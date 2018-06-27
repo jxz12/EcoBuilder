@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 23185512315076612}
   - component: {fileID: 114874683172466424}
   - component: {fileID: 64240836313862286}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,4 +109,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1abedf14f6a0604469121736b10c073f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mr: {fileID: 23185512315076612}

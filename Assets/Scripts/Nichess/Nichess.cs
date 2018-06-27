@@ -44,13 +44,12 @@ public class Nichess : MonoBehaviour
     public void InspectPiece(int idx)
     {
         inspected = pieces[idx];
-        lasso.gameObject.SetActive(true);
+        lasso.Activate(pieces[idx]);
         lasso.Col = pieces[idx].Col;
     }
     public void Uninspect()
     {
-        //lasso.enabled = false;
-        lasso.gameObject.SetActive(false);
+        lasso.DeActivate();
     }
 
     public void Edge()

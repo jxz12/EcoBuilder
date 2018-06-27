@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -13,6 +13,9 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
     }
     public int Idx { get; private set; }
 
+    public Square NicheStart { get; set; }
+    public Square NicheEnd { get; set; }
+
     public void Init(int idx)
     {
         Idx = idx;
@@ -22,7 +25,9 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
     private void Awake()
     {
         mr = GetComponent<MeshRenderer>();
+        //StartCoroutine()
     }
+    //IEnumerator 
 
     public void OnDrag(PointerEventData ped)
     {
@@ -39,14 +44,5 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         else if (ped.clickCount == 2)
             SpeciesManager.Instance.ExtinctSpecies(Idx);
     }
-
-
-    //Square habitat;
-    //public Square Habitat {
-    //    get { return habitat; }
-    //    set { habitat = value; }
-    //}
-    public Square Habitat;
-    public Tuple<Square, Square> Niche { get; set; }
 
 }
