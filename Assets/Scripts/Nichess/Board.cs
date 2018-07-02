@@ -8,18 +8,8 @@ public class Board : MonoBehaviour
     [Serializable] public class ColorEvent : UnityEvent<int, Color> { }
     [SerializeField] ColorEvent PieceColorEvent = new ColorEvent();
 
-    private void Start()
-    {
-        //GridLine newLine = Instantiate(gridLinePrefab, transform);
-        //newLine.LR.positionCount = 4;
-        //newLine.LR.SetPosition(0, new Vector3(-1, 0, -1));
-        //newLine.LR.SetPosition(1, new Vector3(-1, 0, 1));
-        //newLine.LR.SetPosition(2, new Vector3(1, 0, 1));
-        //newLine.LR.SetPosition(3, new Vector3(1, 0, -1));
-        //newLine.LR.loop = true;
-    }
-
     [SerializeField] Square squarePrefab;
+    [SerializeField] Square dummySquare;
     [SerializeField] Transform spawnTransform;
     Square[,] squares;
 
@@ -57,15 +47,13 @@ public class Board : MonoBehaviour
     {
         //newPiece.transform.SetParent(spawnTransform, false); // ???? not working ????
         newPiece.Parent(spawnTransform);
-        newPiece.NicheStart = squares[0, 0];
-        newPiece.NicheEnd = squares[squares.GetLength(0) - 1, squares.GetLength(1) - 1];
+        newPiece.NicheStart = newPiece.NicheEnd = dummySquare;
     }
     public void PieceAdopted(Square newParent, Piece movedPiece)
     {
         Color newCol = newParent.Col;
         newCol.a = 1;
         PieceColorEvent.Invoke(movedPiece.Idx, newCol);
-        //movedPiece.NicheStart = movedPiece.NicheEnd = newParent;
     }
 
     ////public UnityEvent spin;

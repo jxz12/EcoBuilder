@@ -20,8 +20,6 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] float sideWidth = .05f;
     [SerializeField] float cornerRadius = .1f;
 
-    bool initialMode;
-
     LineRenderer lr;
     public Func<Vector3, Vector3> Snap { get; private set; }
     public Color Col {
@@ -53,18 +51,12 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     }
     private void Start()
     {
-        //cornerIdxs = new Dictionary<LassoCorner, int>()
-        //    { { cornerBL, 0 }, { cornerTL, 1 }, { cornerTR, 2 }, { cornerBR, 3 } };
-
-        //int size = GameManager.Instance.BoardSize;
-        //float offset = .5f / size;
-        //Snap = v => new Vector3(Mathf.Floor(v.x * size) / size + offset, 0, Mathf.Floor(v.z * size) / size + offset);
-
         foreach (LassoCorner c in corners)
             c.Sphere.radius = cornerRadius;
         //foreach (LassoSide s in sides)
         //    s.Capsule.radius = sideWidth;
     }
+
     public void OnPointerEnter(PointerEventData ped)
     {
         Color c = lr.material.color;
@@ -83,7 +75,7 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     }
     public void ChangeLayer(int layer)
     {
-        gameObject.layer = layer; // 2 should be ignoreraycast
+        gameObject.layer = layer;
         foreach (LassoCorner c in corners)
             c.gameObject.layer = layer;
         //foreach (LassoSide s in sides)
@@ -93,22 +85,50 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     private Piece inspected;
     public void Activate(Piece toInspect)
     {
+        gameObject.SetActive(true);
         inspected = toInspect;
-        if (inspected.NicheStart == null)
+        if (inspected.InitialMode == false)
         {
-            initialMode = true;
+            corners[0].Location = toInspect.NicheStart;
+            corners[2].Location = toInspect.NicheEnd;
+            MatchAndSnap(corners[0]);
         }
         else
         {
-            gameObject.SetActive(true);
-            cornerBL.Location = inspected.NicheStart;
-            cornerTR.Location = inspected.NicheEnd;
-            MatchAndSnap(cornerBL);
+            corners[0].Location = corners[1].Location = corners[2].Location = corners[3].Location = inspected.NicheStart;
         }
+
+        DrawCorners();
     }
-    public void DeActivate()
+    void Update()
+    {
+        if (inspected.InitialMode == true)
+        {
+            corners[0].Location = corners[1].Location = corners[2].Location = corners[3].Location = inspected.NicheStart;
+        }
+        DrawCorners();
+        Col = inspected.Col;
+    }
+
+    public void Deactivate()
     {
         gameObject.SetActive(false);
+    }
+
+
+    readonly Dictionary<int, Vector2> clockwiseMap = new Dictionary<int, Vector2>(){
+        {0,new Vector2(-.5f, -.5f)}, {1,new Vector2(-.5f, .5f)}, {2,new Vector2(.5f, .5f)}, {3,new Vector2(.5f, -.5f)}
+    };
+    void DrawCorners()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            Vector3 newPos = corners[i].Location.transform.TransformPoint(clockwiseMap[i].x, clockwiseMap[i].y, 0); // assuming that the square is of scale 1
+            corners[i].transform.position = newPos;
+            lr.SetPosition(i, newPos);
+        }
+        //foreach (LassoSide s in sides)
+        //    s.MatchCorners();
     }
 
     private int GetCornerIdx(LassoCorner corner)
@@ -151,29 +171,8 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             SwapCorners(1, 2);
         }
     }
-    //private int GetClockwiseStart(int x1, int x2, int y1, int y2)
-    //{
-    //    if (x1 <= x2)
-    //    {
-    //        if (y1 <= y2)
-    //            return 0;
-    //        else
-    //            return 1;
-    //    }
-    //    else
-    //    {
-    //        if (y1 > y2)
-    //            return 2;
-    //        else
-    //            return 3;
-    //    }
-    //}
-    readonly Dictionary<int, Vector2> clockwiseMap = new Dictionary<int, Vector2>()
-        { {0,new Vector2(-.5f, -.5f)}, {1,new Vector2(-.5f, .5f)}, {2,new Vector2(.5f, .5f)}, {3,new Vector2(.5f, -.5f)} };
 
-
-    // TODO: the first draw should be a square area select :)
-    // TODO: highlight things that eat it as well as things it eats (maybe only in node-link?)
+    // TODO: highlight things that eat it as well as things it eats (maybe only in node-link?) golden angle!
     public void MatchAndSnap(LassoCorner fixedCorner)
     {
         int cornerIdx = GetCornerIdx(fixedCorner);
@@ -184,31 +183,13 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         corners[rightAdj].Location = adjacentCornerSquares.Item2;
 
         ReorientCorners();
-
-        //int clockwiseStart = GetClockwiseStart(corners[0].Location.X, corners[2].Location.X, corners[0].Location.Y, corners[2].Location.Y);
-
-        for (int i = 0; i < 4; i++)
-        {
-            //int clockLoc = (i + clockwiseStart) % 4;
-            //float xLocal = (clockLoc & 1) == 0      ? -.5f : .5f;
-            //float yLocal = (clockLoc >> 1 & 1) == 0 ? -.5f : .5f;
-            int clockLoc = i;
-
-            Vector3 newPos = corners[i].Location.transform.TransformPoint(clockwiseMap[clockLoc].x, clockwiseMap[clockLoc].y, 0); // assuming that the square is of scale 1
-            //Vector3 newPos = corners[i].Location.transform.position;
-            corners[i].transform.position = newPos;
-            lr.SetPosition(i, newPos);
-        }
-        //foreach (LassoSide s in sides)
-        //    s.MatchCorners();
     }
 
-    public void MatchNiche(LassoCorner movedCorner, Square prevSquare)
+    public void MatchNiche(LassoCorner movedCorner)
     {
         //int cornerIdx = GetCornerIdx(movedCorner);
         //int opposite = (cornerIdx + 2) % 4;
 
-        inspected.NicheStart = corners[0].Location;
-        inspected.NicheEnd = corners[2].Location;
+        inspected.SetNiche(corners[0].Location, corners[2].Location);
     }
 }

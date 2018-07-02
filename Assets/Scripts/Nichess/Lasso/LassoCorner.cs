@@ -27,7 +27,7 @@ public class LassoCorner : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndD
                 Square prevLocation = Location;
                 Location = hitSquare;
                 lasso.MatchAndSnap(this);
-                lasso.MatchNiche(this, prevLocation);
+                lasso.MatchNiche(this);
             }
         }
     }

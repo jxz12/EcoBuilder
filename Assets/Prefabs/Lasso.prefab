@@ -27,7 +27,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1111035831226538
 GameObject:
   m_ObjectHideFlags: 0
@@ -78,7 +78,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1367409741683180
 GameObject:
   m_ObjectHideFlags: 0
@@ -95,7 +95,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1435467376311982
 GameObject:
   m_ObjectHideFlags: 0
@@ -129,7 +129,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1791847755450004
 GameObject:
   m_ObjectHideFlags: 0
@@ -305,12 +305,8 @@ MonoBehaviour:
   cornerTL: {fileID: 114274135404405770}
   cornerTR: {fileID: 114634009394932132}
   cornerBR: {fileID: 114465393886475192}
-  sideL: {fileID: 114759467437493274}
-  sideT: {fileID: 114385913911660106}
-  sideR: {fileID: 114539973139862350}
-  sideB: {fileID: 114234408595736574}
   sideWidth: 0.05
-  cornerRadius: 0.1
+  cornerRadius: 0.05
 --- !u!114 &114234408595736574
 MonoBehaviour:
   m_ObjectHideFlags: 1

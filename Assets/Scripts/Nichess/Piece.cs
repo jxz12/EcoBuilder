@@ -22,11 +22,13 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         name = idx.ToString();
     }
 
+    public bool InitialMode { get; private set; }
     private void Awake()
     {
         mr = GetComponent<MeshRenderer>();
-        //StartCoroutine()
+        InitialMode = true;
     }
+
     public void Parent(Transform newParent)
     {
         Vector3 oldScale = transform.localScale;
@@ -35,6 +37,22 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         transform.localPosition = Vector3.zero;
         transform.localScale = oldScale;
         transform.localRotation = oldRotation;
+
+        if (InitialMode == true)
+        {
+            Square placement = transform.parent.GetComponent<Square>();
+            if (placement != null)
+                NicheStart = NicheEnd = placement;
+        }
+    }
+    public void SetNiche(Square start, Square end)
+    {
+        NicheStart = start;
+        NicheEnd = end;
+        InitialMode = false;
+    }
+    void Update()
+    {
     }
 
     public void OnDrag(PointerEventData ped)

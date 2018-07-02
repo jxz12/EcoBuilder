@@ -20,7 +20,6 @@ public class Nichess : MonoBehaviour
         board.Init(GameManager.Instance.BoardSize, (x,y)=>ColorHelper.HSVSquare(x,y,.8f));
     }
 
-    //public Piece AddPiece()?
     public void AddPiece(int idx)
     {
         Piece newPiece = Instantiate(piecePrefab);
@@ -33,11 +32,10 @@ public class Nichess : MonoBehaviour
         Destroy(pieces[idx].gameObject);
         pieces.Remove(idx);
     }
+
     public void ColorPiece(int idx, Color c)
     {
         pieces[idx].Col = c;
-        if (inspected == pieces[idx])
-            lasso.Col = c;
     }
 
     private Piece inspected;
@@ -45,20 +43,24 @@ public class Nichess : MonoBehaviour
     {
         inspected = pieces[idx];
         lasso.Activate(pieces[idx]);
-        lasso.Col = pieces[idx].Col;
     }
     public void Uninspect()
     {
-        lasso.DeActivate();
+        lasso.Deactivate();
     }
 
-    public void Edge()
-    {
-        if (pieces.Count > 1)
-        {
-            int consumer = UnityEngine.Random.Range(1, pieces.Count);
-            int resource = UnityEngine.Random.Range(0, consumer);
-            edgeAddEvent.Invoke(resource, consumer);
-        }
-    }
+    //public void CalculateNewEdges()
+    //{
+    //    inspected.
+    //}
+
+    //public void Edge()
+    //{
+    //    if (pieces.Count > 1)
+    //    {
+    //        int consumer = UnityEngine.Random.Range(1, pieces.Count);
+    //        int resource = UnityEngine.Random.Range(0, consumer);
+    //        edgeAddEvent.Invoke(resource, consumer);
+    //    }
+    //}
 }

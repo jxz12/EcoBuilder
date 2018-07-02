@@ -50,7 +50,6 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                 dragged.Parent(transform);
                 parentBoard.PieceAdopted(this, dragged);
             }
-
         }
         var c = Col;
         c.a = 1;
