@@ -66,6 +66,7 @@ LineRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 86a4cf2771954d9408643b05b2ff4187, type: 2}
   m_StaticBatchInfo:
@@ -96,18 +97,24 @@ LineRenderer:
     widthCurve:
       serializedVersion: 2
       m_Curve:
-      - serializedVersion: 2
+      - serializedVersion: 3
         time: 0
         value: 1
-        inSlope: -0.482353
-        outSlope: -0.482353
+        inSlope: -0.7807945
+        outSlope: -0.7807945
         tangentMode: 0
-      - serializedVersion: 2
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 1
+      - serializedVersion: 3
         time: 1
-        value: 0.5024338
-        inSlope: -0.5064814
-        outSlope: -0.5064814
+        value: 0.22007751
+        inSlope: -0.77836883
+        outSlope: -0.77836883
         tangentMode: 0
+        weightedMode: 0
+        inWeight: 1
+        outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 0

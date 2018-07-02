@@ -27,7 +27,15 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         mr = GetComponent<MeshRenderer>();
         //StartCoroutine()
     }
-    //IEnumerator 
+    public void Parent(Transform newParent)
+    {
+        Vector3 oldScale = transform.localScale;
+        Quaternion oldRotation = transform.localRotation;
+        transform.parent = newParent;
+        transform.localPosition = Vector3.zero;
+        transform.localScale = oldScale;
+        transform.localRotation = oldRotation;
+    }
 
     public void OnDrag(PointerEventData ped)
     {

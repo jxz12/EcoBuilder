@@ -24,6 +24,10 @@ public class Cursor : MonoBehaviour {
 	void Update() {
 		var screenPos = Input.mousePosition;
 		transform.position = screenPos;
+        if (Input.GetMouseButton(0))
+            transform.localScale = new Vector3(1, .9f);
+        else
+            transform.localScale = Vector3.one;
 	}
 
 	void MatchPivot() {

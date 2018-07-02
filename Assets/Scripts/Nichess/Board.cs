@@ -55,10 +55,10 @@ public class Board : MonoBehaviour
 
     public void PlaceNewPiece(Piece newPiece)
     {
-        newPiece.transform.SetParent(spawnTransform, false);
+        //newPiece.transform.SetParent(spawnTransform, false); // ???? not working ????
+        newPiece.Parent(spawnTransform);
         newPiece.NicheStart = squares[0, 0];
-        newPiece.NicheEnd = squares[squares.GetLength(0)-1, squares.GetLength(1)-1];
-        //PieceAdopted(spawnSquare, newPiece);
+        newPiece.NicheEnd = squares[squares.GetLength(0) - 1, squares.GetLength(1) - 1];
     }
     public void PieceAdopted(Square newParent, Piece movedPiece)
     {

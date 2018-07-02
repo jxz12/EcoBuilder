@@ -46,7 +46,8 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             Piece dragged = ped.pointerDrag.GetComponent<Piece>();
             if (dragged != null && transform.childCount == 0)
             {
-                dragged.transform.SetParent(transform, false);
+                //dragged.transform.SetParent(transform, false);
+                dragged.Parent(transform);
                 parentBoard.PieceAdopted(this, dragged);
             }
 

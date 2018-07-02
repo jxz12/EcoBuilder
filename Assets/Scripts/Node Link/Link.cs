@@ -11,6 +11,7 @@ public class Link : MonoBehaviour
     {
         Source = source;
         Target = target;
+        name = Source.Idx + " " + Target.Idx;
     }
 
     private void Update()

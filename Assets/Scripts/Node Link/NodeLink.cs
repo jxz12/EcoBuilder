@@ -53,16 +53,16 @@ public class NodeLink : MonoBehaviour
     // local majorization
     private void Layout()
     {
-        //float xAvg = 0, zAvg = 0;
         foreach (int i in nodes.Indices)
         {
             float xTop = 0, zTop = 0;
             float wBot = 0;
+            Vector3 X_i = nodes[i].transform.localPosition;
+
             foreach (int j in nodes.Indices)
             {
                 if (i != j)
                 {
-                    Vector3 X_i = nodes[i].transform.localPosition;
                     Vector3 X_j = nodes[j].transform.localPosition;
                     float d = (X_i - X_j).magnitude;
 
@@ -88,11 +88,24 @@ public class NodeLink : MonoBehaviour
                 float y = (float)(SpeciesManager.Instance.GetTrophicLevel(i));
                 float x = xTop / wBot, z = zTop / wBot;
                 nodes[i].transform.localPosition = new Vector3(x, y, z);
-                //xAvg += x;
-                //zAvg += z;
             }
         }
-        //transform.localPosition = new Vector3(-xAvg, transform.localPosition.y, -zAvg);
+
+        float xAvg = 0, zAvg = 0;
+        int n = 0;
+        foreach (Node node in nodes)
+        {
+            xAvg += node.transform.localPosition.x;
+            zAvg += node.transform.localPosition.z;
+            n += 1;
+        }
+        if (n > 0)
+        {
+            xAvg /= n;
+            zAvg /= n;
+            foreach (Node node in nodes)
+                node.transform.localPosition -= new Vector3(xAvg, 0, zAvg);
+        }
     }
 
     private void Update()
