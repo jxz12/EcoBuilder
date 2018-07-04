@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-[RequireComponent(typeof(Parameterizer))]
 public class SpeciesManager : MonoBehaviour
 {
     /// <summary>
@@ -33,7 +32,6 @@ public class SpeciesManager : MonoBehaviour
             Destroy(gameObject);
             // this means that there can only ever be one GameObject of this type
         }
-        param = GetComponent<Parameterizer>();
     }
 
 
@@ -45,29 +43,37 @@ public class SpeciesManager : MonoBehaviour
 
     [SerializeField] IntEvent SpawnEvent = new IntEvent();
     [SerializeField] IntEvent ExtinctEvent = new IntEvent();
-    [SerializeField] IntEvent InspectEvent = new IntEvent();
-    [SerializeField] UnityEvent UninspectEvent = new UnityEvent();
 
+    [SerializeField] Parameterizer param;
     public void SpawnSpecies()
     {
         int idx = ecosystem.AddSpecies();
-        ecosystem.InteractionMatrix[idx, idx] = -.1;
-        ecosystem.GrowthVector[0] = 1;
+        param.AddSpecies(idx);
+
+        ecosystem.GrowthVector[idx] = param.GetGrowth(idx);
+        ecosystem.InteractionMatrix[idx, idx] = param.GetIntraspecific(idx);
 
         SpawnEvent.Invoke(idx);
-        InspectEvent.Invoke(idx);
     }
     public void ExtinctSpecies(int idx)
     {
+        param.RemoveSpecies(idx);
         ecosystem.RemoveSpecies(idx);
-        ExtinctEvent.Invoke(idx);
-        UninspectEvent.Invoke();
-    }
-    public void InspectSpecies(int idx)
-    {
-        InspectEvent.Invoke(idx);
-    }
 
+        ExtinctEvent.Invoke(idx);
+    }
+    //public void InspectSpecies(int idx)
+    //{
+    //    InspectEvent.Invoke(idx);
+    //}
+
+    public bool GetIsBasal(int idx)
+    {
+        if (idx == 0)
+            return true;
+        else
+            return false;
+    }
     public double GetTrophicLevel(int idx)
     {
         return ecosystem.TrophicLevels[idx];
@@ -83,7 +89,6 @@ public class SpeciesManager : MonoBehaviour
     /// </summary>
 
     private Stability ecosystem = new Stability();
-    private Parameterizer param;
 
     async public void Equilibrium()
     {
@@ -97,7 +102,7 @@ public class SpeciesManager : MonoBehaviour
         double stability = await Task.Run(() => ecosystem.LocalAsymptoticStability());
         print("stability: " + stability);
     }
-    public void Interaction(int resource, int consumer)
+    public void AddInteraction(int resource, int consumer)
     {
         if (resource == consumer)
             throw new Exception("can't eat itself");
@@ -108,12 +113,20 @@ public class SpeciesManager : MonoBehaviour
         ecosystem.InteractionMatrix[consumer, resource] = interaction * efficiency;
         print("interaction:\n" + ecosystem.InteractionMatrix.ToString(x => x.ToString()));
     }
+    public void RemoveInteraction(int resource, int consumer)
+    {
+        if (resource == consumer)
+            throw new Exception("can't eat itself");
+        ecosystem.InteractionMatrix[resource, consumer] = 0;
+        ecosystem.InteractionMatrix[consumer, resource] = 0;
+        print("interaction:\n" + ecosystem.InteractionMatrix.ToString(x => x.ToString()));
+    }
 
     private void Update()
     {
         ecosystem.TrophicGaussSeidel();
-        if (Input.GetButtonDown("Cancel"))
-            UninspectEvent.Invoke();
+        //if (Input.GetButtonDown("Cancel"))
+        //    UninspectEvent.Invoke();
     }
 
 

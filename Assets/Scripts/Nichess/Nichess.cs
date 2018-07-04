@@ -9,8 +9,12 @@ public class Nichess : MonoBehaviour
     [SerializeField] EdgeEvent edgeAddEvent;
     [SerializeField] EdgeEvent edgeRemoveEvent;
 
+    [Serializable] public class IntEvent : UnityEvent<int> { }
+    [SerializeField] IntEvent InspectEvent;
+
     [SerializeField] Board board;
     [SerializeField] Piece piecePrefab;
+    [SerializeField] Piece basalPiecePrefab;
     [SerializeField] Lasso lasso;
     Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
 
@@ -22,15 +26,33 @@ public class Nichess : MonoBehaviour
 
     public void AddPiece(int idx)
     {
-        Piece newPiece = Instantiate(piecePrefab);
-        newPiece.Init(idx);
+        Piece newPiece;
+        if (SpeciesManager.Instance.GetIsBasal(idx))
+            newPiece = Instantiate(basalPiecePrefab);
+        else
+            newPiece = Instantiate(piecePrefab);
+
+        //bool staticPos = SpeciesManager.Instance.GetIsStaticPos(idx);
+        //bool staticRange = SpeciesManager.Instance.GetIsStaticRange(idx);
+        
+        newPiece.Init(idx, false, SpeciesManager.Instance.GetIsBasal(idx), InspectEvent);
+
         board.PlaceNewPiece(newPiece);
         pieces[idx] = newPiece;
+        InspectEvent.Invoke(idx);
     }
     public void RemovePiece(int idx)
     {
         Destroy(pieces[idx].gameObject);
         pieces.Remove(idx);
+    }
+    public void MovePiece(int idx, int xPos, int yPos)
+    {
+
+    }
+    public void MovePiece(int idx, int xPos, int yPos, int xRangeStart, int yRangeStart, int xRangeEnd, int yRangeEnd)
+    {
+
     }
 
     public void ColorPiece(int idx, Color c)
@@ -41,8 +63,15 @@ public class Nichess : MonoBehaviour
     private Piece inspected;
     public void InspectPiece(int idx)
     {
-        inspected = pieces[idx];
-        lasso.Activate(pieces[idx]);
+        inspected = pieces[idx]; // TODO: highlight other things here
+        if (!inspected.StaticRange)
+        {
+            lasso.Activate(pieces[idx]);
+        }
+        else
+        {
+            lasso.Deactivate();
+        }
     }
     public void Uninspect()
     {
@@ -54,13 +83,4 @@ public class Nichess : MonoBehaviour
     //    inspected.
     //}
 
-    //public void Edge()
-    //{
-    //    if (pieces.Count > 1)
-    //    {
-    //        int consumer = UnityEngine.Random.Range(1, pieces.Count);
-    //        int resource = UnityEngine.Random.Range(0, consumer);
-    //        edgeAddEvent.Invoke(resource, consumer);
-    //    }
-    //}
 }

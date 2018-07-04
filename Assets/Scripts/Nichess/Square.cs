@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(MeshRenderer))]
-public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//, IPointerDownHandler
 {
     Board parentBoard;
     MeshRenderer mr;
@@ -51,6 +51,7 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
                 parentBoard.PieceAdopted(this, dragged);
             }
         }
+
         var c = Col;
         c.a = 1;
         Col = c;
@@ -61,4 +62,11 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         c.a = defaultAlpha;
         Col = c;
     }
+    //public void OnPointerDown(PointerEventData ped)
+    //{
+    //    //if (ped.pointerId == -1)
+    //    //    print("hello");
+    //    //if (ped.pointerId == -2)
+    //    //    print("hello2");
+    //}
 }

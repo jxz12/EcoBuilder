@@ -19,6 +19,7 @@ public class Parameterizer : MonoBehaviour {
 
     [SerializeField] Text nameText;
     [SerializeField] Slider massSlider;
+    [SerializeField] Button spawnButton;
     //[SerializeField] Slider attackSlider;
     //[SerializeField] Slider defenceSlider;
 
@@ -42,12 +43,27 @@ public class Parameterizer : MonoBehaviour {
     {
         nameText.text = allSpecies[idx].Name;
         massSlider.value = allSpecies[idx].BodyMass;
+        massSlider.interactable = false;
+        spawnButton.interactable = false;
     }
     public void Uninspect()
     {
         nameText.text = "none selected";
+        massSlider.interactable = true;
+        spawnButton.interactable = true;
     }
 
+    public float GetGrowth(int idx)
+    {
+        if (idx == 0)
+            return 1;
+        else
+            return -2;
+    }
+    public float GetIntraspecific(int idx)
+    {
+        return -.1f;
+    }
     public float GetEfficiency(int resource, int consumer)
     {
         return .5f;
