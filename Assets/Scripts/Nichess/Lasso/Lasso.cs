@@ -87,25 +87,25 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         gameObject.SetActive(true);
         inspected = toInspect;
-        if (inspected.InitialMode == false)
-        {
-            corners[0].Location = toInspect.NicheStart;
-            corners[2].Location = toInspect.NicheEnd;
-            MatchAndSnap(corners[0]);
-        }
-        else
-        {
-            corners[0].Location = corners[1].Location = corners[2].Location = corners[3].Location = inspected.NicheStart;
-        }
+        //if (inspected.InitialMode == false)
+        //{
+        //    corners[0].Location = toInspect.NicheStart;
+        //    corners[2].Location = toInspect.NicheEnd;
+        //    MatchAndSnap(corners[0]);
+        //}
+        //else
+        //{
+        //    corners[0].Location = corners[1].Location = corners[2].Location = corners[3].Location = inspected.NicheStart;
+        //}
 
         DrawCorners();
     }
     void Update()
     {
-        if (inspected.InitialMode == true)
-        {
-            corners[0].Location = corners[1].Location = corners[2].Location = corners[3].Location = inspected.NicheStart;
-        }
+        //if (inspected.InitialMode == true)
+        //{
+        //    corners[0].Location = corners[1].Location = corners[2].Location = corners[3].Location = inspected.NicheStart;
+        //}
         DrawCorners();
         Col = inspected.Col;
     }

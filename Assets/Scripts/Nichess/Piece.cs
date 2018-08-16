@@ -14,12 +14,16 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         set { mr.material.color = value; }
     }
     public int Idx { get; private set; }
-    public bool InitialMode { get; private set; }
     public bool StaticPos { get; private set; }
     public bool StaticRange { get; private set; }
 
     public Square NicheStart { get; set; }
     public Square NicheEnd { get; set; }
+
+    private void Awake()
+    {
+        mr = GetComponent<MeshRenderer>();
+    }
 
     UnityEvent<int> InspectEvent;
     public void Init(int idx, bool staticPos, bool staticRange, UnityEvent<int> InspectEvent)
@@ -29,12 +33,6 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         StaticPos = staticPos;
         StaticRange = staticRange;
         this.InspectEvent = InspectEvent;
-    }
-
-    private void Awake()
-    {
-        mr = GetComponent<MeshRenderer>();
-        InitialMode = true;
     }
 
     //float angle = 0;
@@ -77,18 +75,17 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         transform.localScale = oldScale;
         transform.localRotation = oldRotation;
 
-        if (InitialMode == true)
-        {
-            Square placement = transform.parent.GetComponent<Square>();
-            if (placement != null)
-                NicheStart = NicheEnd = placement;
-        }
+        //if (InitialMode == true)
+        //{
+        //    Square placement = transform.parent.GetComponent<Square>();
+        //    if (placement != null)
+        //        NicheStart = NicheEnd = placement;
+        //}
     }
     public void SetNiche(Square start, Square end)
     {
         NicheStart = start;
         NicheEnd = end;
-        InitialMode = false;
     }
 
     public void OnDrag(PointerEventData ped)
@@ -103,8 +100,6 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
     {
         if (ped.clickCount == 1 && !ped.dragging)
             InspectEvent.Invoke(Idx);
-        else if (ped.clickCount == 3)
-            SpeciesManager.Instance.ExtinctSpecies(Idx); // change this later
     }
 
 }

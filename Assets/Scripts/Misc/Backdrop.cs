@@ -6,11 +6,11 @@ using UnityEngine.EventSystems;
 
 public class Backdrop : MonoBehaviour, IPointerClickHandler
 {
-    [SerializeField] UnityEvent ClickEvent;
+    [SerializeField] UnityEvent UninspectedEvent;
 
     public void OnPointerClick(PointerEventData ped)
     {
-        ClickEvent.Invoke();
+        UninspectedEvent.Invoke();
     }
 
 	// Use this for initialization

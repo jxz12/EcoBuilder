@@ -1,11 +1,12 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(MeshRenderer))]
 public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//, IPointerDownHandler
 {
-    Board parentBoard;
+    Board parent;
     MeshRenderer mr;
     float defaultAlpha;
 
@@ -21,11 +22,13 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//
         mr = GetComponent<MeshRenderer>();
         defaultAlpha = mr.material.color.a;
     }
-    public void Init(int x, int y, Color c)
+    UnityEvent<int, Color> PieceColoredEvent;
+    public void Init(int x, int y, Color c, UnityEvent<int, Color> ColorEvent)
     {
         X = x;
         Y = y;
         Col = c;
+        PieceColoredEvent = ColorEvent;
         name = x + " " + y;
     }
     void Start()
@@ -33,9 +36,6 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//
         var c = Col;
         c.a = defaultAlpha;
         Col = c;
-        parentBoard = transform.parent.GetComponent<Board>();
-        if (parentBoard == null)
-            throw new Exception("square parent is not have a Board component");
     }
 
     public void OnPointerEnter(PointerEventData ped)
@@ -48,7 +48,8 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//
             {
                 //dragged.transform.SetParent(transform, false);
                 dragged.Parent(transform);
-                parentBoard.PieceAdopted(this, dragged);
+                dragged.Col = Col;
+                PieceColoredEvent.Invoke(dragged.Idx, Col);
             }
         }
 

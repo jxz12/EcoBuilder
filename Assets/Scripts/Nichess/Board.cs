@@ -5,23 +5,25 @@ using UnityEngine.Events;
 
 public class Board : MonoBehaviour
 {
-    [Serializable] public class ColorEvent : UnityEvent<int, Color> { }
-    [SerializeField] ColorEvent PieceColorEvent = new ColorEvent();
+    [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
+    [SerializeField] IntColorEvent PieceColoredEvent = new IntColorEvent();
 
     [SerializeField] Square squarePrefab;
     [SerializeField] Square dummySquare;
     [SerializeField] Transform spawnTransform;
     Square[,] squares;
 
-    public void Init(int size, Func<float, float, Color> ColorMap)
+    private void Awake()
     {
+        int size = GameManager.Instance.BoardSize;
+        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,.8f);
+
         Vector3 bottomLeft = new Vector3(-.5f, 0, -.5f); float gap = 1f / size;
         Vector3 offset = new Vector3(gap / 2, 0, gap / 2);
         float squareWidth = (1f / size) * .95f;
         Vector3 scale = new Vector3(squareWidth, squareWidth, squareWidth);
 
         squares = new Square[size, size];
-        //float normWidth = 1f / (size-1);
 
         for (int i = 0; i < size; i++)
         {
@@ -31,11 +33,12 @@ public class Board : MonoBehaviour
 
                 s.transform.localPosition = bottomLeft + new Vector3(i * gap, 0, j * gap) + offset;
                 s.transform.localScale = scale;
-                s.Init(i, j, ColorMap((float)i / size, (float)j / size));
+                s.Init(i, j, ColorMap((float)i / size, (float)j / size), PieceColoredEvent);
 
                 squares[i, j] = s;
             }
         }
+        //dummySquare.Init(-1, -1, Color.black, null);
     }
     public Tuple<Square, Square> GetAdjacentCornerSquares(Square corner1, Square corner2)
     {
@@ -49,12 +52,7 @@ public class Board : MonoBehaviour
         newPiece.Parent(spawnTransform);
         newPiece.NicheStart = newPiece.NicheEnd = dummySquare;
     }
-    public void PieceAdopted(Square newParent, Piece movedPiece)
-    {
-        Color newCol = newParent.Col;
-        newCol.a = 1;
-        PieceColorEvent.Invoke(movedPiece.Idx, newCol);
-    }
+
 
     ////public UnityEvent spin;
     //bool spinning = false;

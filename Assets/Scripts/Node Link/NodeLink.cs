@@ -85,7 +85,8 @@ public class NodeLink : MonoBehaviour
             }
             if (wBot != 0)
             {
-                float y = (float)(SpeciesManager.Instance.GetTrophicLevel(i));
+                //float y = (float)(SpeciesManager.Instance.GetTrophicLevel(i)); // TODO: make trophic levels an event and store y
+                float y = 1;
                 float x = xTop / wBot, z = zTop / wBot;
                 nodes[i].transform.localPosition = new Vector3(x, y, z);
             }

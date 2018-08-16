@@ -12,7 +12,11 @@ public class GameManager : MonoBehaviour
 	public static GameManager Instance {
         get {
             if (gameManager == null)
+            {
                 Debug.LogError("No active GameManager");
+                gameManager = new GameObject("Game Manager").AddComponent<GameManager>();
+                // remove for build
+            }
             return gameManager;
         }
     }
@@ -34,6 +38,10 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] int boardSize = 5;
     public int BoardSize { get { return boardSize; } }
+
+    [SerializeField] int maxProducers = 3;
+    public int MaxProducers { get { return maxProducers; } }
+
     public enum Difficulty { Easy, Medium, Hard };
     public Difficulty difficulty = Difficulty.Medium;
 
