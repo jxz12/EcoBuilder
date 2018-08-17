@@ -178,9 +178,9 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         int cornerIdx = GetCornerIdx(fixedCorner);
         int leftAdj = (cornerIdx + 1) % 4, opposite = (cornerIdx + 2) % 4, rightAdj = (cornerIdx + 3) % 4;
 
-        var adjacentCornerSquares = board.GetAdjacentCornerSquares(corners[cornerIdx].Location, corners[opposite].Location);
-        corners[leftAdj].Location = adjacentCornerSquares.Item1;
-        corners[rightAdj].Location = adjacentCornerSquares.Item2;
+        //var adjacentCornerSquares = board.GetAdjacentCornerSquares(corners[cornerIdx].Location, corners[opposite].Location);
+        //corners[leftAdj].Location = adjacentCornerSquares.Item1;
+        //corners[rightAdj].Location = adjacentCornerSquares.Item2;
 
         ReorientCorners();
     }
@@ -190,6 +190,6 @@ public class Lasso : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         //int cornerIdx = GetCornerIdx(movedCorner);
         //int opposite = (cornerIdx + 2) % 4;
 
-        inspected.SetNiche(corners[0].Location, corners[2].Location);
+        //inspected.SetNiche(corners[0].Location, corners[2].Location);
     }
 }

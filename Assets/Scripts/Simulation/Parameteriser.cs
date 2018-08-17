@@ -97,7 +97,7 @@ public class Parameteriser : MonoBehaviour
     }
     public void Uninspect()
     {
-        nameText.text = "(new species)";
+        nameText.text = "<new species>";
         massSlider.interactable = true;
         if (producersCounter > 0)
             producerToggle.interactable = true;

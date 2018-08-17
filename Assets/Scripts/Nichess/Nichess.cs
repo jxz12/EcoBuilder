@@ -6,52 +6,54 @@ using UnityEngine.Events;
 public class Nichess : MonoBehaviour
 {
     [Serializable] class IntIntEvent : UnityEvent<int, int> { }
+    [Serializable] class IntEvent : UnityEvent<int> { }
+    [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
     [SerializeField] IntIntEvent EdgeAddedEvent;
     [SerializeField] IntIntEvent EdgeRemovedEvent;
+    [SerializeField] IntEvent PieceInspectedEvent;
+    [SerializeField] IntColorEvent PieceColoredEvent;
 
-    [Serializable] class IntEvent : UnityEvent<int> { }
-    [SerializeField] IntEvent InspectedEvent;
-
-    [SerializeField] Board board;
     [SerializeField] Piece producerPrefab;
     [SerializeField] Piece consumerPrefab;
     Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
 
+    [SerializeField] Board board;
+    [SerializeField] SpawnPlatform spawnPlatform;
+
     private void Start()
     {
-        //board.Init(GameManager.Instance.boardSize, (x,y)=>ColorHelper.HSLSquare(x,y));
+        board.SquareDragStartedEvent += s => print("start " + s.name);
+        board.SquareDraggedEvent += s => print("drag " + s.name);
     }
 
     public void AddProducer(int idx)//, bool staticPos)
     {
         Piece newPiece = Instantiate(producerPrefab);
-        //newPiece.Init(idx, staticPos, true, InspectedEvent);
-        newPiece.Init(idx, false, true, InspectedEvent);
-
-        board.PlaceNewPiece(newPiece);
-        pieces[idx] = newPiece;
-        InspectedEvent.Invoke(idx);
+        newPiece.Init(idx, false, true);
+        SetupNewPiece(newPiece);
     }
     public void AddConsumer(int idx)//, bool staticPos, bool staticRange)
     {
         Piece newPiece = Instantiate(consumerPrefab);
-        newPiece.Init(idx, false, false, InspectedEvent);
-
-        board.PlaceNewPiece(newPiece);
-        pieces[idx] = newPiece;
-        InspectedEvent.Invoke(idx); // maybe shouldn't be here
+        newPiece.Init(idx, false, false);
+        SetupNewPiece(newPiece);
     }
+    void SetupNewPiece(Piece newPiece)
+    {
+        newPiece.InspectedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
+        newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
+        pieces[newPiece.Idx] = newPiece;
+        spawnPlatform.Spawn(newPiece);
+        PieceInspectedEvent.Invoke(newPiece.Idx); // maybe shouldn't go here
+    }
+
     public void RemovePiece(int idx)
     {
         Destroy(pieces[idx].gameObject);
         pieces.Remove(idx);
         Uninspect();
     }
-    public void MovePiece(int idx, int xPos, int yPos)
-    {
-        throw new NotImplementedException();
-    }
-    public void MovePiece(int idx, int xPos, int yPos, int xRangeStart, int yRangeStart, int xRangeEnd, int yRangeEnd)
+    public void ConfigFromString(string config)
     {
         throw new NotImplementedException();
     }
@@ -59,11 +61,6 @@ public class Nichess : MonoBehaviour
     {
         throw new NotImplementedException();
     }
-
-    //public void ColorPiece(int idx, Color c)
-    //{
-    //    pieces[idx].Col = c;
-    //}
 
     private Piece inspected;
     public void InspectPiece(int idx)
@@ -74,10 +71,5 @@ public class Nichess : MonoBehaviour
     {
         inspected = null;
     }
-
-    //public void CalculateNewEdges()
-    //{
-    //    inspected.
-    //}
 
 }

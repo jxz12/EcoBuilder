@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using SparseMatrix;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,9 @@ public class NodeLink : MonoBehaviour
 {
     [SerializeField] Node nodePrefab;
     [SerializeField] Link linkPrefab;
+
+    [Serializable] class IntEvent : UnityEvent<int> { };
+    [SerializeField] IntEvent NodeInspectedEvent;
 
     SparseVector<Node> nodes = new SparseVector<Node>();
     SparseMatrix<Link> links = new SparseMatrix<Link>();

@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class Board : MonoBehaviour
 {
-    [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
-    [SerializeField] IntColorEvent PieceColoredEvent = new IntColorEvent();
-
     [SerializeField] Square squarePrefab;
-    [SerializeField] Square dummySquare;
-    [SerializeField] Transform spawnTransform;
+
     Square[,] squares;
+    //public HashSet<Square> HoveredSquares { get; private set; } = new HashSet<Square>();
+    public event Action<Square> SquareDragStartedEvent;
+    public event Action<Square> SquareDraggedEvent;
 
     private void Awake()
     {
@@ -33,24 +32,51 @@ public class Board : MonoBehaviour
 
                 s.transform.localPosition = bottomLeft + new Vector3(i * gap, 0, j * gap) + offset;
                 s.transform.localScale = scale;
-                s.Init(i, j, ColorMap((float)i / size, (float)j / size), PieceColoredEvent);
+                s.Init(i, j, ColorMap((float)i / size, (float)j / size));
+
+                s.HoveredEvent += () => hovered = s;
+                s.UnhoveredEvent += () => { if (s == hovered) hovered = null; };
 
                 squares[i, j] = s;
             }
         }
-        //dummySquare.Init(-1, -1, Color.black, null);
-    }
-    public Tuple<Square, Square> GetAdjacentCornerSquares(Square corner1, Square corner2)
-    {
-        int x1 = corner1.X, x2 = corner2.X, y1 = corner1.Y, y2 = corner2.Y;
-        return Tuple.Create(squares[x1, y2], squares[x2, y1]);
     }
 
-    public void PlaceNewPiece(Piece newPiece)
+
+
+    Square hovered = null;
+    private void Start()
     {
-        //newPiece.transform.SetParent(spawnTransform, false); // ???? not working ????
-        newPiece.Parent(spawnTransform);
-        newPiece.NicheStart = newPiece.NicheEnd = dummySquare;
+        //SquareHoveredEvent.AddListener(s => HoveredSquares.Add(s));
+        //SquareUnhoveredEvent.AddListener(s => HoveredSquares.Remove(s));
+
+        dragging = false;
+    }
+    bool dragging;
+    Square dragStart, dragEnd;
+    private void Update()
+    {
+        // if it's the frame right-click is pressed
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (hovered != null)
+            {
+                dragStart = dragEnd = hovered;
+                dragging = true;
+                SquareDragStartedEvent.Invoke(dragStart);
+            }
+        }
+        if (Input.GetMouseButtonUp(1))
+        {
+            dragging = false;
+        }
+
+        // if drag has begun, and ends somewhere other than dragEnd
+        if (dragging == true && hovered != null && hovered != dragEnd)
+        {
+            dragEnd = hovered;
+            SquareDraggedEvent.Invoke(dragEnd);
+        }
     }
 
 

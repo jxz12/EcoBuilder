@@ -4,9 +4,8 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(MeshRenderer))]
-public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//, IPointerDownHandler
+public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    Board parent;
     MeshRenderer mr;
     float defaultAlpha;
 
@@ -22,13 +21,12 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//
         mr = GetComponent<MeshRenderer>();
         defaultAlpha = mr.material.color.a;
     }
-    UnityEvent<int, Color> PieceColoredEvent;
-    public void Init(int x, int y, Color c, UnityEvent<int, Color> ColorEvent)
+
+    public void Init(int x, int y, Color c)
     {
         X = x;
         Y = y;
         Col = c;
-        PieceColoredEvent = ColorEvent;
         name = x + " " + y;
     }
     void Start()
@@ -38,6 +36,8 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//
         Col = c;
     }
 
+    public event Action HoveredEvent;
+    public event Action UnhoveredEvent;
     public void OnPointerEnter(PointerEventData ped)
     {
         // make any dragged piece enter this square
@@ -47,27 +47,20 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler//
             if (dragged != null && transform.childCount == 0)
             {
                 //dragged.transform.SetParent(transform, false);
-                dragged.Parent(transform);
-                dragged.Col = Col;
-                PieceColoredEvent.Invoke(dragged.Idx, Col);
+                dragged.ParentToSquare(this);
             }
         }
 
         var c = Col;
         c.a = 1;
         Col = c;
+        HoveredEvent.Invoke();
     }
     public void OnPointerExit(PointerEventData ped)
     {
         var c = Col;
         c.a = defaultAlpha;
         Col = c;
+        UnhoveredEvent.Invoke();
     }
-    //public void OnPointerDown(PointerEventData ped)
-    //{
-    //    //if (ped.pointerId == -1)
-    //    //    print("hello");
-    //    //if (ped.pointerId == -2)
-    //    //    print("hello2");
-    //}
 }
