@@ -61,7 +61,7 @@ public class Board : MonoBehaviour
         {
             if (hovered != null)
             {
-                dragStart = dragEnd = hovered;
+                dragStart = hovered;
                 dragging = true;
                 SquareDragStartedEvent.Invoke(dragStart);
             }

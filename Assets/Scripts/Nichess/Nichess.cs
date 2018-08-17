@@ -19,11 +19,12 @@ public class Nichess : MonoBehaviour
 
     [SerializeField] Board board;
     [SerializeField] SpawnPlatform spawnPlatform;
-
+    
     private void Start()
     {
-        board.SquareDragStartedEvent += s => print("start " + s.name);
-        board.SquareDraggedEvent += s => print("drag " + s.name);
+        PieceInspectedEvent.AddListener(InspectPiece);
+        board.SquareDragStartedEvent += MoveInspectedNicheStart;
+        board.SquareDraggedEvent += MoveInspectedNicheEnd;
     }
 
     public void AddProducer(int idx)//, bool staticPos)
@@ -44,7 +45,7 @@ public class Nichess : MonoBehaviour
         newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
         pieces[newPiece.Idx] = newPiece;
         spawnPlatform.Spawn(newPiece);
-        PieceInspectedEvent.Invoke(newPiece.Idx); // maybe shouldn't go here
+        // PieceInspectedEvent.Invoke(newPiece.Idx);
     }
 
     public void RemovePiece(int idx)
@@ -63,13 +64,38 @@ public class Nichess : MonoBehaviour
     }
 
     private Piece inspected;
+    private HashSet<Piece> inspectedConsumers, inspectedResources;
     public void InspectPiece(int idx)
     {
-        inspected = pieces[idx]; // TODO: highlight other things here
+        if (inspected != null) {
+            inspected.transform.localScale = Vector3.one;
+        }
+        inspected = pieces[idx]; // TODO: highlight other things here, use hashsets to calculate edge changes
+        inspected.transform.localScale = 1.5f * Vector3.one;
     }
     public void Uninspect()
     {
-        inspected = null;
+        if (inspected != null)
+        {
+            inspected.transform.localScale = Vector3.one;
+            inspected = null;
+        }
+    }
+    public void MoveInspectedNicheStart(Square newStart)
+    {
+        if (inspected != null)
+        {
+            inspected.NicheStart = newStart;
+            inspected.DrawLasso();
+        }
+    }
+    public void MoveInspectedNicheEnd(Square newEnd)
+    {
+        if (inspected != null)
+        {
+            inspected.NicheEnd = newEnd;
+            inspected.DrawLasso();
+        }
     }
 
 }

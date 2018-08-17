@@ -60,7 +60,6 @@ public class Parameteriser : MonoBehaviour
             }
             speciesDict.Remove((int)inspectedIdx);
             SpeciesRemovedEvent.Invoke((int)inspectedIdx);
-            Uninspect();
         }
         else
         {
