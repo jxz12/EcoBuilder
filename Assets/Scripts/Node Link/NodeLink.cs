@@ -40,14 +40,16 @@ public class NodeLink : MonoBehaviour
 
     public void AddLink(int i, int j)
     {
-        Link newLink = Instantiate(linkPrefab, transform);
-        newLink.Init(nodes[i], nodes[j]);
-        links[i, j] = newLink;
+        print("added " + i + " " + j);
+        // Link newLink = Instantiate(linkPrefab, transform);
+        // newLink.Init(nodes[i], nodes[j]);
+        // links[i, j] = newLink;
     }
     public void RemoveLink(int i, int j)
     {
-        Destroy(links[i, j].gameObject);
-        links.RemoveAt(i, j);
+        print("removed " + i + " " + j);
+        // Destroy(links[i, j].gameObject);
+        // links.RemoveAt(i, j);
     }
     public void ColorNode(int idx, Color c)
     {

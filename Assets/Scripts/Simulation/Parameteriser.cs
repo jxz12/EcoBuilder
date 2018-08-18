@@ -31,6 +31,7 @@ public class Parameteriser : MonoBehaviour
     [SerializeField] Text nameText;
     [SerializeField] Slider massSlider;
     [SerializeField] Button spawnButton;
+    [SerializeField] Text spawnText;
     [SerializeField] Toggle producerToggle;
 
     void Start()
@@ -60,6 +61,7 @@ public class Parameteriser : MonoBehaviour
             }
             speciesDict.Remove((int)inspectedIdx);
             SpeciesRemovedEvent.Invoke((int)inspectedIdx);
+            Uninspect();
         }
         else
         {
@@ -87,6 +89,7 @@ public class Parameteriser : MonoBehaviour
     public void InspectSpecies(int idx)
     {
         nameText.text = speciesDict[idx].Name;
+        spawnText.text = "REMOVE";
         massSlider.value = speciesDict[idx].BodyMass;
         producerToggle.isOn = speciesDict[idx].Producer;
 
@@ -97,6 +100,7 @@ public class Parameteriser : MonoBehaviour
     public void Uninspect()
     {
         nameText.text = "<new species>";
+        spawnText.text = "SPAWN";
         massSlider.interactable = true;
         if (producersCounter > 0)
             producerToggle.interactable = true;

@@ -40,21 +40,10 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public event Action UnhoveredEvent;
     public void OnPointerEnter(PointerEventData ped)
     {
-        // make any dragged piece enter this square
-        if (ped.pointerDrag != null)
-        {
-            Piece dragged = ped.pointerDrag.GetComponent<Piece>();
-            if (dragged != null && transform.childCount == 0)
-            {
-                //dragged.transform.SetParent(transform, false);
-                dragged.ParentToSquare(this);
-            }
-        }
-
         var c = Col;
         c.a = 1;
         Col = c;
-        HoveredEvent.Invoke();
+        HoveredEvent.Invoke(); // otherwise it's a normal hover
     }
     public void OnPointerExit(PointerEventData ped)
     {

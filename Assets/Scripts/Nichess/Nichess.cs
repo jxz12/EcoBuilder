@@ -19,13 +19,6 @@ public class Nichess : MonoBehaviour
 
     [SerializeField] Board board;
     [SerializeField] SpawnPlatform spawnPlatform;
-    
-    private void Start()
-    {
-        PieceInspectedEvent.AddListener(InspectPiece);
-        board.SquareDragStartedEvent += MoveInspectedNicheStart;
-        board.SquareDraggedEvent += MoveInspectedNicheEnd;
-    }
 
     public void AddProducer(int idx)//, bool staticPos)
     {
@@ -41,7 +34,8 @@ public class Nichess : MonoBehaviour
     }
     void SetupNewPiece(Piece newPiece)
     {
-        newPiece.InspectedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
+        newPiece.ClickedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
+        newPiece.DragStartedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
         newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
         pieces[newPiece.Idx] = newPiece;
         spawnPlatform.Spawn(newPiece);
@@ -62,16 +56,38 @@ public class Nichess : MonoBehaviour
     {
         throw new NotImplementedException();
     }
+    
+    private void Start()
+    {
+        PieceInspectedEvent.AddListener(InspectPiece);
+        board.SquareDraggedEvent += MoveInspectedPos;
+        board.SquarePinched1Event += MoveInspectedNicheStart;
+        board.SquarePinched2Event += MoveInspectedNicheEnd;
+    }
 
     private Piece inspected;
-    private HashSet<Piece> inspectedConsumers, inspectedResources;
+    private HashSet<Piece> inspectedConsumers=new HashSet<Piece>(), inspectedResources=new HashSet<Piece>();
     public void InspectPiece(int idx)
     {
         if (inspected != null) {
             inspected.transform.localScale = Vector3.one;
         }
-        inspected = pieces[idx]; // TODO: highlight other things here, use hashsets to calculate edge changes
-        inspected.transform.localScale = 1.5f * Vector3.one;
+        inspected = pieces[idx];
+        inspected.transform.localScale = 1.5f * Vector3.one; // change this into an outline or something
+
+        inspectedConsumers.Clear();
+        inspectedResources.Clear();
+        foreach (Piece p in pieces.Values)
+        {
+            if (p != inspected) // cannot eat itself
+            {
+                if (p.IsResourceOf(inspected))
+                    inspectedResources.Add(p);
+
+                if (inspected.IsResourceOf(p))
+                    inspectedConsumers.Add(p);
+            }
+        }
     }
     public void Uninspect()
     {
@@ -81,20 +97,78 @@ public class Nichess : MonoBehaviour
             inspected = null;
         }
     }
-    public void MoveInspectedNicheStart(Square newStart)
+    void UpdateInspectedConsumers()
+    {
+        foreach (Piece p in pieces.Values)
+        {
+            if (p != inspected) // cannot eat itself
+            {
+                if (inspected.IsResourceOf(p))
+                {
+                    if (!inspectedConsumers.Contains(p))
+                    {
+                        inspectedConsumers.Add(p);
+                        EdgeAddedEvent.Invoke(inspected.Idx, p.Idx);
+                    }
+                } 
+                else
+                {
+                    if (inspectedConsumers.Contains(p))
+                    {
+                        inspectedConsumers.Remove(p);
+                        EdgeRemovedEvent.Invoke(inspected.Idx, p.Idx);
+                    }
+                }
+            }
+        }
+    }
+    void UpdateInspectedResources()
+    {
+        foreach (Piece p in pieces.Values)
+        {
+            if (p != inspected) // cannot eat itself
+            {
+                if (p.IsResourceOf(inspected))
+                {
+                    if (!inspectedResources.Contains(p))
+                    {
+                        inspectedResources.Add(p);
+                        EdgeAddedEvent.Invoke(p.Idx, inspected.Idx);
+                    }
+                } 
+                else
+                {
+                    if (inspectedResources.Contains(p))
+                    {
+                        inspectedResources.Remove(p);
+                        EdgeRemovedEvent.Invoke(p.Idx, inspected.Idx);
+                    }
+                }
+            }
+        }
+    }
+    void MoveInspectedPos(Square newPos)
+    {
+        if (inspected != null)
+        {
+            inspected.ParentToSquare(newPos);
+            UpdateInspectedConsumers();
+        }
+    }
+    void MoveInspectedNicheStart(Square newStart)
     {
         if (inspected != null)
         {
             inspected.NicheStart = newStart;
-            inspected.DrawLasso();
+            UpdateInspectedResources();
         }
     }
-    public void MoveInspectedNicheEnd(Square newEnd)
+    void MoveInspectedNicheEnd(Square newEnd)
     {
         if (inspected != null)
         {
             inspected.NicheEnd = newEnd;
-            inspected.DrawLasso();
+            UpdateInspectedResources();
         }
     }
 

@@ -8,9 +8,9 @@ public class Board : MonoBehaviour
     [SerializeField] Square squarePrefab;
 
     Square[,] squares;
-    //public HashSet<Square> HoveredSquares { get; private set; } = new HashSet<Square>();
-    public event Action<Square> SquareDragStartedEvent;
     public event Action<Square> SquareDraggedEvent;
+    public event Action<Square> SquarePinched1Event;
+    public event Action<Square> SquarePinched2Event;
 
     private void Awake()
     {
@@ -44,38 +44,51 @@ public class Board : MonoBehaviour
 
 
 
-    Square hovered = null;
-    private void Start()
-    {
-        //SquareHoveredEvent.AddListener(s => HoveredSquares.Add(s));
-        //SquareUnhoveredEvent.AddListener(s => HoveredSquares.Remove(s));
+    Square hovered=null, dragged=null;
 
-        dragging = false;
-    }
-    bool dragging;
-    Square dragStart, dragEnd;
+    bool draggingLeftClick=false, draggingRightClick=false;
     private void Update()
     {
+        // if left-click is pressed
+        if (Input.GetMouseButtonDown(0))
+        {
+            dragged = hovered;
+            draggingLeftClick = true;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            draggingLeftClick = false;
+        }
+
         // if it's the frame right-click is pressed
         if (Input.GetMouseButtonDown(1))
         {
             if (hovered != null)
             {
-                dragStart = hovered;
-                dragging = true;
-                SquareDragStartedEvent.Invoke(dragStart);
+                SquarePinched1Event.Invoke(hovered);
+                SquarePinched2Event.Invoke(hovered);
+                dragged = hovered;
+                draggingRightClick = true;
             }
         }
-        if (Input.GetMouseButtonUp(1))
+        else if (Input.GetMouseButtonUp(1))
         {
-            dragging = false;
+            draggingRightClick = false;
         }
 
-        // if drag has begun, and ends somewhere other than dragEnd
-        if (dragging == true && hovered != null && hovered != dragEnd)
+
+        if (hovered != null && hovered != dragged) // if drag has moved
         {
-            dragEnd = hovered;
-            SquareDraggedEvent.Invoke(dragEnd);
+            if (draggingLeftClick == true)
+            {
+                SquareDraggedEvent.Invoke(hovered);
+                dragged = hovered;
+            }
+            if (draggingRightClick == true)
+            {
+                SquarePinched2Event.Invoke(hovered);
+                dragged = hovered;
+            }
         }
     }
 
@@ -101,11 +114,5 @@ public class Board : MonoBehaviour
     //    transform.localRotation = target;
     //    spinning = false;
     //}
-
-    //void Start()
-    //{
-    //    if (squares == null)
-    //        throw new Exception("Board not initialised");
-    //}
-
 }
+    
