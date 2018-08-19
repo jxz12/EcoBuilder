@@ -800,7 +800,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 730998180}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 585d78c31d3f9274fa1bde3f085215a4, type: 3}
+  m_Script: {fileID: 11500000, guid: af89148a8976444038110908864a3dbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ProducerSpawnedEvent:
@@ -828,7 +828,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Parameteriser+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      - m_Target: {fileID: 773235146}
+        m_MethodName: AddNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: Inspector+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   ConsumerSpawnedEvent:
     m_PersistentCalls:
@@ -855,7 +866,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Parameteriser+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      - m_Target: {fileID: 773235146}
+        m_MethodName: AddNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: Inspector+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   SpeciesRemovedEvent:
     m_PersistentCalls:
@@ -882,7 +904,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Parameteriser+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      - m_Target: {fileID: 773235146}
+        m_MethodName: RemoveNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: Inspector+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   nameText: {fileID: 945188555}
   massSlider: {fileID: 1241781640}
@@ -1036,6 +1069,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: AddInteraction
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: Nichess+IntIntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   EdgeRemovedEvent:
@@ -1043,6 +1087,17 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 773235146}
         m_MethodName: RemoveLink
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: RemoveInteraction
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1068,11 +1123,33 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 773235146}
+        m_MethodName: InspectNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: Nichess+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   PieceColoredEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 773235146}
+        m_MethodName: ColorNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: Nichess+IntColorEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
   producerPrefab: {fileID: 114203879916940958, guid: 180d0bb3e212e13438b63e613d609c15,
@@ -1555,7 +1632,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64db97a0d5b7f81418ca4b1cac069cf9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parameteriser: {fileID: 730998185}
+  TrophicLevelCalculatedEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 773235146}
+        m_MethodName: ConstrainYAxis
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcosystemDriver+IntFloatEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  inspector: {fileID: 0}
   heartRate: 30
 --- !u!4 &1373547604 stripped
 Transform:
@@ -2007,6 +2100,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1936081269}
+  - component: {fileID: 1936081270}
   m_Layer: 5
   m_Name: Inspector
   m_TagString: Untagged
@@ -2033,9 +2127,27 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -74, y: 68.899994}
+  m_AnchoredPosition: {x: 116, y: 79}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!95 &1936081270
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1936081268}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 08e8c94015b4444ccb99ceebd8ce12f2, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &2042325977
 GameObject:
   m_ObjectHideFlags: 0

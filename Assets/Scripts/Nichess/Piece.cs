@@ -101,7 +101,7 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
     }
     public bool IsResourceOf(Piece consumer)
     {
-        if (consumer.NicheStart == null || consumer.NicheEnd == null)
+        if (NichePos == null || consumer.NicheStart == null || consumer.NicheEnd == null)
             return false;
 
         int resX = NichePos.X;

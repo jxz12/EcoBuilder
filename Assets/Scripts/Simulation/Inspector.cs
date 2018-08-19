@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-public class Parameteriser : MonoBehaviour
+public class Inspector : MonoBehaviour
 {
     /// <summary>
     /// attach anything you want to listen to these events
@@ -109,33 +109,10 @@ public class Parameteriser : MonoBehaviour
         inspectedIdx = null;
     }
 
-
-    //private readonly Func<int, double> r_i = i => i == 0 ? .1 : -.4;
-    //private readonly Func<int, double> a_ii = i => .01;
-    //private readonly Func<int, int, double> a_ij = (i, j) => .02;
-    //private readonly Func<int, int, double> e_ij = (i, j) => 1
-
-    public float GetGrowth(int idx)
+    public double GetMass(int idx)
     {
-        if (idx == 0)
-            return 1;
-        else
-            return -2;
+        return speciesDict[idx].BodyMass;
     }
-    public float GetIntraspecific(int idx)
-    {
-        return -.1f;
-    }
-    public float GetEfficiency(int resource, int consumer)
-    {
-        return .5f;
-    }
-    public float GetInteraction(int resource, int consumer)
-    {
-        return 1;
-    }
-
-
 
 
 

@@ -1,34 +1,39 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using System;
 using System.Collections;
 using System.Threading.Tasks;
 
 public class EcosystemDriver : MonoBehaviour
 {
-    [SerializeField] Parameteriser parameteriser;
+    [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
+    [SerializeField] IntFloatEvent TrophicLevelCalculatedEvent;
+    // [Serializable] class FuncIntFloatEvent : UnityEvent<Func<int, float>> { }
+    // [SerializeField] FuncIntFloatEvent TrophicLevelEvent;
+
+    [SerializeField] Inspector inspector;
     [SerializeField] float heartRate = 30;
 
     public void AddSpecies(int idx)
     {
         model.AddSpecies(idx);
-        model.GrowthVector[idx] = parameteriser.GetGrowth(idx);
-        model.InteractionMatrix[idx, idx] = parameteriser.GetIntraspecific(idx);
+        model.GrowthVector[idx] = r_i(idx);
+        model.InteractionMatrix[idx, idx] = a_ii(idx);
     }
     public void RemoveSpecies(int idx)
     {
         model.RemoveSpecies(idx);
     }
 
-    public void EditInteraction(int resource, int consumer)
+    public void AddInteraction(int resource, int consumer)
     {
         if (resource == consumer)
             throw new Exception("can't eat itself");
 
-        double interaction = parameteriser.GetInteraction(resource, consumer);
-        double efficiency = parameteriser.GetEfficiency(resource, consumer);
+        double interaction = a_ij(resource, consumer);
+        double efficiency = e_ij(resource, consumer);
         model.InteractionMatrix[resource, consumer] = -interaction;
         model.InteractionMatrix[consumer, resource] = interaction * efficiency;
-        //print("interaction:\n" + model.InteractionMatrix.ToString(x => x.ToString()));
     }
     public void RemoveInteraction(int resource, int consumer)
     {
@@ -37,8 +42,14 @@ public class EcosystemDriver : MonoBehaviour
 
         model.InteractionMatrix[resource, consumer] = 0;
         model.InteractionMatrix[consumer, resource] = 0;
-        //print("interaction:\n" + model.InteractionMatrix.ToString(x => x.ToString()));
     }
+
+    private readonly Func<int, double> r_i = i => i == 0 ? .1 : -.4;
+    private readonly Func<int, double> a_ii = i => .01;
+    private readonly Func<int, int, double> a_ij = (i, j) => .02;
+    private readonly Func<int, int, double> e_ij = (i, j) => .5;
+
+
 
 
     /// <summary>
@@ -65,6 +76,10 @@ public class EcosystemDriver : MonoBehaviour
     private void Update()
     {
         model.TrophicGaussSeidel();
+        foreach (int i in model.TrophicLevels.Indices)
+        {
+            TrophicLevelCalculatedEvent.Invoke(i, (float)model.TrophicLevels[i]);
+        }
     }
 
     IEnumerator Pulse(float delay)

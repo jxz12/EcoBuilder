@@ -16,6 +16,7 @@ public class NodeLink : MonoBehaviour
     SparseMatrix<Link> links = new SparseMatrix<Link>();
 
     // TODO: include colour and a centering force
+    // TODO: make basal cube?
     public void AddNode(int idx)
     {
         Node newNode = Instantiate(nodePrefab, transform);
@@ -40,20 +41,23 @@ public class NodeLink : MonoBehaviour
 
     public void AddLink(int i, int j)
     {
-        print("added " + i + " " + j);
-        // Link newLink = Instantiate(linkPrefab, transform);
-        // newLink.Init(nodes[i], nodes[j]);
-        // links[i, j] = newLink;
+        Link newLink = Instantiate(linkPrefab, transform);
+        newLink.Init(nodes[i], nodes[j]);
+        links[i, j] = newLink;
     }
     public void RemoveLink(int i, int j)
     {
-        print("removed " + i + " " + j);
-        // Destroy(links[i, j].gameObject);
-        // links.RemoveAt(i, j);
+        Destroy(links[i, j].gameObject);
+        links.RemoveAt(i, j);
     }
     public void ColorNode(int idx, Color c)
     {
         nodes[idx].Col = c;
+    }
+    Dictionary<int, float> yAxisConstraints = new Dictionary<int, float>();
+    public void ConstrainYAxis(int idx, float pos)
+    {
+        yAxisConstraints[idx] = pos;
     }
 
     // local majorization
@@ -91,8 +95,10 @@ public class NodeLink : MonoBehaviour
             }
             if (wBot != 0)
             {
-                //float y = (float)(SpeciesManager.Instance.GetTrophicLevel(i)); // TODO: make trophic levels an event and store y
-                float y = 1;
+                float y;
+                if (yAxisConstraints.TryGetValue(i, out y) == false)
+                    y = 1;
+                
                 float x = xTop / wBot, z = zTop / wBot;
                 nodes[i].transform.localPosition = new Vector3(x, y, z);
             }
@@ -113,6 +119,10 @@ public class NodeLink : MonoBehaviour
             foreach (Node node in nodes)
                 node.transform.localPosition -= new Vector3(xAvg, 0, zAvg);
         }
+    }
+    
+    public void InspectNode(int idx)
+    {
     }
 
     private void Update()
