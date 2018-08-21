@@ -69,11 +69,13 @@ public class Nichess : MonoBehaviour
     private HashSet<Piece> inspectedConsumers=new HashSet<Piece>(), inspectedResources=new HashSet<Piece>();
     public void InspectPiece(int idx)
     {
-        if (inspected != null) {
-            inspected.transform.localScale = Vector3.one;
-        }
+        if (inspected == pieces[idx])
+            return;
+        if (inspected != null)
+            inspected.Uninspect();
+
         inspected = pieces[idx];
-        inspected.transform.localScale = 1.5f * Vector3.one; // change this into an outline or something
+        inspected.Inspect();
 
         inspectedConsumers.Clear();
         inspectedResources.Clear();
@@ -93,8 +95,9 @@ public class Nichess : MonoBehaviour
     {
         if (inspected != null)
         {
-            inspected.transform.localScale = Vector3.one;
+            inspected.Uninspect();
             inspected = null;
+            spawnPlatform.Despawn();
         }
     }
     void UpdateInspectedConsumers()
@@ -149,10 +152,15 @@ public class Nichess : MonoBehaviour
     }
     void MoveInspectedPos(Square newPos)
     {
-        if (inspected != null)
+        if (inspected != null && inspected.Dragging)
         {
-            inspected.ParentToSquare(newPos);
-            UpdateInspectedConsumers();
+            if (newPos.transform.childCount == 0)
+            {
+                inspected.ParentToSquare(newPos);
+                UpdateInspectedConsumers();
+            }
+            if (spawnPlatform.Active)
+                spawnPlatform.Despawn();
         }
     }
     void MoveInspectedNicheStart(Square newStart)

@@ -124,6 +124,10 @@ public class NodeLink : MonoBehaviour
     public void InspectNode(int idx)
     {
     }
+    public void Uninspect()
+    {
+
+    }
 
     private void Update()
     {

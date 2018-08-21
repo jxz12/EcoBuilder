@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
+[RequireComponent(typeof(Animator))]
 public class Inspector : MonoBehaviour
 {
     /// <summary>
@@ -29,18 +30,28 @@ public class Inspector : MonoBehaviour
     }
 
     [SerializeField] Text nameText;
+    [SerializeField] Button nameRefresh;
     [SerializeField] Slider massSlider;
     [SerializeField] Button spawnButton;
     [SerializeField] Text spawnText;
     [SerializeField] Toggle producerToggle;
 
+    Animator anim;
+    [SerializeField] Button appear;
+
+    void Awake()
+    {
+        anim = GetComponent<Animator>();
+    }
     void Start()
     {
         producersCounter = GameManager.Instance.MaxProducers;
         idxCounter = 0;
-        inspectedIdx = null;
 
         spawnButton.onClick.AddListener(() => Spawn());
+        appear.onClick.AddListener(() => { anim.SetTrigger("Toggle"); nameText.text = GenerateName(); });
+        nameRefresh.onClick.AddListener(() => { nameText.text = GenerateName(); });
+
     }
 
     Dictionary<int, Species> speciesDict = new Dictionary<int, Species>();
@@ -65,9 +76,11 @@ public class Inspector : MonoBehaviour
         }
         else
         {
+            speciesDict[idxCounter] = new Species(true, massSlider.value, nameText.text);
+            idxCounter += 1;
+
             if (producerToggle.isOn)
             {
-                speciesDict[idxCounter] = new Species(true, massSlider.value, GenerateName());
                 ProducerSpawnedEvent.Invoke(idxCounter);
                 producersCounter -= 1;
                 if (producersCounter == 0)
@@ -78,11 +91,10 @@ public class Inspector : MonoBehaviour
             }
             else
             {
-                speciesDict[idxCounter] = new Species(false, massSlider.value, GenerateName());
                 ConsumerSpawnedEvent.Invoke(idxCounter);
             }
-            idxCounter += 1;
         }
+        anim.SetTrigger("Toggle");
     }
 
     int? inspectedIdx;

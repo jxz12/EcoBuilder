@@ -3,12 +3,15 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(LineRenderer))]
-public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerClickHandler
+[RequireComponent(typeof(BoxCollider))]
+[RequireComponent(typeof(Animator))]
+public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler
 {
-    MeshRenderer mr;
+    [SerializeField] MeshRenderer mr;
     LineRenderer lr;
+    BoxCollider bc;
+    Animator anim;
 
     public Color Col {
         get { return mr.material.color; }
@@ -20,8 +23,9 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
 
     private void Awake()
     {
-        mr = GetComponent<MeshRenderer>();
         lr = GetComponent<LineRenderer>();
+        bc = GetComponent<BoxCollider>();
+        anim = GetComponent<Animator>();
     }
 
     public void Init(int idx, bool staticPos, bool staticRange)
@@ -30,6 +34,19 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         name = idx.ToString();
         StaticPos = staticPos;
         StaticRange = staticRange;
+    }
+
+    public void Inspect()
+    {
+        // if (!dragging)
+        //     anim.SetTrigger("Inspect");
+        // else
+        //     anim.SetTrigger("Drag");
+
+    }
+    public void Uninspect()
+    {
+        anim.SetTrigger("Idle");
     }
 
     public Square NichePos { get; private set; }
@@ -50,12 +67,10 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
     {
         NichePos = newParent;
 
-        Vector3 oldScale = transform.localScale;
-        Quaternion oldRotation = transform.localRotation;
         transform.parent = newParent.transform;
+        transform.localScale = Vector3.one;
         transform.localPosition = Vector3.zero;
-        transform.localScale = oldScale;
-        transform.localRotation = oldRotation;
+        transform.localRotation = Quaternion.identity;
 
         Col = newParent.Col;
         lr.startColor = lr.endColor = Col;
@@ -73,8 +88,8 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
             float lassoStartLocalX = x1<=x2? -.5f : .5f;
             float lassoStartLocalY = y1<=y2? -.5f : .5f;
 
-            Vector3 lassoStart = NicheStart.transform.TransformPoint(lassoStartLocalX,lassoStartLocalY,0);
-            Vector3 lassoEnd = NicheEnd.transform.TransformPoint(-lassoStartLocalX,-lassoStartLocalY,0);
+            Vector3 lassoStart = NicheStart.transform.TransformPoint(lassoStartLocalX,0,lassoStartLocalY);
+            Vector3 lassoEnd = NicheEnd.transform.TransformPoint(-lassoStartLocalX,0,-lassoStartLocalY);
             lr.SetPosition(0, lassoStart);
             lr.SetPosition(2, lassoEnd);
 
@@ -121,16 +136,25 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IPointerCli
         }
     }
 
+    public bool Dragging { get; private set; }
     public void OnDrag(PointerEventData ped)
     {
     }
     public void OnBeginDrag(PointerEventData ped)
     {
+        anim.SetTrigger("Drag"); // TODO: this is a bit of a mess atm, prob want to move things into statecontrollers
+        Dragging = true;
         DragStartedEvent.Invoke();
+    }
+    public void OnEndDrag(PointerEventData ped)
+    {
+        anim.SetTrigger("Inspect");
+        Dragging = false;
     }
 
     public void OnPointerClick(PointerEventData ped)
     {
+        anim.SetTrigger("Inspect");
         if (ped.clickCount == 1 && !ped.dragging)
             ClickedEvent.Invoke();
     }

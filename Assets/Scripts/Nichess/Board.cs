@@ -9,6 +9,7 @@ public class Board : MonoBehaviour
 
     Square[,] squares;
     public event Action<Square> SquareDraggedEvent;
+    public event Action<Square> SquareDroppedEvent;
     public event Action<Square> SquarePinched1Event;
     public event Action<Square> SquarePinched2Event;
 
