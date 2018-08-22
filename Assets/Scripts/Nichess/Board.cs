@@ -16,11 +16,12 @@ public class Board : MonoBehaviour
     private void Awake()
     {
         int size = GameManager.Instance.BoardSize;
-        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,.8f);
+        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,.7f);
 
         Vector3 bottomLeft = new Vector3(-.5f, 0, -.5f); float gap = 1f / size;
         Vector3 offset = new Vector3(gap / 2, 0, gap / 2);
         float squareWidth = (1f / size) * .95f;
+        // float squareWidth = (1f / size);
         Vector3 scale = new Vector3(squareWidth, squareWidth, squareWidth);
 
         squares = new Square[size, size];
@@ -33,7 +34,8 @@ public class Board : MonoBehaviour
 
                 s.transform.localPosition = bottomLeft + new Vector3(i * gap, 0, j * gap) + offset;
                 s.transform.localScale = scale;
-                s.Init(i, j, ColorMap((float)i / size, (float)j / size));
+                Color c = ColorMap((float)i/(size-1), (float)j/(size-1));
+                s.Init(i, j, c);
 
                 s.HoveredEvent += () => hovered = s;
                 s.UnhoveredEvent += () => { if (s == hovered) hovered = null; };

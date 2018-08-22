@@ -63,7 +63,7 @@ public static class ColorHelper {
             throw new Exception("x and y coordinates should be between 0 and 1");
 
         Vector2 square = new Vector2(x - .5f, y - .5f);
-        Vector2 circle = SquareToCircle(square);
+        Vector2 circle = 2 * SquareToCircleElliptical(square);
         Vector2 polar = CartesianToPolar(circle);
         Color col = HSLToRGB(polar.y / (2 * Mathf.PI), polar.x, lightness);
         return col;
@@ -74,20 +74,41 @@ public static class ColorHelper {
             throw new Exception("x and y coordinates should be between 0 and 1");
 
         Vector2 square = new Vector2(x - .5f, y - .5f);
-        Vector2 circle = SquareToCircle(square);
+        Vector2 circle = 2 * SquareToCircleElliptical(square);
+        // Debug.Log(square);
+        // Debug.Log(circle);
         Vector2 polar = CartesianToPolar(circle);
-        //Color col = HSLToRGB(polar.y / (2 * Mathf.PI), polar.x, lightness);
         Color col = Color.HSVToRGB(polar.y / (2 * Mathf.PI), polar.x, value);
         return col;
     }
 
         
-    public static Vector2 SquareToCircle(Vector2 square) {
-        float xCircle = square.x * Mathf.Sqrt(1-Mathf.Pow(square.y,2)/2);
-        float yCircle = square.y * Mathf.Sqrt(1-Mathf.Pow(square.x,2)/2);
+    public static Vector2 SquareToCircleElliptical(Vector2 square)
+    {
+        float xCircle = square.x * Mathf.Sqrt(1-square.y*square.y/2);
+        float yCircle = square.y * Mathf.Sqrt(1-square.y*square.y/2);
         return new Vector2(xCircle, yCircle);
     }
-    public static Vector2 CartesianToPolar(Vector2 cart) {
+    public static Vector2 SquareToCircleSimpleStretching(Vector2 square)
+    {
+        float xCircle, yCircle;
+        float mag = square.magnitude;
+        if (mag == 0)
+            return Vector2.zero;
+        if (square.x*square.x >= square.y*square.y)
+        {
+            xCircle = Mathf.Sign(square.x) * ((square.x*square.x)/mag);
+            yCircle = Mathf.Sign(square.x) * ((square.x*square.y)/mag);
+        }
+        else
+        {
+            xCircle = Mathf.Sign(square.y) * ((square.x*square.y)/mag); // !!! wrong in that paper lol
+            yCircle = Mathf.Sign(square.y) * ((square.y*square.y)/mag);
+        }
+        return new Vector2(xCircle, yCircle);
+    }
+    public static Vector2 CartesianToPolar(Vector2 cart)
+    {
         float mag = Mathf.Sqrt(Mathf.Pow(cart.x,2) + Mathf.Pow(cart.y,2));
 
         if (cart.x == 0) {

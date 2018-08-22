@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33648463583660330}
   - component: {fileID: 23185512315076612}
   - component: {fileID: 114874683172466424}
-  - component: {fileID: 64240836313862286}
+  - component: {fileID: 65429615872044722}
   m_Layer: 8
   m_Name: Square
   m_TagString: Untagged
@@ -52,7 +52,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
+  m_DynamicOccludee: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -85,8 +85,8 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1861707551808904}
   m_Mesh: {fileID: 4300000, guid: c80161954d15ab9488148cf56b9c1c7b, type: 3}
---- !u!64 &64240836313862286
-MeshCollider:
+--- !u!65 &65429615872044722
+BoxCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
@@ -94,11 +94,9 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 0
-  m_CookingOptions: 14
-  m_SkinWidth: 0.01
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  serializedVersion: 2
+  m_Size: {x: 1, y: 0, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114874683172466424
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -263,9 +263,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.r
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.r
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   - curve:
       serializedVersion: 2
@@ -291,9 +291,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.g
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.g
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   - curve:
       serializedVersion: 2
@@ -319,9 +319,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.b
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.b
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   - curve:
       serializedVersion: 2
@@ -347,9 +347,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.a
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.a
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   m_PPtrCurves: []
   m_SampleRate: 24
@@ -409,31 +409,31 @@ AnimationClip:
       customType: 22
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 1000838097
-      attribute: 1174244292
+      path: 1460884166
+      attribute: 1303350129
       script: {fileID: 0}
-      typeID: 23
+      typeID: 120
       customType: 22
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 1000838097
-      attribute: 1442679748
+      path: 1460884166
+      attribute: 1571785585
       script: {fileID: 0}
-      typeID: 23
+      typeID: 120
       customType: 22
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 1000838097
-      attribute: 1711115204
+      path: 1460884166
+      attribute: 1840221041
       script: {fileID: 0}
-      typeID: 23
+      typeID: 120
       customType: 22
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 1000838097
-      attribute: 1979550660
+      path: 1460884166
+      attribute: 2108656497
       script: {fileID: 0}
-      typeID: 23
+      typeID: 120
       customType: 22
       isPPtrCurve: 0
     pptrCurveMapping: []
@@ -918,9 +918,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.r
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.r
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   - curve:
       serializedVersion: 2
@@ -946,9 +946,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.g
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.g
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   - curve:
       serializedVersion: 2
@@ -974,9 +974,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.b
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.b
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   - curve:
       serializedVersion: 2
@@ -1002,9 +1002,9 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    attribute: material._RendererColor.a
-    path: Mesh/Outline
-    classID: 23
+    attribute: material._Color.a
+    path: Lasso
+    classID: 120
     script: {fileID: 0}
   m_EulerEditorCurves:
   - curve:
