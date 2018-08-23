@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 65727638372625420}
   - component: {fileID: 95089516891540122}
   - component: {fileID: 114109178037667778}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Piece Consumer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   - component: {fileID: 4206975932888074}
   - component: {fileID: 33329095604555606}
   - component: {fileID: 23960690616683470}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Outline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 4115591173591308}
   - component: {fileID: 33687634172365912}
   - component: {fileID: 23754029652139364}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,7 +73,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4747124885436358}
   - component: {fileID: 120289633675198092}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Lasso
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -143,7 +143,7 @@ MeshRenderer:
   m_GameObject: {fileID: 1300494415758652}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
@@ -178,7 +178,7 @@ MeshRenderer:
   m_GameObject: {fileID: 1245098223456140}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
@@ -261,7 +261,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shape: {fileID: 23754029652139364}
-  lassoLoop: {fileID: 0}
+  lassoLoop: {fileID: 120289633675198092}
 --- !u!120 &120205327496362702
 LineRenderer:
   m_ObjectHideFlags: 1
@@ -355,7 +355,7 @@ LineRenderer:
     textureMode: 0
     generateLightingData: 0
   m_UseWorldSpace: 1
-  m_Loop: 1
+  m_Loop: 0
 --- !u!120 &120289633675198092
 LineRenderer:
   m_ObjectHideFlags: 1
@@ -449,4 +449,4 @@ LineRenderer:
     textureMode: 0
     generateLightingData: 0
   m_UseWorldSpace: 1
-  m_Loop: 0
+  m_Loop: 1

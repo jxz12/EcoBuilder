@@ -101,21 +101,30 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
     }
     public void OnBeginDrag(PointerEventData ped)
     {
-        anim.SetTrigger("Drag"); // TODO: this is a bit of a mess atm, should be controlled from Nichess
-        Dragging = true;
-        DragStartedEvent.Invoke();
+        if (ped.button == PointerEventData.InputButton.Left)
+        {
+            anim.SetTrigger("Drag"); // TODO: this is a bit of a mess atm, should be controlled from Nichess
+            Dragging = true;
+            DragStartedEvent.Invoke();
+        }
     }
     public void OnEndDrag(PointerEventData ped)
     {
-        anim.SetTrigger("Inspect");
-        Dragging = false;
+        if (ped.button == PointerEventData.InputButton.Left)
+        {
+            anim.SetTrigger("Inspect");
+            Dragging = false;
+        }
     }
 
     public void OnPointerClick(PointerEventData ped)
     {
-        anim.SetTrigger("Inspect");
-        if (ped.clickCount == 1 && !ped.dragging)
-            ClickedEvent.Invoke();
+        if (ped.button == PointerEventData.InputButton.Left)
+        {
+            anim.SetTrigger("Inspect");
+            if (ped.clickCount == 1 && !ped.dragging)
+                ClickedEvent.Invoke();
+        }
     }
 
     void DrawLasso()

@@ -158,9 +158,9 @@ public class Nichess : MonoBehaviour
             {
                 inspected.ParentToSquare(newPos);
                 UpdateInspectedConsumers();
+                if (spawnPlatform.Active)
+                    spawnPlatform.Despawn();
             }
-            if (spawnPlatform.Active)
-                spawnPlatform.Despawn();
         }
     }
     void MoveInspectedNicheStart(Square newStart)

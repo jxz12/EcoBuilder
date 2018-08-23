@@ -9,16 +9,12 @@ public class LotkaVolterraLAS
     public SparseVector<double> GrowthVector { get; private set; }
     public SparseMatrix<double> InteractionMatrix { get; private set; }
 
-    private SparseMatrix<double> trophicA = new SparseMatrix<double>();
-    public SparseVector<double> TrophicLevels { get; private set; }
     public SparseVector<double> EquilibriumAbundances { get; private set; }
 
     public LotkaVolterraLAS()
     {
         GrowthVector = new SparseVector<double>();
         InteractionMatrix = new SparseMatrix<double>();
-
-        TrophicLevels = new SparseVector<double>();
         EquilibriumAbundances = new SparseVector<double>();
     }
 
@@ -39,69 +35,15 @@ public class LotkaVolterraLAS
 
         // clean matrices and vectors
         GrowthVector.RemoveAt(idx);
-        TrophicLevels.RemoveAt(idx);
         EquilibriumAbundances.RemoveAt(idx);
         foreach (int other in speciesIndices)
         {
-            trophicA.RemoveAt(idx, other);
-            trophicA.RemoveAt(other, idx);
             InteractionMatrix.RemoveAt(idx, other);
             InteractionMatrix.RemoveAt(other, idx);
         }
 
     }
 
-
-    
-    public void TrophicGaussSeidel()
-    {
-        int n = speciesIndices.Count;
-        if (n == 0)
-            return;
-
-        // update the system of linear equations
-        foreach (int consumer in speciesIndices)
-        {
-            double aTotal = 0;
-            foreach (int resource in speciesIndices)
-            {
-                if (consumer != resource) // no cannibalism
-                {
-                    double a = InteractionMatrix[consumer, resource];
-                    if (a > 0) // if j gains biomass from i
-                    {
-                        trophicA[consumer, resource] = -a;
-                        aTotal += a;
-                    }
-                    else
-                    {
-                        trophicA[consumer, resource] = 0;
-                    }
-                }
-            }
-            if (aTotal != 0) // in case divide by zero
-            {
-                foreach (int resource in speciesIndices)
-                {
-                    if (consumer != resource)
-                        trophicA[consumer, resource] /= aTotal; // makes sure that the row sums to 1
-                }
-            }
-        }
-
-        // perform Gauss-Seidel iteration (positive definite)
-        foreach (int i in speciesIndices)
-        {
-            double temp = 0;
-            foreach (int j in speciesIndices)
-            {
-                if (i != j)
-                    temp += trophicA[i, j] * TrophicLevels[j];
-            }
-            //TrophicLevels[i] = (trophicb[i] - temp) / trophicA[i, i];
-            TrophicLevels[i] = (1 - temp); // trophicb and trophicA[i,i] not necessary as they equal 1
-        }
-    }
 
     // these should be run async because O(n^3)
     public void Equilibrium()

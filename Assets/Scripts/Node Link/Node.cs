@@ -9,6 +9,10 @@ public class Node : MonoBehaviour
         get { return mr.material.GetColor("_Color"); }
         set { mr.material.SetColor("_Color", value); }
     }
+    public Vector3 Pos {
+        get { return transform.localPosition; }
+        set { transform.localPosition = value;}
+    }
 
     MeshRenderer mr;
     private void Awake()

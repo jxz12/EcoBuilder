@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4979577846378812}
   - component: {fileID: 33026684351861330}
   - component: {fileID: 23793828088371520}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   - component: {fileID: 65649260139089328}
   - component: {fileID: 95189216518429314}
   - component: {fileID: 114152372220634684}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Piece Producer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 4060806251407808}
   - component: {fileID: 33129428522502060}
   - component: {fileID: 23580779900270902}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Outline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,7 +73,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4773703340372142}
   - component: {fileID: 120851700450048990}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Lasso
   m_TagString: Untagged
   m_Icon: {fileID: 0}

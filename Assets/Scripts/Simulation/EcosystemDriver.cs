@@ -7,11 +7,6 @@ using System.Threading.Tasks;
 public class EcosystemDriver : MonoBehaviour
 {
     [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
-    [SerializeField] IntFloatEvent TrophicLevelCalculatedEvent;
-    // [Serializable] class FuncIntFloatEvent : UnityEvent<Func<int, float>> { }
-    // [SerializeField] FuncIntFloatEvent TrophicLevelEvent;
-
-    [SerializeField] Inspector inspector;
     [SerializeField] float heartRate = 30;
 
     public void AddSpecies(int idx)
@@ -30,6 +25,7 @@ public class EcosystemDriver : MonoBehaviour
         if (resource == consumer)
             throw new Exception("can't eat itself");
 
+        ///////////// THIS NEEDS TO BE FIXED, AS DOESN'T WORK WITH SPECIES THAT EAT EACH OTHER
         double interaction = a_ij(resource, consumer);
         double efficiency = e_ij(resource, consumer);
         model.InteractionMatrix[resource, consumer] = -interaction;
@@ -72,14 +68,6 @@ public class EcosystemDriver : MonoBehaviour
     private void Start()
     {
         //StartCoroutine(Pulse(60f / heartRate));
-    }
-    private void Update()
-    {
-        model.TrophicGaussSeidel();
-        foreach (int i in model.TrophicLevels.Indices)
-        {
-            TrophicLevelCalculatedEvent.Invoke(i, (float)model.TrophicLevels[i]);
-        }
     }
 
     IEnumerator Pulse(float delay)
