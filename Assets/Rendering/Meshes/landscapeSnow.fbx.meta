@@ -1,30 +1,43 @@
 fileFormatVersion: 2
-guid: 7f1a4dfe8a0bad2438f5c18f32c088c2
+guid: 62c49d8ef31918c4aab3d51d837251ee
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
     100000: //RootNode
     100002: Cube
+    100004: Plane
     400000: //RootNode
     400002: Cube
-    2100000: grass
-    2100002: dirt
+    400004: Plane
+    2100000: Snow
+    2100002: Mountain
+    2100004: No Name
+    2100006: Play
     2300000: //RootNode
     2300002: Cube
+    2300004: Plane
     3300000: //RootNode
     3300002: Cube
+    3300004: Plane
     4300000: Cube
+    4300002: Plane
+    2186277476908879412: ImportLogs
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: dirt
-    second: {fileID: 2100000, guid: 974e59847cc193c47bd8a198208c5cab, type: 2}
+      name: Mountain
+    second: {fileID: 2100000, guid: b04c25904e92690459aebeca5d9f5cab, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: grass
-    second: {fileID: 2100000, guid: 7abf04a00b722e340b5c07c52cbab35f, type: 2}
+      name: Play
+    second: {fileID: 2100000, guid: c8b417391128e594c945c241b4e65126, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Snow
+    second: {fileID: 2100000, guid: 2f029104a25cb614889f652998791ba3, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -76,10 +89,10 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
-    normalSmoothAngle: 60
+    normalSmoothAngle: 15
     normalImportMode: 0
-    tangentImportMode: 3
-    normalCalculationMode: 4
+    tangentImportMode: 0
+    normalCalculationMode: 1
   importAnimation: 0
   copyAvatar: 0
   humanDescription:

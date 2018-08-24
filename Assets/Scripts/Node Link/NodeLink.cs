@@ -7,15 +7,15 @@ using System.Collections.Generic;
 
 public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [SerializeField] Node nodePrefab;
+    [SerializeField] Node nodeProducerPrefab, nodeConsumerPrefab;
     [SerializeField] Link linkPrefab;
 
     [Serializable] class IntEvent : UnityEvent<int> { };
     [SerializeField] IntEvent NodeInspectedEvent;
 
-    [SerializeField] float stepSize=.1f, centeringForce=.01f;
-    [SerializeField] float rotationSpeed=.4f, minRotation=.4f, rotationDrag=.1f;
-    [SerializeField] float zoomSpeed=.005f;
+    [SerializeField] float stepSize=.1f, centeringForce=.01f, trophicForce=.5f;
+    [SerializeField] float rotationMultiplier=.9f, yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
+    [SerializeField] float zoomMultiplier=.005f;
 
     SparseVector<Node> nodes = new SparseVector<Node>();
     SparseMatrix<Link> links = new SparseMatrix<Link>();
@@ -29,10 +29,16 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         linksParent.SetParent(transform, false);
     }
 
-    // TODO: make basal cube?
-    public void AddNode(int idx)
+    public void AddProducerNode(int idx)
     {
-        Node newNode = Instantiate(nodePrefab, nodesParent);
+        Node newNode = Instantiate(nodeProducerPrefab, nodesParent);
+        newNode.Init(idx);
+        newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
+        nodes[idx] = newNode;
+    }
+    public void AddConsumerNode(int idx)
+    {
+        Node newNode = Instantiate(nodeConsumerPrefab, nodesParent);
         newNode.Init(idx);
         newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
         nodes[idx] = newNode;
@@ -73,11 +79,20 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         nodes[idx].Col = c;
     }
+
+    Node inspected=null;
     public void InspectNode(int idx)
     {
+        if (inspected != null && inspected != nodes[idx])
+            inspected.Uninspect();
+
+        nodes[idx].Inspect();
+        inspected = nodes[idx];
     }
     public void Uninspect()
     {
+        if (inspected != null)
+            inspected.Uninspect();
     }
 
     private void Update()
@@ -92,13 +107,17 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         if (!dragging)
         {
-            rotationMomentum += (minRotation - rotationMomentum) * rotationDrag;
-            nodesParent.Rotate(Vector3.up, rotationMomentum);
+            yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
+            nodesParent.Rotate(Vector3.up, yRotationMomentum);
+
+            float xRotation = -transform.rotation.x * xRotationForce;
+            transform.Rotate(Vector3.right, xRotation);
         }
     }
 
     // TODO: add zooming with pinch
-    float rotationMomentum = 0;
+    // TODO: check for unsolvable equations
+    float yRotationMomentum = 0;
     bool dragging = false;
     public void OnBeginDrag(PointerEventData ped)
     {
@@ -106,21 +125,24 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     }
     public void OnEndDrag(PointerEventData ped)
     {
-        rotationMomentum = -ped.delta.x * rotationSpeed;
+        yRotationMomentum = -ped.delta.x * rotationMultiplier;
         dragging = false;
     }
     public void OnDrag(PointerEventData ped)
     {
         if (ped.button == PointerEventData.InputButton.Left)
         {
-            float spin = -ped.delta.x * rotationSpeed;
-            nodesParent.Rotate(Vector3.up, spin);
-            rotationMomentum = spin;
-            minRotation = Mathf.Abs(minRotation) * Mathf.Sign(rotationMomentum);
+            float ySpin = -ped.delta.x * rotationMultiplier;
+            nodesParent.Rotate(Vector3.up, ySpin);
+            yRotationMomentum = ySpin;
+            yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
+
+            float xSpin = ped.delta.y * rotationMultiplier;
+            transform.Rotate(Vector3.right, xSpin);
         }
         else if (ped.button == PointerEventData.InputButton.Right)
         {
-            float zoom = ped.delta.y * zoomSpeed;
+            float zoom = ped.delta.y * zoomMultiplier;
             if (zoom > .5f)
                 zoom = .5f;
             if (zoom < -.5f)
@@ -165,9 +187,10 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         foreach (Node no in nodes)
         {
-            Vector3 pos = no.Pos;
-            pos.y = YAxisPos(no.Idx);
-            no.Pos = pos;
+            float targetY = YAxisPos(no.Idx);
+            float toAdd = (targetY - no.Pos.y) * trophicForce;
+            
+            no.Pos += new Vector3(0, toAdd, 0);
         }
     }
     // SGD
@@ -214,63 +237,63 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         }
     }
 
-    // // local majorization
-    // private void LayoutMajorization()
-    // {
-    //     foreach (int i in nodes.Indices)
-    //     {
-    //         float xTop = 0, zTop = 0;
-    //         float wBot = 0;
-    //         Vector3 X_i = nodes[i].transform.localPosition;
+    // local majorization
+    private void LayoutMajorization()
+    {
+        foreach (int i in nodes.Indices)
+        {
+            float xTop = 0, zTop = 0;
+            float wBot = 0;
+            Vector3 X_i = nodes[i].transform.localPosition;
 
-    //         foreach (int j in nodes.Indices)
-    //         {
-    //             if (i != j)
-    //             {
-    //                 Vector3 X_j = nodes[j].transform.localPosition;
-    //                 float d = (X_i - X_j).magnitude;
+            foreach (int j in nodes.Indices)
+            {
+                if (i != j)
+                {
+                    Vector3 X_j = nodes[j].transform.localPosition;
+                    float d = (X_i - X_j).magnitude;
 
-    //                 if (links[i,j] != null || links[j,i] != null) // if connected, then do normal stress
-    //                 {
-    //                     xTop += X_j.x + (X_i.x - X_j.x) / d;
-    //                     zTop += X_j.z + (X_i.z - X_j.z) / d;
-    //                     wBot += 1;
-    //                 }
-    //                 else // otherwise try to move the vertices at least a distance of 2 away
-    //                 {
-    //                     if (d < 2)
-    //                     {
-    //                         xTop += .25f * (X_j.x + 2 * (X_i.x - X_j.x) / d);
-    //                         zTop += .25f * (X_j.z + 2 * (X_i.z - X_j.z) / d);
-    //                         wBot += .25f;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         if (wBot != 0)
-    //         {
-    //             float y = trophicLevels[i];
-    //             float x = xTop / wBot, z = zTop / wBot;
-    //             nodes[i].transform.localPosition = new Vector3(x, y, z);
-    //         }
-    //     }
+                    if (links[i,j] != null || links[j,i] != null) // if connected, then do normal stress
+                    {
+                        xTop += X_j.x + (X_i.x - X_j.x) / d;
+                        zTop += X_j.z + (X_i.z - X_j.z) / d;
+                        wBot += 1;
+                    }
+                    else // otherwise try to move the vertices at least a distance of 2 away
+                    {
+                        if (d < 2)
+                        {
+                            xTop += .25f * (X_j.x + 2 * (X_i.x - X_j.x) / d);
+                            zTop += .25f * (X_j.z + 2 * (X_i.z - X_j.z) / d);
+                            wBot += .25f;
+                        }
+                    }
+                }
+            }
+            if (wBot != 0)
+            {
+                float y = trophicLevels[i];
+                float x = xTop / wBot, z = zTop / wBot;
+                nodes[i].transform.localPosition = new Vector3(x, y, z);
+            }
+        }
 
-    //     float xAvg = 0, zAvg = 0;
-    //     int n = 0;
-    //     foreach (Node node in nodes)
-    //     {
-    //         xAvg += node.transform.localPosition.x;
-    //         zAvg += node.transform.localPosition.z;
-    //         n += 1;
-    //     }
-    //     if (n > 0)
-    //     {
-    //         xAvg /= n;
-    //         zAvg /= n;
-    //         foreach (Node node in nodes)
-    //             node.transform.localPosition -= new Vector3(xAvg, 0, zAvg);
-    //     }
-    // }
+        float xAvg = 0, zAvg = 0;
+        int n = 0;
+        foreach (Node node in nodes)
+        {
+            xAvg += node.transform.localPosition.x;
+            zAvg += node.transform.localPosition.z;
+            n += 1;
+        }
+        if (n > 0)
+        {
+            xAvg /= n;
+            zAvg /= n;
+            foreach (Node node in nodes)
+                node.transform.localPosition -= new Vector3(xAvg, 0, zAvg);
+        }
+    }
 
     //public static string MatStr<T>(T[,] mat)
     //{

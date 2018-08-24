@@ -23,13 +23,13 @@ public class Nichess : MonoBehaviour
     public void AddProducer(int idx)//, bool staticPos)
     {
         Piece newPiece = Instantiate(producerPrefab);
-        newPiece.Init(idx, false, true);
+        newPiece.Init(idx, true, false, true);
         SetupNewPiece(newPiece);
     }
     public void AddConsumer(int idx)//, bool staticPos, bool staticRange)
     {
         Piece newPiece = Instantiate(consumerPrefab);
-        newPiece.Init(idx, false, false);
+        newPiece.Init(idx, false, false, false);
         SetupNewPiece(newPiece);
     }
     void SetupNewPiece(Piece newPiece)
@@ -165,7 +165,7 @@ public class Nichess : MonoBehaviour
     }
     void MoveInspectedNicheStart(Square newStart)
     {
-        if (inspected != null)
+        if (inspected != null && !inspected.IsProducer)
         {
             inspected.NicheStart = newStart;
             UpdateInspectedResources();
@@ -173,7 +173,7 @@ public class Nichess : MonoBehaviour
     }
     void MoveInspectedNicheEnd(Square newEnd)
     {
-        if (inspected != null)
+        if (inspected != null && !inspected.IsProducer)
         {
             inspected.NicheEnd = newEnd;
             UpdateInspectedResources();

@@ -17,6 +17,7 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         set { shape.material.color = value; }
     }
     public int Idx { get; private set; }
+    public bool IsProducer { get; private set; }
     public bool StaticPos { get; private set; }
     public bool StaticRange { get; private set; }
 
@@ -26,10 +27,11 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         anim = GetComponent<Animator>();
     }
 
-    public void Init(int idx, bool staticPos, bool staticRange)
+    public void Init(int idx, bool isProducer, bool staticPos, bool staticRange)
     {
         Idx = idx;
         name = idx.ToString();
+        IsProducer = isProducer;
         StaticPos = staticPos;
         StaticRange = staticRange;
     }

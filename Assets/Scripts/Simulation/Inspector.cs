@@ -129,7 +129,8 @@ public class Inspector : MonoBehaviour
 
 
 
-    public static string[] adjectives = new string[]{
+    public static string[] adjectives = new string[]
+    {
         // "Doc",
         "Grumpy",
         "Happy",
@@ -151,7 +152,8 @@ public class Inspector : MonoBehaviour
         "Average",
         "Shy",
     };
-    public static string[] nouns = new string[]{
+    public static string[] nouns = new string[]
+    {
         "Rat",
         "Ox",
         "Tiger",
@@ -184,7 +186,45 @@ public class Inspector : MonoBehaviour
         "Koala",
         "Tyrannosaurus Rex",
         "Velociraptor",
+
+        "Ant",
+        "Spider",
+        "Wasp",
+        "Bumblebee",
+        "Beetle",
     };
+    public static string[] nounsProducer = new string[]
+    {
+        "Strawberry",
+        "Blueberry",
+        "Banana",
+        "Watermelon",
+        "Orange",
+        "Apple",
+        "Durian",
+        "Grape",
+        "Peach",
+        "Pineapple",
+        "Cherry",
+
+        "Cucumber",
+        "Lettuce",
+        "Carrot",
+        "Wheat",
+        "Clover",
+        "Onion",
+        "Celery",
+        "Radish",
+        "Spinach",
+        "Pumpkin",
+
+        "Lily",
+        "Rose",
+        "Bamboo",
+        "Sunflower",
+        "Chrysanthemum",
+    };
+
     public static string GenerateName() {
         return adjectives[UnityEngine.Random.Range(0,adjectives.Length)] + " " + nouns[UnityEngine.Random.Range(0,nouns.Length)];
     }

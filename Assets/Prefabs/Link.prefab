@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4581474647603244}
   - component: {fileID: 120194515749493738}
   - component: {fileID: 114706499656277630}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Link
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 2
-    widthMultiplier: 0.2
+    widthMultiplier: 0.3
     widthCurve:
       serializedVersion: 2
       m_Curve:
