@@ -1,0 +1,205 @@
+fileFormatVersion: 2
+guid: 422818c2289b3d743b57015bcd631ff4
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: Armature
+    100002: Cube
+    100004: ear L
+    100006: ear L_end
+    100008: ear R
+    100010: ear R_end
+    100012: foot L
+    100014: foot L_end
+    100016: foot R
+    100018: foot R_end
+    100020: //RootNode
+    100022: hand L
+    100024: hand L_end
+    100026: hand R
+    100028: hand R_end
+    100030: head
+    100032: hip
+    100034: lower arm L
+    100036: lower arm R
+    100038: lower leg L
+    100040: lower leg R
+    100042: spine
+    100044: tail 1
+    100046: tail 2
+    100048: tail 3
+    100050: tail 3_end
+    100052: upper arm L
+    100054: upper arm R
+    100056: upper leg L
+    100058: upper leg R
+    400000: Armature
+    400002: Cube
+    400004: ear L
+    400006: ear L_end
+    400008: ear R
+    400010: ear R_end
+    400012: foot L
+    400014: foot L_end
+    400016: foot R
+    400018: foot R_end
+    400020: //RootNode
+    400022: hand L
+    400024: hand L_end
+    400026: hand R
+    400028: hand R_end
+    400030: head
+    400032: hip
+    400034: lower arm L
+    400036: lower arm R
+    400038: lower leg L
+    400040: lower leg R
+    400042: spine
+    400044: tail 1
+    400046: tail 2
+    400048: tail 3
+    400050: tail 3_end
+    400052: upper arm L
+    400054: upper arm R
+    400056: upper leg L
+    400058: upper leg R
+    2100000: Tail
+    2100002: Material
+    2100004: Feet
+    2100006: Ears
+    4300000: Cube
+    7400000: Armature|Dance
+    7400002: Armature|sdfsdf
+    7400004: Armature|Walk
+    9500000: //RootNode
+    13700000: Cube
+    2186277476908879412: ImportLogs
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ears
+    second: {fileID: 2100000, guid: 5b0825e611a7e554b93fabe9ee5f0781, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Feet
+    second: {fileID: 2100000, guid: 8c53e097194f8074ba432a8b2111b9b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material
+    second: {fileID: 2100000, guid: cf5384999f1990843858bb8c5ba2787b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Tail
+    second: {fileID: 2100000, guid: 30795a8060e4ee14cbc2fff20df331c2, type: 2}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Armature|Walk
+      takeName: Armature|Walk
+      firstFrame: 0
+      lastFrame: 19
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.5
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 0
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 0
+    preserveHierarchy: 1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 84
+    normalImportMode: 1
+    tangentImportMode: 3
+    normalCalculationMode: 2
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

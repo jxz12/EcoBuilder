@@ -1,43 +1,39 @@
 fileFormatVersion: 2
-guid: 62c49d8ef31918c4aab3d51d837251ee
+guid: d80217287cd86c947a2cd2c4510f029a
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
-    100000: //RootNode
-    100002: Cube
-    100004: Plane
-    400000: //RootNode
-    400002: Cube
-    400004: Plane
-    2100000: Snow
-    2100002: Mountain
-    2100004: No Name
-    2100006: Play
-    2300000: //RootNode
-    2300002: Cube
-    2300004: Plane
-    3300000: //RootNode
-    3300002: Cube
-    3300004: Plane
-    4300000: Cube
-    4300002: Plane
+    100000: Armature
+    100002: Bone
+    100004: Bone.001
+    100006: //RootNode
+    100008: snowman
+    100010: Bone.001_end
+    400000: Armature
+    400002: Bone
+    400004: Bone.001
+    400006: //RootNode
+    400008: snowman
+    400010: Bone.001_end
+    2100000: Material.001
+    2100002: body
+    2100004: accessories
+    4300000: snowman
+    7400000: Armature|Wobble
+    9500000: //RootNode
+    13700000: snowman
     2186277476908879412: ImportLogs
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Mountain
-    second: {fileID: 2100000, guid: b04c25904e92690459aebeca5d9f5cab, type: 2}
+      name: accessories
+    second: {fileID: 2100000, guid: 9bc1c6e4998583b4ebc9e41f52bcd3b4, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Play
-    second: {fileID: 2100000, guid: c8b417391128e594c945c241b4e65126, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Snow
-    second: {fileID: 2100000, guid: 2f029104a25cb614889f652998791ba3, type: 2}
+      name: body
+    second: {fileID: 2100000, guid: d9ebc07b7a6a7e547a827f7038e200c9, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -64,11 +60,39 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     extraUserProperties: []
-    clipAnimations: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Armature|Wobble
+      takeName: Armature|Wobble
+      firstFrame: 0
+      lastFrame: 38
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.5
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     importVisibility: 0
@@ -89,11 +113,11 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
-    normalSmoothAngle: 133
+    normalSmoothAngle: 39
     normalImportMode: 1
     tangentImportMode: 3
-    normalCalculationMode: 4
-  importAnimation: 0
+    normalCalculationMode: 2
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
@@ -112,7 +136,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 
