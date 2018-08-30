@@ -1,37 +1,30 @@
 fileFormatVersion: 2
-guid: 875fb1635e99a498a99b63b3006a04aa
+guid: 467cd07b0247cfa48862406f434a5712
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
     100000: //RootNode
-    100002: Plane
+    100002: Hat
     400000: //RootNode
-    400002: Plane
-    2100000: water
-    2100002: sand
-    2100004: grass
+    400002: Hat
+    2100000: leather
+    2100002: belt
     2300000: //RootNode
-    2300002: Plane
+    2300002: Hat
     3300000: //RootNode
-    3300002: Plane
-    4300000: Plane
-    2186277476908879412: ImportLogs
+    3300002: Hat
+    4300000: Hat
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: grass
-    second: {fileID: 2100000, guid: e15b93f9a46794a6582e8f4e988e940d, type: 2}
+      name: belt
+    second: {fileID: 2100000, guid: 7af067f8178c27a40be1453205db9d62, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: sand
-    second: {fileID: 2100000, guid: bc77e07e6ba37484a88716a7925ca267, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: water
-    second: {fileID: 2100000, guid: c96c176c0d0624b47964c94b883a043a, type: 2}
+      name: leather
+    second: {fileID: 2100000, guid: 172c13b9d4f2aab4cb7c8cf4a7bb4157, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -62,7 +55,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.5
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     importVisibility: 0
@@ -83,10 +76,10 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
-    normalSmoothAngle: 64
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
-    normalCalculationMode: 3
+    normalCalculationMode: 4
   importAnimation: 0
   copyAvatar: 0
   humanDescription:

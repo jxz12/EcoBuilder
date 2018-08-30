@@ -12,6 +12,8 @@ ModelImporter:
     100012: Bone.005
     100014: //RootNode
     100016: Cactus
+    100018: Bone.003_end
+    100020: Bone.005_end
     400000: Armature
     400002: Bone
     400004: Bone.001
@@ -21,6 +23,8 @@ ModelImporter:
     400012: Bone.005
     400014: //RootNode
     400016: Cactus
+    400018: Bone.003_end
+    400020: Bone.005_end
     2100000: Sockets
     2100002: Green
     2100004: Spikes
@@ -28,6 +32,7 @@ ModelImporter:
     7400000: Armature|Dance
     7400002: Armature|Wobble
     9500000: //RootNode
+    11100000: //RootNode
     13700000: Cactus
     2186277476908879412: ImportLogs
   externalObjects:
@@ -65,7 +70,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 1
+    animationCompression: 3
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -105,7 +110,7 @@ ModelImporter:
       name: Armature|Wobble
       takeName: Armature|Wobble
       firstFrame: 0
-      lastFrame: 28
+      lastFrame: 80
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -170,10 +175,10 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    rootMotionBoneName: 
+    rootMotionBoneName: Cactus
     rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
-    hasExtraRoot: 0
+    hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   animationType: 2
