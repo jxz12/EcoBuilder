@@ -2,15 +2,65 @@
 using UnityEngine.Events;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class EcosystemDriver : MonoBehaviour
-{
+// Controls everything!
+public class Ecosystem : MonoBehaviour
+{   
+    [SerializeField] Nichess nichess;
+    [SerializeField] NodeLink nodeLink;
+    // [SerializeField] Thermometer therm;
+
     [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
     [SerializeField] float heartRate = 30;
 
-    public void AddSpecies(int idx)
+    bool newIsProducer;
+    float newBodyMass;
+    public void SetNewIsProducer(bool isProducer) { newIsProducer = isProducer; }
+    public void SetNewBodyMass(float bodyMass) { newBodyMass = bodyMass; }
+
+    class Species
     {
+        public Species(int idx, bool isProducer, float bodyMass, string name)
+        {
+            Idx = idx;
+            IsProducer = isProducer;
+            BodyMass = bodyMass;
+            Name = name;
+        }
+
+        public int Idx { get; private set; }
+        public bool IsProducer { get; private set; }
+        public float BodyMass { get; private set; }
+        public string Name { get; private set; }
+    }
+
+    private readonly Func<float, double> m0 = m => Mathf.Pow(10, m);
+
+    private readonly Func<int, double> r_i = i => i == 0 ? .1 : -.4;
+    private readonly Func<int, double> a_ii = i => .01;
+    private readonly Func<int, int, double> a_ij = (i, j) => .02;
+    private readonly Func<int, int, double> e_ij = (i, j) => .5;
+
+    Dictionary<int, Species> speciesDict = new Dictionary<int, Species>();
+    public void AddSpecies(int idx, string name)
+    {
+        var newSpecies = new Species(idx, newIsProducer, newBodyMass, name);
+        speciesDict.Add(idx, newSpecies);
+
+        if (newIsProducer)
+        {
+            nichess.AddPiece(idx, Nichess.Shape.Square, newBodyMass);
+            nichess.FixPiecePos(idx);
+            nodeLink.AddNode(idx, NodeLink.Shape.Cube);
+        }
+        else
+        {
+            nichess.AddPiece(idx, Nichess.Shape.Circle, newBodyMass);
+            nodeLink.AddNode(idx, NodeLink.Shape.Sphere);
+        }
+
         model.AddSpecies(idx);
         model.GrowthVector[idx] = r_i(idx);
         model.InteractionMatrix[idx, idx] = a_ii(idx);
@@ -40,12 +90,14 @@ public class EcosystemDriver : MonoBehaviour
         model.InteractionMatrix[consumer, resource] = 0;
     }
 
-    private readonly Func<int, double> r_i = i => i == 0 ? .1 : -.4;
-    private readonly Func<int, double> a_ii = i => .01;
-    private readonly Func<int, int, double> a_ij = (i, j) => .02;
-    private readonly Func<int, int, double> e_ij = (i, j) => .5;
-
-
+    public void ConfigFromString(string config)
+    {
+        throw new NotImplementedException();
+    }
+    public string GetConfigString()
+    {
+        throw new NotImplementedException();
+    }
 
 
     /// <summary>

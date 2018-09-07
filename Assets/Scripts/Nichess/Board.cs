@@ -16,7 +16,8 @@ public class Board : MonoBehaviour
     private void Awake()
     {
         int size = GameManager.Instance.BoardSize;
-        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,.7f);
+        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,1f);
+        // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSLSquare(x,y,.5f);
 
         Vector3 bottomLeft = new Vector3(-.5f, 0, -.5f); float gap = 1f / size;
         Vector3 offset = new Vector3(gap / 2, 0, gap / 2);

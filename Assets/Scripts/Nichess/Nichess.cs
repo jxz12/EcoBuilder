@@ -13,33 +13,38 @@ public class Nichess : MonoBehaviour
     [SerializeField] IntEvent PieceInspectedEvent;
     [SerializeField] IntColorEvent PieceColoredEvent;
 
-    [SerializeField] Piece producerPrefab;
-    [SerializeField] Piece consumerPrefab;
+    [SerializeField] Piece squarePrefab;
+    [SerializeField] Piece circlePrefab;
     Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
 
     [SerializeField] Board board;
     [SerializeField] SpawnPlatform spawnPlatform;
 
-    public void AddProducer(int idx)//, bool staticPos)
+    public enum Shape { Square, Circle }
+    
+    public void AddPiece(int idx, Shape shape, float lightness)
     {
-        Piece newPiece = Instantiate(producerPrefab);
-        newPiece.Init(idx, true, false, true);
-        SetupNewPiece(newPiece);
-    }
-    public void AddConsumer(int idx)//, bool staticPos, bool staticRange)
-    {
-        Piece newPiece = Instantiate(consumerPrefab);
-        newPiece.Init(idx, false, false, false);
-        SetupNewPiece(newPiece);
-    }
-    void SetupNewPiece(Piece newPiece)
-    {
+        Piece newPiece;
+        // float pieceLightness = .8f - (.6f*lightness); // make sure that the color is not too light or dark
+        float pieceLightness = lightness;
+        if (shape == Shape.Square)
+        {
+            newPiece = Instantiate(squarePrefab);
+            newPiece.Init(idx, pieceLightness);
+        }
+        else if (shape == Shape.Circle)
+        {
+            newPiece = Instantiate(circlePrefab);
+            newPiece.Init(idx, pieceLightness);
+        }
+        else
+            throw new Exception("piece shape not supported");
+
         newPiece.ClickedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
         newPiece.DragStartedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
         newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
         pieces[newPiece.Idx] = newPiece;
         spawnPlatform.Spawn(newPiece);
-        // PieceInspectedEvent.Invoke(newPiece.Idx);
     }
 
     public void RemovePiece(int idx)
@@ -48,14 +53,9 @@ public class Nichess : MonoBehaviour
         pieces.Remove(idx);
         Uninspect();
     }
-    public void ConfigFromString(string config)
-    {
-        throw new NotImplementedException();
-    }
-    public string GetConfigString()
-    {
-        throw new NotImplementedException();
-    }
+
+    public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }
+    public void FixPieceRange(int idx) { pieces[idx].StaticRange = true; }
     
     private void Start()
     {
@@ -165,7 +165,7 @@ public class Nichess : MonoBehaviour
     }
     void MoveInspectedNicheStart(Square newStart)
     {
-        if (inspected != null && !inspected.IsProducer)
+        if (inspected != null && !inspected.StaticPos)
         {
             inspected.NicheStart = newStart;
             UpdateInspectedResources();
@@ -173,7 +173,7 @@ public class Nichess : MonoBehaviour
     }
     void MoveInspectedNicheEnd(Square newEnd)
     {
-        if (inspected != null && !inspected.IsProducer)
+        if (inspected != null && !inspected.StaticPos)
         {
             inspected.NicheEnd = newEnd;
             UpdateInspectedResources();

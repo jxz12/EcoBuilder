@@ -17,9 +17,10 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         set { shape.material.color = value; }
     }
     public int Idx { get; private set; }
-    public bool IsProducer { get; private set; }
-    public bool StaticPos { get; private set; }
-    public bool StaticRange { get; private set; }
+    public float Lightness { get; private set; }
+
+    public bool StaticPos { get; set; }
+    public bool StaticRange { get; set; }
 
     private void Awake()
     {
@@ -27,13 +28,12 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         anim = GetComponent<Animator>();
     }
 
-    public void Init(int idx, bool isProducer, bool staticPos, bool staticRange)
+    public void Init(int idx, float lightness)
     {
         Idx = idx;
         name = idx.ToString();
-        IsProducer = isProducer;
-        StaticPos = staticPos;
-        StaticRange = staticRange;
+        Lightness = lightness;
+        print(Lightness);
     }
 
     public void Inspect()
@@ -68,7 +68,8 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        Col = newParent.Col;
+        Col = ColorHelper.SetLightness(newParent.Col, Lightness);
+        // Col = newParent.Col;
         lassoSpoke.startColor = lassoSpoke.endColor = lassoLoop.startColor = lassoLoop.endColor = Col;
         ColoredEvent.Invoke();
 

@@ -2,57 +2,68 @@ using System;
 using UnityEngine;
 
 public static class ColorHelper {
-    public static Color HSLToRGB(float h, float s, float l) {
-        h *= 360;
-        float c = (1 - Mathf.Abs(2*l - 1)) * s;
-        float x = c * (1-Mathf.Abs(((h/60)%2) - 1));
-        float m = l - c/2;
-
-        Color rgb;
-        if (h < 60) {
-            rgb = new Color(c,x,0);
-        } else if (h < 120) {
-            rgb = new Color(x,c,0);
-        } else if (h < 180) {
-            rgb = new Color(0,c,x);
-        } else if (h < 240) {
-            rgb = new Color(0,x,c);
-        } else if (h < 300) {
-            rgb = new Color(x,0,c);
-        } else {
-            rgb = new Color(c,0,x);
+    static float HueToRGB(float p, float q, float t)
+    {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1f/6) return p + (q-p)*6*t;
+        if (t < 1f/2) return q;
+        if (t < 2f/3) return p + (q-p) * (2f/3-t) * 6;
+        return p;
+    }
+    public static Color HSLToRGB(float h, float s, float l)
+    {
+        if (s == 0)
+        {
+            return Color.white;
         }
-        rgb = new Color(rgb.r+m, rgb.g+m, rgb.b+m);
-        return rgb;
+        else
+        {
+            float q = l<.5f? l*(1+s) : l+s-l*s;
+            float p = 2 * l - q;
+
+            float r = HueToRGB(p,q,h+1f/3);
+            float g = HueToRGB(p,q,h);
+            float b = HueToRGB(p,q,h-1f/3);
+            return new Color(r, g, b);
+        }
     }
 
-    public static Tuple<float,float,float> RGBToHSL (Color rgb) {
+    public static Tuple<float,float,float> RGBToHSL(Color rgb)
+    {
         float r = rgb.r, g = rgb.g, b = rgb.b;
         float cMax = Mathf.Max(r, g, b);
         float cMin = Mathf.Min(r, g, b);
-        float delta = cMax - cMin;
+        float h, s, l;
+        h = s = l = (cMax + cMin) / 2f;
 
-        float h = 0;
-        if (cMax == r) {
-            h = 60 * (((g-b)/delta)%6);
-        } else if (cMax == g) {
-            h = 60 * (((b-r)/delta)+2);
-        } else {
-            h = 60 * (((r-g)/delta)+4);
+        if (cMax == cMin)
+        {
+            h = s = 0;
         }
-        float l = (cMax + cMin) / 2;
+        else 
+        {
+            float delta = cMax - cMin;
+            s = l>.5f? delta/(2-cMax-cMin) : delta/(cMax+cMin);
+            if (cMax == r)
+                h = (g-b)/delta + (g<b? 6:0);
+            else if (cMax == g)
+                h = (b-r)/delta + 2;
+            else
+                h = (r-g)/delta + 4;
 
-        float s = 0;
-        if (delta != 0) {
-            s = delta/(1-Mathf.Abs(2*l - 1));
+            h /= 6;
         }
+
         return Tuple.Create(h,s,l);
     }
     
-    public static Color SetLightness(Color col, float l) {
+    public static Color SetLightness(Color col, float l)
+    {
         var HSL = RGBToHSL(col);
-        // Debug.Log(HSL.Item1 + " " + HSL.Item2 + " " + HSL.Item3);
-        return HSLToRGB(HSL.Item1, HSL.Item2, l);
+        Debug.Log(HSL.Item1 + " " + HSL.Item2 + " " + HSL.Item3);
+        Color newCol = HSLToRGB(HSL.Item1, HSL.Item2, l);
+        return newCol;
     }
 
 
@@ -75,8 +86,6 @@ public static class ColorHelper {
 
         Vector2 square = new Vector2(x - .5f, y - .5f);
         Vector2 circle = 2 * SquareToCircleElliptical(square);
-        // Debug.Log(square);
-        // Debug.Log(circle);
         Vector2 polar = CartesianToPolar(circle);
         Color col = Color.HSVToRGB(polar.y / (2 * Mathf.PI), polar.x, value);
         return col;

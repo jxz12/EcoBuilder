@@ -7,13 +7,13 @@ using System.Collections.Generic;
 
 public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [SerializeField] Node nodeProducerPrefab, nodeConsumerPrefab;
+    [SerializeField] Node cubePrefab, spherePrefab;
     [SerializeField] Link linkPrefab;
 
     [Serializable] class IntEvent : UnityEvent<int> { };
     [SerializeField] IntEvent NodeInspectedEvent;
 
-    [SerializeField] float stepSize=.1f, centeringForce=.01f, trophicForce=.5f;
+    [SerializeField] float stepSize=.2f, centeringForce=.01f, trophicForce=.5f;
     [SerializeField] float rotationMultiplier=.9f, yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
     [SerializeField] float zoomMultiplier=.005f;
 
@@ -29,16 +29,17 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         linksParent.SetParent(transform, false);
     }
 
-    public void AddProducerNode(int idx)
+    public enum Shape { Cube, Sphere };
+    public void AddNode(int idx, Shape shape)
     {
-        Node newNode = Instantiate(nodeProducerPrefab, nodesParent);
-        newNode.Init(idx);
-        newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
-        nodes[idx] = newNode;
-    }
-    public void AddConsumerNode(int idx)
-    {
-        Node newNode = Instantiate(nodeConsumerPrefab, nodesParent);
+        Node newNode;
+        if (shape == Shape.Cube)
+            newNode = Instantiate(cubePrefab, nodesParent);
+        else if (shape == Shape.Sphere)
+            newNode = Instantiate(spherePrefab, nodesParent);
+        else
+            throw new Exception("shape not supported yet");
+
         newNode.Init(idx);
         newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
         nodes[idx] = newNode;
@@ -99,7 +100,7 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         TrophicGaussSeidel();
         SetYAxis(i=>trophicLevels[i]-1);
-        LayoutSGD(stepSize);
+        LayoutSGD(Mathf.Sqrt(Mathf.Abs(yRotationMomentum)) * stepSize); // the more it shakes, the higher the step size
         Rotate();
     }
 
