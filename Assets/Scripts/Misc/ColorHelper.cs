@@ -13,9 +13,9 @@ public static class ColorHelper {
     }
     public static Color HSLToRGB(float h, float s, float l)
     {
-        if (s == 0)
+        if (s==0)
         {
-            return Color.white;
+            return new Color(l, l, l);
         }
         else
         {
@@ -61,7 +61,6 @@ public static class ColorHelper {
     public static Color SetLightness(Color col, float l)
     {
         var HSL = RGBToHSL(col);
-        Debug.Log(HSL.Item1 + " " + HSL.Item2 + " " + HSL.Item3);
         Color newCol = HSLToRGB(HSL.Item1, HSL.Item2, l);
         return newCol;
     }

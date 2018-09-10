@@ -260,7 +260,9 @@ namespace SparseMatrix {
                 sb.Length -= 2;
                 sb.Append("},\n");
             }
-            sb.Length -= 2;
+            if (sb.Length > 1)
+                sb.Length -= 2;
+
             sb.Append("}");
             return sb.ToString();
         }
@@ -374,7 +376,9 @@ namespace SparseMatrix {
             foreach (int i in _items.Keys.OrderBy(x=>x)) {
                 sb.Append(i.ToString()).Append(": ").Append(Str(GetAt(i))).Append(", ");
             }
-            sb.Length -= 2;
+            if (sb.Length > 1)
+                sb.Length -= 2;
+
             sb.Append("}");
             return sb.ToString();
         }

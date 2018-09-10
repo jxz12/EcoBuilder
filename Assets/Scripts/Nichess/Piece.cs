@@ -33,7 +33,6 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         Idx = idx;
         name = idx.ToString();
         Lightness = lightness;
-        print(Lightness);
     }
 
     public void Inspect()

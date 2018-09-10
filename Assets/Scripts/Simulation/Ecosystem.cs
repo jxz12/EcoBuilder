@@ -10,9 +10,8 @@ public class Ecosystem : MonoBehaviour
 {   
     [SerializeField] Nichess nichess;
     [SerializeField] NodeLink nodeLink;
-    // [SerializeField] Thermometer therm;
+    [SerializeField] Thermometer therm;
 
-    [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
     [SerializeField] float heartRate = 30;
 
     bool newIsProducer;
@@ -38,10 +37,10 @@ public class Ecosystem : MonoBehaviour
 
     private readonly Func<float, double> m0 = m => Mathf.Pow(10, m);
 
-    private readonly Func<int, double> r_i = i => i == 0 ? .1 : -.4;
-    private readonly Func<int, double> a_ii = i => .01;
-    private readonly Func<int, int, double> a_ij = (i, j) => .02;
-    private readonly Func<int, int, double> e_ij = (i, j) => .5;
+    private readonly Func<Species, double> r_i = i => i.IsProducer? .1 : -.4;
+    private readonly Func<Species, double> a_ii = i => .01;
+    private readonly Func<Species, Species, double> a_ij = (i, j) => .02;
+    private readonly Func<Species, Species, double> e_ij = (i, j) => .5;
 
     Dictionary<int, Species> speciesDict = new Dictionary<int, Species>();
     public void AddSpecies(int idx, string name)
@@ -51,19 +50,19 @@ public class Ecosystem : MonoBehaviour
 
         if (newIsProducer)
         {
-            nichess.AddPiece(idx, Nichess.Shape.Square, newBodyMass);
+            nichess.AddPiece(idx, Nichess.Shape.Square, 1-newBodyMass);
             nichess.FixPiecePos(idx);
             nodeLink.AddNode(idx, NodeLink.Shape.Cube);
         }
         else
         {
-            nichess.AddPiece(idx, Nichess.Shape.Circle, newBodyMass);
+            nichess.AddPiece(idx, Nichess.Shape.Circle, 1-newBodyMass);
             nodeLink.AddNode(idx, NodeLink.Shape.Sphere);
         }
 
         model.AddSpecies(idx);
-        model.GrowthVector[idx] = r_i(idx);
-        model.InteractionMatrix[idx, idx] = a_ii(idx);
+        model.GrowthVector[idx] = r_i(newSpecies);
+        model.InteractionMatrix[idx, idx] = a_ii(newSpecies);
     }
     public void RemoveSpecies(int idx)
     {
@@ -75,19 +74,22 @@ public class Ecosystem : MonoBehaviour
         if (resource == consumer)
             throw new Exception("can't eat itself");
 
-        ///////////// THIS NEEDS TO BE FIXED, AS DOESN'T WORK WITH SPECIES THAT EAT EACH OTHER
-        double interaction = a_ij(resource, consumer);
-        double efficiency = e_ij(resource, consumer);
-        model.InteractionMatrix[resource, consumer] = -interaction;
-        model.InteractionMatrix[consumer, resource] = interaction * efficiency;
+        Species res = speciesDict[resource], con = speciesDict[consumer];
+        double interaction = a_ij(res, con);
+        double efficiency = e_ij(res, con);
+        model.InteractionMatrix[resource, consumer] += -interaction;
+        model.InteractionMatrix[consumer, resource] += interaction * efficiency;
     }
     public void RemoveInteraction(int resource, int consumer)
     {
         if (resource == consumer)
             throw new Exception("can't eat itself");
 
-        model.InteractionMatrix[resource, consumer] = 0;
-        model.InteractionMatrix[consumer, resource] = 0;
+        Species res = speciesDict[resource], con = speciesDict[consumer];
+        double interaction = a_ij(res, con);
+        double efficiency = e_ij(res, con);
+        model.InteractionMatrix[resource, consumer] -= -interaction;
+        model.InteractionMatrix[consumer, resource] -= interaction * efficiency;
     }
 
     public void ConfigFromString(string config)
@@ -119,14 +121,15 @@ public class Ecosystem : MonoBehaviour
 
     private void Start()
     {
-        //StartCoroutine(Pulse(60f / heartRate));
+        StartCoroutine(Pulse(60f / heartRate));
     }
 
     IEnumerator Pulse(float delay)
     {
         while (true)
         {
-            Equilibrium();
+            // Equilibrium();
+            print(model.InteractionMatrix.ToString(x=>x.ToString()));
             yield return new WaitForSeconds(delay);
         }
     }
