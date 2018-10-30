@@ -11,6 +11,7 @@ public class Nichess : MonoBehaviour
     [SerializeField] IntIntEvent EdgeAddedEvent;
     [SerializeField] IntIntEvent EdgeRemovedEvent;
     [SerializeField] IntEvent PieceInspectedEvent;
+    [SerializeField] IntEvent PieceRemovedEvent;
     [SerializeField] IntColorEvent PieceColoredEvent;
 
     [SerializeField] Piece squarePrefab;
@@ -49,9 +50,11 @@ public class Nichess : MonoBehaviour
 
     public void RemovePiece(int idx)
     {
+        if (inspected != null && inspected.Idx == idx)
+            Uninspect();
+
         Destroy(pieces[idx].gameObject);
         pieces.Remove(idx);
-        Uninspect();
     }
 
     public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }
@@ -64,9 +67,16 @@ public class Nichess : MonoBehaviour
         board.SquarePinched1Event += MoveInspectedNicheStart;
         board.SquarePinched2Event += MoveInspectedNicheEnd;
     }
+    private void Update()
+    {
+        if (Input.GetButtonDown("Jump") && inspected != null)
+            PieceRemovedEvent.Invoke(inspected.Idx);
+
+    }
 
     private Piece inspected;
-    private HashSet<Piece> inspectedConsumers=new HashSet<Piece>(), inspectedResources=new HashSet<Piece>();
+    private HashSet<Piece> inspectedConsumers=new HashSet<Piece>();
+    private HashSet<Piece> inspectedResources=new HashSet<Piece>();
     public void InspectPiece(int idx)
     {
         if (inspected == pieces[idx])
@@ -97,7 +107,6 @@ public class Nichess : MonoBehaviour
         {
             inspected.Uninspect();
             inspected = null;
-            spawnPlatform.Despawn();
         }
     }
     void UpdateInspectedConsumers()

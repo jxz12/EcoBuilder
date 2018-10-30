@@ -45,7 +45,7 @@ public class LotkaVolterraLAS
     }
 
 
-    // these should be run async because O(n^3)
+    // should be run async because O(n^3)
     public void Equilibrium()
     {
         // create Matrix and Vector that MathNet understands
@@ -57,8 +57,8 @@ public class LotkaVolterraLAS
         Matrix<double> A = Matrix<double>.Build.Dense(n, n, (i, j) => InteractionMatrix[idxMap[i], idxMap[j]]);
         Vector<double> b = Vector<double>.Build.Dense(n, i => -GrowthVector[idxMap[i]]);
 
-        //UnityEngine.Debug.Log(MatStr(A.ToArray()));
-        //UnityEngine.Debug.Log(VecStr(b.ToArray()));
+        // UnityEngine.Debug.Log(MatStr(A.ToArray()));
+        // UnityEngine.Debug.Log(VecStr(b.ToArray()));
 
         // find stable equilibrium point of system
         var x = A.Solve(b);
@@ -96,7 +96,7 @@ public class LotkaVolterraLAS
         return mat;
     }
 
-    // these should be run async because O(n^3)
+    // should be run async because O(n^3)
     public double LocalAsymptoticStability()
     {
         // calculate community matrix with jacobian
@@ -109,7 +109,6 @@ public class LotkaVolterraLAS
         foreach (var e in eigenValues)
             Lambda = Math.Max(Lambda, e.Real);
 
-        //System.Threading.Thread.Sleep(1000);
         return -Lambda;
     }
 

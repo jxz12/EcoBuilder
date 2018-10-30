@@ -18,5 +18,9 @@ public class Link : MonoBehaviour
     {
         lr.SetPosition(0, Source.transform.position);
         lr.SetPosition(1, Target.transform.position);
+        // lr.startColor = Source.Col;
+        // lr.endColor = Target.Col;
+        lr.endColor = Source.Col;
+        lr.startColor = Target.Col;
     }
 }

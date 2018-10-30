@@ -46,6 +46,9 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     }
     public void RemoveNode(int idx)
     {
+        if (inspected != null && inspected.Idx == idx)
+            Uninspect();
+
         Destroy(nodes[idx].gameObject);
         nodes.RemoveAt(idx);
 
@@ -100,7 +103,8 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         TrophicGaussSeidel();
         SetYAxis(i=>trophicLevels[i]-1);
-        LayoutSGD(Mathf.Sqrt(Mathf.Abs(yRotationMomentum)) * stepSize); // the more it shakes, the higher the step size
+        // LayoutSGD(Mathf.Sqrt(Mathf.Abs(yRotationMomentum)) * stepSize); // the more it shakes, the higher the step size
+        LayoutSGD(stepSize);
         Rotate();
     }
 

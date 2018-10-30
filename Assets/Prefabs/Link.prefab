@@ -100,20 +100,20 @@ LineRenderer:
       - serializedVersion: 3
         time: 0
         value: 1
-        inSlope: -0.7807945
-        outSlope: -0.7807945
+        inSlope: -0.026740992
+        outSlope: -0.026740992
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 1
+        outWeight: 0.21868788
       - serializedVersion: 3
         time: 1
-        value: 0.22007751
-        inSlope: -0.77836883
-        outSlope: -0.77836883
+        value: 0.017532349
+        inSlope: -0.36457214
+        outSlope: -0.36457214
         tangentMode: 0
         weightedMode: 0
-        inWeight: 1
+        inWeight: 0.46520877
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2

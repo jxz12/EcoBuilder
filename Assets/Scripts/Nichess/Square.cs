@@ -40,6 +40,7 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public event Action UnhoveredEvent;
     public void OnPointerEnter(PointerEventData ped)
     {
+        // print(name);
         var c = Col;
         c.a = 1;
         Col = c;
