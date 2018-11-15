@@ -6,8 +6,8 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(MeshRenderer))]
 public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    [SerializeField] float defaultAlpha;
     MeshRenderer mr;
-    float defaultAlpha;
 
     public Color Col {
         get { return mr.material.color; }
@@ -19,7 +19,7 @@ public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     void Awake()
     {
         mr = GetComponent<MeshRenderer>();
-        defaultAlpha = mr.material.color.a;
+        // defaultAlpha = mr.material.color.a;
     }
 
     public void Init(int x, int y, Color c)

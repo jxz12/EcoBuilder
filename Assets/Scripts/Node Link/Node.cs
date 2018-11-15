@@ -14,6 +14,10 @@ public class Node : MonoBehaviour
         get { return transform.localPosition; }
         set { transform.localPosition = value;}
     }
+    public float Size {
+        get { return transform.localScale.x; }
+        set { transform.localScale = new Vector3(value, value, value); }
+    }
 
     MeshRenderer mr;
     Animator anim;

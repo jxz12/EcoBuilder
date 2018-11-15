@@ -83,6 +83,15 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         nodes[idx].Col = c;
     }
+    public void ResizeNode(int idx, float size)
+    {
+        nodes[idx].Size = size;
+        // TODO: change shortest paths
+    }
+    public void ResizeEdge(int i, int j, float size)
+    {
+        links[i,j].Size = size;
+    }
 
     Node inspected=null;
     public void InspectNode(int idx)
@@ -97,8 +106,13 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         if (inspected != null)
             inspected.Uninspect();
+        
+        inspected = null;
     }
 
+    // check if there is one connected component, show error otherwise
+    // (this BFS can also be used to update d_ij)
+    // then check if there is at least one basal, show error otherwise
     private void Update()
     {
         TrophicGaussSeidel();
@@ -222,8 +236,17 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
                         Vector3 r = ((mag-1)/2) * (X_ij/mag);
 
                         r.y = 0; // keep y position
-                        nodes[i].Pos -= mu * r;
-                        nodes[j].Pos += mu * r;
+                        // if (inspected != null && (inspected.Idx==i || inspected.Idx==j))
+                        // {
+                        //     // focus
+                        //     nodes[i].Pos -= r;
+                        //     nodes[j].Pos += r;
+                        // } 
+                        // else
+                        // {
+                            nodes[i].Pos -= mu * r;
+                            nodes[j].Pos += mu * r;
+                        // }
                     }
                     else // otherwise try to move the vertices at least a distance of 2 away
                     {
@@ -238,7 +261,8 @@ public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
                     }
                 }
             }
-            nodes[i].Pos -= nodes[i].Pos * centeringForce;
+            var centering = new Vector3(-centeringForce*nodes[i].Pos.x, 0, -centeringForce*nodes[i].Pos.z);  
+            nodes[i].Pos += centering;
         }
     }
 

@@ -67,8 +67,9 @@ public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHan
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        Col = ColorHelper.SetLightness(newParent.Col, Lightness);
-        // Col = newParent.Col;
+        // Col = ColorHelper.SetLightness(newParent.Col, Lightness);
+        Col = ColorHelper.SetYGamma(newParent.Col, Lightness);
+        // Col = ColorHelper.SetY(newParent.Col, Lightness);
         lassoSpoke.startColor = lassoSpoke.endColor = lassoLoop.startColor = lassoLoop.endColor = Col;
         ColoredEvent.Invoke();
 

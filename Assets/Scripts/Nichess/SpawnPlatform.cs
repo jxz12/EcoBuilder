@@ -5,9 +5,17 @@ using UnityEngine.Events;
 
 public class SpawnPlatform : MonoBehaviour
 {
+    [SerializeField] float alpha=.5f;
     public bool Active { get; private set; } = false;
     public UnityEvent DespawnedEvent;
 
+    void Awake()
+    {
+        var mr = GetComponent<MeshRenderer>();
+        Color c = mr.material.color;
+        c.a = alpha;
+        mr.material.color = c;
+    }
 	public void Spawn(Piece toSpawn)
     {
         gameObject.SetActive(true);

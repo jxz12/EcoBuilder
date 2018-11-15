@@ -14,96 +14,72 @@ public class Ecosystem : MonoBehaviour
 
     [SerializeField] float heartRate = 30;
 
-    bool newIsProducer;
-    float newBodyMass;
-    public void SetNewIsProducer(bool isProducer) { newIsProducer = isProducer; }
-    public void SetNewBodyMass(float bodyMass) { newBodyMass = bodyMass; }
+    public bool nextIsProducer { get; set; }
+    public float nextBodyMass { get; set; }
+    public float nextGreediness { get; set; } = 1f;
 
     class Species
     {
         public int Idx { get; private set; }
         public bool IsProducer { get; private set; }
         public double BodyMass { get; private set; }
+        public double Intra { get; private set; }
         public string Name { get; private set; }
 
-        public Species(int idx, bool isProducer, float bodyMassScale, string name)
+        public Species(int idx, bool isProducer, float bodyMassScale, float greedyScale, string name)
         {
             Idx = idx;
             IsProducer = isProducer;
 
             // this corresponds to a range from 1 mg all the way up to 1 tonne
+            // TODO: do the POW thing here so that model does not do endless exponents
             BodyMass = 1e-6*Mathf.Pow(10, bodyMassScale*9);;
+            // intraspecific interaction scales from 0 to -1
+            Intra = greedyScale - 1;
             Name = name;
         }
-    }
 
-    static readonly double b0 = 1e0,
-                           d0 = -1e-2,
-                           a0 = 1e0,
-                     aii_easy = -1e-2,
-                   aii_medium = -1e-3,
-                     aii_hard = -1e-4,
-                         beta = 0.75;
-
-    private static double r_i(Species i)
-    {
-        double mPow = Math.Pow(i.BodyMass, beta-1);
-        return i.IsProducer? b0*mPow : d0*mPow;
+        static readonly double b0 = 1e0,
+                            d0 = 1e-2,
+                            a0 = 1e0,
+                            a_ii0 = 1e-1,
+                            beta = 0.75;
     }
-    private static double a_ii(Species i)
-    {
-        if (GameManager.Instance.difficulty == GameManager.Difficulty.Easy)
-            return aii_easy;
-        else if (GameManager.Instance.difficulty == GameManager.Difficulty.Medium)
-            return aii_medium;
-        else if (GameManager.Instance.difficulty == GameManager.Difficulty.Hard)
-            return aii_hard;
-        else
-            throw new Exception("difficulty not supported");
-    }
-    private static double a_ij(Species i, Species j)
-    {
-        double mPow = Math.Pow(j.BodyMass, beta-1);
-        return a0 * mPow;
-    }
-    private static double e_ij(Species i, Species j)
-    {
-        return i.IsProducer? .2 : .5;
-    }
-
 
     Dictionary<int, Species> speciesDict = new Dictionary<int, Species>();
-    LotkaVolterraLAS model = new LotkaVolterraLAS();
+    LotkaVolterraLAS<Species> model = new LotkaVolterraLAS<Species>(
+        i => i.IsProducer? 1:-1,
+        i => i.Intra,
+        (i,j) => 1,
+        (i,j) => i.IsProducer? 0.2:0.5
+    );
 
     public void AddSpecies(int idx, string name)
     {
-        var newSpecies = new Species(idx, newIsProducer, newBodyMass, name);
+        var newSpecies = new Species(idx, nextIsProducer, nextBodyMass, nextGreediness, name);
+        model.AddSpecies(newSpecies);
         speciesDict.Add(idx, newSpecies);
 
-        if (newIsProducer)
+        if (nextIsProducer)
         {
-            nichess.AddPiece(idx, Nichess.Shape.Square, 1-newBodyMass);
+            nichess.AddPiece(idx, Nichess.Shape.Square, 1-nextBodyMass);
             nichess.FixPiecePos(idx);
             nodeLink.AddNode(idx, NodeLink.Shape.Cube);
         }
         else
         {
-            nichess.AddPiece(idx, Nichess.Shape.Circle, 1-newBodyMass);
+            nichess.AddPiece(idx, Nichess.Shape.Circle, 1-nextBodyMass);
             nodeLink.AddNode(idx, NodeLink.Shape.Sphere);
         }
 
-        model.AddSpecies(idx);
-        model.GrowthVector[idx] = r_i(newSpecies);
-        print(model.GrowthVector[idx]);
-        model.InteractionMatrix[idx, idx] = a_ii(newSpecies);
     }
     public void RemoveSpecies(int idx)
     {
         nichess.RemovePiece(idx);
         nodeLink.RemoveNode(idx);
+        model.RemoveSpecies(speciesDict[idx]);
 
         speciesDict.Remove(idx);
-        model.RemoveSpecies(idx);
     }
 
     public void AddInteraction(int resource, int consumer)
@@ -112,10 +88,7 @@ public class Ecosystem : MonoBehaviour
             throw new Exception("can't eat itself");
 
         Species res = speciesDict[resource], con = speciesDict[consumer];
-        double interaction = a_ij(res, con);
-        double efficiency = e_ij(res, con);
-        model.InteractionMatrix[resource, consumer] += -interaction;
-        model.InteractionMatrix[consumer, resource] += interaction * efficiency;
+        model.AddInteraction(res, con);
     }
     public void RemoveInteraction(int resource, int consumer)
     {
@@ -123,10 +96,7 @@ public class Ecosystem : MonoBehaviour
             throw new Exception("can't eat itself");
 
         Species res = speciesDict[resource], con = speciesDict[consumer];
-        double interaction = a_ij(res, con);
-        double efficiency = e_ij(res, con);
-        model.InteractionMatrix[resource, consumer] -= -interaction;
-        model.InteractionMatrix[consumer, resource] -= interaction * efficiency;
+        model.RemoveInteraction(res, con);
     }
 
     public void ConfigFromString(string config)
@@ -139,34 +109,21 @@ public class Ecosystem : MonoBehaviour
     }
 
 
-    /// <summary>
-    /// Mathy stuff goes below
-    /// </summary>
-
-    static Func<double, string> Format =
-        x => x>=0? Math.Log10(1+x).ToString("0.000") : (-Math.Log10(1-x)).ToString("0.000");
 
     async void Equilibrium()
     {
-        await Task.Run(() => model.Equilibrium());
-        monitor.SetFlux(model.InteractionMatrix.ToString(x => x.ToString()));
-        monitor.SetHeight(model.EquilibriumAbundances.ToString(Format));
-
-        // check whether feasible
-        foreach (double abundance in model.EquilibriumAbundances)
+        await Task.Run(() => model.SolveEquilibrium());
+        monitor.SetHeight(model.MaxAbundance + " " + model.MinAbundance);
+        // calculate stability if feasible
+        if (model.MinAbundance > 0)
         {
-            if (abundance <= 0)
-            {
-                monitor.SetLAS("infeasible");
-                return;
-            }
+            double stability = await Task.Run(() => model.LocalAsymptoticStability());
+            monitor.SetLAS(stability.ToString());
         }
-        LocalStability(); // calculate stability if feasible
-    }
-    async void LocalStability()
-    {
-        double stability = await Task.Run(() => model.LocalAsymptoticStability());
-        monitor.SetLAS(Format(stability));
+        else
+        {
+            monitor.SetLAS("infeasible");
+        }
     }
 
     private void Start()

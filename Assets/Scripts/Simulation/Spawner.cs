@@ -16,12 +16,12 @@ public class Spawner : MonoBehaviour
 
     void Start()
     {
-        // producersCounter = GameManager.Instance.MaxProducers;
+        producersCounter = GameManager.Instance.MaxProducers;
         idxCounter = 0;
         nameText.text = GenerateName();
     }
 
-    // int producersCounter;
+    int producersCounter;
     int idxCounter;
 
     public void SetNewName()
@@ -39,6 +39,13 @@ public class Spawner : MonoBehaviour
 
         SpawnedEvent.Invoke(idxCounter++, nameText.text);
         nameText.text = GenerateName();
+        // if (newIsProducer)
+        // {
+        //     producersCounter--;
+        //     if (producersCounter <= 0)
+
+        // }
+
     }
     
 

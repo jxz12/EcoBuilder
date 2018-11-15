@@ -7,6 +7,11 @@ public class Link : MonoBehaviour
     public Node Source { get; private set; }
     public Node Target { get; private set; }
 
+    public float Size {
+        get { return lr.widthMultiplier; }
+        set { lr.widthMultiplier = value; }
+    }
+
     public void Init(Node source, Node target)
     {
         Source = source;
@@ -18,9 +23,8 @@ public class Link : MonoBehaviour
     {
         lr.SetPosition(0, Source.transform.position);
         lr.SetPosition(1, Target.transform.position);
-        // lr.startColor = Source.Col;
-        // lr.endColor = Target.Col;
-        lr.endColor = Source.Col;
         lr.startColor = Target.Col;
+        lr.endColor = Source.Col;
+        // TODO: make the thickness scale with lossyscale?
     }
 }

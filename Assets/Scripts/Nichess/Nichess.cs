@@ -26,7 +26,7 @@ public class Nichess : MonoBehaviour
     public void AddPiece(int idx, Shape shape, float lightness)
     {
         Piece newPiece;
-        float pieceLightness = .2f + .6f*lightness; // make sure that the color is not too light or dark
+        float pieceLightness = .2f + .7f*lightness; // make sure that the color is not too light or dark
         // float pieceLightness = lightness;
         if (shape == Shape.Square)
         {

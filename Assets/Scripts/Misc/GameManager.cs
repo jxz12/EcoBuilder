@@ -36,18 +36,15 @@ public class GameManager : MonoBehaviour
 
 
 
-    [SerializeField] int boardSize = 5;
+    [SerializeField] int boardSize = 50;
     public int BoardSize { get { return boardSize; } }
 
     [SerializeField] int maxProducers = 3;
     public int MaxProducers { get { return maxProducers; } }
 
-    public enum Difficulty { Easy, Medium, Hard };
-    public Difficulty difficulty = Difficulty.Medium;
-
     void Start()
     {
-        //LoadScene("Play");
+        // LoadScene("Play");
     }
     
 

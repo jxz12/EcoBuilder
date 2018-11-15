@@ -6,6 +6,8 @@ using UnityEngine.Events;
 public class Board : MonoBehaviour
 {
     [SerializeField] Square squarePrefab;
+    [SerializeField] float defaultYColor=.5f;
+    [SerializeField] float squareBorder=.05f;
 
     Square[,] squares;
     public event Action<Square> SquareDraggedEvent;
@@ -16,13 +18,15 @@ public class Board : MonoBehaviour
     private void Awake()
     {
         int size = GameManager.Instance.BoardSize;
-        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,1f);
+        // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,1f);
         // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSLSquare(x,y,.5f);
+        Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.YUVtoRGBtruncated(defaultYColor,.5f*x,.5f*y);
+        // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.YUVtoRGBtruncated(defaultYColor,x,y);
 
-        Vector3 bottomLeft = new Vector3(-.5f, 0, -.5f); float gap = 1f / size;
+        Vector3 bottomLeft = new Vector3(-.5f, 0, -.5f);
+        float gap = 1f / size;
         Vector3 offset = new Vector3(gap / 2, 0, gap / 2);
-        float squareWidth = (1f / size) * .95f;
-        // float squareWidth = (1f / size);
+        float squareWidth = (1f / size) * (1f-squareBorder);
         Vector3 scale = new Vector3(squareWidth, squareWidth, squareWidth);
 
         squares = new Square[size, size];
@@ -35,7 +39,9 @@ public class Board : MonoBehaviour
 
                 s.transform.localPosition = bottomLeft + new Vector3(i * gap, 0, j * gap) + offset;
                 s.transform.localScale = scale;
-                Color c = ColorMap((float)i/(size-1), (float)j/(size-1));
+                // Color c = ColorMap((float)i/(size-1), (float)j/(size-1));
+                Color c = ColorMap((float)i/(size-1)-.5f, (float)j/(size-1)-.5f);
+                c = ColorHelper.ApplyGamma(c);
                 s.Init(i, j, c);
 
                 s.HoveredEvent += () => hovered = s;

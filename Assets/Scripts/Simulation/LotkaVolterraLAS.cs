@@ -1,122 +1,239 @@
 ﻿using System;
 using System.Collections.Generic;
-using SparseMatrix;
 using MathNet.Numerics.LinearAlgebra;
 
-// simply a maths class to calculate things like trophic levels and eigenvalues
-public class LotkaVolterraLAS
+// a class to implement a simple lotka-volterra Type I functional response model
+// can find equilibrium abundances, flux at equilibrium, local asymptotic stability
+public class LotkaVolterraLAS<T>
 {
-    public SparseVector<double> GrowthVector { get; private set; }
-    public SparseMatrix<double> InteractionMatrix { get; private set; }
+    private Func<T, double> r_i;
+    private Func<T, double> a_ii;
+    private Func<T,T, double> a_ij;
+    private Func<T,T, double> e_ij;
 
-    public SparseVector<double> EquilibriumAbundances { get; private set; }
-
-    public LotkaVolterraLAS()
+    public LotkaVolterraLAS(
+        Func<T, double> Growth, Func<T, double> Intra,
+        Func<T,T, double> Attack, Func<T,T, double> Efficiency)
     {
-        GrowthVector = new SparseVector<double>();
-        InteractionMatrix = new SparseMatrix<double>();
-        EquilibriumAbundances = new SparseVector<double>();
+        r_i = Growth;
+        a_ii = Intra;
+        a_ij = Attack;
+        e_ij = Efficiency;
     }
 
-    HashSet<int> speciesIndices = new HashSet<int>();
-    public void AddSpecies(int idx)
-    {
-        if (speciesIndices.Contains(idx))
-            throw new Exception("ecosystem has idx already");
+    Dictionary<T, int> speciesDict = new Dictionary<T, int>();
+    Dictionary<T, HashSet<T>> speciesAdjacency = new Dictionary<T, HashSet<T>>();
+    Dictionary<T, double> equilibriumAbundances = new Dictionary<T, double>();
 
-        speciesIndices.Add(idx);
+    List<T> speciesList = new List<T>();
+    List<HashSet<int>> adjacency = new List<HashSet<int>>();
+
+    Matrix<double> A, community, flux;
+    Vector<double> x, b;
+    public void RebuildMatrices(int n)
+    {
+        // A is interaction matrix, x and b are equilibrium abundance
+        A = Matrix<double>.Build.Dense(n, n);
+        x = Vector<double>.Build.Dense(n);
+        b = Vector<double>.Build.Dense(n);
+        community = Matrix<double>.Build.Dense(n, n);
+        flux = Matrix<double>.Build.Dense(n, n);
     }
-    public void RemoveSpecies(int idx)
+
+    public void AddSpecies(T species)
     {
-        if (!speciesIndices.Contains(idx))
-            throw new Exception("ecosystem does not have that idx");
+        if (speciesDict.ContainsKey(species))
+            throw new Exception("Ecosystem has that species already");
 
-        speciesIndices.Remove(idx);
+        speciesList.Add(species);
+        adjacency.Add(new HashSet<int>());
 
-        // clean matrices and vectors
-        GrowthVector.RemoveAt(idx);
-        EquilibriumAbundances.RemoveAt(idx);
-        foreach (int other in speciesIndices)
+        int n = speciesList.Count;
+        speciesDict[species] = n-1;
+        speciesAdjacency[species] = new HashSet<T>();
+        equilibriumAbundances[species] = 0;
+
+        RebuildMatrices(n);
+    }
+    public void RemoveSpecies(T species)
+    {
+        if (!speciesDict.ContainsKey(species))
+            throw new Exception("Ecosystem does not have that species");
+
+        speciesDict.Remove(species);
+        foreach (T other in speciesList)
+            speciesAdjacency[other].Remove(species);
+        speciesAdjacency.Remove(species);
+        equilibriumAbundances.Remove(species);
+
+        speciesList.Remove(species);
+        // iterate through all possible interactions to fix adjacency indices
+        int n = speciesList.Count;
+        for (int i=0; i<n; i++)
         {
-            InteractionMatrix.RemoveAt(idx, other);
-            InteractionMatrix.RemoveAt(other, idx);
+            adjacency[i].Clear();
+            for (int j=0; j<speciesList.Count; j++)
+            {
+                if (speciesAdjacency[speciesList[i]].Contains(speciesList[j]))
+                    adjacency[i].Add(j);
+            }
         }
+        adjacency.RemoveAt(n);
 
+        RebuildMatrices(n);
     }
+    public void AddInteraction(T res, T con)
+    {
+        if (speciesAdjacency[res].Contains(con))
+            throw new Exception("ecosystem has interaction already");
 
+        speciesAdjacency[res].Add(con);
+        adjacency[speciesDict[res]].Add(speciesDict[con]);
+    }
+    public void RemoveInteraction(T res, T con)
+    {
+        if (!speciesAdjacency[res].Contains(con))
+            throw new Exception("ecosystem does not have that interaction");
+
+        speciesAdjacency[res].Remove(con);
+        adjacency[speciesDict[res]].Remove(speciesDict[con]);
+    }
 
     // should be run async because O(n^3)
-    public void Equilibrium()
+    public void SolveEquilibrium()
     {
         // create Matrix and Vector that MathNet understands
-        int n = speciesIndices.Count;
-        var idxMap = new List<int>(n);
-        foreach (int idx in speciesIndices)
-            idxMap.Add(idx);
+        int n = speciesList.Count;
 
-        Matrix<double> A = Matrix<double>.Build.Dense(n, n, (i, j) => InteractionMatrix[idxMap[i], idxMap[j]]);
-        Vector<double> b = Vector<double>.Build.Dense(n, i => -GrowthVector[idxMap[i]]);
-
-        // UnityEngine.Debug.Log(MatStr(A.ToArray()));
-        // UnityEngine.Debug.Log(VecStr(b.ToArray()));
-
-        // find stable equilibrium point of system
-        var x = A.Solve(b);
-
-        // place values back into SparseVector
-        for (int i=0; i<n; i++)
-            EquilibriumAbundances[idxMap[i]] = x[i];
-    }
-
-    Matrix<double> BuildCommunityMatrix()
-    {
-        //int n = growthVector.Length;
-        int n = speciesIndices.Count;
-        var idxMap = new List<int>(n);
-        foreach (int idx in speciesIndices)
-            idxMap.Add(idx);
-
-        var mat = Matrix<double>.Build.Dense(n, n);
+        A.Clear();
+        b.Clear();
+        flux.Clear();
         for (int i=0; i<n; i++)
         {
-            int res = idxMap[i];
-            mat[i, i] = GrowthVector[res] + (2 * InteractionMatrix[res, res] * EquilibriumAbundances[res]);
-
-            // calculate every element of the Jacobian, evaluated at equilibrium point
-            for (int j = 0; j < n; j++)
+            T res = speciesList[i];
+            b[i] = -r_i(res);
+            A[i,i] = a_ii(res);
+            foreach (int j in adjacency[i])
             {
-                if (i != j)
+                T con = speciesList[j];
+                double a = a_ij(res, con);
+                double e = e_ij(res, con);
+                A[i,j] -= a;
+                A[j,i] += flux[i,j] = e*a;
+            }
+        }
+
+        // UnityEngine.Debug.Log(MatStr(A));
+        // UnityEngine.Debug.Log(VecStr(b.));
+
+        // find stable equilibrium point of system
+        x = A.Solve(b);
+
+        ScaleAbundance();
+    }
+
+    // Depends on A and b being correct
+    void BuildCommunityMatrix()
+    {
+        int n = speciesList.Count;
+
+        community.Clear();
+        for (int i=0; i<n; i++)
+        {
+            // calculate every element of the Jacobian, evaluated at equilibrium point
+            for (int j=0; j<n; j++)
+            {
+                if (i==j)
                 {
-                    int con = idxMap[j];
-                    mat[i, j] = InteractionMatrix[res, con] * EquilibriumAbundances[res];
-                    mat[i, i] += InteractionMatrix[res, con] * EquilibriumAbundances[con];
+                    community[i,i] += -b[i] + (2*A[i,i] * x[i]);
+                }
+                else
+                {
+                    community[i,j] = A[i,j] * x[i];
+                    community[i,i] += A[i,j] * x[j];
                 }
             }
         }
-        return mat;
     }
 
     // should be run async because O(n^3)
     public double LocalAsymptoticStability()
     {
-        // calculate community matrix with jacobian
-        Matrix<double> A = BuildCommunityMatrix();
+        BuildCommunityMatrix();
+        UnityEngine.Debug.Log(MatStr(A));
+        UnityEngine.Debug.Log(MatStr(community));
 
-        var eigenValues = A.Evd().EigenValues;
+        // calculate community matrix with jacobian
+        var eigenValues = community.Evd().EigenValues;
 
         // get largest real part of any eigenvalue
-        double Lambda = double.MinValue;
+        double Lambda = -double.MaxValue;
         foreach (var e in eigenValues)
             Lambda = Math.Max(Lambda, e.Real);
 
         return -Lambda;
     }
 
+    private void ScaleAbundance()
+    {
+        int n = x.Count;
+        double minPosAbundance, maxNegAbundance;
 
-    public static string MatStr<T>(T[,] mat)
+        MaxAbundance = maxNegAbundance = -double.MaxValue;
+        MinAbundance = minPosAbundance = double.MaxValue;
+        for (int i=0; i<n; i++)
+        {
+            double abundance = x[i];
+            MaxAbundance = Math.Max(abundance, MaxAbundance);
+            MinAbundance = Math.Min(abundance, MinAbundance);
+            if (abundance > 0)
+                minPosAbundance = Math.Min(abundance, minPosAbundance);
+            else if (abundance < 0)
+                maxNegAbundance = Math.Max(abundance, maxNegAbundance);
+            // else
+                // throw new Exception("equilibrium population of zero");
+        }
+        double posLogMaxNorm, negLogMinNorm;
+        if (MaxAbundance > 0)
+            posLogMaxNorm = Math.Log(MaxAbundance / minPosAbundance);
+        else
+            posLogMaxNorm = 1;
+
+        if (MinAbundance < 0)
+            negLogMinNorm = Math.Log(MinAbundance / maxNegAbundance);
+        else
+            negLogMinNorm = 1;
+
+        for (int i=0; i<n; i++)
+        {
+            T species = speciesList[i];
+            double abundance = x[i];
+            if (abundance > 0)
+                equilibriumAbundances[species] = 1 + Math.Log(abundance/minPosAbundance)/posLogMaxNorm;
+            else if (abundance < 0)
+                equilibriumAbundances[species] = -1 - Math.Log(abundance/maxNegAbundance)/negLogMinNorm;
+            else
+                equilibriumAbundances[species] = 0;
+        }
+    }
+    public double GetAbundance(T species)
+    {
+        return equilibriumAbundances[species];
+    }
+    public double GetFlux(T res, T con)
+    {
+        int i = speciesDict[res], j = speciesDict[con];
+        return flux[i,j] * x[i] * x[j];
+    }
+    public double MaxAbundance { get; private set; }
+    public double MinAbundance { get; private set; }
+
+
+    public static string MatStr(Matrix<double> mat)
     {
         var sb = new System.Text.StringBuilder();
-        int m = mat.GetLength(0), n = mat.GetLength(1);
+        // int m = mat.GetLength(0), n = mat.GetLength(1);
+        int n = mat.RowCount, m = mat.ColumnCount;
         for (int i=0; i<m; i++)
         {
             for (int j=0; j<n; j++)
@@ -129,10 +246,10 @@ public class LotkaVolterraLAS
         return sb.ToString();
     }
     
-    public static string VecStr<T>(T[] vec)
+    public static string VecStr(Vector<double> vec)
     {
         var sb = new System.Text.StringBuilder();
-        int n = vec.Length;
+        int n = vec.Count;
         for (int i=0; i<n; i++)
         {
                 sb.Append(vec[i].ToString() + " ");

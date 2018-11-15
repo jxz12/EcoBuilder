@@ -1,7 +1,70 @@
 using System;
 using UnityEngine;
 
-public static class ColorHelper {
+public static class ColorHelper
+{
+    public static Color ApplyGamma(Color col, float gamma=1.8f)
+    {
+        float expo = 1f/gamma;
+        float r, g, b;
+
+        r = Mathf.Pow(col.r, expo);
+        g = Mathf.Pow(col.g, expo);
+        b = Mathf.Pow(col.b, expo);
+        
+        // if (col.r == 0) r = 0;
+        // else            r = Mathf.Pow(col.r, expo);
+        // if (col.g == 0) g = 0;
+        // else            g = Mathf.Pow(col.g, expo);
+        // if (col.b == 0) b = 0;
+        // else            b = Mathf.Pow(col.b, expo);
+
+        return new Color(r, g, b);
+    }
+    public static Color UnapplyGamma(Color col, float gamma=1.8f)
+    {
+        float expo = gamma;
+        float r, g, b;
+
+        r = Mathf.Pow(col.r, expo);
+        g = Mathf.Pow(col.g, expo);
+        b = Mathf.Pow(col.b, expo);
+
+        return new Color(r, g, b);
+    }
+    public static Color SetY(Color col, float newY)
+    {
+        float r = col.r, g = col.g, b = col.b;
+
+        // float y = 0.2126f*r + 0.7152f*g + 0.0722f*b;
+        float u = -0.09991f*r - 0.33609f*g +   0.436f*b;
+        float v =    0.615f*r - 0.55861f*g - 0.05639f*b;
+
+        return YUVtoRGBtruncated(newY, u, v);
+    }
+    public static Color SetYGamma(Color col, float newY, float gamma=1.8f)
+    {
+        col = UnapplyGamma(col, gamma);
+        col = SetY(col, newY);
+        return ApplyGamma(col);
+    }
+    public static Color YUVtoRGBtruncated(float y, float u, float v)
+    {
+        // BT7.09
+        float r = y              + 1.28033f*v;
+        float g = y - 0.21482f*u - 0.38059f*v;
+        float b = y + 2.12798f*u             ;
+
+        if      (r > 1) r = 1;
+        else if (r < 0) r = 0;
+        if      (g > 1) g = 1;
+        else if (g < 0) g = 0;
+        if      (b > 1) b = 1;
+        else if (b < 0) b = 0;
+
+        return new Color(r, g, b);
+    }
+
     static float HueToRGB(float p, float q, float t)
     {
         if (t < 0) t += 1;
@@ -58,10 +121,10 @@ public static class ColorHelper {
         return Tuple.Create(h,s,l);
     }
     
-    public static Color SetLightness(Color col, float l)
+    public static Color SetLightness(Color col, float newL)
     {
         var HSL = RGBToHSL(col);
-        Color newCol = HSLToRGB(HSL.Item1, HSL.Item2, l);
+        Color newCol = HSLToRGB(HSL.Item1, HSL.Item2, newL);
         return newCol;
     }
 
