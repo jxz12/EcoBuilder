@@ -898,7 +898,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 20
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5.32
   m_Depth: 0
   m_CullingMask:
@@ -1173,12 +1173,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27210a53b99319c4aaf40a25dcf7c620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 114750418537604480, guid: eff292638c95bf54fa693e490a3d811e,
-    type: 2}
-  spherePrefab: {fileID: 114609019565973728, guid: f94caf4d0e879934f85696ff05ebf3a5,
-    type: 2}
-  linkPrefab: {fileID: 114706499656277630, guid: f379656aba023c74f82548dad4dbb0eb,
-    type: 2}
   NodeInspectedEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1193,8 +1187,16 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: NodeLink+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    m_TypeName: EcoBuilder.NodeLink.NodeLink+IntEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  nodePrefab: {fileID: 114609019565973728, guid: f94caf4d0e879934f85696ff05ebf3a5,
+    type: 2}
+  sphereMesh: {fileID: 4300004, guid: 2ca10ac884a8d9a4e87f38be971365bd, type: 3}
+  sphereOutlineMesh: {fileID: 4300004, guid: fa2612aa8d82dd24ca2d9cd73d96e925, type: 3}
+  cubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  cubeOutlineMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  linkPrefab: {fileID: 114706499656277630, guid: f379656aba023c74f82548dad4dbb0eb,
+    type: 2}
   stepSize: 0.2
   centeringForce: 0.01
   trophicForce: 0.2
@@ -1341,12 +1343,12 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 1
+  m_Value: 0.1
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1294120325}
-        m_MethodName: set_newGreediness
+      - m_Target: {fileID: 0}
+        m_MethodName: set_nextGreediness
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1421,8 +1423,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Nichess+IntIntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    m_TypeName: EcoBuilder.Nichess.Nichess+IntIntEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   EdgeRemovedEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1448,8 +1450,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Nichess+IntIntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    m_TypeName: EcoBuilder.Nichess.Nichess+IntIntEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   PieceInspectedEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1464,8 +1466,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Nichess+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    m_TypeName: EcoBuilder.Nichess.Nichess+IntEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   PieceRemovedEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1480,8 +1482,19 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Nichess+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+      - m_Target: {fileID: 773235146}
+        m_MethodName: RemoveNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Nichess.Nichess+IntEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   PieceColoredEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1496,12 +1509,14 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Nichess+IntColorEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  squarePrefab: {fileID: 114152372220634684, guid: 180d0bb3e212e13438b63e613d609c15,
+    m_TypeName: EcoBuilder.Nichess.Nichess+IntColorEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  piecePrefab: {fileID: 114109178037667778, guid: 4ee94d8b555265e42b05839099cbfc8d,
     type: 2}
-  circlePrefab: {fileID: 114109178037667778, guid: 4ee94d8b555265e42b05839099cbfc8d,
-    type: 2}
+  squareMesh: {fileID: 4300000, guid: 20b6b8ab7d9c2a146afef329d2bdfe35, type: 3}
+  squareOutlineMesh: {fileID: 4300000, guid: 20b6b8ab7d9c2a146afef329d2bdfe35, type: 3}
+  circleMesh: {fileID: 4300000, guid: 93f09ee7e3efc474c9702107045fa8e3, type: 3}
+  circleOutlineMesh: {fileID: 4300000, guid: 93f09ee7e3efc474c9702107045fa8e3, type: 3}
   board: {fileID: 423145481}
   spawnPlatform: {fileID: 531647439}
 --- !u!4 &862883999
@@ -2191,7 +2206,7 @@ GameObject:
   - component: {fileID: 1294120324}
   - component: {fileID: 1294120325}
   m_Layer: 0
-  m_Name: Ecosystem
+  m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -2218,12 +2233,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1294120323}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b8b00d92e780104eb584345b28b0fab, type: 3}
+  m_Script: {fileID: 11500000, guid: ee2edc39d3b898746a0f4bff6d6d5969, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nichess: {fileID: 862883997}
-  nodeLink: {fileID: 773235146}
-  monitor: {fileID: 1068091799}
+  AbundanceSetEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 773235146}
+        m_MethodName: ResizeNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Model.Model+IntFloatEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   heartRate: 30
 --- !u!1 &1305717198
 GameObject:
@@ -2460,17 +2488,6 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: Producer Chosen
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1294120325}
-        m_MethodName: set_newIsProducer
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
@@ -2749,17 +2766,6 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: Producer Chosen
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1294120325}
-        m_MethodName: set_newIsProducer
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
@@ -3359,8 +3365,8 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1294120325}
-        m_MethodName: set_newBodyMass
+      - m_Target: {fileID: 0}
+        m_MethodName: set_nextBodyMass
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3391,10 +3397,10 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1936081269}
+  - component: {fileID: 1936081273}
   - component: {fileID: 1936081270}
   - component: {fileID: 1936081272}
   - component: {fileID: 1936081271}
-  - component: {fileID: 1936081273}
   m_Layer: 5
   m_Name: Spawner
   m_TagString: Untagged
@@ -3482,23 +3488,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1936081268}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb96cf0fb3161034f8b80c0131bcddf3, type: 3}
+  m_Script: {fileID: 11500000, guid: 254c8bc746a1f6b44b3019a9af30bb7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   SpawnedEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1294120325}
-        m_MethodName: AddSpecies
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 1408184383}
         m_MethodName: set_interactable
         m_Mode: 6
@@ -3510,9 +3505,170 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: Spawner+IntStringEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      - m_Target: {fileID: 862883997}
+        m_MethodName: AddPiece
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 773235146}
+        m_MethodName: AddNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: AddSpecies
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Spawner+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
       PublicKeyToken=null
+  ProducerSetEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 862883997}
+        m_MethodName: ShapePieceIntoSquare
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 773235146}
+        m_MethodName: ShapeNodeIntoCube
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: SetSpeciesAsProducer
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Spawner+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  ConsumerSetEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 862883997}
+        m_MethodName: ShapePieceIntoCircle
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 773235146}
+        m_MethodName: ShapeNodeIntoSphere
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: SetSpeciesAsConsumer
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Spawner+IntEvent, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+  BodyMassSetEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 862883997}
+        m_MethodName: SetDarkness
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: SetSpeciesBodyMass
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Spawner+IntFloatEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  GreedinessSetEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1294120325}
+        m_MethodName: SetSpeciesGreediness
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_TypeName: EcoBuilder.Spawner+IntFloatEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  NamedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: EcoBuilder.Spawner+IntStringEvent, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
   nameText: {fileID: 94494733}
+  producerButton: {fileID: 1559064346}
+  consumerButton: {fileID: 1388381129}
+  bodyMassSlider: {fileID: 1914681975}
+  greedinessSlider: {fileID: 845532688}
 --- !u!1 &1975049779
 GameObject:
   m_ObjectHideFlags: 0

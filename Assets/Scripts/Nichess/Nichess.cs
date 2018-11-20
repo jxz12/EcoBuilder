@@ -3,190 +3,190 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Nichess : MonoBehaviour
+namespace EcoBuilder.Nichess
 {
-    [Serializable] class IntIntEvent : UnityEvent<int, int> { }
-    [Serializable] class IntEvent : UnityEvent<int> { }
-    [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
-    [SerializeField] IntIntEvent EdgeAddedEvent;
-    [SerializeField] IntIntEvent EdgeRemovedEvent;
-    [SerializeField] IntEvent PieceInspectedEvent;
-    [SerializeField] IntEvent PieceRemovedEvent;
-    [SerializeField] IntColorEvent PieceColoredEvent;
-
-    [SerializeField] Piece squarePrefab;
-    [SerializeField] Piece circlePrefab;
-    Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
-
-    [SerializeField] Board board;
-    [SerializeField] SpawnPlatform spawnPlatform;
-
-    public enum Shape { Square, Circle }
-    
-    public void AddPiece(int idx, Shape shape, float lightness)
+    public class Nichess : MonoBehaviour
     {
-        Piece newPiece;
-        float pieceLightness = .2f + .7f*lightness; // make sure that the color is not too light or dark
-        // float pieceLightness = lightness;
-        if (shape == Shape.Square)
+        [Serializable] class IntIntEvent : UnityEvent<int, int> { }
+        [Serializable] class IntEvent : UnityEvent<int> { }
+        [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
+        [SerializeField] IntIntEvent EdgeAddedEvent;
+        [SerializeField] IntIntEvent EdgeRemovedEvent;
+        [SerializeField] IntEvent PieceInspectedEvent;
+        [SerializeField] IntEvent PieceRemovedEvent;
+        [SerializeField] IntColorEvent PieceColoredEvent;
+
+        [SerializeField] Piece piecePrefab;
+        [SerializeField] Mesh squareMesh, squareOutlineMesh, circleMesh, circleOutlineMesh;
+        Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
+
+        [SerializeField] Board board;
+        [SerializeField] SpawnPlatform spawnPlatform;
+
+        public void AddPiece(int idx)
         {
-            newPiece = Instantiate(squarePrefab);
-            newPiece.Init(idx, pieceLightness);
+            Piece newPiece = Instantiate(piecePrefab);
+            newPiece.Init(idx, 0);
+
+            newPiece.ClickedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
+            newPiece.DragStartedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
+            newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
+            pieces[newPiece.Idx] = newPiece;
+            spawnPlatform.Spawn(newPiece);
         }
-        else if (shape == Shape.Circle)
+        public void ShapePieceIntoSquare(int idx)
         {
-            newPiece = Instantiate(circlePrefab);
-            newPiece.Init(idx, pieceLightness);
+            pieces[idx].SetShape(squareMesh, squareOutlineMesh);
         }
-        else
-            throw new Exception("piece shape not supported");
-
-        newPiece.ClickedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
-        newPiece.DragStartedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
-        newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
-        pieces[newPiece.Idx] = newPiece;
-        spawnPlatform.Spawn(newPiece);
-    }
-
-    public void RemovePiece(int idx)
-    {
-        if (inspected != null && inspected.Idx == idx)
-            Uninspect();
-
-        Destroy(pieces[idx].gameObject);
-        pieces.Remove(idx);
-    }
-
-    public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }
-    public void FixPieceRange(int idx) { pieces[idx].StaticRange = true; }
-    
-    private void Start()
-    {
-        PieceInspectedEvent.AddListener(InspectPiece);
-        board.SquareDraggedEvent += MoveInspectedPos;
-        board.SquarePinched1Event += MoveInspectedNicheStart;
-        board.SquarePinched2Event += MoveInspectedNicheEnd;
-    }
-    private void Update()
-    {
-        if (Input.GetButtonDown("Jump") && inspected != null)
-            PieceRemovedEvent.Invoke(inspected.Idx);
-
-    }
-
-    private Piece inspected;
-    private HashSet<Piece> inspectedConsumers=new HashSet<Piece>();
-    private HashSet<Piece> inspectedResources=new HashSet<Piece>();
-    public void InspectPiece(int idx)
-    {
-        if (inspected == pieces[idx])
-            return;
-        if (inspected != null)
-            inspected.Uninspect();
-
-        inspected = pieces[idx];
-        inspected.Inspect();
-
-        inspectedConsumers.Clear();
-        inspectedResources.Clear();
-        foreach (Piece p in pieces.Values)
+        public void ShapePieceIntoCircle(int idx)
         {
-            if (p != inspected) // cannot eat itself
+            pieces[idx].SetShape(circleMesh, circleOutlineMesh);
+        }
+        public void SetDarkness(int idx, float darkness)
+        {
+            float pieceLightness = .2f + .7f*(1-darkness); // make sure that the color is not too light or dark
+            pieces[idx].Lightness = pieceLightness;
+        }
+
+        public void RemovePiece(int idx)
+        {
+            if (inspected != null && inspected.Idx == idx)
+                Uninspect();
+
+            Destroy(pieces[idx].gameObject);
+            pieces.Remove(idx);
+        }
+
+        public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }
+        public void FixPieceRange(int idx) { pieces[idx].StaticRange = true; }
+        
+        private void Start()
+        {
+            PieceInspectedEvent.AddListener(InspectPiece);
+            board.SquareDraggedEvent += MoveInspectedPos;
+            board.SquarePinched1Event += MoveInspectedNicheStart;
+            board.SquarePinched2Event += MoveInspectedNicheEnd;
+        }
+        private void Update()
+        {
+            if (Input.GetButtonDown("Jump") && inspected != null)
+                PieceRemovedEvent.Invoke(inspected.Idx);
+        }
+
+        private Piece inspected;
+        private HashSet<Piece> inspectedConsumers=new HashSet<Piece>();
+        private HashSet<Piece> inspectedResources=new HashSet<Piece>();
+        public void InspectPiece(int idx)
+        {
+            if (inspected == pieces[idx])
+                return;
+            if (inspected != null)
+                inspected.Uninspect();
+
+            inspected = pieces[idx];
+            inspected.Inspect();
+
+            inspectedConsumers.Clear();
+            inspectedResources.Clear();
+            foreach (Piece p in pieces.Values)
             {
-                if (p.IsResourceOf(inspected))
-                    inspectedResources.Add(p);
-
-                if (inspected.IsResourceOf(p))
-                    inspectedConsumers.Add(p);
-            }
-        }
-    }
-    public void Uninspect()
-    {
-        if (inspected != null)
-        {
-            inspected.Uninspect();
-            inspected = null;
-        }
-    }
-    void UpdateInspectedConsumers()
-    {
-        foreach (Piece p in pieces.Values)
-        {
-            if (p != inspected) // cannot eat itself
-            {
-                if (inspected.IsResourceOf(p))
+                if (p != inspected) // cannot eat itself
                 {
-                    if (!inspectedConsumers.Contains(p))
-                    {
-                        inspectedConsumers.Add(p);
-                        EdgeAddedEvent.Invoke(inspected.Idx, p.Idx);
-                    }
-                } 
-                else
-                {
-                    if (inspectedConsumers.Contains(p))
-                    {
-                        inspectedConsumers.Remove(p);
-                        EdgeRemovedEvent.Invoke(inspected.Idx, p.Idx);
-                    }
-                }
-            }
-        }
-    }
-    void UpdateInspectedResources()
-    {
-        foreach (Piece p in pieces.Values)
-        {
-            if (p != inspected) // cannot eat itself
-            {
-                if (p.IsResourceOf(inspected))
-                {
-                    if (!inspectedResources.Contains(p))
-                    {
+                    if (p.IsResourceOf(inspected))
                         inspectedResources.Add(p);
-                        EdgeAddedEvent.Invoke(p.Idx, inspected.Idx);
-                    }
-                } 
-                else
+
+                    if (inspected.IsResourceOf(p))
+                        inspectedConsumers.Add(p);
+                }
+            }
+        }
+        public void Uninspect()
+        {
+            if (inspected != null)
+            {
+                inspected.Uninspect();
+                inspected = null;
+            }
+        }
+        void UpdateInspectedConsumers()
+        {
+            foreach (Piece p in pieces.Values)
+            {
+                if (p != inspected) // cannot eat itself
                 {
-                    if (inspectedResources.Contains(p))
+                    if (inspected.IsResourceOf(p))
                     {
-                        inspectedResources.Remove(p);
-                        EdgeRemovedEvent.Invoke(p.Idx, inspected.Idx);
+                        if (!inspectedConsumers.Contains(p))
+                        {
+                            inspectedConsumers.Add(p);
+                            EdgeAddedEvent.Invoke(inspected.Idx, p.Idx);
+                        }
+                    } 
+                    else
+                    {
+                        if (inspectedConsumers.Contains(p))
+                        {
+                            inspectedConsumers.Remove(p);
+                            EdgeRemovedEvent.Invoke(inspected.Idx, p.Idx);
+                        }
                     }
                 }
             }
         }
-    }
-    void MoveInspectedPos(Square newPos)
-    {
-        if (inspected != null && inspected.Dragging)
+        void UpdateInspectedResources()
         {
-            if (newPos.transform.childCount == 0)
+            foreach (Piece p in pieces.Values)
             {
-                inspected.ParentToSquare(newPos);
-                UpdateInspectedConsumers();
-                if (spawnPlatform.Active)
-                    spawnPlatform.Despawn();
+                if (p != inspected) // cannot eat itself
+                {
+                    if (p.IsResourceOf(inspected))
+                    {
+                        if (!inspectedResources.Contains(p))
+                        {
+                            inspectedResources.Add(p);
+                            EdgeAddedEvent.Invoke(p.Idx, inspected.Idx);
+                        }
+                    } 
+                    else
+                    {
+                        if (inspectedResources.Contains(p))
+                        {
+                            inspectedResources.Remove(p);
+                            EdgeRemovedEvent.Invoke(p.Idx, inspected.Idx);
+                        }
+                    }
+                }
             }
         }
-    }
-    void MoveInspectedNicheStart(Square newStart)
-    {
-        if (inspected != null && !inspected.StaticPos)
+        void MoveInspectedPos(Square newPos)
         {
-            inspected.NicheStart = newStart;
-            UpdateInspectedResources();
+            if (inspected != null && inspected.Dragging)
+            {
+                if (newPos.transform.childCount == 0)
+                {
+                    inspected.ParentToSquare(newPos);
+                    UpdateInspectedConsumers();
+                    if (spawnPlatform.Active)
+                        spawnPlatform.Despawn();
+                }
+            }
         }
-    }
-    void MoveInspectedNicheEnd(Square newEnd)
-    {
-        if (inspected != null && !inspected.StaticPos)
+        void MoveInspectedNicheStart(Square newStart)
         {
-            inspected.NicheEnd = newEnd;
-            UpdateInspectedResources();
+            if (inspected != null && !inspected.StaticPos)
+            {
+                inspected.NicheStart = newStart;
+                UpdateInspectedResources();
+            }
         }
-    }
+        void MoveInspectedNicheEnd(Square newEnd)
+        {
+            if (inspected != null && !inspected.StaticPos)
+            {
+                inspected.NicheEnd = newEnd;
+                UpdateInspectedResources();
+            }
+        }
 
+    }
 }
