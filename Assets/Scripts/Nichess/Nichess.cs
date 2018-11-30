@@ -66,6 +66,9 @@ namespace EcoBuilder.Nichess
             board.SquareDraggedEvent += MoveInspectedPos;
             board.SquarePinched1Event += MoveInspectedNicheStart;
             board.SquarePinched2Event += MoveInspectedNicheEnd;
+            // TODO: instead of a lasso action, drag the nearest edge like before
+            //       this lets us move the entire lasso at once too
+
         }
         private void Update()
         {
@@ -112,8 +115,8 @@ namespace EcoBuilder.Nichess
         {
             foreach (Piece p in pieces.Values)
             {
-                if (p != inspected) // cannot eat itself
-                {
+                // if (p != inspected) // cannot eat itself
+                // {
                     if (inspected.IsResourceOf(p))
                     {
                         if (!inspectedConsumers.Contains(p))
@@ -130,15 +133,15 @@ namespace EcoBuilder.Nichess
                             EdgeRemovedEvent.Invoke(inspected.Idx, p.Idx);
                         }
                     }
-                }
+                // }
             }
         }
         void UpdateInspectedResources()
         {
             foreach (Piece p in pieces.Values)
             {
-                if (p != inspected) // cannot eat itself
-                {
+                // if (p != inspected) // cannot eat itself
+                // {
                     if (p.IsResourceOf(inspected))
                     {
                         if (!inspectedResources.Contains(p))
@@ -155,38 +158,70 @@ namespace EcoBuilder.Nichess
                             EdgeRemovedEvent.Invoke(p.Idx, inspected.Idx);
                         }
                     }
-                }
+                // }
             }
         }
-        void MoveInspectedPos(Square newPos)
+        void MoveInspectedPos(Square newSquare)
         {
-            if (inspected != null && inspected.Dragging)
+            if (inspected != null && inspected.Dragging && !inspected.StaticPos)
             {
-                if (newPos.transform.childCount == 0)
+                if (newSquare.transform.childCount == 0)
                 {
-                    inspected.ParentToSquare(newPos);
-                    UpdateInspectedConsumers();
-                    if (spawnPlatform.Active)
-                        spawnPlatform.Despawn();
+                    Square oldSquare = inspected.NichePos;
+                    inspected.ParentToSquare(newSquare);
+                    if (inspected.IsResourceOf(inspected)) // cannot eat itself
+                    {
+                        inspected.ParentToSquare(oldSquare);
+                    }
+                    else
+                    {
+                        UpdateInspectedConsumers();
+                        if (spawnPlatform.Active)
+                            spawnPlatform.Despawn();
+                    }
                 }
             }
         }
+        // TODO: THIS DOESN'T WORK WITH RIGHT CLICK STARTING THE LASSO
         void MoveInspectedNicheStart(Square newStart)
         {
-            if (inspected != null && !inspected.StaticPos)
+            if (inspected != null && !inspected.StaticRange)
             {
+                Square oldStart = inspected.NicheStart;
                 inspected.NicheStart = newStart;
-                UpdateInspectedResources();
+                if (inspected.IsResourceOf(inspected))
+                {
+                    inspected.NicheStart = oldStart; // cannot eat itself
+                }
+                else
+                    UpdateInspectedResources();
             }
         }
         void MoveInspectedNicheEnd(Square newEnd)
         {
-            if (inspected != null && !inspected.StaticPos)
+            if (inspected != null && !inspected.StaticRange)
             {
+                Square oldEnd = inspected.NicheEnd;
                 inspected.NicheEnd = newEnd;
-                UpdateInspectedResources();
+                if (inspected.IsResourceOf(inspected))
+                {
+                    inspected.NicheEnd = oldEnd; // cannot eat itself
+                }
+                else
+                    UpdateInspectedResources();
             }
         }
+
+        public void ConfigFromString(string config)
+        {
+            throw new NotImplementedException();
+        }
+        public string GetConfigString()
+        {
+            throw new NotImplementedException();
+        }
+
+
 
     }
 }

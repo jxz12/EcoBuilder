@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Cactus Sockets
-  m_Shader: {fileID: 4800000, guid: 9b4b9ab37d0ad2748a3e0bdbfce899eb, type: 3}
+  m_Shader: {fileID: 4800000, guid: eebd8c4a874e7d04695fd48edb7bae8d, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

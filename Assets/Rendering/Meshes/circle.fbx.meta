@@ -1,25 +1,23 @@
 fileFormatVersion: 2
-guid: 2ca10ac884a8d9a4e87f38be971365bd
+guid: bf0b8d99220cc7e45acbc5b2af528b31
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
-    100000: Icosphere
-    100002: Icosphere.001
-    100004: //RootNode
-    400000: Icosphere
-    400002: Icosphere.001
-    400004: //RootNode
+    100000: //RootNode
+    100002: Circle
+    100004: Cylinder
+    400000: //RootNode
+    400002: Circle
+    400004: Cylinder
     2100000: No Name
-    2300000: Icosphere
-    2300002: Icosphere.001
-    2300004: //RootNode
-    3300000: Icosphere
-    3300002: Icosphere.001
-    3300004: //RootNode
-    4300000: Icosphere.001
-    4300002: Icosphere
-    4300004: Icosphere3
-    2186277476908879412: ImportLogs
+    2300000: //RootNode
+    2300002: Circle
+    2300004: Cylinder
+    3300000: //RootNode
+    3300002: Circle
+    3300004: Cylinder
+    4300000: Circle
+    4300002: Cylinder
   externalObjects: {}
   materials:
     importMaterials: 0
@@ -51,7 +49,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 2
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     importVisibility: 0
@@ -64,7 +62,7 @@ ModelImporter:
     optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
-    preserveHierarchy: 0
+    preserveHierarchy: 1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
@@ -72,8 +70,8 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
-    normalSmoothAngle: 180
-    normalImportMode: 1
+    normalSmoothAngle: 60
+    normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
   importAnimation: 0

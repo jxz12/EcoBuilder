@@ -87,7 +87,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1300494415758652}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4206975932888074}
@@ -101,8 +101,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1245098223456140}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.02, z: 0}
-  m_LocalScale: {x: 1.1, y: 1.2, z: 1.1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4115591173591308}
   m_RootOrder: 0
@@ -211,14 +211,14 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1245098223456140}
-  m_Mesh: {fileID: 4300000, guid: 93f09ee7e3efc474c9702107045fa8e3, type: 3}
+  m_Mesh: {fileID: 4300002, guid: 93f09ee7e3efc474c9702107045fa8e3, type: 3}
 --- !u!33 &33687634172365912
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1300494415758652}
-  m_Mesh: {fileID: 4300000, guid: 93f09ee7e3efc474c9702107045fa8e3, type: 3}
+  m_Mesh: {fileID: 4300004, guid: 93f09ee7e3efc474c9702107045fa8e3, type: 3}
 --- !u!65 &65727638372625420
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -261,9 +261,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shape: {fileID: 23754029652139364}
-  lassoLoop: {fileID: 120289633675198092}
+  outline: {fileID: 23960690616683470}
   pieceMesh: {fileID: 33687634172365912}
   outlineMesh: {fileID: 33329095604555606}
+  lassoLoop: {fileID: 120289633675198092}
+  lassoSpoke: {fileID: 120205327496362702}
 --- !u!120 &120205327496362702
 LineRenderer:
   m_ObjectHideFlags: 1
@@ -302,8 +304,6 @@ LineRenderer:
   m_Positions:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 2
     widthMultiplier: 0.1
@@ -325,7 +325,7 @@ LineRenderer:
     colorGradient:
       serializedVersion: 2
       key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 0}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -373,7 +373,7 @@ LineRenderer:
   m_ReflectionProbeUsage: 0
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: a10e4ee6a0c4b604cbc4bbd999854e35, type: 2}
+  - {fileID: 2100000, guid: acddef5614979de49a0955df24c74e25, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

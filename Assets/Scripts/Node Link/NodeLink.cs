@@ -3,6 +3,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using SparseMatrix;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
@@ -12,6 +13,7 @@ namespace EcoBuilder.NodeLink
         [Serializable] class IntEvent : UnityEvent<int> { };
         [SerializeField] IntEvent NodeInspectedEvent;
         [SerializeField] Node nodePrefab;
+        [SerializeField] GameObject diskPrefab;
         [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
         [SerializeField] Link linkPrefab;
 
@@ -22,14 +24,7 @@ namespace EcoBuilder.NodeLink
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
 
-        private Transform nodesParent, linksParent;
-        void Awake()
-        {
-            nodesParent = new GameObject("Nodes").transform;
-            nodesParent.SetParent(transform, false);
-            linksParent = new GameObject("Links").transform;
-            linksParent.SetParent(transform, false);
-        }
+        [SerializeField] Transform graphParent, nodesParent, linksParent, disksParent;
 
         public void AddNode(int idx)
         {
@@ -64,8 +59,6 @@ namespace EcoBuilder.NodeLink
 
             foreach (var ij in toRemove)
                 RemoveLink(ij.Item1, ij.Item2);
-
-            UpdateTrophicEquations();
         }
 
         public void AddLink(int i, int j)
@@ -73,15 +66,11 @@ namespace EcoBuilder.NodeLink
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i, j] = newLink;
-
-            UpdateTrophicEquations();
         }
         public void RemoveLink(int i, int j)
         {
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
-
-            UpdateTrophicEquations();
         }
         public void ColorNode(int idx, Color c)
         {
@@ -89,11 +78,10 @@ namespace EcoBuilder.NodeLink
         }
         public void ResizeNode(int idx, float size)
         {
-            // if (size < 1 || size > 2)
-            if (size < 0 || size > 2)
+            if (size < 0 || size > 1)
                 throw new Exception("not normalized");
 
-            nodes[idx].Size = size;
+            nodes[idx].Size = .5f + size; // do some tweening here!
         }
         public void ResizeEdge(int i, int j, float size)
         {
@@ -116,17 +104,41 @@ namespace EcoBuilder.NodeLink
             
             inspected = null;
         }
+        public void FlashNode(int idx)
+        {
+            print("Warning: " + idx);
+        }
+        public void HeavyflashNode(int idx)
+        {
+            print("AHHHHHH: " + idx);
+        }
+        public void UnflashNode(int idx)
+        {
+            print("Phew: " + idx);
+        }
 
-        // check if there is one connected component, show error otherwise
-        // (this BFS can also be used to update d_ij)
-        // then check if there is at least one basal, show error otherwise
         private void Update()
         {
-            TrophicGaussSeidel();
-            SetYAxis(i=>trophicLevels[i]-1);
-            // LayoutSGD(Mathf.Sqrt(Mathf.Abs(yRotationMomentum)) * stepSize); // the more it shakes, the higher the step size
-            LayoutSGD(stepSize);
+            if (nodes.Count < 1)
+                return;
+
+            // checks whether there is a directed path to every species from basal
+            HashSet<int> basal = UpdateTrophicEquations();
+            int componentSize = ConnectedComponentBFS(basal);
+            if (componentSize==nodes.Count)
+            {
+                float maxTrophicLevel = TrophicGaussSeidel();
+                SetYAxis(i=>trophicLevels[i]-1);             
+                SetCorrectTrophicDisks(maxTrophicLevel);
+            }
+            else
+            {
+                print("asdasda"); // TODO: change this to a warning or something
+                return;
+            }
+
             Rotate();
+            LayoutSGD(stepSize);
         }
 
         void Rotate()
@@ -136,8 +148,8 @@ namespace EcoBuilder.NodeLink
                 yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
                 nodesParent.Rotate(Vector3.up, yRotationMomentum);
 
-                float xRotation = -transform.rotation.x * xRotationForce;
-                transform.Rotate(Vector3.right, xRotation);
+                float xRotation = -graphParent.localRotation.x * xRotationForce;
+                graphParent.Rotate(Vector3.right, xRotation);
             }
         }
 
@@ -163,7 +175,7 @@ namespace EcoBuilder.NodeLink
                 yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
 
                 float xSpin = ped.delta.y * rotationMultiplier;
-                transform.Rotate(Vector3.right, xSpin);
+                graphParent.Rotate(Vector3.right, xSpin);
             }
             else if (ped.button == PointerEventData.InputButton.Right)
             {
@@ -180,21 +192,29 @@ namespace EcoBuilder.NodeLink
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();
 
-        void UpdateTrophicEquations()
+        // returns a set of basal species
+        HashSet<int> UpdateTrophicEquations()
         {
             // update the system of linear equations
             foreach (Node no in nodes)
                 trophicA[no.Idx] = 0;
 
             foreach (Link li in links)
-                trophicA[li.Target.Idx] += 1f; // add one to the row for every resource it has
+                trophicA[li.Target.Idx] += 1f; // add one to the consumer's row for every resource it has
 
+            var basal = new HashSet<int>();
             foreach (Node no in nodes)
+            {
                 if (trophicA[no.Idx] != 0)
                     trophicA[no.Idx] = -1f / trophicA[no.Idx]; // invert, ensures diagonal dominance
+                else
+                    basal.Add(no.Idx);
+            }
+            
+            return basal;
         }
 
-        void TrophicGaussSeidel()
+        float TrophicGaussSeidel()
         {
             SparseVector<float> temp = new SparseVector<float>();
             foreach (Link li in links)
@@ -202,10 +222,13 @@ namespace EcoBuilder.NodeLink
                 int resource = li.Source.Idx, consumer = li.Target.Idx;
                 temp[consumer] += trophicA[consumer] * trophicLevels[resource];
             }
+            float maxTrophicLevel = 0;
             foreach (Node no in nodes)
             {
                 trophicLevels[no.Idx] = (1 - temp[no.Idx]);
+                maxTrophicLevel = Math.Max(maxTrophicLevel, trophicLevels[no.Idx]);
             }
+            return maxTrophicLevel;
         }
 
         void SetYAxis(Func<int, float> YAxisPos)
@@ -218,6 +241,26 @@ namespace EcoBuilder.NodeLink
                 no.Pos += new Vector3(0, toAdd, 0);
             }
         }
+        Stack<GameObject> disks = new Stack<GameObject>();
+        void SetCorrectTrophicDisks(float maxTrophicLevel)
+        {
+            // always assume one disk always present
+
+            int numDisks = disks.Count;
+            if (maxTrophicLevel >= numDisks+2) // add disk
+            {
+                var newDisk = Instantiate(diskPrefab, disksParent, false);
+                newDisk.transform.localPosition = new Vector3(0,numDisks+1,0);
+                disks.Push(newDisk);
+            }
+            else if (maxTrophicLevel < numDisks+1)
+            {
+                var oldDisk = disks.Pop();
+                Destroy(oldDisk);
+            }
+        }
+
+
         // SGD
         private void LayoutSGD(float eta)
         {
@@ -274,90 +317,28 @@ namespace EcoBuilder.NodeLink
                 nodes[i].Pos += centering;
             }
         }
-
-        // local majorization
-        private void LayoutMajorization()
+        private int ConnectedComponentBFS(IEnumerable<int> sources)
         {
-            foreach (int i in nodes.Indices)
+            var visited = new HashSet<int>();
+            var q = new Queue<int>();
+            foreach (int source in sources)
             {
-                float xTop = 0, zTop = 0;
-                float wBot = 0;
-                Vector3 X_i = nodes[i].transform.localPosition;
-
-                foreach (int j in nodes.Indices)
+                q.Enqueue(source);
+                visited.Add(source);
+            }
+            while (q.Count != 0)
+            {
+                int current = q.Dequeue();
+                foreach (int next in links.GetColumnIndicesInRow(current))
                 {
-                    if (i != j)
+                    if (!visited.Contains(next))
                     {
-                        Vector3 X_j = nodes[j].transform.localPosition;
-                        float d = (X_i - X_j).magnitude;
-
-                        if (links[i,j] != null || links[j,i] != null) // if connected, then do normal stress
-                        {
-                            xTop += X_j.x + (X_i.x - X_j.x) / d;
-                            zTop += X_j.z + (X_i.z - X_j.z) / d;
-                            wBot += 1;
-                        }
-                        else // otherwise try to move the vertices at least a distance of 2 away
-                        {
-                            if (d < 2)
-                            {
-                                xTop += .25f * (X_j.x + 2 * (X_i.x - X_j.x) / d);
-                                zTop += .25f * (X_j.z + 2 * (X_i.z - X_j.z) / d);
-                                wBot += .25f;
-                            }
-                        }
+                        q.Enqueue(next);
+                        visited.Add(next);
                     }
                 }
-                if (wBot != 0)
-                {
-                    float y = trophicLevels[i];
-                    float x = xTop / wBot, z = zTop / wBot;
-                    nodes[i].transform.localPosition = new Vector3(x, y, z);
-                }
             }
-
-            float xAvg = 0, zAvg = 0;
-            int n = 0;
-            foreach (Node node in nodes)
-            {
-                xAvg += node.transform.localPosition.x;
-                zAvg += node.transform.localPosition.z;
-                n += 1;
-            }
-            if (n > 0)
-            {
-                xAvg /= n;
-                zAvg /= n;
-                foreach (Node node in nodes)
-                    node.transform.localPosition -= new Vector3(xAvg, 0, zAvg);
-            }
+            return visited.Count;
         }
-
-        //public static string MatStr<T>(T[,] mat)
-        //{
-        //    var sb = new System.Text.StringBuilder();
-        //    int m = mat.GetLength(0), n = mat.GetLength(1);
-        //    for (int i=0; i<m; i++)
-        //    {
-        //        for (int j=0; j<n; j++)
-        //        {
-        //            sb.Append(mat[i, j].ToString() + " ");
-        //        }
-        //        sb.Append("\n");
-        //    }
-        //    sb.Remove(sb.Length - 1, 1);
-        //    return sb.ToString();
-        //}
-        //public static string VecStr<T>(T[] vec)
-        //{
-        //    var sb = new System.Text.StringBuilder();
-        //    int n = vec.Length;
-        //    for (int i=0; i<n; i++)
-        //    {
-        //            sb.Append(vec[i].ToString() + " ");
-        //    }
-        //    sb.Remove(sb.Length - 1, 1);
-        //    return sb.ToString();
-        //}
     }
 }

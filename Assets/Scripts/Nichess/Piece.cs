@@ -9,16 +9,16 @@ namespace EcoBuilder.Nichess
     [RequireComponent(typeof(Animator))]
     public class Piece : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerClickHandler
     {
-        [SerializeField] MeshRenderer shape;
-        [SerializeField] LineRenderer lassoLoop;
-        [SerializeField] MeshFilter pieceMesh;
-        [SerializeField] MeshFilter outlineMesh;
-        LineRenderer lassoSpoke;
+        [SerializeField] MeshRenderer shape, outline;
+        [SerializeField] MeshFilter pieceMesh, outlineMesh;
+        [SerializeField] LineRenderer lassoLoop, lassoSpoke;
         Animator anim;
 
         public Color Col {
             get { return shape.material.color; }
-            set { shape.material.color = value; }
+            set { shape.material.color = outline.material.color
+                                       = lassoLoop.material.color
+                                       = lassoSpoke.material.color = value; }
         }
         public int Idx { get; private set; }
         public float Lightness { private get; set; }
@@ -28,7 +28,6 @@ namespace EcoBuilder.Nichess
 
         private void Awake()
         {
-            lassoSpoke = GetComponent<LineRenderer>();
             anim = GetComponent<Animator>();
         }
 
@@ -77,9 +76,8 @@ namespace EcoBuilder.Nichess
             transform.localRotation = Quaternion.identity;
 
             // Col = ColorHelper.SetLightness(newParent.Col, Lightness);
-            Col = ColorHelper.SetYGamma(newParent.Col, Lightness);
             // Col = ColorHelper.SetY(newParent.Col, Lightness);
-            lassoSpoke.startColor = lassoSpoke.endColor = lassoLoop.startColor = lassoLoop.endColor = Col;
+            Col = ColorHelper.SetYGamma(newParent.Col, Lightness);
             ColoredEvent.Invoke();
 
             DrawLasso();

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace EcoBuilder.Nichess
 {
@@ -13,7 +13,7 @@ namespace EcoBuilder.Nichess
 
         Square[,] squares;
         public event Action<Square> SquareDraggedEvent;
-        public event Action<Square> SquareDroppedEvent;
+        // public event Action<Square> SquareDroppedEvent;
         public event Action<Square> SquarePinched1Event;
         public event Action<Square> SquarePinched2Event;
 
@@ -46,85 +46,96 @@ namespace EcoBuilder.Nichess
                     c = ColorHelper.ApplyGamma(c);
                     s.Init(i, j, c);
 
-                    s.HoveredEvent += () => hovered = s;
-                    s.UnhoveredEvent += () => { if (s == hovered) hovered = null; };
+                    // s.HoveredEvent += x => hovered = s;
+                    // s.UnhoveredEvent += x => { if (s == hovered) hovered = null; };
+                    s.HoveredEvent += x => Hover(s, x);
+                    s.UnhoveredEvent += x => Unhover(s, x);
 
                     squares[i, j] = s;
                 }
             }
         }
 
-
-
-        Square hovered=null, dragged=null;
+        HashSet<int> hoveredPointerIds = new HashSet<int>();
+        Square lastHovered;
+        bool pinching = false;
+        void Hover(Square hovered, PointerEventData ped)
+        {
+            hoveredPointerIds.Add(ped.pointerId);
+            // print("hover " + ped.pointerId + " " + hoveredPointerIds.Count);
+            if (hoveredPointerIds.Count == 1) // if one touch or click
+            {
+                // print(ped.pointerId);
+                if (draggingLeftClick || ped.pointerId == 0)
+                    SquareDraggedEvent.Invoke(hovered);
+                else if (draggingRightClick)
+                    SquarePinched2Event.Invoke(hovered);
+            }
+            else if (hoveredPointerIds.Count >= 2) // if pinch
+            {
+                if (pinching)
+                {
+                    if (ped.pointerId == 0)
+                        SquarePinched1Event.Invoke(hovered);
+                    else if (ped.pointerId == 1)
+                        SquarePinched2Event.Invoke(hovered);
+                }
+                else
+                {
+                    SquarePinched1Event.Invoke(lastHovered);
+                    SquarePinched2Event.Invoke(hovered);
+                    pinching = true;
+                }
+            }
+            lastHovered = hovered;
+        }
+        void Unhover(Square sq, PointerEventData ped)
+        {
+            hoveredPointerIds.Remove(ped.pointerId);
+            if (hoveredPointerIds.Count < 2)
+            {
+                pinching = false;
+                // print("unhover " + ped.pointerId + " " + hoveredPointerIds.Count);
+            }
+        }
+        // Square hovered=null, dragged=null;
 
         bool draggingLeftClick=false, draggingRightClick=false;
         private void Update()
         {
             // if left-click is pressed
             if (Input.GetMouseButtonDown(0))
-            {
-                dragged = hovered;
                 draggingLeftClick = true;
-            }
             else if (Input.GetMouseButtonUp(0))
-            {
                 draggingLeftClick = false;
-            }
 
             // if it's the frame right-click is pressed
             if (Input.GetMouseButtonDown(1))
             {
-                if (hovered != null)
+                if (lastHovered != null)
                 {
-                    SquarePinched1Event.Invoke(hovered);
-                    SquarePinched2Event.Invoke(hovered);
-                    dragged = hovered;
                     draggingRightClick = true;
+                    SquarePinched1Event.Invoke(lastHovered);
+                    SquarePinched2Event.Invoke(lastHovered);
                 }
             }
             else if (Input.GetMouseButtonUp(1))
-            {
                 draggingRightClick = false;
-            }
 
 
-            if (hovered != null && hovered != dragged) // if drag has moved
-            {
-                if (draggingLeftClick == true)
-                {
-                    SquareDraggedEvent.Invoke(hovered);
-                    dragged = hovered;
-                }
-                if (draggingRightClick == true)
-                {
-                    SquarePinched2Event.Invoke(hovered);
-                    dragged = hovered;
-                }
-            }
+            // if (hovered != null && hovered != dragged) // if drag has moved
+            // {
+            //     if (draggingLeftClick == true)
+            //     {
+            //         SquareDraggedEvent.Invoke(hovered);
+            //         dragged = hovered;
+            //     }
+            //     if (draggingRightClick == true)
+            //     {
+            //         SquarePinched2Event.Invoke(hovered);
+            //         dragged = hovered;
+            //     }
+            // }
         }
-
-
-        ////public UnityEvent spin;
-        //bool spinning = false;
-        //public void Spin90Clockwise() //{
-        //    if (spinning == false)
-        //    {
-        //        spinning = true;
-        //        StartCoroutine(Spin(60));
-        //    }
-        //}
-        //IEnumerator Spin(int numFrames)
-        //{
-        //    Quaternion initial = transform.localRotation;
-        //    Quaternion target = initial * Quaternion.Euler(Vector3.up * 90);
-        //    for (int i = 0; i < numFrames; i++)
-        //    {
-        //        transform.localRotation = Quaternion.Slerp(initial, target, (float)i / numFrames);
-        //        yield return null;
-        //    }
-        //    transform.localRotation = target;
-        //    spinning = false;
-        //}
     }        
 }

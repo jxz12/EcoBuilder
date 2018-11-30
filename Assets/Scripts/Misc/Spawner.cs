@@ -27,12 +27,12 @@ namespace EcoBuilder
         [SerializeField] Slider greedinessSlider;
 
         bool nextIsProducer;
-        int producersCounter;
         int idxCounter;
+        HashSet<int> producerSet = new HashSet<int>();
 
         void Start()
         {
-            producersCounter = GameManager.Instance.MaxProducers;
+            // producersCounter = GameManager.Instance.MaxProducers;
             producerButton.onClick.AddListener(() => nextIsProducer=true);
             consumerButton.onClick.AddListener(() => nextIsProducer=false);
             idxCounter = 0;
@@ -41,7 +41,12 @@ namespace EcoBuilder
         {
             SpawnedEvent.Invoke(idxCounter);
             if (nextIsProducer)
+            {
                 ProducerSetEvent.Invoke(idxCounter);
+                producerSet.Add(idxCounter);
+                if (producerSet.Count >= GameManager.Instance.MaxProducers)
+                    producerButton.interactable = false;
+            }
             else
                 ConsumerSetEvent.Invoke(idxCounter);
 
@@ -56,6 +61,15 @@ namespace EcoBuilder
             //     if (producersCounter == 0)
             //         producerButton.interactable = false;
             // }
+        }
+        public void Despawn(int idx)
+        {
+            if (producerSet.Contains(idx))
+            {
+                producerSet.Remove(idx);
+                producerButton.interactable = true;
+            }
+
         }
         
 

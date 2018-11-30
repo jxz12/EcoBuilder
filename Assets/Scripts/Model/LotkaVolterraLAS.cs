@@ -126,14 +126,14 @@ namespace EcoBuilder.Model
                 }
             }
 
-            UnityEngine.Debug.Log(MatStr(A));
+            // UnityEngine.Debug.Log(MatStr(A));
             // UnityEngine.Debug.Log(VecStr(b));
 
             // find stable equilibrium point of system
             x = A.Solve(b);
-            UnityEngine.Debug.Log(VecStr(x));
-
-            ScaleAbundance();
+            // UnityEngine.Debug.Log(VecStr(x));
+            for (int i=0; i<speciesList.Count; i++)
+                equilibriumAbundances[speciesList[i]] = x[i];
         }
 
         // Depends on A and b being correct
@@ -145,18 +145,23 @@ namespace EcoBuilder.Model
             for (int i=0; i<n; i++)
             {
                 // calculate every element of the Jacobian, evaluated at equilibrium point
-                for (int j=0; j<n; j++)
-                {
-                    if (i==j)
-                    {
-                        community[i,i] += -b[i] + (2*A[i,i] * x[i]);
-                    }
-                    else
-                    {
-                        community[i,j] = A[i,j] * x[i];
-                        community[i,i] += A[i,j] * x[j];
-                    }
-                }
+                // for (int j=0; j<n; j++)
+                // {
+                //     if (i==j)
+                //     {
+                //         community[i,i] += -b[i] + (2*A[i,i] * x[i]);
+                //     }
+                //     else
+                //     {
+                //         community[i,j] = A[i,j] * x[i];
+                //         community[i,i] += A[i,j] * x[j];
+                //     }
+                // }
+                community[i,i] = A[i,i] * x[i];
+                for (int j=0; j<i; j++)
+                    community[i,j] = A[i,j] * x[i];
+                for (int j=i+1; j<n; j++)
+                    community[i,j] = A[i,j] * x[i];
             }
         }
 
@@ -164,69 +169,13 @@ namespace EcoBuilder.Model
         public double LocalAsymptoticStability()
         {
             BuildCommunityMatrix();
-            // UnityEngine.Debug.Log(MatStr(A));
-            // UnityEngine.Debug.Log(MatStr(community));
 
             // calculate community matrix with jacobian
             var eigenValues = community.Evd().EigenValues;
 
             // get largest real part of any eigenvalue
-            double Lambda = -double.MaxValue;
-            foreach (var e in eigenValues)
-                Lambda = Math.Max(Lambda, e.Real);
-
-            return -Lambda;
-        }
-
-        private void ScaleAbundance()
-        {
-            int n = x.Count;
-            double minPosAbundance, maxNegAbundance;
-
-            MaxAbundance = maxNegAbundance = -double.MaxValue;
-            MinAbundance = minPosAbundance = double.MaxValue;
-            for (int i=0; i<n; i++)
-            {
-                double abundance = x[i];
-                MaxAbundance = Math.Max(abundance, MaxAbundance);
-                MinAbundance = Math.Min(abundance, MinAbundance);
-                if (abundance > 0)
-                    minPosAbundance = Math.Min(abundance, minPosAbundance);
-                else if (abundance < 0)
-                    maxNegAbundance = Math.Max(abundance, maxNegAbundance);
-                // else
-                    // throw new Exception("equilibrium population of zero");
-            }
-
-            double posLogMaxNorm = 1, negLogMinNorm = 1;
-            if (MaxAbundance > 0)
-            {
-                if (minPosAbundance == MaxAbundance)
-                    minPosAbundance = MaxAbundance / Math.Exp(0.5); // result=1.5
-                else 
-                    posLogMaxNorm = Math.Log(MaxAbundance / minPosAbundance);
-            }
-            if (MinAbundance < 0)
-            {
-                if (maxNegAbundance == MinAbundance)
-                    maxNegAbundance = MinAbundance / Math.Exp(0.5);
-                else
-                    negLogMinNorm = Math.Log(MinAbundance / maxNegAbundance);
-            }
-
-            for (int i=0; i<n; i++)
-            {
-                T species = speciesList[i];
-                double abundance = x[i];
-                if (abundance > 0)
-                {
-                    equilibriumAbundances[species] = 1 + Math.Log(abundance/minPosAbundance)/posLogMaxNorm;
-                }
-                else if (abundance < 0)
-                    equilibriumAbundances[species] = -1 - Math.Log(abundance/maxNegAbundance)/negLogMinNorm;
-                else
-                    equilibriumAbundances[species] = 0;
-            }
+            double Lambda = eigenValues.Real().Maximum();
+            return Lambda;
         }
         public double GetAbundance(T species)
         {
@@ -237,8 +186,6 @@ namespace EcoBuilder.Model
             int i = speciesDict[res], j = speciesDict[con];
             return flux[i,j] * x[i] * x[j];
         }
-        public double MaxAbundance { get; private set; }
-        public double MinAbundance { get; private set; }
 
 
         public static string MatStr(Matrix<double> mat)

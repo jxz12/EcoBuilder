@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 namespace EcoBuilder.Nichess
@@ -8,7 +7,7 @@ namespace EcoBuilder.Nichess
     [RequireComponent(typeof(MeshRenderer))]
     public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
-        [SerializeField] float defaultAlpha;
+        [SerializeField] float defaultAlpha=.2f, hoverAlpha=1;
         MeshRenderer mr;
 
         public Color Col {
@@ -38,22 +37,22 @@ namespace EcoBuilder.Nichess
             Col = c;
         }
 
-        public event Action HoveredEvent;
-        public event Action UnhoveredEvent;
+        public event Action<PointerEventData> HoveredEvent;
+        public event Action<PointerEventData> UnhoveredEvent;
         public void OnPointerEnter(PointerEventData ped)
         {
             // print(name);
             var c = Col;
-            c.a = 1;
+            c.a = hoverAlpha;
             Col = c;
-            HoveredEvent.Invoke(); // otherwise it's a normal hover
+            HoveredEvent.Invoke(ped); // otherwise it's a normal hover
         }
         public void OnPointerExit(PointerEventData ped)
         {
             var c = Col;
             c.a = defaultAlpha;
             Col = c;
-            UnhoveredEvent.Invoke();
+            UnhoveredEvent.Invoke(ped);
         }
     }
 }
