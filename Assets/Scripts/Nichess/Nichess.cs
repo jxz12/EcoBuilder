@@ -12,7 +12,7 @@ namespace EcoBuilder.Nichess
         [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
         [SerializeField] IntIntEvent EdgeAddedEvent;
         [SerializeField] IntIntEvent EdgeRemovedEvent;
-        [SerializeField] IntEvent PieceInspectedEvent;
+        [SerializeField] IntEvent PieceClickedEvent;
         [SerializeField] IntEvent PieceRemovedEvent;
         [SerializeField] IntColorEvent PieceColoredEvent;
 
@@ -28,8 +28,8 @@ namespace EcoBuilder.Nichess
             Piece newPiece = Instantiate(piecePrefab);
             newPiece.Init(idx, 0);
 
-            newPiece.ClickedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
-            newPiece.DragStartedEvent += () => PieceInspectedEvent.Invoke(newPiece.Idx);
+            newPiece.ClickedEvent += () => PieceClickedEvent.Invoke(newPiece.Idx);
+            // newPiece.DragStartedEvent += () => PieceClickedEvent.Invoke(newPiece.Idx);
             newPiece.ColoredEvent += () => PieceColoredEvent.Invoke(newPiece.Idx, newPiece.Col);
             pieces[newPiece.Idx] = newPiece;
             spawnPlatform.Spawn(newPiece);
@@ -62,7 +62,7 @@ namespace EcoBuilder.Nichess
         
         private void Start()
         {
-            PieceInspectedEvent.AddListener(InspectPiece);
+            // PieceInspectedEvent.AddListener(InspectPiece);
             board.SquareDraggedEvent += MoveInspectedPos;
             board.SquarePinched1Event += MoveInspectedNicheStart;
             board.SquarePinched2Event += MoveInspectedNicheEnd;

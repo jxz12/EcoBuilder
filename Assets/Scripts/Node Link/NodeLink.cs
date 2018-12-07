@@ -8,10 +8,13 @@ using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
-    public class NodeLink : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class NodeLink : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [Serializable] class IntEvent : UnityEvent<int> { };
-        [SerializeField] IntEvent NodeInspectedEvent;
+
+        [SerializeField] UnityEvent EmptyClickedEvent;
+        [SerializeField] IntEvent NodeClickedEvent;
+
         [SerializeField] Node nodePrefab;
         [SerializeField] GameObject diskPrefab;
         [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
@@ -20,6 +23,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float stepSize=.2f, centeringForce=.01f, trophicForce=.5f;
         [SerializeField] float rotationMultiplier=.9f, yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
         [SerializeField] float zoomMultiplier=.005f;
+        [SerializeField] float clickRadius=100; // TODO: might want to change this into viewport coordinates
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
@@ -185,6 +189,37 @@ namespace EcoBuilder.NodeLink
                 if (zoom < -.5f)
                     zoom = -.5f;
                 nodesParent.localScale *= 1 + zoom;
+            }
+        }
+        public void OnPointerClick(PointerEventData ped)
+        {
+            if (!ped.dragging)
+            {
+                Node closest = null;
+                float closestDist = float.MaxValue;
+                foreach (Node node in nodes)
+                {
+                    Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
+                    // if the click is within the clickable radius 
+                    if ((ped.position-screenPos).sqrMagnitude < clickRadius)
+                    {
+                        // choose the node closer to the screen
+                        float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
+                        if (dist < closestDist)
+                        {
+                            closest = node;
+                            closestDist = dist;
+                        }
+                    }
+                }
+                if (closest != null)
+                {
+                    NodeClickedEvent.Invoke(closest.Idx);
+                }
+                else
+                {
+                    EmptyClickedEvent.Invoke();
+                }
             }
         }
 

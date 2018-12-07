@@ -45,7 +45,8 @@ namespace EcoBuilder.Nichess
 
         public void Inspect()
         {
-            // TODO: sort this out
+            if (!Dragging)
+                anim.SetTrigger("Inspect");
         }
         public void Uninspect()
         {
@@ -64,7 +65,7 @@ namespace EcoBuilder.Nichess
         }
 
         public event Action ClickedEvent;
-        public event Action DragStartedEvent;
+        // public event Action DragStartedEvent;
         public event Action ColoredEvent;
         public void ParentToSquare(Square newParent)
         {
@@ -113,9 +114,9 @@ namespace EcoBuilder.Nichess
         {
             if (ped.button == PointerEventData.InputButton.Left)
             {
-                anim.SetTrigger("Drag"); // TODO: this is a bit of a mess atm, should be controlled from Nichess
                 Dragging = true;
-                DragStartedEvent.Invoke();
+                ClickedEvent.Invoke();
+                anim.SetTrigger("Drag");
             }
         }
         public void OnEndDrag(PointerEventData ped)
@@ -131,7 +132,7 @@ namespace EcoBuilder.Nichess
         {
             if (ped.button == PointerEventData.InputButton.Left)
             {
-                anim.SetTrigger("Inspect");
+                // anim.SetTrigger("Inspect");
                 if (ped.clickCount == 1 && !ped.dragging)
                     ClickedEvent.Invoke();
             }
