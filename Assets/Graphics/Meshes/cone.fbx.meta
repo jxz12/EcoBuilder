@@ -1,45 +1,21 @@
 fileFormatVersion: 2
-guid: 62c49d8ef31918c4aab3d51d837251ee
+guid: 2a4c9a08ad892f6458d0ad945cc4046a
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
     100000: //RootNode
-    100002: Cube
-    100004: Plane
+    100002: Cone
     400000: //RootNode
-    400002: Cube
-    400004: Plane
-    2100000: Snow
-    2100002: Mountain
-    2100004: No Name
-    2100006: Play
+    400002: Cone
+    2100000: No Name
     2300000: //RootNode
-    2300002: Cube
-    2300004: Plane
+    2300002: Cone
     3300000: //RootNode
-    3300002: Cube
-    3300004: Plane
-    4300000: Cube
-    4300002: Plane
-    2186277476908879412: ImportLogs
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Mountain
-    second: {fileID: 2100000, guid: b04c25904e92690459aebeca5d9f5cab, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Play
-    second: {fileID: 2100000, guid: c8b417391128e594c945c241b4e65126, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Snow
-    second: {fileID: 2100000, guid: 2f029104a25cb614889f652998791ba3, type: 2}
+    3300002: Cone
+    4300000: Cone
+  externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -89,7 +65,7 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
   tangentSpace:
-    normalSmoothAngle: 133
+    normalSmoothAngle: 60
     normalImportMode: 1
     tangentImportMode: 3
     normalCalculationMode: 4

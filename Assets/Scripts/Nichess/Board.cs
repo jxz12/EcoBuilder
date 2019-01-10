@@ -9,21 +9,22 @@ namespace EcoBuilder.Nichess
     {
         [SerializeField] Square squarePrefab;
         [SerializeField] float defaultYColor=.5f;
+        [SerializeField] float YUVRange=.8f;
         [SerializeField] float squareBorder=.05f;
 
         Square[,] squares;
-        public event Action<Square> SquareDraggedEvent;
-        // public event Action<Square> SquareDroppedEvent;
-        public event Action<Square> SquarePinched1Event;
-        public event Action<Square> SquarePinched2Event;
+        public event Action<Square> SquareSelectedEvent;
+        public event Action<Piece> PieceSelectedEvent;
+        public event Action<Piece> PieceDeletedEvent;
+        public event Action<Piece> PieceNichePosChangedEvent;
+        public event Action<Piece> PieceNicheRangeChangedEvent;
+        // move these events into piece, along with animation
 
         private void Awake()
         {
             int size = GameManager.Instance.BoardSize;
-            // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSVSquare(x,y,1f);
             // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.HSLSquare(x,y,.5f);
-            Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.YUVtoRGBtruncated(defaultYColor,.5f*x,.5f*y);
-            // Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.YUVtoRGBtruncated(defaultYColor,x,y);
+            Func<float,float,Color> ColorMap = (x,y)=>ColorHelper.YUVtoRGBtruncated(defaultYColor,YUVRange*x,YUVRange*y);
 
             Vector3 bottomLeft = new Vector3(-.5f, 0, -.5f);
             float gap = 1f / size;
@@ -46,96 +47,118 @@ namespace EcoBuilder.Nichess
                     c = ColorHelper.ApplyGamma(c);
                     s.Init(i, j, c);
 
-                    // s.HoveredEvent += x => hovered = s;
-                    // s.UnhoveredEvent += x => { if (s == hovered) hovered = null; };
-                    s.HoveredEvent += x => Hover(s, x);
-                    s.UnhoveredEvent += x => Unhover(s, x);
+                    s.ClickedEvent += ()=> ClickSquare(s);
+                    s.DragStartedEvent += ()=> DragStartFromSquare(s);
+                    s.DragEndedEvent += ()=> DragEndFromSquare(s);
+                    s.DraggedIntoEvent += ()=> DragIntoSquare(s);
+                    s.DroppedOnEvent += ()=> DropOnSquare(s);
+                    // s.HoveredEvent += ()=> HoveredSquare = s;
+                    // s.UnhoveredEvent += ()=> { if (HoveredSquare==s) HoveredSquare=null; };
 
                     squares[i, j] = s;
                 }
             }
         }
-
-        HashSet<int> hoveredPointerIds = new HashSet<int>();
-        Square lastHovered;
-        bool pinching = false;
-        void Hover(Square hovered, PointerEventData ped)
-        {
-            hoveredPointerIds.Add(ped.pointerId);
-            // print("hover " + ped.pointerId + " " + hoveredPointerIds.Count);
-            if (hoveredPointerIds.Count == 1) // if one touch or click
-            {
-                // print(ped.pointerId);
-                if (draggingLeftClick || ped.pointerId == 0)
-                    SquareDraggedEvent.Invoke(hovered);
-                else if (draggingRightClick)
-                    SquarePinched2Event.Invoke(hovered);
+        private Square selectedSquare = null;
+        private Square SelectedSquare {
+            get {
+                return selectedSquare;
             }
-            else if (hoveredPointerIds.Count >= 2) // if pinch
-            {
-                if (pinching)
-                {
-                    if (ped.pointerId == 0)
-                        SquarePinched1Event.Invoke(hovered);
-                    else if (ped.pointerId == 1)
-                        SquarePinched2Event.Invoke(hovered);
-                }
-                else
-                {
-                    SquarePinched1Event.Invoke(lastHovered);
-                    SquarePinched2Event.Invoke(hovered);
-                    pinching = true;
-                }
-            }
-            lastHovered = hovered;
-        }
-        void Unhover(Square sq, PointerEventData ped)
-        {
-            hoveredPointerIds.Remove(ped.pointerId);
-            if (hoveredPointerIds.Count < 2)
-            {
-                pinching = false;
-                // print("unhover " + ped.pointerId + " " + hoveredPointerIds.Count);
+            set {
+                if (selectedSquare != null)
+                    selectedSquare.Deselect();
+                selectedSquare = value;
+                if (value != null)
+                    selectedSquare.Select();
             }
         }
-        // Square hovered=null, dragged=null;
 
-        bool draggingLeftClick=false, draggingRightClick=false;
-        private void Update()
+        public void PlaceNewPiece(Piece p)
         {
-            // if left-click is pressed
-            if (Input.GetMouseButtonDown(0))
-                draggingLeftClick = true;
-            else if (Input.GetMouseButtonUp(0))
-                draggingLeftClick = false;
-
-            // if it's the frame right-click is pressed
-            if (Input.GetMouseButtonDown(1))
+            if (selectedSquare == null)
+                throw new Exception("square not selected first!");
+            else
             {
-                if (lastHovered != null)
+                p.NichePos = selectedSquare;
+                selectedSquare.Occupant = p;
+            }
+        }
+        public void Deselect()
+        {
+            SelectedSquare = null;
+        }
+        private void ClickSquare(Square s)
+        {
+            if (s.Occupant != null)
+            {
+                s.Occupant.Select();
+                PieceSelectedEvent(s.Occupant); // move this into piece
+            }
+            else
+            {
+                SquareSelectedEvent(s);
+            }
+            selectedSquare = s;
+        }
+
+        private Square draggedSquare = null;
+        private void DragStartFromSquare(Square s)
+        {
+            if (selectedSquare == null || selectedSquare.Occupant == null)
+            {
+                // empty drag, do nothing until drop
+            }
+            else
+            {
+                s.Occupant.Select();
+                PieceSelectedEvent(s.Occupant); // move this into piece
+                selectedSquare = s;
+            }
+            draggedSquare = s;
+        }
+        private void DragIntoSquare(Square s)
+        {
+            // change niche, but don't actually drop the piece
+            if (draggedSquare != null && draggedSquare.Occupant != null)
+            {
+                s.Occupant = draggedSquare.Occupant;
+                s.Occupant.NichePos = s;
+                draggedSquare.Occupant = null;
+                PieceNichePosChangedEvent(s.Occupant);
+
+                draggedSquare = selectedSquare = s; // this is a little confusing
+            }
+        }
+        private void DropOnSquare(Square s)
+        {
+            print("drop");
+            // treat an empty drag as a click on the dropped square
+            if (draggedSquare == null || selectedSquare == null
+                || selectedSquare.Occupant == null)
+            {
+                ClickSquare(s);
+            }
+            else // otherwise a piece needs to be affected
+            {
+                if (draggedSquare == selectedSquare)
                 {
-                    draggingRightClick = true;
-                    SquarePinched1Event.Invoke(lastHovered);
-                    SquarePinched2Event.Invoke(lastHovered);
+                    draggedSquare.Occupant.Deselect();
                 }
             }
-            else if (Input.GetMouseButtonUp(1))
-                draggingRightClick = false;
-
-
-            // if (hovered != null && hovered != dragged) // if drag has moved
-            // {
-            //     if (draggingLeftClick == true)
-            //     {
-            //         SquareDraggedEvent.Invoke(hovered);
-            //         dragged = hovered;
-            //     }
-            //     if (draggingRightClick == true)
-            //     {
-            //         SquarePinched2Event.Invoke(hovered);
-            //         dragged = hovered;
-            //     }
-            // }
+            draggedSquare = null;
+        }
+        // always happens after drop
+        private void DragEndFromSquare(Square s)
+        {
+            if (draggedSquare != null) // if not dropped on square
+            {
+                if (selectedSquare != null && selectedSquare.Occupant != null)
+                {
+                    // print("DELETE PIECE");
+                    PieceDeletedEvent(selectedSquare.Occupant);
+                }
+                draggedSquare = null;
+            }
         }
     }        
 }

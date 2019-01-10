@@ -230,7 +230,7 @@ namespace EcoBuilder.Model
 
         private void Start()
         {
-            StartCoroutine(Pulse(60f / heartRate));
+            // StartCoroutine(Pulse(60f / heartRate));
         }
 
         IEnumerator Pulse(float delay)

@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-namespace EcoBuilder
+namespace EcoBuilder.Nichess
 {
-    public class Spawner : MonoBehaviour
+    public class Inspector : MonoBehaviour
     {
         [Serializable] class IntEvent : UnityEvent<int> { }
         [Serializable] class IntBoolEvent : UnityEvent<int, bool> { }
@@ -14,47 +14,52 @@ namespace EcoBuilder
         [Serializable] class IntStringEvent : UnityEvent<int, string> { }
 
         [SerializeField] IntEvent SpawnedEvent;
-        [SerializeField] IntEvent ProducerSetEvent;
-        [SerializeField] IntEvent ConsumerSetEvent;
-        [SerializeField] IntFloatEvent BodyMassSetEvent;
-        [SerializeField] IntFloatEvent GreedinessSetEvent;
-        [SerializeField] IntStringEvent NamedEvent;
+        // [SerializeField] IntEvent ProducerSetEvent;
+        // [SerializeField] IntEvent ConsumerSetEvent;
+        // [SerializeField] IntFloatEvent BodyMassSetEvent;
+        // [SerializeField] IntFloatEvent GreedinessSetEvent;
+        // [SerializeField] IntStringEvent NamedEvent;
 
         [SerializeField] Text nameText;
-        [SerializeField] Button producerButton;
-        [SerializeField] Button consumerButton;
-        [SerializeField] Slider bodyMassSlider;
-        [SerializeField] Slider greedinessSlider;
+        // [SerializeField] Button producerButton;
+        // [SerializeField] Button consumerButton;
+        // [SerializeField] Slider bodyMassSlider;
+        // [SerializeField] Slider greedinessSlider;
 
-        bool nextIsProducer;
+        // bool nextIsProducer;
         int idxCounter;
-        HashSet<int> producerSet = new HashSet<int>();
+        // HashSet<int> producerSet = new HashSet<int>();
 
         void Start()
         {
             // producersCounter = GameManager.Instance.MaxProducers;
-            producerButton.onClick.AddListener(() => nextIsProducer=true);
-            consumerButton.onClick.AddListener(() => nextIsProducer=false);
+            // producerButton.onClick.AddListener(() => nextIsProducer=true);
+            // consumerButton.onClick.AddListener(() => nextIsProducer=false);
             idxCounter = 0;
+            nameText.text = GenerateConsumerName();
         }
         public void Spawn()
         {
             SpawnedEvent.Invoke(idxCounter);
-            if (nextIsProducer)
-            {
-                ProducerSetEvent.Invoke(idxCounter);
-                producerSet.Add(idxCounter);
-                if (producerSet.Count >= GameManager.Instance.MaxProducers)
-                    producerButton.interactable = false;
-            }
-            else
-                ConsumerSetEvent.Invoke(idxCounter);
-
-            BodyMassSetEvent.Invoke(idxCounter, bodyMassSlider.normalizedValue);
-            GreedinessSetEvent.Invoke(idxCounter, greedinessSlider.normalizedValue);
-            NamedEvent.Invoke(idxCounter, nameText.text);
-
+            names[idxCounter] = nameText.text;
             idxCounter += 1;
+            nameText.text = GenerateConsumerName();
+            nameText.color = Color.grey;
+            // if (nextIsProducer)
+            // {
+            //     ProducerSetEvent.Invoke(idxCounter);
+            //     producerSet.Add(idxCounter);
+            //     if (producerSet.Count >= GameManager.Instance.MaxProducers)
+            //         producerButton.interactable = false;
+            // }
+            // else
+            //     ConsumerSetEvent.Invoke(idxCounter);
+
+            // BodyMassSetEvent.Invoke(idxCounter, bodyMassSlider.normalizedValue);
+            // GreedinessSetEvent.Invoke(idxCounter, greedinessSlider.normalizedValue);
+            // NamedEvent.Invoke(idxCounter, nameText.text);
+
+            // idxCounter += 1;
             // if (nextIsProducer)
             // {
             //     producersCounter -= 1;
@@ -62,15 +67,30 @@ namespace EcoBuilder
             //         producerButton.interactable = false;
             // }
         }
-        public void Despawn(int idx)
+        // public void Extinguish(int idx)
+        // {
+        //     names.Remove(idx);
+        // }
+        Dictionary<int, string> names = new Dictionary<int, string>();
+        public void InspectSpecies(int idx)
         {
-            if (producerSet.Contains(idx))
-            {
-                producerSet.Remove(idx);
-                producerButton.interactable = true;
-            }
-
+            nameText.text = names[idx];
+            nameText.color = Color.black;
         }
+        public void Uninspect()
+        {
+            nameText.text = GenerateConsumerName();
+            nameText.color = Color.grey;
+        }
+        // public void Despawn(int idx)
+        // {
+        //     if (producerSet.Contains(idx))
+        //     {
+        //         producerSet.Remove(idx);
+        //         producerButton.interactable = true;
+        //     }
+
+        // }
         
 
         public static string[] adjectives = new string[]
@@ -179,10 +199,10 @@ namespace EcoBuilder
         }
         public void SetNewName()
         {
-            if (nextIsProducer)
-                nameText.text = GenerateProducerName();
-            else
-                nameText.text = GenerateConsumerName();
+            // if (nextIsProducer)
+            //     nameText.text = GenerateProducerName();
+            // else
+            //     nameText.text = GenerateConsumerName();
         }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-public class Backdrop : MonoBehaviour, IPointerClickHandler
+public class Backdrop : MonoBehaviour, IPointerClickHandler, IDragHandler
 {
     [SerializeField] UnityEvent ClickedEvent;
 
@@ -12,6 +12,10 @@ public class Backdrop : MonoBehaviour, IPointerClickHandler
     {
         ClickedEvent.Invoke();
     }
+	public void OnDrag(PointerEventData ped)
+	{
+
+	}
 
 	// Use this for initialization
 	void Start () {

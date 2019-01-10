@@ -157,7 +157,6 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        // TODO: add zooming with pinch
         float yRotationMomentum = 0;
         bool dragging = false;
         public void OnBeginDrag(PointerEventData ped)

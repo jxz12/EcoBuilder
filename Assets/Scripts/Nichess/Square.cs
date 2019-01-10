@@ -5,9 +5,11 @@ using UnityEngine.EventSystems;
 namespace EcoBuilder.Nichess
 {
     [RequireComponent(typeof(MeshRenderer))]
-    public class Square : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public class Square : MonoBehaviour,
+        IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler,
+        IDragHandler, IBeginDragHandler, IEndDragHandler, IDropHandler
     {
-        [SerializeField] float defaultAlpha=.2f, hoverAlpha=1;
+        [SerializeField] float defaultAlpha=.2f, hoverAlpha=1f;
         MeshRenderer mr;
 
         public Color Col {
@@ -16,6 +18,7 @@ namespace EcoBuilder.Nichess
         }
         public int X { get; private set; }
         public int Y { get; private set; }
+        public Piece Occupant { get; set; } = null;
 
         void Awake()
         {
@@ -36,23 +39,60 @@ namespace EcoBuilder.Nichess
             c.a = defaultAlpha;
             Col = c;
         }
+        public void Select()
+        {
+            var pos = transform.localPosition;
+            pos.x += .1f;
+            transform.localPosition = pos;
+        }
+        public void Deselect()
+        {
+            var pos = transform.localPosition;
+            pos.x -= .1f;
+            transform.localPosition = pos;
+        }
 
-        public event Action<PointerEventData> HoveredEvent;
-        public event Action<PointerEventData> UnhoveredEvent;
+        /////////////////////////////////////////////////////////
+
+        public event Action ClickedEvent;
+        public event Action DragStartedEvent;
+        public event Action DraggedIntoEvent;
+        public event Action DragEndedEvent;
+        public event Action DroppedOnEvent;
         public void OnPointerEnter(PointerEventData ped)
         {
-            // print(name);
             var c = Col;
             c.a = hoverAlpha;
             Col = c;
-            HoveredEvent.Invoke(ped); // otherwise it's a normal hover
+
+            if (ped.dragging)
+                DraggedIntoEvent();
         }
         public void OnPointerExit(PointerEventData ped)
         {
             var c = Col;
             c.a = defaultAlpha;
             Col = c;
-            UnhoveredEvent.Invoke(ped);
+            // UnhoveredEvent();
+        }
+        public void OnPointerClick(PointerEventData ped)
+        {
+            ClickedEvent();
+        }
+        public void OnBeginDrag(PointerEventData ped)
+        {
+            DragStartedEvent();
+        }
+        public void OnEndDrag(PointerEventData ped)
+        {
+            DragEndedEvent();
+        }
+        public void OnDrag(PointerEventData ped)
+        {
+        }
+        public void OnDrop(PointerEventData ped)
+        {
+            DroppedOnEvent();
         }
     }
 }
