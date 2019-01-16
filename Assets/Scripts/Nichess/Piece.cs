@@ -16,7 +16,11 @@ namespace EcoBuilder.Nichess
             set { shape.material.color = value; }
         }
         public int Idx { get; private set; }
-        public float Lightness { private get; set; }
+        private float lightness;
+        public float Lightness {
+            private get { return lightness; }
+            set { lightness = value; Col = ColorHelper.SetYGamma(Col, value); }
+        }
 
         public bool StaticPos { get; set; }
         public bool StaticRange { get; set; }
@@ -41,21 +45,19 @@ namespace EcoBuilder.Nichess
         Square nichePos, nicheStart, nicheEnd;
         public Square NichePos { 
             get { return nichePos; }
-            set {
-                // if (nichePos != null)
-                //     nichePos.Occupant = null;
-                nichePos = value;
-                // value.Occupant = this;
+            set { // this setter probably makes more sense as a function
+                if (value == nichePos)
+                    return;
 
-                // below is required to get colliders to work with eventsystem
+                // // below is required to get colliders to work with eventsystem
                 transform.parent = value.transform;
                 transform.localScale = Vector3.one;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
 
-                Col = ColorHelper.SetY(value.Col, Lightness);
-                // Col = ColorHelper.SetYGamma(value.Col, Lightness);
-                // NichePositioned();
+                nichePos = value;
+                // Col = ColorHelper.SetY(value.Col, Lightness);
+                Col = ColorHelper.SetYGamma(value.Col, Lightness);
             }
         }
         public Square NicheStart {
@@ -70,11 +72,19 @@ namespace EcoBuilder.Nichess
         // TODO: replace this with animation!
         public void Select()
         {
-            transform.localScale += new Vector3(.2f, .2f, .2f);
+            shape.transform.localScale += new Vector3(.3f, .3f, .3f);
         }
         public void Deselect()
         {
-            transform.localScale -= new Vector3(.2f, .2f, .2f);
+            shape.transform.localScale -= new Vector3(.3f, .3f, .3f);
+        }
+        public void Lift()
+        {
+            shape.transform.localPosition += new Vector3(0, .7f, 0);
+        }
+        public void Drop()
+        {
+            shape.transform.localPosition -= new Vector3(0, .7f, 0);
         }
 
         // public bool IsResourceOf(Piece consumer)

@@ -26,10 +26,18 @@ namespace EcoBuilder.Nichess
         
         private void Start()
         {
-            board.SquareSelectedEvent += s=> PlacementReadyEvent.Invoke();
-            board.PieceSelectedEvent += p=> PieceInspectedEvent.Invoke(p.Idx);
-            board.PieceNichePosChangedEvent += p=> print("niche pos changed");
-            board.PieceDeletedEvent += p=> PieceRemovedEvent.Invoke(p.Idx);
+            board.SquareSelectedEvent +=
+                s=> PlacementReadyEvent.Invoke();
+            board.PieceSelectedEvent +=
+                p=> PieceInspectedEvent.Invoke(p.Idx);
+            board.PieceNichePosChangedEvent +=
+                p=> PieceColoredEvent.Invoke(p.Idx, p.Col);
+            board.PieceNicheRangeChangedEvent +=
+                p=> print(p.Idx + " ranged");
+            board.PieceThrownAwayEvent +=
+                p=> RemovePiece(p.Idx);
+            board.PieceThrownAwayEvent +=
+                p=> PieceRemovedEvent.Invoke(p.Idx);
         }
 
         public void AddPiece(int idx)
@@ -53,9 +61,9 @@ namespace EcoBuilder.Nichess
         {
             pieces[idx].SetShape(circleMesh);
         }
-        public void SetPieceDarkness(int idx, float darkness)
+        public void SetPieceLightness(int idx, float lightness)
         {
-            float pieceLightness = .2f + .7f*(1-darkness); // make sure that the color is not too light or dark
+            float pieceLightness = .2f + .7f*lightness; // make sure that the color is not too light or dark
             pieces[idx].Lightness = pieceLightness;
         }
 
@@ -92,14 +100,10 @@ namespace EcoBuilder.Nichess
         //     //     }
         //     // }
         // }
-        // public void Uninspect()
-        // {
-        //     if (inspectedPiece != null)
-        //     {
-        //         inspectedPiece.Uninspect();
-        //         inspectedPiece = null;
-        //     }
-        // }
+        public void Uninspect()
+        {
+            board.Deselect();
+        }
         // void UpdateInspectedConsumers()
         // {
         //     foreach (Piece p in pieces.Values)

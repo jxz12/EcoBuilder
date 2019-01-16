@@ -16,10 +16,11 @@ namespace EcoBuilder.Nichess
         [SerializeField] IntEvent SpawnedEvent;
         // [SerializeField] IntEvent ProducerSetEvent;
         // [SerializeField] IntEvent ConsumerSetEvent;
-        // [SerializeField] IntFloatEvent BodyMassSetEvent;
+        [SerializeField] IntFloatEvent MetabolismSetEvent;
         // [SerializeField] IntFloatEvent GreedinessSetEvent;
         // [SerializeField] IntStringEvent NamedEvent;
 
+        [SerializeField] Button spawnButton;
         [SerializeField] Text nameText;
         // [SerializeField] Button producerButton;
         // [SerializeField] Button consumerButton;
@@ -36,36 +37,22 @@ namespace EcoBuilder.Nichess
             // producerButton.onClick.AddListener(() => nextIsProducer=true);
             // consumerButton.onClick.AddListener(() => nextIsProducer=false);
             idxCounter = 0;
-            nameText.text = GenerateConsumerName();
+            nameText.text = "None Selected";
+        }
+        public void Reload()
+        {
+            spawnButton.interactable = true;
+            SetNewName();
         }
         public void Spawn()
         {
-            SpawnedEvent.Invoke(idxCounter);
             names[idxCounter] = nameText.text;
-            idxCounter += 1;
-            nameText.text = GenerateConsumerName();
             nameText.color = Color.grey;
-            // if (nextIsProducer)
-            // {
-            //     ProducerSetEvent.Invoke(idxCounter);
-            //     producerSet.Add(idxCounter);
-            //     if (producerSet.Count >= GameManager.Instance.MaxProducers)
-            //         producerButton.interactable = false;
-            // }
-            // else
-            //     ConsumerSetEvent.Invoke(idxCounter);
+            spawnButton.interactable = false;
 
-            // BodyMassSetEvent.Invoke(idxCounter, bodyMassSlider.normalizedValue);
-            // GreedinessSetEvent.Invoke(idxCounter, greedinessSlider.normalizedValue);
-            // NamedEvent.Invoke(idxCounter, nameText.text);
-
-            // idxCounter += 1;
-            // if (nextIsProducer)
-            // {
-            //     producersCounter -= 1;
-            //     if (producersCounter == 0)
-            //         producerButton.interactable = false;
-            // }
+            SpawnedEvent.Invoke(idxCounter);
+            MetabolismSetEvent.Invoke(idxCounter, .5f);
+            idxCounter += 1;
         }
         // public void Extinguish(int idx)
         // {
@@ -74,24 +61,17 @@ namespace EcoBuilder.Nichess
         Dictionary<int, string> names = new Dictionary<int, string>();
         public void InspectSpecies(int idx)
         {
+            print(idx);
             nameText.text = names[idx];
-            nameText.color = Color.black;
+            spawnButton.interactable = false;
+            // nameText.color = Color.black;
         }
         public void Uninspect()
         {
-            nameText.text = GenerateConsumerName();
-            nameText.color = Color.grey;
+            nameText.text = "None Selected";
+            spawnButton.interactable = false;
+            // nameText.color = Color.grey;
         }
-        // public void Despawn(int idx)
-        // {
-        //     if (producerSet.Contains(idx))
-        //     {
-        //         producerSet.Remove(idx);
-        //         producerButton.interactable = true;
-        //     }
-
-        // }
-        
 
         public static string[] adjectives = new string[]
         {
@@ -202,7 +182,7 @@ namespace EcoBuilder.Nichess
             // if (nextIsProducer)
             //     nameText.text = GenerateProducerName();
             // else
-            //     nameText.text = GenerateConsumerName();
+                nameText.text = GenerateConsumerName();
         }
     }
 }
