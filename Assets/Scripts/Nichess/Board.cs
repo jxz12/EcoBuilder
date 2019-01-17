@@ -12,13 +12,14 @@ namespace EcoBuilder.Nichess
         [SerializeField] float YUVRange=.8f;
         [SerializeField] float squareBorder=.05f;
 
+        [SerializeField] PieceCamera cam;
+
         Square[,] squares;
         public event Action<Square> SquareSelectedEvent;
         public event Action<Piece> PieceSelectedEvent;
         public event Action<Piece> PieceThrownAwayEvent;
         public event Action<Piece> PieceNichePosChangedEvent;
         public event Action<Piece> PieceNicheRangeChangedEvent;
-        // move these events into piece, along with animation
 
         private void Awake()
         {
@@ -48,6 +49,12 @@ namespace EcoBuilder.Nichess
                 }
             }
         }
+        private void Start()
+        {
+            SquareSelectedEvent += s=> cam.ViewBoard(this);
+            PieceSelectedEvent += p=> cam.ViewPiece(p);
+        }
+
         private Square selectedSquare = null;
         private Square draggedSquare = null;
         private enum BoardState {
@@ -57,7 +64,7 @@ namespace EcoBuilder.Nichess
         private BoardState myState = BoardState.Idle;
         private BoardState State {
             get { return myState; }
-            set { print(value); myState = value; }
+            set { /*print(value);*/ myState = value; }
         }
 
         public void PlaceNewPiece(Piece pce)
@@ -69,7 +76,7 @@ namespace EcoBuilder.Nichess
                 pce.NichePos = selectedSquare;
                 selectedSquare.Occupant = pce;
                 pce.Select();
-                // PieceSelectedEvent(pce);
+                cam.ViewPiece(pce);
                 State = BoardState.PieceSelected;
             }
         }
@@ -110,13 +117,33 @@ namespace EcoBuilder.Nichess
                 else
                 {
                     State = BoardState.Idle;
+                    cam.ViewBoard(this);
                 }
                 selectedSquare = sqr;
             }
         }
-        public void Deselect()
+        public void SelectPiece(Piece pce)
+        {
+            // ClickSquare(p.NichePos); // cannot do this because it will wrongly invoke events
+            if (State == BoardState.SquareSelected)
+            {
+                selectedSquare.Deselect();
+            }
+            else if (State == BoardState.PieceSelected)
+            {
+                selectedSquare.Deselect();
+                selectedSquare.Occupant.Deselect();
+            }
+            pce.Select();
+            pce.NichePos.Select();
+            cam.ViewPiece(pce);
+            State = BoardState.PieceSelected;
+            selectedSquare = pce.NichePos;
+        }
+        public void DeselectAll()
         {
             ClickSquare(null);
+            cam.ViewBoard(this);
         }
 
         private void DragStartFromSquare(Square sqr)
@@ -166,8 +193,11 @@ namespace EcoBuilder.Nichess
                 }
                 else if (State == BoardState.NicheDragging)
                 {
-                    UpdateNiche(selectedSquare.Occupant, draggedSquare, sqr);
-                    draggedSquare = sqr;
+                    bool updated = UpdateNiche(selectedSquare.Occupant, draggedSquare, sqr);
+                    if (updated)
+                    {
+                        draggedSquare = sqr;
+                    }
                 }
             }
         }
@@ -184,7 +214,6 @@ namespace EcoBuilder.Nichess
             }
             else if (State == BoardState.NicheDragging)
             {
-                print("niche range finish");
                 State = BoardState.PieceSelected;
             }
             else
@@ -194,39 +223,21 @@ namespace EcoBuilder.Nichess
             draggedSquare = null;
         }
         // always happens after drop
-        // also cannot drop on itself
         private void DragEndFromSquare(Square sqr)
         {
             if (draggedSquare != null)
             {
-                if (State == BoardState.Idle || State == BoardState.SquareSelected)
+                if (State == BoardState.PieceDragging)
                 {
-                    if (sqr == draggedSquare)
-                    {
-                        ClickSquare(sqr);
-                    }
-                }
-                else if (State == BoardState.PieceDragging)
-                {
-                    if (draggedSquare == selectedSquare)
-                    {
-                        draggedSquare.Occupant.Drop();
-                        State = BoardState.PieceSelected;
-                    }
-                    else
-                    {
-                        // if drop happens off grid
-                        print("DELETE PIECE " + draggedSquare.Occupant.name);
-                        PieceThrownAwayEvent(draggedSquare.Occupant);
-                        draggedSquare.Occupant = null;
-                        selectedSquare.Deselect();
-                        State = BoardState.Idle;
-                    }
+                    cam.ViewBoard(this);
+                    PieceThrownAwayEvent(draggedSquare.Occupant);
+                    draggedSquare.Occupant = null;
+                    selectedSquare.Deselect();
+                    State = BoardState.Idle;
                 }
                 else if (State == BoardState.NicheDragging) // if the niche is 1 square
                 {
-                    print("niche range finished 2");
-                    State = BoardState.PieceSelected;
+                    State = BoardState.PieceSelected; // make sure state is reset
                 }
                 else
                 {
@@ -236,59 +247,144 @@ namespace EcoBuilder.Nichess
             }
 
         }
-        private void UpdateNiche(Piece toUpdate, Square from, Square to)
+        private bool UpdateNiche(Piece toUpdate, Square from, Square to)
         {
-            if (toUpdate.NicheStart == null || toUpdate.NicheEnd == null)
+            // new piece
+            if (toUpdate.NicheMin == null || toUpdate.NicheMax == null)
             {
-                toUpdate.NicheStart = toUpdate.NicheEnd = from;
+                toUpdate.NicheMin = toUpdate.NicheMax = from;
                 from.AddConsumer(toUpdate);
                 PieceNicheRangeChangedEvent(toUpdate);
+                return true;
             }
             else
             {
-                int x0=toUpdate.NicheStart.X, x=toUpdate.NichePos.X, x1=toUpdate.NicheEnd.X;
-                int y0=toUpdate.NicheStart.Y, y=toUpdate.NichePos.Y, y1=toUpdate.NicheEnd.Y;
+                // 0 is old Niche Range, l=left, r=right, b=bottom, t=top
+                int l0=toUpdate.NicheMin.X, r0=toUpdate.NicheMax.X;
+                int b0=toUpdate.NicheMin.Y, t0=toUpdate.NicheMax.Y;
 
                 if (from == to) // if it's the start of the drag
                 {
-                    if ( !(((x0<=x && x<=x1) && (y==y0 || y==y1)) ||
-                           ((y0<=y && y<=y1) && (x==x0 || x==x1)))
+                    if ( !(((l0<=from.X && from.X<=r0) && (from.Y==b0 || from.Y==t0)) ||
+                           ((b0<=from.Y && from.Y<=t0) && (from.X==l0 || from.X==r0)))
                     ) {
-                        print(x0 + " " + x1);
-                        for (int i=x0; i<=x1; i++)
+                        for (int i=l0; i<=r0; i++)
                         {
-                            for (int j=y0; j<=y1; j++)
+                            for (int j=b0; j<=t0; j++)
                             {
-                                print("hi2");
                                 squares[i,j].RemoveConsumer(toUpdate);
                             }
                         }
-                        toUpdate.NicheStart = toUpdate.NicheEnd = from;
+                        toUpdate.NicheMin = toUpdate.NicheMax = from;
                         from.AddConsumer(toUpdate);
                         PieceNicheRangeChangedEvent(toUpdate);
+                        return true;
+                    }
+                    else
+                    {
+                        return false; // otherwise we have grabbed a side or a corner
                     }
                 }
                 else
                 {
-                    // if dragged square is on corner, move corner
-                    // if dragged square was on side, move corner connected to that side
-                    // check whether it gets bigger or smaller
-                    if (toUpdate.NicheStart == from)
+                    int xFrom = from.X, yFrom = from.Y;
+                    int xTo = to.X, yTo = to.Y;
+
+                    // 1 is new Niche Range
+                    int l1 = l0, r1 = r0;
+                    int b1 = b0, t1 = t0;
+                    if (xFrom==l0 && yFrom==b0) // bottom left
                     {
-                        print("start");
-                        toUpdate.NicheStart = to;
-                        to.AddConsumer(toUpdate);
-                        PieceNicheRangeChangedEvent(toUpdate);
+                        l1 = xTo;
+                        b1 = yTo;
                     }
-                    else if (toUpdate.NicheEnd == from)
+                    else if (xFrom==l0 && yFrom==t0) // top left
                     {
-                        print("end");
-                        toUpdate.NicheStart = to;
-                        to.AddConsumer(toUpdate);
-                        PieceNicheRangeChangedEvent(toUpdate);
+                        l1 = xTo;
+                        t1 = yTo;
                     }
+                    else if (xFrom==r0 && yFrom==t0) // top right
+                    {
+                        r1 = xTo;
+                        t1 = yTo;
+                    }
+                    else if (xFrom==r0 && yFrom==b0) // bottom right
+                    {
+                        r1 = xTo;
+                        b1 = yTo;
+                    }
+                    else if (xFrom==l0 && (b0<yFrom && yFrom<t0)) // left
+                    {
+                        l1 = xTo;
+                    } 
+                    else if ((l0<xFrom && xFrom<r0) && yFrom==t0) // top
+                    {
+                        t1 = yTo;
+                    }
+                    else if (xFrom==r0 && (t0>yFrom && yFrom>b0)) // right
+                    {
+                        r1 = xTo;
+                    }
+                    else if ((l0<xFrom && xFrom<r0) && yFrom==b0) // bottom
+                    {
+                        b1 = yTo;
+                    }
+                    else
+                    {
+                        throw new Exception("impossible drag");
+                        // return false;
+                    }
+
+                    // flip niche start or end back around to make calculation simpler
+                    if (l1 > r1) { int temp = l1; l1 = r1; r1 = temp; }
+                    if (b1 > t1) { int temp = b1; b1 = t1; t1 = temp; }
+
+                    if (l1<=toUpdate.NichePos.X && toUpdate.NichePos.X<=r1 &&
+                        b1<=toUpdate.NichePos.Y && toUpdate.NichePos.Y<=t1
+                    ) {
+                        // cannot eat itself
+                        // State = BoardState.PieceSelected;
+                        return false;
+                    }
+
+                    toUpdate.NicheMin = squares[l1, b1];
+                    toUpdate.NicheMax = squares[r1, t1];
+                    
+
+                    ////////////////////////////////////
+                    // MAKE THE FOLLOWING BETTER OMG
+                     
+                    // 4 and 5 are the intersect
+                    int l2 = Math.Max(l0, l1);
+                    int r2 = Math.Min(r0, r1);
+                    int b2 = Math.Max(b0, b1);
+                    int t2 = Math.Min(t0, t1);
+
+                    // clear vacated squares
+                    for (int i=l0; i<=r0; i++)
+                    {
+                        for (int j=b0; j<=t0; j++)
+                        {
+                            if (!(l2<=i && i<=r2 && b2<=j && j<=t2)) // if not in intersect
+                            {
+                                squares[i,j].RemoveConsumer(toUpdate);
+                            }
+                        }
+                    }
+                    // fill new squares
+                    for (int i=l1; i<=r1; i++)
+                    {
+                        for (int j=b1; j<=t1; j++)
+                        {
+                            if (!(l2<=i && i<=r2 && b2<=j && j<=t2)) // if not in intersect
+                            {
+                                squares[i,j].AddConsumer(toUpdate);
+                            }
+                        }
+                    }
+                    PieceNicheRangeChangedEvent(toUpdate);
+                    return true;
                 }
-                // if (x1 > x0 || 
             }
         }
     }

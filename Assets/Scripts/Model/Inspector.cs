@@ -54,14 +54,14 @@ namespace EcoBuilder.Nichess
             MetabolismSetEvent.Invoke(idxCounter, .5f);
             idxCounter += 1;
         }
-        // public void Extinguish(int idx)
-        // {
-        //     names.Remove(idx);
-        // }
+        public void Extinguish(int idx)
+        {
+            names.Remove(idx);
+            Uninspect();
+        }
         Dictionary<int, string> names = new Dictionary<int, string>();
         public void InspectSpecies(int idx)
         {
-            print(idx);
             nameText.text = names[idx];
             spawnButton.interactable = false;
             // nameText.color = Color.black;

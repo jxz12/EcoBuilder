@@ -110,3 +110,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultAlpha: 0.2
   hoverAlpha: 1
+  markerPrefab: {fileID: 114514284377319700, guid: 468871ffce45b7a41acba2414f0f0a9e,
+    type: 2}

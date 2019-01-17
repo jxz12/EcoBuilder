@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Outline
-  m_Shader: {fileID: 4800000, guid: fe7b9fa0b8f5dea44ae5765f98f12e12, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1d1772a9751c1334c931e3b5ff8c6a77, type: 3}
   m_ShaderKeywords: ETC1_EXTERNAL_ALPHA
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

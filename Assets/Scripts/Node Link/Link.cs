@@ -27,7 +27,6 @@ namespace EcoBuilder.NodeLink
             lr.SetPosition(1, Target.transform.position);
             lr.startColor = Target.Col;
             lr.endColor = Source.Col;
-            // TODO: make the thickness scale with lossyscale?
         }
     }
 }

@@ -42,7 +42,7 @@ namespace EcoBuilder.Nichess
         }
         //////////////////////////////////////////////////////////////////
 
-        Square nichePos, nicheStart, nicheEnd;
+        Square nichePos, nicheMin, nicheMax;
         public Square NichePos { 
             get { return nichePos; }
             set { // this setter probably makes more sense as a function
@@ -60,13 +60,13 @@ namespace EcoBuilder.Nichess
                 Col = ColorHelper.SetYGamma(value.Col, Lightness);
             }
         }
-        public Square NicheStart {
-            get { return nicheStart; }
-            set { nicheStart = value; }
+        public Square NicheMin {
+            get { return nicheMin; }
+            set { nicheMin = value; }
         }
-        public Square NicheEnd {
-            get { return nicheEnd; }
-            set { nicheEnd = value; }
+        public Square NicheMax {
+            get { return nicheMax; }
+            set { nicheMax = value; }
         }
 
         // TODO: replace this with animation!
@@ -87,27 +87,26 @@ namespace EcoBuilder.Nichess
             shape.transform.localPosition -= new Vector3(0, .7f, 0);
         }
 
-        // public bool IsResourceOf(Piece consumer)
-        // {
-        //     if (NichePos == null || consumer.NicheStart == null || consumer.NicheEnd == null)
-        //         return false;
+        public bool IsResourceOf(Piece consumer)
+        {
+            if (NichePos == null || consumer.NicheMin == null || consumer.NicheMax == null)
+                return false;
 
-        //     int resX = NichePos.X;
-        //     int resY = NichePos.Y;
-        //     int conX1 = consumer.NicheStart.X;
-        //     int conX2 = consumer.NicheEnd.X;
-        //     int conY1 = consumer.NicheStart.Y;
-        //     int conY2 = consumer.NicheEnd.Y;
-        //     if ((resX>=conX1 && resX<=conX2 || resX<=conX1 && resX>=conX2) &&
-        //         (resY>=conY1 && resY<=conY2 || resY<=conY1 && resY>=conY2))
-        //     {
-        //         return true;
-        //     }
-        //     else
-        //     {
-        //         return false;
-        //     }
-        // }
+            int resX = NichePos.X;
+            int resY = NichePos.Y;
+            int conL = consumer.NicheMin.X;
+            int conR = consumer.NicheMax.X;
+            int conB = consumer.NicheMin.Y;
+            int conT = consumer.NicheMax.Y;
+            if (conL<=resX && resX<=conR && conB<=resY && resY<=conT)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         ///////////////////////////////////////////////////////////
 

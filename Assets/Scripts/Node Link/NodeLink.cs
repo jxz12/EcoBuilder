@@ -50,7 +50,7 @@ namespace EcoBuilder.NodeLink
         public void RemoveNode(int idx)
         {
             if (inspected != null && inspected.Idx == idx)
-                Uninspect();
+                UnfocusAll();
 
             Destroy(nodes[idx].gameObject);
             nodes.RemoveAt(idx);
@@ -67,12 +67,14 @@ namespace EcoBuilder.NodeLink
 
         public void AddLink(int i, int j)
         {
+            print(i + " " + j);
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i, j] = newLink;
         }
         public void RemoveLink(int i, int j)
         {
+            print(":( " + i + " " + j);
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
         }
@@ -93,7 +95,7 @@ namespace EcoBuilder.NodeLink
         }
 
         Node inspected=null;
-        public void InspectNode(int idx)
+        public void FocusNode(int idx)
         {
             if (inspected != null && inspected != nodes[idx])
                 inspected.Uninspect();
@@ -101,7 +103,7 @@ namespace EcoBuilder.NodeLink
             nodes[idx].Inspect();
             inspected = nodes[idx];
         }
-        public void Uninspect()
+        public void UnfocusAll()
         {
             if (inspected != null)
                 inspected.Uninspect();

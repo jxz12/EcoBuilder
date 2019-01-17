@@ -12,6 +12,7 @@ namespace EcoBuilder.Nichess
         IDragHandler, IBeginDragHandler, IEndDragHandler, IDropHandler
     {
         [SerializeField] float defaultAlpha=.2f, hoverAlpha=1f;
+        [SerializeField] Marker markerPrefab;
         MeshRenderer mr;
         BoxCollider bc;
 
@@ -59,6 +60,7 @@ namespace EcoBuilder.Nichess
             transform.localPosition -= .01f*Vector3.up;
         }
         private HashSet<Piece> consumers = new HashSet<Piece>();
+        Stack<Marker> markerStack = new Stack<Marker>();
         public void AddConsumer(Piece p)
         {
             // keep track of how many pieces are eating it, and draw concentric circles 
@@ -68,17 +70,24 @@ namespace EcoBuilder.Nichess
             }
             else
             {
+                // CAN DEFINITELY BE OPTIMISED with POOLING
+                // MAKE THE ORDER MATCH IDX ORDER
                 consumers.Add(p);
-                mr.transform.localScale *= .8f;
+                var marker = Instantiate(markerPrefab, transform);
+                markerStack.Push(marker);
+
+                marker.Col = p.Col;
+                marker.Layer = markerStack.Count;
+                marker.Size = Mathf.Pow(.5f, markerStack.Count-1);
             }
         }
         public void RemoveConsumer(Piece p)
         {
             if (consumers.Contains(p))
             {
-                print(name);
                 consumers.Remove(p);
-                mr.transform.localScale *= 1.25f;
+                var marker = markerStack.Pop();
+                Destroy(marker.gameObject);
             }
             else
             {
@@ -87,6 +96,7 @@ namespace EcoBuilder.Nichess
         }
 
         /////////////////////////////////////////////////////////
+        // TODO: make this deal with two touches
 
         public event Action ClickedEvent;
         public event Action DragStartedEvent;
@@ -122,7 +132,11 @@ namespace EcoBuilder.Nichess
         }
         public void OnEndDrag(PointerEventData ped)
         {
-            DragEndedEvent();
+            // so that you can drop on yourself
+            if (ped.pointerEnter == this.gameObject)
+                DroppedOnEvent();
+            else
+                DragEndedEvent();
         }
         public void OnDrag(PointerEventData ped)
         {

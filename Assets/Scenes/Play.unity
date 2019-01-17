@@ -279,8 +279,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 683027930}
+  - {fileID: 1117117895}
   m_Father: {fileID: 862883999}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &423145481
 MonoBehaviour:
@@ -298,6 +299,7 @@ MonoBehaviour:
   defaultYColor: 0.5
   YUVRange: 0.5
   squareBorder: 0.05
+  cam: {fileID: 1117117897}
 --- !u!1 &428378303
 GameObject:
   m_ObjectHideFlags: 0
@@ -894,7 +896,18 @@ MonoBehaviour:
   EmptyClickedEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 773235146}
+      - m_Target: {fileID: 862883997}
+        m_MethodName: DeselectAll
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 579506707}
         m_MethodName: Uninspect
         m_Mode: 1
         m_Arguments:
@@ -910,8 +923,19 @@ MonoBehaviour:
   NodeClickedEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 773235146}
-        m_MethodName: InspectNode
+      - m_Target: {fileID: 862883997}
+        m_MethodName: SelectPiece
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 579506707}
+        m_MethodName: InspectSpecies
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -956,7 +980,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 5.6, y: 10, z: 0.1}
-  m_Center: {x: 0, y: 4, z: 0}
+  m_Center: {x: 0, y: 3.32, z: 0}
 --- !u!4 &773235148
 Transform:
   m_ObjectHideFlags: 0
@@ -1045,14 +1069,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  PieceInspectedEvent:
-    m_PersistentCalls:
-      m_Calls:
       - m_Target: {fileID: 773235146}
-        m_MethodName: InspectNode
-        m_Mode: 0
+        m_MethodName: UnfocusAll
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1061,8 +1080,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 579506707}
-        m_MethodName: InspectSpecies
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+  PieceSelectedEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 773235146}
+        m_MethodName: FocusNode
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1090,6 +1114,17 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 773235146}
         m_MethodName: RemoveNode
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 579506707}
+        m_MethodName: Extinguish
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1186,7 +1221,6 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_Children:
-  - {fileID: 1117117895}
   - {fileID: 423145480}
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -1281,7 +1315,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 958886012}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Trophic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1311,6 +1345,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1117117895}
   - component: {fileID: 1117117896}
+  - component: {fileID: 1117117897}
   m_Layer: 0
   m_Name: Piece Camera
   m_TagString: Untagged
@@ -1324,13 +1359,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1117117894}
-  m_LocalRotation: {x: 0.22367534, y: 0, z: 0, w: 0.97466373}
-  m_LocalPosition: {x: 0, y: 0.69, z: -1.6}
+  m_LocalRotation: {x: 0.7071068, y: 0.000000029802319, z: -0.000000029802319, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 862883999}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 25.85, y: 0, z: 0}
+  m_Father: {fileID: 423145480}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!20 &1117117896
 Camera:
   m_ObjectHideFlags: 0
@@ -1355,7 +1390,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294965247
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -1367,6 +1402,17 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1117117897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1117117894}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521df1aa61961d544a834ede9ca232f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1294120323
 GameObject:
   m_ObjectHideFlags: 0
@@ -1558,7 +1604,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 773235146}
-        m_MethodName: Uninspect
+        m_MethodName: UnfocusAll
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1591,7 +1637,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 862883997}
-        m_MethodName: Uninspect
+        m_MethodName: DeselectAll
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1655,6 +1701,10 @@ Prefab:
     - target: {fileID: 4603552658957478, guid: ef2d2bced8387b84394bb8a8f43b60bf, type: 2}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1417990449152048, guid: ef2d2bced8387b84394bb8a8f43b60bf, type: 2}
+      propertyPath: m_Layer
+      value: 11
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ef2d2bced8387b84394bb8a8f43b60bf, type: 2}
