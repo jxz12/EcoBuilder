@@ -8,7 +8,10 @@ namespace EcoBuilder.Nichess
 		public Color Col {
 			set { mr.material.color = new Color(value.r, value.g, value.b, mr.material.color.a); }
 		}
-		public int Order {
+		public int ConIdx {
+			get; set;
+		}
+		public int RenderOrder {
 			set { mr.material.renderQueue = defaultRenderQueue - value; }
 		}
 		public float Size {

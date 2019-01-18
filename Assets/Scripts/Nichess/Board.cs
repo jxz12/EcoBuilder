@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -48,6 +49,7 @@ namespace EcoBuilder.Nichess
                     squares[i, j] = s;
                 }
             }
+            markerNumbers[0] = 25; // keep track of markers on each square
         }
         private void Start()
         {
@@ -198,7 +200,11 @@ namespace EcoBuilder.Nichess
                 {
                     bool updated = UpdateNiche(selectedSquare.Occupant, draggedSquare, sqr);
                     if (updated)
+                    {
+                        RescaleMarkersIfNeeded();
+                        OnPieceNicheRangeChanged(selectedSquare.Occupant);
                         draggedSquare = sqr;
+                    }
                 }
             }
         }
@@ -248,14 +254,65 @@ namespace EcoBuilder.Nichess
             }
 
         }
+
+        ///////////////////////////////////////
+        // Niche stuff below
+
+        private SortedDictionary<int, int> markerNumbers = new SortedDictionary<int,int>();
+        private void AddMarkerNumber(int n)
+        {
+            if (markerNumbers.ContainsKey(-n))
+                markerNumbers[-n] += 1;
+            else
+                markerNumbers[-n] = 1;
+
+        }
+        private void RemoveMarkerNumber(int n)
+        {
+            if (markerNumbers.ContainsKey(-n))
+            {
+                markerNumbers[-n] -= 1;
+                if (markerNumbers[-n] == 0)
+                    markerNumbers.Remove(-n);
+            }
+            else
+            {
+                throw new Exception("does not have key " + n);
+            }
+        }
+        private void AddConsumerToSquare(Square sqr, Piece con)
+        {
+            RemoveMarkerNumber(sqr.NumMarkers);
+            sqr.AddConsumer(con);
+            AddMarkerNumber(sqr.NumMarkers);
+        }
+        private void RemoveConsumerFromSquare(Square sqr, Piece con)
+        {
+            RemoveMarkerNumber(sqr.NumMarkers);
+            sqr.RemoveConsumer(con);
+            AddMarkerNumber(sqr.NumMarkers);
+        }
+        private int prevMaxNumMarkers=0;
+        private void RescaleMarkersIfNeeded()
+        {
+            int newMaxNumMarkers = markerNumbers.Keys.First();//OrDefault();
+            if (newMaxNumMarkers != prevMaxNumMarkers && newMaxNumMarkers != 0)
+            {
+                // minus because we are storing negative in order to access largest first
+                float newSize = -1f/newMaxNumMarkers;
+                foreach (Square s in squares)
+                    s.ResizeMarkers(newSize);
+            }
+            prevMaxNumMarkers = newMaxNumMarkers;
+        }
+
         private bool UpdateNiche(Piece toUpdate, Square from, Square to)
         {
             // new piece
             if (toUpdate.NicheMin == null || toUpdate.NicheMax == null)
             {
                 toUpdate.NicheMin = toUpdate.NicheMax = from;
-                from.AddConsumer(toUpdate);
-                OnPieceNicheRangeChanged(toUpdate);
+                AddConsumerToSquare(to, toUpdate);
                 return true;
             }
             else
@@ -273,12 +330,11 @@ namespace EcoBuilder.Nichess
                         {
                             for (int j=b0; j<=t0; j++)
                             {
-                                squares[i,j].RemoveConsumer(toUpdate);
+                                RemoveConsumerFromSquare(squares[i,j], toUpdate);
                             }
                         }
                         toUpdate.NicheMin = toUpdate.NicheMax = from;
-                        from.AddConsumer(toUpdate);
-                        OnPieceNicheRangeChanged(toUpdate);
+                        AddConsumerToSquare(to, toUpdate);
                         return true;
                     }
                     else
@@ -349,10 +405,9 @@ namespace EcoBuilder.Nichess
 
                     toUpdate.NicheMin = squares[l1, b1];
                     toUpdate.NicheMax = squares[r1, t1];
-                    
 
-                    ////////////////////////////////////
-                    // MAKE THE FOLLOWING BETTER OMG
+                    //////////////////////////////////////////////////////////////
+                    // make the following better? complexity is pretty good anyway
                      
                     // 4 and 5 are the intersect
                     int l2 = Math.Max(l0, l1);
@@ -367,10 +422,10 @@ namespace EcoBuilder.Nichess
                         {
                             if (!(l2<=i && i<=r2 && b2<=j && j<=t2)) // if not in intersect
                             {
-                                squares[i,j].RemoveConsumer(toUpdate);
+                                RemoveConsumerFromSquare(squares[i,j], toUpdate);
                             }
                         }
-                    }
+                    }                   int prevMaxNumMarkers = markerNumbers.Keys.FirstOrDefault();
                     // fill new squares
                     for (int i=l1; i<=r1; i++)
                     {
@@ -378,11 +433,21 @@ namespace EcoBuilder.Nichess
                         {
                             if (!(l2<=i && i<=r2 && b2<=j && j<=t2)) // if not in intersect
                             {
-                                squares[i,j].AddConsumer(toUpdate);
+                                AddConsumerToSquare(squares[i,j], toUpdate);
                             }
                         }
                     }
-                    OnPieceNicheRangeChanged(toUpdate);
+
+
+                    int newMaxNumMarkers = markerNumbers.Keys.FirstOrDefault();
+                    if (newMaxNumMarkers != prevMaxNumMarkers && newMaxNumMarkers != 0)
+                    {
+                        // minus because we are storing negative in order to access largest first
+                        float newSize = -1f/newMaxNumMarkers;
+                        foreach (Square s in squares)
+                            s.ResizeMarkers(newSize);
+                    }
+
                     return true;
                 }
             }

@@ -102,49 +102,78 @@ namespace EcoBuilder.Nichess
             markerPool.Push(oldMarker);
         }
 
-        SortedDictionary<int, Marker> markers = new SortedDictionary<int, Marker>();
-        private HashSet<Piece> consumers = new HashSet<Piece>(); // only for error tracking
+        // private SortedDictionary<int, Marker> markers = new SortedDictionary<int, Marker>();
+        private LinkedList<Marker> markersLL = new LinkedList<Marker>();
+        // need to go through once to resize anyway, so use a LL
+        public int NumMarkers { get { return markersLL.Count; } }
+
         public void AddConsumer(Piece con)
         {
-            // keep track of how many pieces are eating it, and draw concentric circles 
-            if (consumers.Contains(con))
-                throw new Exception("already eaten by " + con.name);
-
-            consumers.Add(con);
             var newMarker = GetMarker(markersParent);
             con.OnPosChanged += ()=> newMarker.Col = con.Col;
             con.OnThrownAway += ()=> RemoveConsumer(con);
-
             newMarker.Col = con.Col;
-            newMarker.Order = con.Idx;
-            markers.Add(con.Idx, newMarker);
-            float i=0, gap=1f/markers.Count;
-            foreach (Marker m in markers.Values)
+            newMarker.ConIdx = con.Idx;
+
+            int i = 1, oldCount = markersLL.Count;
+            var head = markersLL.First;
+
+            // traverse the list and add the new marker at the right place
+            while (head != null)
             {
-                i += 1;
-                m.Size = i;
+                if (newMarker.ConIdx < head.Value.ConIdx)
+                {
+                    newMarker.Size = newMarker.RenderOrder = i;
+                    markersLL.AddBefore(head, newMarker);
+                    i += 1;
+                }
+                else {
+                    head.Value.Size = head.Value.RenderOrder = i;
+                    i += 1;
+                    head = head.Next;
+                }
             }
-            markersParent.localScale = new Vector3(1f/3, 1f/3, 1f/3);
-            // markersParent.transform.localScale = new Vector3(gap,gap,gap);
+            if (markersLL.Count == oldCount)
+            {
+                newMarker.Size = newMarker.RenderOrder = i;
+                markersLL.AddLast(newMarker);
+            }
+
         }
         public void RemoveConsumer(Piece con)
         {
-            if (!consumers.Contains(con))
-                throw new Exception("not eaten by " + con.name);
+            int i = 1, oldCount = markersLL.Count;
+            var head = markersLL.First;
 
-            consumers.Remove(con);
-            var oldMarker = markers[con.Idx];
-            con.OnPosChanged -= ()=> oldMarker.Col = con.Col;
-            con.OnThrownAway -= ()=> RemoveConsumer(con);
-            ReturnMarker(oldMarker);
-
-            markers.Remove(con.Idx);
-            float i=0;
-            foreach (Marker m in markers.Values)
+            // traverse the list and remove the old marker from its place
+            while (head != null)
             {
-                i += 1f/markers.Count;
-                m.Size = Mathf.Sqrt(i);
+                if (head.Value.ConIdx == con.Idx)
+                {
+                    var oldMarker = head.Value;
+                    con.OnPosChanged -= ()=> oldMarker.Col = con.Col;
+                    con.OnThrownAway -= ()=> RemoveConsumer(con);
+                    ReturnMarker(oldMarker);
+
+                    var nodeToRemove = head;
+                    head = head.Next;
+                    markersLL.Remove(nodeToRemove);
+                }
+                else
+                {
+                    head.Value.Size = head.Value.RenderOrder = i;
+                    i += 1;
+                    head = head.Next;
+                }
             }
+            if (markersLL.Count == oldCount)
+            {
+                throw new Exception("no marker matches " + con.Idx);
+            }
+        }
+        public void ResizeMarkers(float size)
+        {
+            markersParent.transform.localScale = new Vector3(size, size, size);
         }
 
         /////////////////////////////////////////////////////////
