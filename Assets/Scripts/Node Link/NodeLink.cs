@@ -12,8 +12,8 @@ namespace EcoBuilder.NodeLink
     {
         [Serializable] class IntEvent : UnityEvent<int> { };
 
-        [SerializeField] UnityEvent EmptyClickedEvent;
-        [SerializeField] IntEvent NodeClickedEvent;
+        [SerializeField] UnityEvent OnEmptyClicked;
+        [SerializeField] IntEvent OnNodeClicked;
 
         [SerializeField] Node nodePrefab;
         [SerializeField] GameObject diskPrefab;
@@ -32,6 +32,10 @@ namespace EcoBuilder.NodeLink
 
         public void AddNode(int idx)
         {
+            // this might not be best
+            if (nodes[idx] != null)
+                throw new Exception("already has idx " + idx);
+
             Node newNode;
             newNode = Instantiate(nodePrefab, nodesParent);
 
@@ -67,14 +71,12 @@ namespace EcoBuilder.NodeLink
 
         public void AddLink(int i, int j)
         {
-            print(i + " " + j);
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i, j] = newLink;
         }
         public void RemoveLink(int i, int j)
         {
-            print(":( " + i + " " + j);
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
         }
@@ -215,11 +217,11 @@ namespace EcoBuilder.NodeLink
                 }
                 if (closest != null)
                 {
-                    NodeClickedEvent.Invoke(closest.Idx);
+                    OnNodeClicked.Invoke(closest.Idx);
                 }
                 else
                 {
-                    EmptyClickedEvent.Invoke();
+                    OnEmptyClicked.Invoke();
                 }
             }
         }

@@ -13,6 +13,7 @@ namespace EcoBuilder.Nichess
     {
         [SerializeField] float defaultAlpha=.2f, hoverAlpha=1f;
         [SerializeField] Marker markerPrefab;
+        [SerializeField] Transform markersParent;
         MeshRenderer mr;
         BoxCollider bc;
 
@@ -28,6 +29,7 @@ namespace EcoBuilder.Nichess
         {
             mr = GetComponent<MeshRenderer>();
             bc = GetComponent<BoxCollider>();
+            markerPoolPrefab = markerPrefab; // this is ugly but whatever
         }
 
         public void Init(int x, int y, Color c, int size, float borderWidth)
@@ -59,50 +61,100 @@ namespace EcoBuilder.Nichess
         {
             transform.localPosition -= .01f*Vector3.up;
         }
-        private HashSet<Piece> consumers = new HashSet<Piece>();
-        Stack<Marker> markerStack = new Stack<Marker>();
-        public void AddConsumer(Piece p)
-        {
-            // keep track of how many pieces are eating it, and draw concentric circles 
-            if (consumers.Contains(p))
-            {
-                throw new Exception("already eaten by " + p.name);
-            }
-            else
-            {
-                // CAN DEFINITELY BE OPTIMISED with POOLING
-                // MAKE THE ORDER MATCH IDX ORDER
-                consumers.Add(p);
-                var marker = Instantiate(markerPrefab, transform);
-                markerStack.Push(marker);
 
-                marker.Col = p.Col;
-                marker.Layer = markerStack.Count;
-                marker.Size = Mathf.Pow(.5f, markerStack.Count-1);
+        // pool markers because they will get added and removed often
+        private static Marker markerPoolPrefab;
+        private static Stack<Marker> markerPool = new Stack<Marker>();
+        private static int poolNum = 10;
+        private static Transform pooledParent;
+        private static void PoolMarkers(int numMarkers)
+        {
+            if (pooledParent == null)
+            {
+                pooledParent = new GameObject().transform;
+                pooledParent.name = "Marker Pool";
+            }
+
+            for (int i=0; i<numMarkers; i++)
+            {
+                var newMarker = Instantiate(markerPoolPrefab);
+                newMarker.gameObject.SetActive(false);
+                newMarker.transform.SetParent(pooledParent);
+                markerPool.Push(newMarker);
             }
         }
-        public void RemoveConsumer(Piece p)
+        private static Marker GetMarker(Transform newParent)
         {
-            if (consumers.Contains(p))
+            if (markerPool.Count == 0)
+                PoolMarkers(poolNum);
+
+            var newMarker = markerPool.Pop();
+            newMarker.gameObject.SetActive(true);
+            newMarker.transform.parent = newParent;
+            newMarker.transform.localPosition = Vector3.zero;
+            newMarker.transform.localRotation = Quaternion.identity;
+            return newMarker;
+        }
+        private static void ReturnMarker(Marker oldMarker)
+        {
+            oldMarker.gameObject.SetActive(false);
+            oldMarker.transform.SetParent(pooledParent);
+            markerPool.Push(oldMarker);
+        }
+
+        SortedDictionary<int, Marker> markers = new SortedDictionary<int, Marker>();
+        private HashSet<Piece> consumers = new HashSet<Piece>(); // only for error tracking
+        public void AddConsumer(Piece con)
+        {
+            // keep track of how many pieces are eating it, and draw concentric circles 
+            if (consumers.Contains(con))
+                throw new Exception("already eaten by " + con.name);
+
+            consumers.Add(con);
+            var newMarker = GetMarker(markersParent);
+            con.OnPosChanged += ()=> newMarker.Col = con.Col;
+            con.OnThrownAway += ()=> RemoveConsumer(con);
+
+            newMarker.Col = con.Col;
+            newMarker.Order = con.Idx;
+            markers.Add(con.Idx, newMarker);
+            float i=0, gap=1f/markers.Count;
+            foreach (Marker m in markers.Values)
             {
-                consumers.Remove(p);
-                var marker = markerStack.Pop();
-                Destroy(marker.gameObject);
+                i += 1;
+                m.Size = i;
             }
-            else
+            markersParent.localScale = new Vector3(1f/3, 1f/3, 1f/3);
+            // markersParent.transform.localScale = new Vector3(gap,gap,gap);
+        }
+        public void RemoveConsumer(Piece con)
+        {
+            if (!consumers.Contains(con))
+                throw new Exception("not eaten by " + con.name);
+
+            consumers.Remove(con);
+            var oldMarker = markers[con.Idx];
+            con.OnPosChanged -= ()=> oldMarker.Col = con.Col;
+            con.OnThrownAway -= ()=> RemoveConsumer(con);
+            ReturnMarker(oldMarker);
+
+            markers.Remove(con.Idx);
+            float i=0;
+            foreach (Marker m in markers.Values)
             {
-                throw new Exception("not eaten by " + p.name);
+                i += 1f/markers.Count;
+                m.Size = Mathf.Sqrt(i);
             }
         }
 
         /////////////////////////////////////////////////////////
         // TODO: make this deal with two touches
 
-        public event Action ClickedEvent;
-        public event Action DragStartedEvent;
-        public event Action DraggedIntoEvent;
-        public event Action DragEndedEvent;
-        public event Action DroppedOnEvent;
+        public event Action OnClicked;
+        public event Action OnDragStarted;
+        public event Action OnDraggedInto;
+        public event Action OnDragEnded;
+        public event Action OnDroppedOn;
         public void OnPointerEnter(PointerEventData ped)
         {
             var c = Col;
@@ -110,7 +162,7 @@ namespace EcoBuilder.Nichess
             Col = c;
 
             if (ped.dragging)
-                DraggedIntoEvent();
+                OnDraggedInto();
         }
         public void OnPointerExit(PointerEventData ped)
         {
@@ -123,27 +175,27 @@ namespace EcoBuilder.Nichess
             // don't throw a click if this is already being dragged, because EndDrag will be
             if (!ped.dragging || ped.pointerDrag != this.gameObject)
             {
-                ClickedEvent();
+                OnClicked();
             }
         }
         public void OnBeginDrag(PointerEventData ped)
         {
-            DragStartedEvent();
+            OnDragStarted();
         }
         public void OnEndDrag(PointerEventData ped)
         {
             // so that you can drop on yourself
             if (ped.pointerEnter == this.gameObject)
-                DroppedOnEvent();
+                OnDroppedOn();
             else
-                DragEndedEvent();
+                OnDragEnded();
         }
         public void OnDrag(PointerEventData ped)
         {
         }
         public void OnDrop(PointerEventData ped)
         {
-            DroppedOnEvent();
+            OnDroppedOn();
         }
     }
 }

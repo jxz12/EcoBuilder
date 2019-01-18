@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,12 +11,12 @@ namespace EcoBuilder.Nichess
         [Serializable] class IntIntEvent : UnityEvent<int, int> { }
         [Serializable] class IntEvent : UnityEvent<int> { }
         [Serializable] class IntColorEvent : UnityEvent<int, Color> { }
-        [SerializeField] UnityEvent PlacementReadyEvent;
-        [SerializeField] IntEvent PieceSelectedEvent;
-        [SerializeField] IntEvent PieceRemovedEvent;
-        [SerializeField] IntIntEvent EdgeAddedEvent;
-        [SerializeField] IntIntEvent EdgeRemovedEvent;
-        [SerializeField] IntColorEvent PieceColoredEvent;
+        [SerializeField] UnityEvent OnPlacementReady;
+        [SerializeField] IntEvent OnPieceSelected;
+        [SerializeField] IntEvent OnPieceRemoved;
+        [SerializeField] IntIntEvent OnEdgeAdded;
+        [SerializeField] IntIntEvent OnEdgeRemoved;
+        [SerializeField] IntColorEvent OnPieceColored;
 
         [SerializeField] Piece piecePrefab;
         [SerializeField] Mesh squareMesh, circleMesh;
@@ -26,40 +27,45 @@ namespace EcoBuilder.Nichess
         
         private void Start()
         {
-            board.SquareSelectedEvent += s=> {
+            board.OnSquareSelected += s=> {
                 selectedPiece = null;
-                PlacementReadyEvent.Invoke();
+                OnPlacementReady.Invoke();
             };
-            board.PieceSelectedEvent += p=> {
+            board.OnPieceSelected += p=> {
                 SelectPiece(p);
-                PieceSelectedEvent.Invoke(p.Idx);
+                InitSelectedResCon();
+                OnPieceSelected.Invoke(p.Idx);
             };
 
-            board.PieceNichePosChangedEvent += p=> {
-                UpdateInspectedConsumers();
-                PieceColoredEvent.Invoke(p.Idx, p.Col);
-            };
-            board.PieceNicheRangeChangedEvent += p=> {
-                UpdateInspectedResources();
-            };
-            board.PieceThrownAwayEvent += p=> {
-                RemovePiece(p.Idx);
-                PieceRemovedEvent.Invoke(p.Idx);
+            board.OnPieceNicheRangeChanged += p=> {
+                UpdateSelectedResources();
             };
         }
 
         public void AddPiece(int idx)
         {
             Piece newPiece = Instantiate(piecePrefab);
-            newPiece.Init(idx, 0);
+            newPiece.Init(idx);
+            pieces[newPiece.Idx] = newPiece;
 
             board.PlaceNewPiece(newPiece);
-            pieces[newPiece.Idx] = newPiece;
             SelectPiece(newPiece);
+
+            StartCoroutine(WaitThenInitPiece(newPiece));
+        }
+        // necessary because event system means that other vertices may not be initialised
+        IEnumerator WaitThenInitPiece(Piece toInit)
+        {
+            yield return null;
+            UpdateSelectedConsumers();
+            OnPieceColored.Invoke(toInit.Idx, toInit.Col);
+            toInit.OnPosChanged += ()=> UpdateSelectedConsumers();
+            toInit.OnPosChanged += ()=> OnPieceColored.Invoke(toInit.Idx, toInit.Col);
+            toInit.OnThrownAway += ()=> RemovePiece(toInit.Idx);
+            toInit.OnThrownAway += ()=> OnPieceRemoved.Invoke(toInit.Idx);
         }
         public void RemovePiece(int idx)
         {
-            Destroy(pieces[idx].gameObject);
             pieces.Remove(idx);
         }
         public void ShapePieceIntoSquare(int idx)
@@ -93,13 +99,6 @@ namespace EcoBuilder.Nichess
 
             selectedConsumers.Clear();
             selectedResources.Clear();
-            foreach (Piece p in pieces.Values)
-            {
-                if (p.IsResourceOf(selectedPiece))
-                    selectedResources.Add(p);
-                if (selectedPiece.IsResourceOf(p))
-                    selectedConsumers.Add(p);
-            }
         }
         public void SelectPiece(int idx) // for use from outside to affect board
         {
@@ -111,29 +110,17 @@ namespace EcoBuilder.Nichess
             selectedPiece = null;
             board.DeselectAll();
         }
-        private void UpdateInspectedConsumers()
+        private void InitSelectedResCon()
         {
-            foreach (Piece con in pieces.Values)
+            foreach (Piece p in pieces.Values)
             {
-                if (selectedPiece.IsResourceOf(con))
-                {
-                    if (!selectedConsumers.Contains(con))
-                    {
-                        selectedConsumers.Add(con);
-                        EdgeAddedEvent.Invoke(selectedPiece.Idx, con.Idx);
-                    }
-                } 
-                else
-                {
-                    if (selectedConsumers.Contains(con))
-                    {
-                        selectedConsumers.Remove(con);
-                        EdgeRemovedEvent.Invoke(selectedPiece.Idx, con.Idx);
-                    }
-                }
+                if (p.IsResourceOf(selectedPiece))
+                    selectedResources.Add(p);
+                if (selectedPiece.IsResourceOf(p))
+                    selectedConsumers.Add(p);
             }
         }
-        private void UpdateInspectedResources()
+        private void UpdateSelectedResources()
         {
             foreach (Piece res in pieces.Values)
             {
@@ -142,7 +129,7 @@ namespace EcoBuilder.Nichess
                     if (!selectedResources.Contains(res))
                     {
                         selectedResources.Add(res);
-                        EdgeAddedEvent.Invoke(res.Idx, selectedPiece.Idx);
+                        OnEdgeAdded.Invoke(res.Idx, selectedPiece.Idx);
                     }
                 } 
                 else
@@ -150,7 +137,29 @@ namespace EcoBuilder.Nichess
                     if (selectedResources.Contains(res))
                     {
                         selectedResources.Remove(res);
-                        EdgeRemovedEvent.Invoke(res.Idx, selectedPiece.Idx);
+                        OnEdgeRemoved.Invoke(res.Idx, selectedPiece.Idx);
+                    }
+                }
+            }
+        }
+        private void UpdateSelectedConsumers()
+        {
+            foreach (Piece con in pieces.Values)
+            {
+                if (selectedPiece.IsResourceOf(con))
+                {
+                    if (!selectedConsumers.Contains(con))
+                    {
+                        selectedConsumers.Add(con);
+                        OnEdgeAdded.Invoke(selectedPiece.Idx, con.Idx);
+                    }
+                } 
+                else
+                {
+                    if (selectedConsumers.Contains(con))
+                    {
+                        selectedConsumers.Remove(con);
+                        OnEdgeRemoved.Invoke(selectedPiece.Idx, con.Idx);
                     }
                 }
             }

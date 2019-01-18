@@ -13,12 +13,12 @@ namespace EcoBuilder.Model
         [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
         [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
 
-        [SerializeField] IntEvent WarningEvent;
-        [SerializeField] IntEvent RescuedEvent;
-        [SerializeField] IntEvent EndangeredEvent;
-        [SerializeField] IntEvent ExtinctionEvent;
-        [SerializeField] IntFloatEvent AbundanceSetEvent;
-        [SerializeField] IntIntFloatEvent FluxSetEvent;
+        [SerializeField] IntEvent OnWarning;
+        [SerializeField] IntEvent OnRescued;
+        [SerializeField] IntEvent OnEndangered;
+        [SerializeField] IntEvent OnExtinction;
+        [SerializeField] IntFloatEvent OnAbundanceSet;
+        [SerializeField] IntIntFloatEvent OnFluxSet;
 
         [SerializeField] float heartRate=60, abundanceTweenSpeed=.1f, lagAbundanceTweenSpeed=.01f;
         [SerializeField] Monitor monitor;
@@ -154,12 +154,12 @@ namespace EcoBuilder.Model
                 if (modelAbundance <= 0 && !warningSpecies.Contains(idx))
                 {
                     warningSpecies.Add(idx);
-                    WarningEvent.Invoke(idx);
+                    OnWarning.Invoke(idx);
                 }
                 else if (modelAbundance > 0 && warningSpecies.Contains(idx))
                 {
                     warningSpecies.Remove(idx);
-                    RescuedEvent.Invoke(idx);
+                    OnRescued.Invoke(idx);
                 }
                 maxModelAbundance = Mathf.Max(maxModelAbundance, modelAbundance);
 
@@ -176,7 +176,7 @@ namespace EcoBuilder.Model
                     if (oldAbundance > 0)
                     {
                         gameAbundances[idx] = 0;
-                        EndangeredEvent.Invoke(idx);
+                        OnEndangered.Invoke(idx);
                     }
                 }
             }
@@ -217,7 +217,7 @@ namespace EcoBuilder.Model
             {
                 float abundance = gameAbundances[idx];
                 float scaledAbundance = abundance / lagMaxAbundance;
-                AbundanceSetEvent.Invoke(idx, scaledAbundance);
+                OnAbundanceSet.Invoke(idx, scaledAbundance);
             }
 
             return feasible;

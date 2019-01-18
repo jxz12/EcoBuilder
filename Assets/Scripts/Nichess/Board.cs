@@ -15,11 +15,11 @@ namespace EcoBuilder.Nichess
         [SerializeField] PieceCamera cam;
 
         Square[,] squares;
-        public event Action<Square> SquareSelectedEvent;
-        public event Action<Piece> PieceSelectedEvent;
-        public event Action<Piece> PieceThrownAwayEvent;
-        public event Action<Piece> PieceNichePosChangedEvent;
-        public event Action<Piece> PieceNicheRangeChangedEvent;
+        public event Action<Square> OnSquareSelected;
+        public event Action<Piece> OnPieceSelected;
+        // public event Action<Piece> OnPieceThrownAway;
+        // public event Action<Piece> OnPieceNichePosChanged;
+        public event Action<Piece> OnPieceNicheRangeChanged;
 
         private void Awake()
         {
@@ -36,14 +36,14 @@ namespace EcoBuilder.Nichess
                     var s = Instantiate(squarePrefab, transform);
 
                     Color c = ColorMap((float)i/(size-1)-.5f, (float)j/(size-1)-.5f);
-                    c = ColorHelper.ApplyGamma(c);
+                    // c = ColorHelper.ApplyGamma(c);
                     s.Init(i, j, c, size, squareBorder);
 
-                    s.ClickedEvent += ()=> ClickSquare(s);
-                    s.DragStartedEvent += ()=> DragStartFromSquare(s);
-                    s.DragEndedEvent += ()=> DragEndFromSquare(s);
-                    s.DraggedIntoEvent += ()=> DragIntoSquare(s);
-                    s.DroppedOnEvent += ()=> DropOnSquare(s);
+                    s.OnClicked += ()=> ClickSquare(s);
+                    s.OnDragStarted += ()=> DragStartFromSquare(s);
+                    s.OnDragEnded += ()=> DragEndFromSquare(s);
+                    s.OnDraggedInto += ()=> DragIntoSquare(s);
+                    s.OnDroppedOn += ()=> DropOnSquare(s);
 
                     squares[i, j] = s;
                 }
@@ -51,8 +51,8 @@ namespace EcoBuilder.Nichess
         }
         private void Start()
         {
-            SquareSelectedEvent += s=> cam.ViewBoard(this);
-            PieceSelectedEvent += p=> cam.ViewPiece(p);
+            OnSquareSelected += s=> cam.ViewBoard(this);
+            OnPieceSelected += p=> cam.ViewPiece(p);
         }
 
         private Square selectedSquare = null;
@@ -106,12 +106,12 @@ namespace EcoBuilder.Nichess
                     {
                         sqr.Occupant.Select();
                         State = BoardState.PieceSelected;
-                        PieceSelectedEvent(sqr.Occupant);
+                        OnPieceSelected(sqr.Occupant);
                     }
                     else
                     {
                         State = BoardState.SquareSelected;
-                        SquareSelectedEvent(sqr);
+                        OnSquareSelected(sqr);
                     }
                 }
                 else
@@ -184,20 +184,21 @@ namespace EcoBuilder.Nichess
             {
                 if (State == BoardState.PieceDragging)
                 {
-                    // change nichePos, but don't actually drop the piece
-                    sqr.Occupant = draggedSquare.Occupant;
-                    draggedSquare.Occupant = null;
-                    sqr.Occupant.NichePos = sqr;
-                    draggedSquare = sqr;
-                    PieceNichePosChangedEvent(sqr.Occupant);
+                    if (draggedSquare.Occupant.IsPotentialNewSquare(sqr))
+                    {
+                        draggedSquare.Occupant.NichePos = sqr;
+                        sqr.Occupant = draggedSquare.Occupant;
+                        draggedSquare.Occupant = null;
+                        draggedSquare = sqr;
+                        // OnPieceNichePosChanged(sqr.Occupant);
+                    }
+                    else {} // otherwise keep the previous draggedSquare
                 }
                 else if (State == BoardState.NicheDragging)
                 {
                     bool updated = UpdateNiche(selectedSquare.Occupant, draggedSquare, sqr);
                     if (updated)
-                    {
                         draggedSquare = sqr;
-                    }
                 }
             }
         }
@@ -230,7 +231,7 @@ namespace EcoBuilder.Nichess
                 if (State == BoardState.PieceDragging)
                 {
                     cam.ViewBoard(this);
-                    PieceThrownAwayEvent(draggedSquare.Occupant);
+                    draggedSquare.Occupant.ThrowAway();
                     draggedSquare.Occupant = null;
                     selectedSquare.Deselect();
                     State = BoardState.Idle;
@@ -254,7 +255,7 @@ namespace EcoBuilder.Nichess
             {
                 toUpdate.NicheMin = toUpdate.NicheMax = from;
                 from.AddConsumer(toUpdate);
-                PieceNicheRangeChangedEvent(toUpdate);
+                OnPieceNicheRangeChanged(toUpdate);
                 return true;
             }
             else
@@ -277,7 +278,7 @@ namespace EcoBuilder.Nichess
                         }
                         toUpdate.NicheMin = toUpdate.NicheMax = from;
                         from.AddConsumer(toUpdate);
-                        PieceNicheRangeChangedEvent(toUpdate);
+                        OnPieceNicheRangeChanged(toUpdate);
                         return true;
                     }
                     else
@@ -343,7 +344,6 @@ namespace EcoBuilder.Nichess
                         b1<=toUpdate.NichePos.Y && toUpdate.NichePos.Y<=t1
                     ) {
                         // cannot eat itself
-                        // State = BoardState.PieceSelected;
                         return false;
                     }
 
@@ -382,7 +382,7 @@ namespace EcoBuilder.Nichess
                             }
                         }
                     }
-                    PieceNicheRangeChangedEvent(toUpdate);
+                    OnPieceNicheRangeChanged(toUpdate);
                     return true;
                 }
             }

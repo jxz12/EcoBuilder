@@ -25,8 +25,9 @@ namespace EcoBuilder.NodeLink
         {
             lr.SetPosition(0, Source.transform.position);
             lr.SetPosition(1, Target.transform.position);
-            lr.startColor = Target.Col;
-            lr.endColor = Source.Col;
+            // lr.startColor = Target.Col;
+            // lr.endColor = Source.Col;
+            lr.material.color = Source.Col;
         }
     }
 }

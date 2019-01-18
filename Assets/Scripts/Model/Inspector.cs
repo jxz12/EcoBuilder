@@ -13,10 +13,10 @@ namespace EcoBuilder.Nichess
         [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
         [Serializable] class IntStringEvent : UnityEvent<int, string> { }
 
-        [SerializeField] IntEvent SpawnedEvent;
+        [SerializeField] IntEvent OnSpawned;
         // [SerializeField] IntEvent ProducerSetEvent;
         // [SerializeField] IntEvent ConsumerSetEvent;
-        [SerializeField] IntFloatEvent MetabolismSetEvent;
+        [SerializeField] IntFloatEvent OnMetabolismSet;
         // [SerializeField] IntFloatEvent GreedinessSetEvent;
         // [SerializeField] IntStringEvent NamedEvent;
 
@@ -50,8 +50,8 @@ namespace EcoBuilder.Nichess
             nameText.color = Color.grey;
             spawnButton.interactable = false;
 
-            SpawnedEvent.Invoke(idxCounter);
-            MetabolismSetEvent.Invoke(idxCounter, .5f);
+            OnSpawned.Invoke(idxCounter);
+            OnMetabolismSet.Invoke(idxCounter, .5f);
             idxCounter += 1;
         }
         public void Extinguish(int idx)

@@ -13,7 +13,7 @@ namespace EcoBuilder.Nichess
 		{
 			// transform.position = toView.transform.position;
 			transform.SetParent(toView.transform);
-			transform.localPosition = Vector3.up;
+			transform.localPosition = 3*Vector3.up;
 		}
 		// public void ViewSquare(Square toView)
 		// {

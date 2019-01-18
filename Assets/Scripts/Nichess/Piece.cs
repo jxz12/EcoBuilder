@@ -19,7 +19,10 @@ namespace EcoBuilder.Nichess
         private float lightness;
         public float Lightness {
             private get { return lightness; }
-            set { lightness = value; Col = ColorHelper.SetYGamma(Col, value); }
+            set {
+                lightness = value;
+                Col = ColorHelper.SetY(NichePos.Col, value);
+            }
         }
 
         public bool StaticPos { get; set; }
@@ -29,35 +32,46 @@ namespace EcoBuilder.Nichess
         {
             // anim = GetComponent<Animator>();
         }
-        public void Init(int idx, float lightness)
+        public void Init(int idx)
         {
             Idx = idx;
             name = idx.ToString();
-            Lightness = lightness;
+            // Lightness = lightness;
+            // this.lightness = lightness;
         }
-
         public void SetShape(Mesh piece)
         {
             pieceMesh.mesh = piece;
         }
+
+        private void ParentTo(Transform parent)
+        {
+            // below is required to get colliders to work with eventsystem
+            transform.parent = parent;
+            transform.localScale = Vector3.one;
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+        }
+
         //////////////////////////////////////////////////////////////////
+
+        public event Action OnPosChanged;
+        public event Action OnThrownAway;
 
         Square nichePos, nicheMin, nicheMax;
         public Square NichePos { 
             get { return nichePos; }
-            set { // this setter probably makes more sense as a function
+            set {
+                // this setter probably makes more sense as a function
                 if (value == nichePos)
                     return;
-
-                // // below is required to get colliders to work with eventsystem
-                transform.parent = value.transform;
-                transform.localScale = Vector3.one;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
-
+                
+                ParentTo(value.transform);
                 nichePos = value;
-                // Col = ColorHelper.SetY(value.Col, Lightness);
-                Col = ColorHelper.SetYGamma(value.Col, Lightness);
+                Col = ColorHelper.SetY(value.Col, Lightness);
+
+                if (OnPosChanged != null)
+                    OnPosChanged();
             }
         }
         public Square NicheMin {
@@ -77,6 +91,11 @@ namespace EcoBuilder.Nichess
         public void Deselect()
         {
             shape.transform.localScale -= new Vector3(.3f, .3f, .3f);
+        }
+        public void ThrowAway()
+        {
+            OnThrownAway();
+            Destroy(gameObject);
         }
         public void Lift()
         {
@@ -105,6 +124,25 @@ namespace EcoBuilder.Nichess
             else
             {
                 return false;
+            }
+        }
+        public bool IsPotentialNewSquare(Square newSquare)
+        {
+            if (newSquare.Occupant != null)
+                return false;
+
+            if (NicheMin == null && NicheMax == null)
+                return true;
+
+            // check if within range
+            int xNew = newSquare.X, yNew = newSquare.Y;
+            if (NicheMin.X<=xNew && xNew<=NicheMax.X && NicheMin.Y<=yNew && yNew<=NicheMax.Y)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
