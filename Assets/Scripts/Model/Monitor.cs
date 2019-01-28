@@ -1,35 +1,45 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 
 namespace EcoBuilder.Model
 {
 	public class Monitor : MonoBehaviour
 	{
-		// public void SetFlux(float flux)
+		// [SerializeField] Text flux;
+		// [SerializeField] Text height;
+		// [SerializeField] Text stability;
+		// [SerializeField] float tweenSpeed;
+
+		// Func<float, float> scale = x=>Mathf.Log(x);
+		// Dictionary<int, float> abundances;
+
+		// public void SetFlux(string flu)
 		// {
-
+		// 	flux.text = flu;
 		// }
-		[SerializeField] Text flux;
-		[SerializeField] Text height;
-		[SerializeField] Text stability;
-		[SerializeField] float tweenSpeed;
+		// public void SetHeight(string hei)
+		// {
+		// 	height.text = hei;
+		// }
+		// public void SetLAS(string las)
+		// {
+		// 	stability.text = las;
+		// }
 
-		Func<float, float> scale = x=>Mathf.Log(x);
-		Dictionary<int, float> abundances;
 
-		public void SetFlux(string flu)
+		[SerializeField] Text debug;
+		public void Debug(string txt)
 		{
-			flux.text = flu;
+			debug.text = txt;
+			StartCoroutine(Flash(.1f));
 		}
-		public void SetHeight(string hei)
+		IEnumerator Flash(float seconds)
 		{
-			height.text = hei;
-		}
-		public void SetLAS(string las)
-		{
-			stability.text = las;
+			debug.color = Color.green;
+			yield return new WaitForSeconds(seconds);
+			debug.color = Color.white;
 		}
 	}
 }

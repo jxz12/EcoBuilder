@@ -20,7 +20,6 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
         [SerializeField] Link linkPrefab;
 
-
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
 
@@ -242,7 +241,8 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        [SerializeField] float SGDStep=.2f, centeringStep, focusStep;
+        [SerializeField] float SGDStep=.2f, centeringStep;
+        [SerializeField] float focusStep, focusCenteringStep;
 
         private Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
         private Queue<int> toBFS = new Queue<int>();
@@ -363,10 +363,8 @@ namespace EcoBuilder.NodeLink
                         if (d_ij != 0) // if there is a path between the two
                         {
                             float mu;
-                            if (i==toFocus || j==toFocus)
-                                mu = 1;
-                            else
-                                mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+                            float eta = (i==toFocus || j==toFocus)? SGDStep : focusStep;
+                            mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
 
                             Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
                             // r.y = 0; // use to keep y position
@@ -389,7 +387,7 @@ namespace EcoBuilder.NodeLink
                 if (i == toFocus)
                 {
                     var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
-                    nodes[i].Pos -= focusStep * fromCenter;
+                    nodes[i].Pos -= focusCenteringStep * fromCenter;
                 }
             }
         }

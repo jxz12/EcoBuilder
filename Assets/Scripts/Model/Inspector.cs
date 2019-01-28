@@ -33,11 +33,13 @@ namespace EcoBuilder.Nichess
             public string name;
             public bool isProducer;
             public float metabolism;
-            public Species(string n, bool iP, float m)
+            public float greediness;
+            public Species(string n, bool iP, float m, float g)
             {
                 name = n;
                 isProducer = iP;
                 metabolism = m;
+                greediness = g;
             }
         }
 
@@ -83,16 +85,19 @@ namespace EcoBuilder.Nichess
         }
         public void Spawn()
         {
-            var newSpecies = new Species(nameText.text, nextIsProducer, metabolismSlider.normalizedValue);
+            var newSpecies = new Species(
+                nameText.text, nextIsProducer,
+                metabolismSlider.normalizedValue, greedinessSlider.normalizedValue
+            );
 
             OnSpawned.Invoke(idxCounter);
+
             if (newSpecies.isProducer)
                 OnProducerSet.Invoke(idxCounter);
             else
                 OnConsumerSet.Invoke(idxCounter);
-
             OnMetabolismSet.Invoke(idxCounter, newSpecies.metabolism);
-            OnGreedinessSet.Invoke(idxCounter, newSpecies.metabolism);
+            // OnGreedinessSet.Invoke(idxCounter, newSpecies.greediness);
 
             speciesDict[idxCounter] = newSpecies;
             InspectSpecies(idxCounter);

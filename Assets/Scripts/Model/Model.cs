@@ -23,6 +23,7 @@ namespace EcoBuilder.Model
         [SerializeField] int countdown=5; // how many heartbeats until death
         [SerializeField] Monitor monitor;
 
+
         class Species
         {
             public int Idx { get; private set; }
@@ -40,7 +41,7 @@ namespace EcoBuilder.Model
             }
             double greediness;
             public double Greediness {
-                set { Greediness = value; }
+                set { greediness = value; }
             }
             public Species(int idx)
             {
@@ -49,10 +50,7 @@ namespace EcoBuilder.Model
 
             public static double Growth(Species s)
             {
-                if (s.isProducer)
-                    return -d0 * s.metabolism;
-                else
-                    return b0 * s.metabolism;
+                return s.isProducer? b0*s.metabolism : -d0*s.metabolism;
             }
             public static double Intra(Species s)
             {
@@ -67,9 +65,9 @@ namespace EcoBuilder.Model
                 return res.isProducer? 0.2:0.5;
             }
             static readonly double b0 = 1,
-                                   d0 = 1,
+                                   d0 = .1,
                                    a_ii0 = 1,
-                                   a0 = 1;
+                                   a0 = 10;
 
             // static readonly double b0 = 1e0,
             //                        d0 = 1e-2,
@@ -148,7 +146,7 @@ namespace EcoBuilder.Model
             if (feasible)
                 CalculateAndSetStability();
             else
-                monitor.SetLAS("infeasible");
+                monitor.Debug("infeasible");
         }
 
         HashSet<Species> endangeredSpecies = new HashSet<Species>();
@@ -182,12 +180,12 @@ namespace EcoBuilder.Model
         private async void CalculateAndSetStability()
         {
             double stability = await Task.Run(() => simulation.LocalAsymptoticStability());
-            monitor.SetLAS(stability.ToString("E"));
+            monitor.Debug(stability.ToString("E"));
         }
 
         private void Start()
         {
-            // StartCoroutine(Pulse(60f / heartRate));
+            StartCoroutine(Pulse(60f / heartRate));
         }
 
         IEnumerator Pulse(float delay)

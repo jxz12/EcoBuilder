@@ -23,67 +23,68 @@ namespace EcoBuilder.Model
             e_ij = Efficiency;
         }
 
+        // external dictionary for lookup
         Dictionary<T, int> speciesDict = new Dictionary<T, int>();
         Dictionary<T, HashSet<T>> speciesAdjacency = new Dictionary<T, HashSet<T>>();
         Dictionary<T, double> equilibriumAbundances = new Dictionary<T, double>();
+        Dictionary<T, Dictionary<T, double>> flux = new Dictionary<T, Dictionary<T, double>>();
 
+        // internal 0-based indexing for matrix operations
         List<T> speciesList = new List<T>();
         List<HashSet<int>> adjacency = new List<HashSet<int>>();
-
-        Matrix<double> A, community, flux;
-        Vector<double> x, b;
-        public void RebuildMatrices(int n)
-        {
-            // A is interaction matrix, x and b are equilibrium abundance
-            A = Matrix<double>.Build.Dense(n, n);
-            x = Vector<double>.Build.Dense(n);
-            b = Vector<double>.Build.Dense(n);
-            community = Matrix<double>.Build.Dense(n, n);
-            flux = Matrix<double>.Build.Dense(n, n);
-        }
 
         public void AddSpecies(T species)
         {
             if (speciesDict.ContainsKey(species))
                 throw new Exception("Ecosystem has that species already");
 
+            int n = speciesList.Count;
+
+            speciesDict[species] = n;
+            speciesAdjacency[species] = new HashSet<T>();
+            equilibriumAbundances[species] = 0;
+            flux[species] = new Dictionary<T, double>();
+
             speciesList.Add(species);
             adjacency.Add(new HashSet<int>());
 
-            int n = speciesList.Count;
-            speciesDict[species] = n-1;
-            speciesAdjacency[species] = new HashSet<T>();
-            equilibriumAbundances[species] = 0;
-
-            RebuildMatrices(n);
+            RebuildMatrices(n+1);
         }
         public void RemoveSpecies(T species)
         {
             if (!speciesDict.ContainsKey(species))
                 throw new Exception("Ecosystem does not have that species");
 
-            speciesDict.Remove(species);
-            foreach (T other in speciesList)
-                speciesAdjacency[other].Remove(species);
-            speciesAdjacency.Remove(species);
-            equilibriumAbundances.Remove(species);
-
-            speciesList.Remove(species);
-            // iterate through all possible interactions to fix adjacency indices
             int n = speciesList.Count;
-            for (int i=0; i<n; i++)
+
+            speciesDict.Remove(species);
+            speciesAdjacency.Remove(species);
+            foreach (var hash in speciesAdjacency.Values)
+                hash.Remove(species);
+
+            equilibriumAbundances.Remove(species);
+            flux.Remove(species);
+            foreach (var dict in flux.Values)
+                dict.Remove(species);
+
+            // O(n) but that's okay, as it shifts indices as required
+            speciesList.Remove(species);
+
+            // iterate through all possible interactions to fix adjacency indices
+            adjacency.RemoveAt(n-1);
+            for (int i=0; i<n-1; i++)
             {
+                T res = speciesList[i];
                 adjacency[i].Clear();
-                for (int j=0; j<speciesList.Count; j++)
+                for (int j=0; j<n-1; j++)
                 {
-                    if (speciesAdjacency[speciesList[i]].Contains(speciesList[j]))
+                    T con = speciesList[j];
+                    if (speciesAdjacency[res].Contains(con))
                         adjacency[i].Add(j);
                 }
             }
-            adjacency.RemoveAt(n);
 
-            if (n > 0)
-                RebuildMatrices(n);
+            RebuildMatrices(n-1);
         }
         public void AddInteraction(T res, T con)
         {
@@ -102,7 +103,30 @@ namespace EcoBuilder.Model
             adjacency[speciesDict[res]].Remove(speciesDict[con]);
         }
 
+        Matrix<double> A, community;
+        Vector<double> x, b;
+        public void RebuildMatrices(int n)
+        {
+            if (n > 0)
+            {
+                // A is interaction matrix, x is equilibrium abundance, b is -r
+                A = Matrix<double>.Build.Dense(n, n);
+                x = Vector<double>.Build.Dense(n);
+                b = Vector<double>.Build.Dense(n);
+
+                // community is Jacobian evaluated at x, flux is e*A
+                community = Matrix<double>.Build.Dense(n, n);
+            }
+            else
+            {
+                A = community = null;
+                x = b = null;
+            }
+        }
+
+        ///////////////////////////////////////
         // should be run async because O(n^3)
+
         public void SolveEquilibrium()
         {
             // create Matrix and Vector that MathNet understands
@@ -110,7 +134,6 @@ namespace EcoBuilder.Model
 
             A.Clear();
             b.Clear();
-            flux.Clear();
             for (int i=0; i<n; i++)
             {
                 T res = speciesList[i];
@@ -122,18 +145,19 @@ namespace EcoBuilder.Model
                     double a = a_ij(res, con);
                     double e = e_ij(res, con);
                     A[i,j] -= a;
-                    A[j,i] += flux[i,j] = e*a;
+                    A[j,i] += flux[res][con] = e*a; // set flux values here
+                    // TODO: this flux has leaks but will prob not cause issues
                 }
             }
-
-            // UnityEngine.Debug.Log(MatStr(A));
-            // UnityEngine.Debug.Log(VecStr(b));
+            // UnityEngine.Debug.Log(MathNetMatStr(A));
+            // UnityEngine.Debug.Log(MathNetVecStr(b));
 
             // find stable equilibrium point of system
             x = A.Solve(b);
-            // UnityEngine.Debug.Log(VecStr(x));
             for (int i=0; i<speciesList.Count; i++)
                 equilibriumAbundances[speciesList[i]] = x[i];
+
+            // UnityEngine.Debug.Log(MathNetVecStr(x));
         }
 
         // Depends on A and b being correct
@@ -157,6 +181,8 @@ namespace EcoBuilder.Model
                 //         community[i,i] += A[i,j] * x[j];
                 //     }
                 // }
+                
+                // Cramer's rule to simplify the above commented
                 community[i,i] = A[i,i] * x[i];
                 for (int j=0; j<i; j++)
                     community[i,j] = A[i,j] * x[i];
@@ -165,7 +191,9 @@ namespace EcoBuilder.Model
             }
         }
 
+        ///////////////////////////////////////////
         // should be run async because O(n^3)
+
         public double LocalAsymptoticStability()
         {
             BuildCommunityMatrix();
@@ -183,12 +211,11 @@ namespace EcoBuilder.Model
         }
         public double GetFlux(T res, T con)
         {
-            int i = speciesDict[res], j = speciesDict[con];
-            return flux[i,j] * x[i] * x[j];
+            return flux[res][con];
         }
 
 
-        public static string MatStr(Matrix<double> mat)
+        public static string MathNetMatStr(Matrix<double> mat)
         {
             var sb = new System.Text.StringBuilder();
             // int m = mat.GetLength(0), n = mat.GetLength(1);
@@ -205,7 +232,7 @@ namespace EcoBuilder.Model
             return sb.ToString();
         }
         
-        public static string VecStr(Vector<double> vec)
+        public static string MathNetVecStr(Vector<double> vec)
         {
             var sb = new System.Text.StringBuilder();
             int n = vec.Count;
