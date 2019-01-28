@@ -50,6 +50,7 @@ namespace EcoBuilder.Nichess
 
             board.PlaceNewPiece(newPiece);
             SelectPiece(newPiece);
+            FixPiecePos(idx);
 
             StartCoroutine(WaitThenInitPiece(newPiece));
         }
@@ -63,6 +64,8 @@ namespace EcoBuilder.Nichess
             toInit.OnPosChanged += ()=> OnPieceColored.Invoke(toInit.Idx, toInit.Col);
             toInit.OnThrownAway += ()=> RemovePiece(toInit.Idx);
             toInit.OnThrownAway += ()=> OnPieceRemoved.Invoke(toInit.Idx);
+
+            OnPieceSelected.Invoke(toInit.Idx);
         }
         public void RemovePiece(int idx)
         {
@@ -82,8 +85,10 @@ namespace EcoBuilder.Nichess
             pieces[idx].Lightness = pieceLightness;
         }
 
-        // public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }
-        // public void FixPieceRange(int idx) { pieces[idx].StaticRange = true; }
+        public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }
+        public void FixPieceRange(int idx) { pieces[idx].StaticRange = true; }
+        // public void SetPieceNichePos(int idx, int x, int y);
+        // public void SetPieceNicheRange(int idx, int x, int y);
 
         //////////////////////////////////////////////////////////////
 

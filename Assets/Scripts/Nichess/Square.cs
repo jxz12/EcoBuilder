@@ -53,6 +53,7 @@ namespace EcoBuilder.Nichess
             c.a = defaultAlpha;
             Col = c;
         }
+        // TODO: change this to some animation that glows
         public void Select()
         {
             transform.localPosition += .01f*Vector3.up;
@@ -109,64 +110,74 @@ namespace EcoBuilder.Nichess
 
         public void AddConsumer(Piece con)
         {
-            var newMarker = GetMarker(markersParent);
-            con.OnPosChanged += ()=> newMarker.Col = con.Col;
-            con.OnThrownAway += ()=> RemoveConsumer(con);
-            newMarker.Col = con.Col;
-            newMarker.ConIdx = con.Idx;
+            if (con == this)
+                throw new Exception("cannot eat itself");
 
-            int i = 1, oldCount = markersLL.Count;
+            var newMarker = GetMarker(markersParent);
+            newMarker.AttachPiece(con);
+
+            int i = 1;
             var head = markersLL.First;
+            bool added = false;
 
             // traverse the list and add the new marker at the right place
             while (head != null)
             {
-                if (newMarker.ConIdx < head.Value.ConIdx)
+                if (newMarker.ConIdx < head.Value.ConIdx && added==false)
                 {
-                    newMarker.Size = newMarker.RenderOrder = i;
+                    newMarker.Size = i;
+                    newMarker.RenderOrder = i;
                     markersLL.AddBefore(head, newMarker);
                     i += 1;
+                    added = true;
                 }
-                else {
-                    head.Value.Size = head.Value.RenderOrder = i;
-                    i += 1;
-                    head = head.Next;
-                }
+                head.Value.Size = i;
+                head.Value.RenderOrder = i;
+                head = head.Next;
+                i += 1;
             }
-            if (markersLL.Count == oldCount)
+            if (added == false)
             {
-                newMarker.Size = newMarker.RenderOrder = i;
+                newMarker.Size = i;
+                newMarker.RenderOrder = i;
                 markersLL.AddLast(newMarker);
             }
-
         }
         public void RemoveConsumer(Piece con)
         {
-            int i = 1, oldCount = markersLL.Count;
+            if (con == this)
+                throw new Exception("cannot eat itself");
+
+            int i = 1;
             var head = markersLL.First;
+            bool removed = false;
 
             // traverse the list and remove the old marker from its place
             while (head != null)
             {
                 if (head.Value.ConIdx == con.Idx)
                 {
-                    var oldMarker = head.Value;
-                    con.OnPosChanged -= ()=> oldMarker.Col = con.Col;
-                    con.OnThrownAway -= ()=> RemoveConsumer(con);
-                    ReturnMarker(oldMarker);
+                    if (removed == true)
+                        throw new Exception("two of the same marker removed");
 
                     var nodeToRemove = head;
                     head = head.Next;
+
+                    var oldMarker = nodeToRemove.Value;
+                    oldMarker.DetachPiece(con);
+                    ReturnMarker(oldMarker);
                     markersLL.Remove(nodeToRemove);
+                    removed = true;
                 }
                 else
                 {
-                    head.Value.Size = head.Value.RenderOrder = i;
+                    head.Value.Size = i;
+                    head.Value.RenderOrder = i;
                     i += 1;
                     head = head.Next;
                 }
             }
-            if (markersLL.Count == oldCount)
+            if (removed == false)
             {
                 throw new Exception("no marker matches " + con.Idx);
             }

@@ -140,10 +140,7 @@ namespace EcoBuilder.Nichess
             {
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         ///////////////////////////////////////////////////////////

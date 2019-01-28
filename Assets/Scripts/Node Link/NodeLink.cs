@@ -12,27 +12,22 @@ namespace EcoBuilder.NodeLink
     {
         [Serializable] class IntEvent : UnityEvent<int> { };
 
-        [SerializeField] UnityEvent OnEmptyClicked;
-        [SerializeField] IntEvent OnNodeClicked;
+        [SerializeField] UnityEvent OnUnfocus;
+        [SerializeField] IntEvent OnFocus;
 
         [SerializeField] Node nodePrefab;
         [SerializeField] GameObject diskPrefab;
         [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
         [SerializeField] Link linkPrefab;
 
-        [SerializeField] float stepSize=.2f, centeringForce=.01f, trophicForce=.5f;
-        [SerializeField] float rotationMultiplier=.9f, yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
-        [SerializeField] float zoomMultiplier=.005f;
-        [SerializeField] float clickRadius=100; // TODO: might want to change this into viewport coordinates
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
 
-        [SerializeField] Transform graphParent, nodesParent, linksParent, disksParent;
+        [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         public void AddNode(int idx)
         {
-            // this might not be best
             if (nodes[idx] != null)
                 throw new Exception("already has idx " + idx);
 
@@ -40,8 +35,12 @@ namespace EcoBuilder.NodeLink
             newNode = Instantiate(nodePrefab, nodesParent);
 
             newNode.Init(idx);
-            newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
+            // newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
+            newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1, 1f), UnityEngine.Random.Range(-1f, 1f));
             nodes[idx] = newNode;
+
+            adjacency[idx] = new HashSet<int>();
+            toBFS.Enqueue(idx);
         }
         public void ShapeNodeIntoCube(int idx)
         {
@@ -53,7 +52,7 @@ namespace EcoBuilder.NodeLink
         }
         public void RemoveNode(int idx)
         {
-            if (inspected != null && inspected.Idx == idx)
+            if (focus != null && focus.Idx == idx)
                 UnfocusAll();
 
             Destroy(nodes[idx].gameObject);
@@ -67,6 +66,21 @@ namespace EcoBuilder.NodeLink
 
             foreach (var ij in toRemove)
                 RemoveLink(ij.Item1, ij.Item2);
+
+            // prevent memory leak in SGD data structures
+            adjacency.Remove(idx);
+            toBFS.Clear();
+            foreach (int i in adjacency.Keys)
+            {
+                adjacency[i].Remove(idx);
+                toBFS.Enqueue(i);
+                shortestPaths.RemoveAt(idx, i);
+                shortestPaths.RemoveAt(i, idx);
+            }
+
+            // prevent memory leak in trophic level data structures
+            trophicA.RemoveAt(idx);
+            trophicLevels.RemoveAt(idx);
         }
 
         public void AddLink(int i, int j)
@@ -74,11 +88,15 @@ namespace EcoBuilder.NodeLink
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i, j] = newLink;
+            adjacency[i].Add(j);
+            adjacency[j].Add(i);
         }
         public void RemoveLink(int i, int j)
         {
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
+            adjacency[i].Remove(j);
+            adjacency[j].Remove(i);
         }
         public void ColorNode(int idx, Color c)
         {
@@ -86,43 +104,32 @@ namespace EcoBuilder.NodeLink
         }
         public void ResizeNode(int idx, float size)
         {
-            if (size < 0 || size > 1)
-                throw new Exception("not normalized");
+            // if (size < 0 || size > 1)
+            //     throw new Exception("not normalized");
 
-            nodes[idx].Size = .5f + size; // do some tweening here!
+            nodes[idx].Size = size; // do some tweening here!
         }
         public void ResizeEdge(int i, int j, float size)
         {
             links[i,j].Size = size;
         }
 
-        Node inspected=null;
+        Node focus=null;
         public void FocusNode(int idx)
         {
-            if (inspected != null && inspected != nodes[idx])
-                inspected.Uninspect();
-
-            nodes[idx].Inspect();
-            inspected = nodes[idx];
+            focus = nodes[idx];
         }
         public void UnfocusAll()
         {
-            if (inspected != null)
-                inspected.Uninspect();
-            
-            inspected = null;
+            focus = null;
         }
         public void FlashNode(int idx)
         {
-            print("Warning: " + idx);
-        }
-        public void HeavyflashNode(int idx)
-        {
-            print("AHHHHHH: " + idx);
+            nodes[idx].Flash();
         }
         public void UnflashNode(int idx)
         {
-            print("Phew: " + idx);
+            nodes[idx].Idle();
         }
 
         private void Update()
@@ -130,25 +137,29 @@ namespace EcoBuilder.NodeLink
             if (nodes.Count < 1)
                 return;
 
-            // checks whether there is a directed path to every species from basal
-            HashSet<int> basal = UpdateTrophicEquations();
-            int componentSize = ConnectedComponentBFS(basal);
-            if (componentSize==nodes.Count)
-            {
-                float maxTrophicLevel = TrophicGaussSeidel();
-                SetYAxis(i=>trophicLevels[i]-1);             
-                SetCorrectTrophicDisks(maxTrophicLevel);
-            }
+            UpdateShortestPaths();
+            if (focus == null)
+                LayoutSGD();
             else
-            {
-                print("asdasda"); // TODO: change this to a warning or something
-                return;
-            }
+                LayoutFocusSGD(focus.Idx);
+
+            bool solvable = UpdateTrophicEquations();
+            if (solvable)
+                TrophicGaussSeidel();
+            else
+                print("LAPLACIAN DET=0"); //TODO: replace this with a warning message
+
+            SetYAxis(i=>trophicLevels[i]-1, trophicStep);
 
             Rotate();
-            LayoutSGD(stepSize);
         }
 
+        ////////////////////////////////////
+        // for user-interaction rotation
+
+        [SerializeField] float rotationMultiplier=.9f, yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
+        [SerializeField] float zoomMultiplier=.005f;
+        [SerializeField] float clickRadius=100; // TODO: might want to change this into viewport coordinates
         void Rotate()
         {
             if (!dragging)
@@ -217,92 +228,78 @@ namespace EcoBuilder.NodeLink
                 }
                 if (closest != null)
                 {
-                    OnNodeClicked.Invoke(closest.Idx);
+                    FocusNode(closest.Idx);
+                    OnFocus.Invoke(closest.Idx);
                 }
                 else
                 {
-                    OnEmptyClicked.Invoke();
+                    UnfocusAll();
+                    OnUnfocus.Invoke();
                 }
             }
         }
 
+        /////////////////////////////////
+        // for stress-based layout
 
-        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
-        private SparseVector<float> trophicLevels = new SparseVector<float>();
+        [SerializeField] float SGDStep=.2f, centeringStep, focusStep;
 
-        // returns a set of basal species
-        HashSet<int> UpdateTrophicEquations()
+        private Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
+        private Queue<int> toBFS = new Queue<int>();
+        private SparseMatrix<int> shortestPaths = new SparseMatrix<int>();
+        private HashSet<int> ShortestPathsBFS(int source)
         {
-            // update the system of linear equations
-            foreach (Node no in nodes)
-                trophicA[no.Idx] = 0;
+            var visited = new HashSet<int>();
+            visited.Add(source);
+            var q = new Queue<int>();
+            q.Enqueue(source);
+            int myNull = int.MinValue;
+            q.Enqueue(myNull); // use this as null value
+            int depth = 1;
 
-            foreach (Link li in links)
-                trophicA[li.Target.Idx] += 1f; // add one to the consumer's row for every resource it has
-
-            var basal = new HashSet<int>();
-            foreach (Node no in nodes)
+            while (q.Count > 1) // will always have one myNull somewhere
             {
-                if (trophicA[no.Idx] != 0)
-                    trophicA[no.Idx] = -1f / trophicA[no.Idx]; // invert, ensures diagonal dominance
+                int current = q.Dequeue();
+                if (current == myNull) // we have reached the end of this depth level
+                {
+                    q.Enqueue(myNull);
+                    depth += 1;
+                }
                 else
-                    basal.Add(no.Idx);
+                {
+                    foreach (int next in adjacency[current])
+                    {
+                        if (!visited.Contains(next))
+                        {
+                            q.Enqueue(next);
+                            visited.Add(next);
+                            shortestPaths[source, next] = shortestPaths[next, source] = depth;
+                        }
+                    }
+                }
             }
-            
-            return basal;
+            return visited;
         }
-
-        float TrophicGaussSeidel()
+        private void UpdateShortestPaths()
         {
-            SparseVector<float> temp = new SparseVector<float>();
-            foreach (Link li in links)
+            int toUpdate = toBFS.Dequeue();
+            var visited = ShortestPathsBFS(toUpdate);
+            foreach (int i in adjacency.Keys)
             {
-                int resource = li.Source.Idx, consumer = li.Target.Idx;
-                temp[consumer] += trophicA[consumer] * trophicLevels[resource];
+                // this is to make sure that unconnected vertices get pushed away
+                if (!visited.Contains(i))
+                {
+                    shortestPaths.RemoveAt(toUpdate, i);
+                    shortestPaths.RemoveAt(i, toUpdate);
+                }
             }
-            float maxTrophicLevel = 0;
-            foreach (Node no in nodes)
-            {
-                trophicLevels[no.Idx] = (1 - temp[no.Idx]);
-                maxTrophicLevel = Math.Max(maxTrophicLevel, trophicLevels[no.Idx]);
-            }
-            return maxTrophicLevel;
+            toBFS.Enqueue(toUpdate);
         }
-
-        void SetYAxis(Func<int, float> YAxisPos)
-        {
-            foreach (Node no in nodes)
-            {
-                float targetY = YAxisPos(no.Idx);
-                float toAdd = (targetY - no.Pos.y) * trophicForce;
-                
-                no.Pos += new Vector3(0, toAdd, 0);
-            }
-        }
-        Stack<GameObject> disks = new Stack<GameObject>();
-        void SetCorrectTrophicDisks(float maxTrophicLevel)
-        {
-            // always assume one disk always present
-
-            int numDisks = disks.Count;
-            if (maxTrophicLevel >= numDisks+2) // add disk
-            {
-                var newDisk = Instantiate(diskPrefab, disksParent, false);
-                newDisk.transform.localPosition = new Vector3(0,numDisks+1,0);
-                disks.Push(newDisk);
-            }
-            else if (maxTrophicLevel < numDisks+1)
-            {
-                var oldDisk = disks.Pop();
-                Destroy(oldDisk);
-            }
-        }
-
 
         // SGD
-        private void LayoutSGD(float eta)
+        private void LayoutSGD()
         {
-            if (eta < 0)
+            if (SGDStep < 0)
                 return;
 
             // no shuffle, could add later
@@ -316,45 +313,176 @@ namespace EcoBuilder.NodeLink
                         Vector3 X_j = nodes[j].Pos;
                         Vector3 X_ij = X_i - X_j;
                         float mag = X_ij.magnitude;
-                        // float d_ij = 1 + (nodes[i].Size-1) + (nodes[j].Size-1);
+                        int d_ij = shortestPaths[i, j];
 
-                        if (links[i,j] != null || links[j,i] != null) // if connected, do normal SGD
+                        if (d_ij != 0) // if there is a path between the two
                         {
-                            float mu = Mathf.Min(eta, 1); // w = 1/d^2 = 1/1
-                            // Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
-                            Vector3 r = ((mag-1)/2) * (X_ij/mag);
+                            float mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
 
-                            r.y = 0; // keep y position
-                            // if (inspected != null && (inspected.Idx==i || inspected.Idx==j))
-                            // {
-                            //     // focus
-                            //     nodes[i].Pos -= r;
-                            //     nodes[j].Pos += r;
-                            // } 
-                            // else
-                            // {
-                                nodes[i].Pos -= mu * r;
-                                nodes[j].Pos += mu * r;
-                            // }
+                            Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                            // r.y = 0; // use to keep y position
+                            nodes[i].Pos -= mu * r;
+                            nodes[j].Pos += mu * r;
                         }
                         else // otherwise try to move the vertices at least a distance of 2 away
                         {
                             if (mag < 2)
                             {
-                                float mu = Mathf.Min(.25f*eta, 1); // w = 1/d^2 = 1/4
-                                // Vector3 r = ((mag-(d_ij+1))/2) * (X_ij/mag);
+                                float mu = Mathf.Min(SGDStep * .25f, 1); // w = 1/d^2 = 1/2^2 = .25
+
                                 Vector3 r = ((mag-2)/2) * (X_ij/mag);
-                                r.y = 0; // keep y position
+                                // r.y = 0; // use to keep y position
                                 nodes[i].Pos -= mu * r;
                                 nodes[j].Pos += mu * r;
                             }
                         }
                     }
                 }
-                var centering = new Vector3(-centeringForce*nodes[i].Pos.x, 0, -centeringForce*nodes[i].Pos.z);  
-                nodes[i].Pos += centering;
+                var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
+                nodes[i].Pos -= centeringStep * fromCenter;
             }
         }
+        private void LayoutFocusSGD(int toFocus)
+        {
+            if (SGDStep < 0)
+                return;
+
+            // no shuffle, could add later
+            foreach (int i in nodes.Indices)
+            {
+                Vector3 X_i = nodes[i].Pos;
+                foreach (int j in nodes.Indices)
+                {
+                    if (i < j)
+                    {
+                        Vector3 X_j = nodes[j].Pos;
+                        Vector3 X_ij = X_i - X_j;
+                        float mag = X_ij.magnitude;
+                        int d_ij = shortestPaths[i, j];
+
+                        if (d_ij != 0) // if there is a path between the two
+                        {
+                            float mu;
+                            if (i==toFocus || j==toFocus)
+                                mu = 1;
+                            else
+                                mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+
+                            Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                            // r.y = 0; // use to keep y position
+                            nodes[i].Pos -= mu * r;
+                            nodes[j].Pos += mu * r;
+                        }
+                        else // otherwise try to move the vertices at least a distance of 2 away
+                        {
+                            if (mag < 2)
+                            {
+                                float mu = Mathf.Min(SGDStep * .25f, 1); // w = 1/d^2 = 1/4
+                                Vector3 r = ((mag-2)/2) * (X_ij/mag);
+                                // r.y = 0; // use to keep y position
+                                nodes[i].Pos -= mu * r;
+                                nodes[j].Pos += mu * r;
+                            }
+                        }
+                    }
+                }
+                if (i == toFocus)
+                {
+                    var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
+                    nodes[i].Pos -= focusStep * fromCenter;
+                }
+            }
+        }
+
+        ////////////////////////////////////
+        // for trophic level calculation
+
+        [SerializeField] float trophicStep;
+
+        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
+        private SparseVector<float> trophicLevels = new SparseVector<float>();
+
+        // update the system of linear equations (Laplacian)
+        private bool UpdateTrophicEquations()
+        {
+            foreach (Node no in nodes)
+                trophicA[no.Idx] = 0;
+
+            foreach (Link li in links)
+            {
+                int res = li.Source.Idx, con = li.Target.Idx;
+                // if (links[li.Target.Idx, li.Source.Idx] == null) // prevent intraguild predation (TODO: MAY NOT BE NECESSARY)
+                    trophicA[con] += 1f;
+            }
+
+            var basal = new HashSet<int>();
+            foreach (Node no in nodes)
+            {
+                if (trophicA[no.Idx] != 0)
+                    trophicA[no.Idx] = -1f / trophicA[no.Idx]; // ensures diagonal dominance
+                else
+                    basal.Add(no.Idx);
+            }
+
+            // returns whether determinant of the Laplacian is 0
+            int cc = ConnectedComponentBFS(basal);
+            if (cc != nodes.Count)
+                return false;
+            else
+                return true;
+        }
+
+        // simplified gauss-seidel iteration because of the simplicity of the laplacian
+        void TrophicGaussSeidel()
+        {
+            SparseVector<float> temp = new SparseVector<float>();
+            foreach (Link li in links)
+            {
+                int res = li.Source.Idx, con = li.Target.Idx;
+                // if (links[con, res] == null) // prevent intraguild predation
+                    temp[con] += trophicA[con] * trophicLevels[res];
+            }
+            foreach (Node no in nodes)
+            {
+                trophicLevels[no.Idx] = (1 - temp[no.Idx]);
+            }
+        }
+
+        void SetYAxis(Func<int, float> YAxisPos, float force)
+        {
+            foreach (Node no in nodes)
+            {
+                float targetY = YAxisPos(no.Idx);
+                if (targetY == 0)
+                {
+                    no.Pos -= new Vector3(0, no.Pos.y, 0);
+                }
+                else
+                {
+                    float toAdd = (targetY - no.Pos.y) * force;
+                    no.Pos += new Vector3(0, toAdd, 0);
+                }
+            }
+        }
+
+        private Stack<GameObject> disks = new Stack<GameObject>();
+        void SetCorrectYDisks(float maxY)
+        {
+            // assume one disk always present
+            int numDisks = disks.Count;
+            if (maxY >= numDisks+1) // add disk
+            {
+                var newDisk = Instantiate(diskPrefab, nodesParent, false);
+                newDisk.transform.localPosition = new Vector3(0,numDisks+1,0);
+                disks.Push(newDisk);
+            }
+            else if (maxY < numDisks)
+            {
+                var oldDisk = disks.Pop();
+                Destroy(oldDisk);
+            }
+        }
+
         private int ConnectedComponentBFS(IEnumerable<int> sources)
         {
             var visited = new HashSet<int>();

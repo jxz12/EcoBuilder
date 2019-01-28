@@ -42,13 +42,21 @@ namespace EcoBuilder.NodeLink
             nodeMesh.mesh = node;
             outlineMesh.mesh = outline;
         }
-        public void Inspect()
+        // public void Inspect()
+        // {
+        //     anim.SetTrigger("Inspect");
+        // }
+        // public void Uninspect()
+        // {
+        //     anim.SetTrigger("Uninspect");
+        // }
+        public void Flash()
         {
-            anim.SetTrigger("Inspect");
+            anim.SetTrigger("Flash");
         }
-        public void Uninspect()
+        public void Idle()
         {
-            anim.SetTrigger("Uninspect");
+            anim.SetTrigger("Idle");
         }
     }
 }
