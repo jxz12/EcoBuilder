@@ -55,6 +55,7 @@ namespace EcoBuilder.Nichess
 
         //////////////////////////////////////////////////////////////////
 
+        public event Action OnSelected;
         public event Action OnPosChanged;
         public event Action OnThrownAway;
 
@@ -87,6 +88,7 @@ namespace EcoBuilder.Nichess
         public void Select()
         {
             shape.transform.localScale += new Vector3(.3f, .3f, .3f);
+            OnSelected();
         }
         public void Deselect()
         {

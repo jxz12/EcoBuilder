@@ -149,6 +149,12 @@ namespace EcoBuilder.Model
                 monitor.Debug("infeasible");
         }
 
+        // ------------------ topTop
+        // ------------------ top
+        //     UNBUFFERED
+        // ------------------ bot
+        // ------------------ botBot
+        float topTop, top, bot, botBot;
         HashSet<Species> endangeredSpecies = new HashSet<Species>();
         private bool ScaleAndSetAbundances()
         {
@@ -176,6 +182,21 @@ namespace EcoBuilder.Model
                 }
             }
             return feasible;
+            // want to scale from min to max, also abs so 0-1
+            // problems:
+            //  - if the min/max in/decreases, the size should in/decrease as well
+            //    but if we just scale from min to max they will stay the same size
+            //  - despite how similar two nodes are in absolute size, the relative
+            //    size is maxed out if there are only two of them
+            //
+            // solutions:
+            //  - always keep a buffer either side in order to have room to move
+            //    and
+            //  - e.g. 0.25-0.75 is actual range, and if e.g. the min drops then
+            //    0.0-0.25 is new min to old min
+            //  - actual min then slowly move towards new in
+            //  - keep track of min/max ever in order to make relative better
+            
         }
         private async void CalculateAndSetStability()
         {

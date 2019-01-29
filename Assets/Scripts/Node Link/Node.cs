@@ -14,10 +14,17 @@ namespace EcoBuilder.NodeLink
             get { return mr.material.GetColor("_Color"); }
             set { mr.material.SetColor("_Color", value); }
         }
+        private Vector3 target;
         public Vector3 Pos {
-            get { return transform.localPosition; }
-            set { transform.localPosition = value;}
+            get { return target; }
+            set { target = value; }
         }
+        private Vector3 velocity = Vector3.zero;
+        [SerializeField] private float smoothTime = .2f;
+        // public Vector3 Pos {
+        //     get { return transform.localPosition; }
+        //     set { transform.localPosition = value;}
+        // }
         public float Size {
             get { return shape.localScale.x; }
             set { shape.localScale = new Vector3(value, value, value); }
@@ -41,6 +48,10 @@ namespace EcoBuilder.NodeLink
         {
             nodeMesh.mesh = node;
             outlineMesh.mesh = outline;
+        }
+        void FixedUpdate()
+        {
+            transform.localPosition = Vector3.SmoothDamp(transform.localPosition, target, ref velocity, smoothTime);
         }
         // public void Inspect()
         // {

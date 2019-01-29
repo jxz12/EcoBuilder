@@ -1395,10 +1395,11 @@ MonoBehaviour:
   xRotationForce: 15
   zoomMultiplier: 0.005
   clickRadius: 500
-  SGDStep: 0.2
+  minSGDStep: 0.1
+  stepMultiplier: 0.5
   centeringStep: 0.02
-  focusStep: 1
-  focusCenteringStep: 0.1
+  focusStep: 4
+  focusCenteringStep: 0.2
   trophicStep: 0.1
 --- !u!65 &773235147
 BoxCollider:

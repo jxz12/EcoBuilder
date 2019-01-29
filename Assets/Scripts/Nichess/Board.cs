@@ -18,9 +18,7 @@ namespace EcoBuilder.Nichess
 
         Square[,] squares;
         public event Action<Square> OnSquareSelected;
-        public event Action<Piece> OnPieceSelected;
-        // public event Action<Piece> OnPieceThrownAway;
-        // public event Action<Piece> OnPieceNichePosChanged;
+        // public event Action<Piece> OnPieceSelected;
         public event Action<Piece> OnPieceNicheRangeChanged;
 
         private void Awake()
@@ -56,8 +54,6 @@ namespace EcoBuilder.Nichess
         {
             OnSquareSelected += s=> cam.ViewBoard(this);
             OnSquareSelected += s=> EraseLasso();
-            OnPieceSelected += p=> cam.ViewPiece(p);
-            OnPieceSelected += p=> DrawLasso(p);
         }
 
         private Square selectedSquare = null;
@@ -72,7 +68,7 @@ namespace EcoBuilder.Nichess
             set { /*print(value);*/ myState = value; }
         }
 
-        public void PlaceNewPiece(Piece pce)
+        public void PlaceNewPieceOnSelectedSquare(Piece pce)
         {
             if (selectedSquare == null)
                 throw new Exception("square not selected first!");
@@ -80,8 +76,11 @@ namespace EcoBuilder.Nichess
             {
                 pce.NichePos = selectedSquare;
                 selectedSquare.Occupant = pce;
+
+                pce.OnSelected += ()=> cam.ViewPiece(pce);
+                pce.OnSelected += ()=> DrawLasso(pce);
                 pce.Select();
-                cam.ViewPiece(pce);
+
                 State = BoardState.PieceSelected;
             }
         }
@@ -111,7 +110,7 @@ namespace EcoBuilder.Nichess
                     {
                         sqr.Occupant.Select();
                         State = BoardState.PieceSelected;
-                        OnPieceSelected(sqr.Occupant);
+                        // OnPieceSelected(sqr.Occupant);
                     }
                     else
                     {
@@ -127,7 +126,8 @@ namespace EcoBuilder.Nichess
                 selectedSquare = sqr;
             }
         }
-        public void SelectPiece(Piece pce)
+
+        public void SelectPieceExternal(Piece pce)
         {
             // ClickSquare(p.NichePos); // cannot do this because it will wrongly invoke events
             if (State == BoardState.SquareSelected)
@@ -139,13 +139,16 @@ namespace EcoBuilder.Nichess
                 selectedSquare.Deselect();
                 selectedSquare.Occupant.Deselect();
             }
-            pce.Select();
             pce.NichePos.Select();
-            cam.ViewPiece(pce);
-            State = BoardState.PieceSelected;
+            pce.Select();
             selectedSquare = pce.NichePos;
+
+            cam.ViewPiece(pce);
             DrawLasso(selectedSquare.Occupant);
+
+            State = BoardState.PieceSelected;
         }
+
         public void DeselectAll()
         {
             ClickSquare(null);
@@ -187,7 +190,7 @@ namespace EcoBuilder.Nichess
                     }
                     else
                     {
-                        if (sqr.Occupant != null)
+                        if (sqr.Occupant != null && !sqr.Occupant.StaticPos)
                         {
                             ClickSquare(sqr);
                             sqr.Occupant.Lift();

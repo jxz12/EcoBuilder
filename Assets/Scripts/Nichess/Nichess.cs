@@ -31,11 +31,6 @@ namespace EcoBuilder.Nichess
                 selectedPiece = null;
                 OnPlacementReady.Invoke();
             };
-            board.OnPieceSelected += p=> {
-                SelectPiece(p);
-                InitSelectedResCon();
-                OnPieceSelected.Invoke(p.Idx);
-            };
 
             board.OnPieceNicheRangeChanged += p=> {
                 UpdateSelectedResources();
@@ -48,17 +43,30 @@ namespace EcoBuilder.Nichess
             newPiece.Init(idx);
             pieces[newPiece.Idx] = newPiece;
 
-            board.PlaceNewPiece(newPiece);
-            SelectPiece(newPiece);
-            FixPiecePos(idx);
+            board.PlaceNewPieceOnSelectedSquare(newPiece);
+            FixPiecePos(idx); // can be removed
 
             StartCoroutine(WaitThenInitPiece(newPiece));
         }
         // necessary because event system means that other vertices may not be initialised
         IEnumerator WaitThenInitPiece(Piece toInit)
         {
-            yield return null;
-            UpdateSelectedConsumers();
+            yield return null; // wait one frame
+
+            selectedPiece = toInit;
+            selectedResources.Clear();
+            selectedConsumers.Clear();
+            UpdateSelectedConsumers(); // update without InitSelected to get initial consumers
+
+            toInit.OnSelected += ()=> {
+                if (selectedPiece != toInit) // if call is from board
+                {
+                    selectedPiece = toInit;
+                    OnPieceSelected.Invoke(toInit.Idx);
+                }
+                InitSelectedResCon();
+            };
+
             OnPieceColored.Invoke(toInit.Idx, toInit.Col);
             toInit.OnPosChanged += ()=> UpdateSelectedConsumers();
             toInit.OnPosChanged += ()=> OnPieceColored.Invoke(toInit.Idx, toInit.Col);
@@ -95,20 +103,14 @@ namespace EcoBuilder.Nichess
         private Piece selectedPiece;
         private HashSet<Piece> selectedConsumers=new HashSet<Piece>();
         private HashSet<Piece> selectedResources=new HashSet<Piece>();
-        private void SelectPiece(Piece toSelect)
-        {
-            if (selectedPiece == toSelect)
-                throw new Exception("piece already inspected");
 
-            selectedPiece = toSelect;
-
-            selectedConsumers.Clear();
-            selectedResources.Clear();
-        }
         public void SelectPiece(int idx) // for use from outside to affect board
         {
-            board.SelectPiece(pieces[idx]);
-            SelectPiece(pieces[idx]);
+            if (selectedPiece != null && selectedPiece.Idx == idx)
+                throw new Exception("piece already inspected");
+
+            selectedPiece = pieces[idx]; // 'mark' this call as external
+            board.SelectPieceExternal(pieces[idx]);
         }
         public void DeselectAll()
         {
@@ -117,6 +119,9 @@ namespace EcoBuilder.Nichess
         }
         private void InitSelectedResCon()
         {
+            selectedConsumers.Clear();
+            selectedResources.Clear();
+
             foreach (Piece p in pieces.Values)
             {
                 if (p.IsResourceOf(selectedPiece))

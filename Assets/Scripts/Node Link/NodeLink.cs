@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using SparseMatrix;
 using System;
-using System.Linq;
+// using System.Linq;
 using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
@@ -73,8 +73,6 @@ namespace EcoBuilder.NodeLink
             {
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
-                shortestPaths.RemoveAt(idx, i);
-                shortestPaths.RemoveAt(i, idx);
             }
 
             // prevent memory leak in trophic level data structures
@@ -136,11 +134,20 @@ namespace EcoBuilder.NodeLink
             if (nodes.Count < 1)
                 return;
 
-            UpdateShortestPaths();
-            if (focus == null)
-                LayoutSGD();
+            int dq = toBFS.Dequeue(); // only do one vertex per frame
+            var d_j = ShortestPathsBFS(dq);
+            if (focus != null && focus.Idx == dq)
+            {
+                LayoutSGD(dq, d_j, focusStep);
+                CenteringSGD(dq, focusCenteringStep);
+            }
             else
-                LayoutFocusSGD(focus.Idx);
+            {
+                LayoutSGD(dq, d_j, SGDStep);
+                CenteringSGD(dq, centeringStep);
+            }
+
+            toBFS.Enqueue(dq);
 
             bool solvable = UpdateTrophicEquations();
             if (solvable)
@@ -193,6 +200,7 @@ namespace EcoBuilder.NodeLink
 
                 float xSpin = ped.delta.y * rotationMultiplier;
                 graphParent.Rotate(Vector3.right, xSpin);
+                // TODO: make SGD step go up when shaken
             }
             else if (ped.button == PointerEventData.InputButton.Right)
             {
@@ -227,8 +235,11 @@ namespace EcoBuilder.NodeLink
                 }
                 if (closest != null)
                 {
-                    FocusNode(closest.Idx);
-                    OnFocus.Invoke(closest.Idx);
+                    if (focus != closest)
+                    {
+                        FocusNode(closest.Idx);
+                        OnFocus.Invoke(closest.Idx);
+                    }
                 }
                 else
                 {
@@ -241,16 +252,21 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        [SerializeField] float SGDStep=.2f, centeringStep;
-        [SerializeField] float focusStep, focusCenteringStep;
+        [SerializeField] float SGDStep=.2f;
+        [SerializeField] float separationStep, focusStep, centeringStep, focusCenteringStep;
 
         private Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
         private Queue<int> toBFS = new Queue<int>();
-        private SparseMatrix<int> shortestPaths = new SparseMatrix<int>();
-        private HashSet<int> ShortestPathsBFS(int source)
+
+        private Dictionary<int, int> visited; // ugly, but reuse here to ease GC
+        private Dictionary<int, int> ShortestPathsBFS(int source)
         {
-            var visited = new HashSet<int>();
-            visited.Add(source);
+            if (visited == null)
+                visited = new Dictionary<int, int>();
+            else
+                visited.Clear();
+
+            visited[source] = 0;
             var q = new Queue<int>();
             q.Enqueue(source);
             int myNull = int.MinValue;
@@ -269,127 +285,57 @@ namespace EcoBuilder.NodeLink
                 {
                     foreach (int next in adjacency[current])
                     {
-                        if (!visited.Contains(next))
+                        if (!visited.ContainsKey(next))
                         {
                             q.Enqueue(next);
-                            visited.Add(next);
-                            shortestPaths[source, next] = shortestPaths[next, source] = depth;
+                            visited[next] = depth;
                         }
                     }
                 }
             }
             return visited;
         }
-        private void UpdateShortestPaths()
-        {
-            int toUpdate = toBFS.Dequeue();
-            var visited = ShortestPathsBFS(toUpdate);
-            foreach (int i in adjacency.Keys)
-            {
-                // this is to make sure that unconnected vertices get pushed away
-                if (!visited.Contains(i))
-                {
-                    shortestPaths.RemoveAt(toUpdate, i);
-                    shortestPaths.RemoveAt(i, toUpdate);
-                }
-            }
-            toBFS.Enqueue(toUpdate);
-        }
 
         // SGD
-        private void LayoutSGD()
+        private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
         {
-            if (SGDStep < 0)
-                return;
-
-            // no shuffle, could add later
-            foreach (int i in nodes.Indices)
+            foreach (int j in nodes.Indices) // no shuffle, TODO: add later
             {
-                Vector3 X_i = nodes[i].Pos;
-                foreach (int j in nodes.Indices)
+                if (i != j)
                 {
-                    if (i < j)
+                    Vector3 X_ij = nodes[i].Pos - nodes[j].Pos;
+                    float mag = X_ij.magnitude;
+
+                    if (d_j.ContainsKey(j)) // if there is a path between the two
                     {
-                        Vector3 X_j = nodes[j].Pos;
-                        Vector3 X_ij = X_i - X_j;
-                        float mag = X_ij.magnitude;
-                        int d_ij = shortestPaths[i, j];
+                        int d_ij = d_j[j];
+                        float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
 
-                        if (d_ij != 0) // if there is a path between the two
+                        Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                        // r.y = 0; // use to keep y position
+                        nodes[i].Pos -= mu * r;
+                        nodes[j].Pos += mu * r;
+                    }
+                    else // otherwise try to move the vertices at least a distance of 2 away
+                    {
+                        if (mag < 2) // only push away
                         {
-                            float mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+                            // float mu = Mathf.Min(eta * .25f, 1); // w = 1/d^2 = 1/2^2 = .25
+                            float mu = Mathf.Min(separationStep*.25f, 1);
 
-                            Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                            Vector3 r = ((mag-2)/2) * (X_ij/mag);
                             // r.y = 0; // use to keep y position
                             nodes[i].Pos -= mu * r;
                             nodes[j].Pos += mu * r;
                         }
-                        else // otherwise try to move the vertices at least a distance of 2 away
-                        {
-                            if (mag < 2)
-                            {
-                                float mu = Mathf.Min(SGDStep * .25f, 1); // w = 1/d^2 = 1/2^2 = .25
-
-                                Vector3 r = ((mag-2)/2) * (X_ij/mag);
-                                // r.y = 0; // use to keep y position
-                                nodes[i].Pos -= mu * r;
-                                nodes[j].Pos += mu * r;
-                            }
-                        }
                     }
                 }
-                var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
-                nodes[i].Pos -= centeringStep * fromCenter;
             }
         }
-        private void LayoutFocusSGD(int toFocus)
+        private void CenteringSGD(int i, float eta)
         {
-            if (SGDStep < 0)
-                return;
-
-            // no shuffle, could add later
-            foreach (int i in nodes.Indices)
-            {
-                Vector3 X_i = nodes[i].Pos;
-                foreach (int j in nodes.Indices)
-                {
-                    if (i < j)
-                    {
-                        Vector3 X_j = nodes[j].Pos;
-                        Vector3 X_ij = X_i - X_j;
-                        float mag = X_ij.magnitude;
-                        int d_ij = shortestPaths[i, j];
-
-                        if (d_ij != 0) // if there is a path between the two
-                        {
-                            float mu;
-                            float eta = (i==toFocus || j==toFocus)? SGDStep : focusStep;
-                            mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
-
-                            Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
-                            // r.y = 0; // use to keep y position
-                            nodes[i].Pos -= mu * r;
-                            nodes[j].Pos += mu * r;
-                        }
-                        else // otherwise try to move the vertices at least a distance of 2 away
-                        {
-                            if (mag < 2)
-                            {
-                                float mu = Mathf.Min(SGDStep * .25f, 1); // w = 1/d^2 = 1/4
-                                Vector3 r = ((mag-2)/2) * (X_ij/mag);
-                                // r.y = 0; // use to keep y position
-                                nodes[i].Pos -= mu * r;
-                                nodes[j].Pos += mu * r;
-                            }
-                        }
-                    }
-                }
-                if (i == toFocus)
-                {
-                    var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
-                    nodes[i].Pos -= focusCenteringStep * fromCenter;
-                }
-            }
+            var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
+            nodes[i].Pos -= eta * fromCenter;
         }
 
         ////////////////////////////////////

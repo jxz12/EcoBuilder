@@ -115,6 +115,7 @@ namespace EcoBuilder.Nichess
             producerButton.interactable = !speciesDict[idx].isProducer;
             consumerButton.interactable = speciesDict[idx].isProducer;
             metabolismSlider.normalizedValue = speciesDict[idx].metabolism;
+            greedinessSlider.normalizedValue = speciesDict[idx].greediness;
             
             ////////////////////////////////////////////////////////////////////
             producerButton.gameObject.SetActive(true);
