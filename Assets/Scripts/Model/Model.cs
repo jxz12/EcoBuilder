@@ -14,56 +14,49 @@ namespace EcoBuilder.Model
         [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
 
         [SerializeField] IntEvent OnEndangered;
-        [SerializeField] IntEvent OnExtinction;
         [SerializeField] IntEvent OnRescued;
+        [SerializeField] IntEvent OnExtinction;
         [SerializeField] IntFloatEvent OnAbundanceSet;
         [SerializeField] IntIntFloatEvent OnFluxSet;
 
         [SerializeField] float heartRate=60; // frequency of LAS calculations
-        [SerializeField] int countdown=5; // how many heartbeats until death
+        // [SerializeField] int countdown=5; // how many heartbeats until death
         [SerializeField] Monitor monitor;
-
 
         class Species
         {
             public int Idx { get; private set; }
             bool isProducer;
             public bool IsProducer {
-                set { isProducer = value; }
+                set {
+                    isProducer = value;
+                    Growth = value? metabolism*b0 : -metabolism*d0;
+                    Efficiency = value? 0.2 : 0.5;
+                }
             }
-            // double bodyMass;
-            // public double BodyMass {
-            //     set { bodyMass = Math.Pow(10, value*9); }
-            // }
             double metabolism;
             public double Metabolism {
-                set { metabolism = value; }
+                set {
+                    metabolism = (value+.1);
+                    Growth = isProducer? (value+.1)*b0 : -(value+.1)*d0;
+                    Attack = (value+.1) * a0;
+                }
             }
-            double greediness;
             public double Greediness {
-                set { greediness = value; }
+                set {
+                    SelfReg = a_ii0 * (-1.1 + value);
+                }
             }
+            public double Growth { get; private set; } = 0;
+            public double SelfReg { get; private set; } = 0;
+            public double Attack { get; private set; } = 0;
+            public double Efficiency { get; private set; } = 0;
+
             public Species(int idx)
             {
                 Idx = idx;
             }
 
-            public static double Growth(Species s)
-            {
-                return s.isProducer? b0*s.metabolism : -d0*s.metabolism;
-            }
-            public static double Intra(Species s)
-            {
-                return a_ii0 * (-1 + s.greediness);
-            }
-            public static double Attack(Species res, Species con)
-            {
-                return a0 * con.metabolism;
-            }
-            public static double Efficiency(Species res, Species con)
-            {
-                return res.isProducer? 0.2:0.5;
-            }
             static readonly double b0 = 1,
                                    d0 = .1,
                                    a_ii0 = 1,
@@ -76,33 +69,21 @@ namespace EcoBuilder.Model
             //                        beta = 0.75;
         }
 
-        LotkaVolterraLAS<Species> simulation = new LotkaVolterraLAS<Species>
-        (
-            s => Species.Growth(s),
-            s => Species.Intra(s),
-            (r,c) => Species.Attack(r,c),
-            (r,c) => Species.Efficiency(r,c)
-        );
-
+        LotkaVolterra<Species> simulation;
         Dictionary<int, Species> idx2Species = new Dictionary<int, Species>();
-        // Dictionary<Species, int> species2Idx = new Dictionary<Species, int>();
-        Dictionary<int, float> gameAbundances = new Dictionary<int, float>();
 
         public void AddSpecies(int idx)
         {
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
             idx2Species.Add(idx, newSpecies);
-            // species2Idx.Add(newSpecies, idx);
-            gameAbundances.Add(idx, 0);
         }
         public void RemoveSpecies(int idx)
         {
             Species toRemove = idx2Species[idx];
             simulation.RemoveSpecies(toRemove);
             idx2Species.Remove(idx);
-            // species2Idx.Remove(toRemove);
-            gameAbundances.Remove(idx);
+            scaledAbundances.Remove(idx);
         }
         public void SetSpeciesAsProducer(int idx)
         {
@@ -138,10 +119,23 @@ namespace EcoBuilder.Model
             simulation.RemoveInteraction(res, con);
         }
 
+        void Awake()
+        {
+            simulation = new LotkaVolterra<Species>(
+                s => s.Growth,
+                s => s.SelfReg,
+                (r,c) => r.Attack,
+                (r,c) => r.Efficiency
+            );
+            simulation.OnAbundanceSet += SetAndScaleAbundance;
+        }
+
+        /////////////////////
+        // mathy bits here
+
         async void Equilibrium()
         {
-            await Task.Run(() => simulation.SolveEquilibrium());
-            bool feasible = ScaleAndSetAbundances();
+            bool feasible = await Task.Run(() => simulation.SolveEquilibrium());
 
             if (feasible)
                 CalculateAndSetStability();
@@ -154,34 +148,34 @@ namespace EcoBuilder.Model
         //     UNBUFFERED
         // ------------------ bot
         // ------------------ botBot
-        float topTop, top, bot, botBot;
-        HashSet<Species> endangeredSpecies = new HashSet<Species>();
-        private bool ScaleAndSetAbundances()
+        // float topTop, top, bot, botBot;
+
+        HashSet<Species> endangered = new HashSet<Species>();
+        Dictionary<int, float> scaledAbundances = new Dictionary<int, float>();
+        private void SetAndScaleAbundance(Species s, double abundance)
         {
-            bool feasible = true;
-            foreach (Species s in idx2Species.Values)
+            print(s.Idx + " " + abundance);
+            if (abundance <= 0)
             {
-                // Species s = idx2Species[idx];
-                float modelAbundance = (float)simulation.GetAbundance(s);
-                if (modelAbundance <= 0)
+                if (!endangered.Contains(s))
                 {
-                    feasible = false;
-                    if (!endangeredSpecies.Contains(s))
-                    {
-                        endangeredSpecies.Add(s);
-                        OnEndangered.Invoke(s.Idx);
-                    }
-                }
-                else
-                {
-                    if (endangeredSpecies.Contains(s))
-                    {
-                        endangeredSpecies.Remove(s);
-                        OnRescued.Invoke(s.Idx);
-                    }
+                    endangered.Add(s);
+                    OnEndangered.Invoke(s.Idx);
                 }
             }
-            return feasible;
+            else
+            {
+                if (endangered.Contains(s))
+                {
+                    endangered.Remove(s);
+                    OnRescued.Invoke(s.Idx);
+                }
+            }
+
+            // TODO: do scaling and tweening instead of this
+            scaledAbundances[s.Idx] = abundance<=0? 0 : .5f;
+            OnAbundanceSet.Invoke(s.Idx, scaledAbundances[s.Idx]);
+
             // want to scale from min to max, also abs so 0-1
             // problems:
             //  - if the min/max in/decreases, the size should in/decrease as well
@@ -196,8 +190,16 @@ namespace EcoBuilder.Model
             //    0.0-0.25 is new min to old min
             //  - actual min then slowly move towards new in
             //  - keep track of min/max ever in order to make relative better
-            
         }
+
+        private void SetAndScaleFlux(Species res, Species con, double flux)
+        {
+            print(res.Idx + " " + con.Idx + " " + flux);
+            // OnFluxSet.Invoke(res.Idx, con.Idx, 1);
+            OnFluxSet.Invoke(res.Idx, con.Idx, UnityEngine.Random.Range(.2f, 1));
+        }
+
+
         private async void CalculateAndSetStability()
         {
             double stability = await Task.Run(() => simulation.LocalAsymptoticStability());

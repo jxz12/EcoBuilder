@@ -86,7 +86,7 @@ namespace EcoBuilder
 
             totalTime -= oldDelta;
             totalTime += newDelta;
-            fpsText.text = (1 / (totalTime / numFrames)).ToString("0.0");
+            fpsText.text = (1 / (totalTime / numFrames)).ToString("0");
 
             timeDeltas.Enqueue(newDelta);
         }

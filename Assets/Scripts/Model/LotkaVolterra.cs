@@ -6,14 +6,14 @@ namespace EcoBuilder.Model
 {
     // a class to implement a simple lotka-volterra Type I functional response model
     // can find equilibrium abundances, flux at equilibrium, local asymptotic stability
-    public class LotkaVolterraLAS<T>
+    public class LotkaVolterra<T>
     {
         private Func<T, double> r_i;
         private Func<T, double> a_ii;
         private Func<T,T, double> a_ij;
         private Func<T,T, double> e_ij;
 
-        public LotkaVolterraLAS(
+        public LotkaVolterra(
             Func<T, double> Growth, Func<T, double> Intra,
             Func<T,T, double> Attack, Func<T,T, double> Efficiency)
         {
@@ -26,8 +26,6 @@ namespace EcoBuilder.Model
         // external dictionary for lookup
         Dictionary<T, int> speciesDict = new Dictionary<T, int>();
         Dictionary<T, HashSet<T>> speciesAdjacency = new Dictionary<T, HashSet<T>>();
-        Dictionary<T, double> equilibriumAbundances = new Dictionary<T, double>();
-        Dictionary<T, Dictionary<T, double>> flux = new Dictionary<T, Dictionary<T, double>>();
 
         // internal 0-based indexing for matrix operations
         List<T> speciesList = new List<T>();
@@ -42,8 +40,6 @@ namespace EcoBuilder.Model
 
             speciesDict[species] = n;
             speciesAdjacency[species] = new HashSet<T>();
-            equilibriumAbundances[species] = 0;
-            flux[species] = new Dictionary<T, double>();
 
             speciesList.Add(species);
             adjacency.Add(new HashSet<int>());
@@ -62,15 +58,11 @@ namespace EcoBuilder.Model
             foreach (var hash in speciesAdjacency.Values)
                 hash.Remove(species);
 
-            equilibriumAbundances.Remove(species);
-            flux.Remove(species);
-            foreach (var dict in flux.Values)
-                dict.Remove(species);
-
             // O(n) but that's okay, as it shifts indices as required
             speciesList.Remove(species);
 
-            // iterate through all possible interactions to fix adjacency indices
+            // iterate through all possible interactions
+            // to fix adjacency indices according to the above shift
             adjacency.RemoveAt(n-1);
             for (int i=0; i<n-1; i++)
             {
@@ -124,10 +116,13 @@ namespace EcoBuilder.Model
             }
         }
 
+        public event Action<T, double> OnAbundanceSet;
+        public event Action<T, T, double> OnFluxSet;
+
         ///////////////////////////////////////
         // should be run async because O(n^3)
 
-        public void SolveEquilibrium()
+        public bool SolveEquilibrium()
         {
             // create Matrix and Vector that MathNet understands
             int n = speciesList.Count;
@@ -137,38 +132,47 @@ namespace EcoBuilder.Model
             for (int i=0; i<n; i++)
             {
                 T res = speciesList[i];
-                b[i] = -r_i(res); // TODO: can maybe remove this minus operator
+                b[i] = -r_i(res);
                 A[i,i] = a_ii(res);
                 foreach (int j in adjacency[i])
                 {
                     T con = speciesList[j];
                     double a = a_ij(res, con);
                     double e = e_ij(res, con);
+
                     A[i,j] -= a;
-                    A[j,i] += flux[res][con] = e*a; // set flux values here
-                    // TODO: this flux has leaks but will prob not cause issues
+                    double flux = e*a;
+                    A[j,i] += flux;
+                    OnFluxSet(res, con, flux);
                 }
             }
             // UnityEngine.Debug.Log(MathNetMatStr(A));
             // UnityEngine.Debug.Log(MathNetVecStr(b));
 
-            // find stable equilibrium point of system
+            // find fixed equilibrium point of system
             x = A.Solve(b);
-            for (int i=0; i<speciesList.Count; i++)
-                equilibriumAbundances[speciesList[i]] = x[i];
 
             // UnityEngine.Debug.Log(MathNetVecStr(x));
+
+            bool feasible = true;
+            for (int i=0; i<speciesList.Count; i++)
+            {
+                OnAbundanceSet(speciesList[i], x[i]);
+                if (x[i] <= 0)
+                    feasible = false;
+            }
+            return feasible;
         }
 
         // Depends on A and b being correct
         void BuildCommunityMatrix()
         {
+            // calculates every element of the Jacobian, evaluated at equilibrium point
             int n = speciesList.Count;
 
             community.Clear();
             for (int i=0; i<n; i++)
             {
-                // calculate every element of the Jacobian, evaluated at equilibrium point
                 // for (int j=0; j<n; j++)
                 // {
                 //     if (i==j)
@@ -192,28 +196,25 @@ namespace EcoBuilder.Model
         }
 
         ///////////////////////////////////////////
-        // should be run async because O(n^3)
+        // should also be run async because O(n^3)
 
         public double LocalAsymptoticStability()
         {
+            // calculate community matrix with jacobian
             BuildCommunityMatrix();
 
-            // calculate community matrix with jacobian
+            // get largest real part of any eigenvalue of this community matrix
             var eigenValues = community.Evd().EigenValues;
 
-            // get largest real part of any eigenvalue
             double Lambda = eigenValues.Real().Maximum();
             return Lambda;
         }
-        public double GetAbundance(T species)
-        {
-            return equilibriumAbundances[species];
-        }
-        public double GetFlux(T res, T con)
-        {
-            return flux[res][con];
-        }
 
+
+
+
+        /////////////////////
+        // helper functions
 
         public static string MathNetMatStr(Matrix<double> mat)
         {

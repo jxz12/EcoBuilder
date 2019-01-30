@@ -87,6 +87,8 @@ namespace EcoBuilder.NodeLink
             links[i, j] = newLink;
             adjacency[i].Add(j);
             adjacency[j].Add(i);
+
+            SGDStep = adjacency.Count * adjacency.Count; // adapt step size to new distance matrix
         }
         public void RemoveLink(int i, int j)
         {
@@ -94,21 +96,26 @@ namespace EcoBuilder.NodeLink
             links.RemoveAt(i, j);
             adjacency[i].Remove(j);
             adjacency[j].Remove(i);
+
+            SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
         }
         public void ColorNode(int idx, Color c)
         {
             nodes[idx].Col = c;
         }
+
         public void ResizeNode(int idx, float size)
         {
-            // if (size < 0 || size > 1)
-            //     throw new Exception("not normalized");
+            if (size < 0)
+                throw new Exception("size cannot be negative");
 
-            nodes[idx].Size = size; // do some tweening here!
+            nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
+            // TODO: do some tweening here!
+            // TODO: maybe do cube root here? although the visual on screen will increase linearly
         }
-        public void ResizeEdge(int i, int j, float size)
+        public void ResizeEdge(int i, int j, float width)
         {
-            links[i,j].Size = size;
+            links[i,j].Width = width;
         }
 
         Node focus=null;
@@ -136,10 +143,17 @@ namespace EcoBuilder.NodeLink
 
             int dq = toBFS.Dequeue(); // only do one vertex per frame
             var d_j = ShortestPathsBFS(dq);
-            if (focus != null && focus.Idx == dq)
+            if (focus != null)
             {
-                LayoutSGD(dq, d_j, focusStep);
-                CenteringSGD(dq, focusCenteringStep);
+                if (focus.Idx == dq)
+                {
+                    LayoutSGD(dq, d_j, focusStep);
+                    CenteringSGD(dq, focusCenteringStep);
+                }
+                else
+                {
+                    LayoutSGD(dq, d_j, SGDStep);
+                }
             }
             else
             {
@@ -148,6 +162,7 @@ namespace EcoBuilder.NodeLink
             }
 
             toBFS.Enqueue(dq);
+            SGDStep = Mathf.Max(SGDStep * SGDMultiplier, minSGDStep); // decay step size
 
             bool solvable = UpdateTrophicEquations();
             if (solvable)
@@ -163,8 +178,8 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for user-interaction rotation
 
-        [SerializeField] float rotationMultiplier=.9f, yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
-        [SerializeField] float zoomMultiplier=.005f;
+        [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f;
+        [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
         [SerializeField] float clickRadius=100; // TODO: might want to change this into viewport coordinates
         void Rotate()
         {
@@ -252,8 +267,9 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        [SerializeField] float SGDStep=.2f;
-        [SerializeField] float separationStep, focusStep, centeringStep, focusCenteringStep;
+        [SerializeField] float SGDStep=.1f, SGDMultiplier=.7f, minSGDStep=.1f;
+        [SerializeField] float separationStep=1, focusStep=4;
+        [SerializeField] float centeringStep=.05f, focusCenteringStep=1;
 
         private Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
         private Queue<int> toBFS = new Queue<int>();
@@ -341,7 +357,7 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for trophic level calculation
 
-        [SerializeField] float trophicStep;
+        [SerializeField] float trophicStep=.05f;
 
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();

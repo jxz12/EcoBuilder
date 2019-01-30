@@ -9,7 +9,7 @@ namespace EcoBuilder.NodeLink
         public Node Source { get; private set; }
         public Node Target { get; private set; }
 
-        public float Size {
+        public float Width {
             get { return lr.widthMultiplier; }
             set { lr.widthMultiplier = value; }
         }
