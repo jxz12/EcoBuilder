@@ -93,7 +93,7 @@ LineRenderer:
   - {x: 0, y: 0, z: -100}
   m_Parameters:
     serializedVersion: 2
-    widthMultiplier: 0.2
+    widthMultiplier: 0.1
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -148,7 +148,7 @@ LineRenderer:
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
-    numCapVertices: 4
+    numCapVertices: 0
     alignment: 0
     textureMode: 0
     generateLightingData: 0

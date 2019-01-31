@@ -77,13 +77,16 @@ namespace EcoBuilder.Model
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
             idx2Species.Add(idx, newSpecies);
+
+            scaledAbundances[newSpecies] = 0;
         }
         public void RemoveSpecies(int idx)
         {
             Species toRemove = idx2Species[idx];
             simulation.RemoveSpecies(toRemove);
             idx2Species.Remove(idx);
-            scaledAbundances.Remove(idx);
+
+            scaledAbundances.Remove(toRemove);
         }
         public void SetSpeciesAsProducer(int idx)
         {
@@ -122,20 +125,44 @@ namespace EcoBuilder.Model
         void Awake()
         {
             simulation = new LotkaVolterra<Species>(
-                s => s.Growth,
-                s => s.SelfReg,
-                (r,c) => r.Attack,
-                (r,c) => r.Efficiency
+                s=> s.Growth,
+                s=> s.SelfReg,
+                (r,c)=> r.Attack,
+                (r,c)=> r.Efficiency
             );
             simulation.OnAbundanceSet += SetAndScaleAbundance;
+            simulation.OnFluxSet += SetAndScaleFlux;
         }
 
         /////////////////////
         // mathy bits here
 
+        List<Action> UnityEventsTodo = new List<Action>();
         async void Equilibrium()
         {
             bool feasible = await Task.Run(() => simulation.SolveEquilibrium());
+
+            foreach (Action a in UnityEventsTodo)
+                a();
+            UnityEventsTodo.Clear();
+
+            print("Abund: " + minLogAbund + " " + maxLogAbund);
+
+            // move mins and maxs slowly towards each other, so that any huge min/max isn't permanent
+            if (minLogAbund != double.MaxValue && maxLogAbund != double.MinValue)
+            {
+                double minMaxGapAbund = maxLogAbund - minLogAbund;
+                minLogAbund += minMaxGapAbund * minMaxTweenSpeed;
+                maxLogAbund -= minMaxGapAbund * minMaxTweenSpeed;
+            }
+
+            if (minLogFlux != double.MaxValue && maxLogFlux != double.MinValue)
+            {
+                double minMaxGapFlux = maxLogFlux - minLogFlux;
+                minLogFlux += minMaxGapFlux * minMaxTweenSpeed;
+                maxLogFlux -= minMaxGapFlux * minMaxTweenSpeed;
+            }
+
 
             if (feasible)
                 CalculateAndSetStability();
@@ -148,55 +175,70 @@ namespace EcoBuilder.Model
         //     UNBUFFERED
         // ------------------ bot
         // ------------------ botBot
-        // float topTop, top, bot, botBot;
+        // always leave a buffer, if entered simply tween buffer STARTs slowly
+        // if ends of buffer are reached, set buffer ENDs instantly
 
+        [SerializeField] double minMaxTweenSpeed = .1f;
+        double minLogAbund = double.MaxValue, maxLogAbund = double.MinValue;
+        private static readonly double myEps = 1e-10f; // real double.Epsilon = 5e-324
+
+        Dictionary<Species, float> scaledAbundances = new Dictionary<Species, float>();
         HashSet<Species> endangered = new HashSet<Species>();
-        Dictionary<int, float> scaledAbundances = new Dictionary<int, float>();
         private void SetAndScaleAbundance(Species s, double abundance)
         {
-            print(s.Idx + " " + abundance);
             if (abundance <= 0)
             {
                 if (!endangered.Contains(s))
                 {
                     endangered.Add(s);
-                    OnEndangered.Invoke(s.Idx);
+                    UnityEventsTodo.Add(()=> OnEndangered.Invoke(s.Idx));
                 }
+                // TODO: start countdown to zero if any species is in endangered
+                //  Keep track of which species has the most negative abundance
+                //  only kill that one species if countdown reaches zero
+                //   then start countdown again
+                //   if two species are tied, then kill the newer one?
+                scaledAbundances[s] = 0;
             }
             else
             {
                 if (endangered.Contains(s))
                 {
                     endangered.Remove(s);
-                    OnRescued.Invoke(s.Idx);
+                    UnityEventsTodo.Add(()=>OnRescued.Invoke(s.Idx));
                 }
+                // TODO: this will have to be changed back once logs are put back in
+                // double logAbundance = Math.Log10(abundance);
+                double logAbundance = abundance;
+                minLogAbund = Math.Min(logAbundance, minLogAbund) - myEps;
+                maxLogAbund = Math.Max(logAbundance, maxLogAbund) + myEps;
+
+                print(s.Idx + ": " + logAbundance);
+
+                float scaled = (float)((logAbundance-minLogAbund) / (maxLogAbund-minLogAbund));
+                scaledAbundances[s] = scaled;
             }
-
-            // TODO: do scaling and tweening instead of this
-            scaledAbundances[s.Idx] = abundance<=0? 0 : .5f;
-            OnAbundanceSet.Invoke(s.Idx, scaledAbundances[s.Idx]);
-
-            // want to scale from min to max, also abs so 0-1
-            // problems:
-            //  - if the min/max in/decreases, the size should in/decrease as well
-            //    but if we just scale from min to max they will stay the same size
-            //  - despite how similar two nodes are in absolute size, the relative
-            //    size is maxed out if there are only two of them
-            //
-            // solutions:
-            //  - always keep a buffer either side in order to have room to move
-            //    and
-            //  - e.g. 0.25-0.75 is actual range, and if e.g. the min drops then
-            //    0.0-0.25 is new min to old min
-            //  - actual min then slowly move towards new in
-            //  - keep track of min/max ever in order to make relative better
+            UnityEventsTodo.Add(()=> OnAbundanceSet.Invoke(s.Idx, scaledAbundances[s]));
         }
 
+        double minLogFlux = double.MaxValue, maxLogFlux = double.MinValue;
         private void SetAndScaleFlux(Species res, Species con, double flux)
         {
-            print(res.Idx + " " + con.Idx + " " + flux);
-            // OnFluxSet.Invoke(res.Idx, con.Idx, 1);
-            OnFluxSet.Invoke(res.Idx, con.Idx, UnityEngine.Random.Range(.2f, 1));
+            // TODO: this will have to be changed back once logs are put back in
+            // double logFlux = Math.Log10(flux);
+
+
+            // TODO: This method is making lines way too thin almost all the time
+            double logFlux = flux;
+            // double logFlux = flux * scaledAbundances[res]*scaledAbundances[con]; // might be better otherwise
+            minLogFlux = Math.Min(logFlux, minLogFlux) - myEps;
+            maxLogFlux = Math.Max(logFlux, maxLogFlux) + myEps;
+
+            print(res.Idx + " " + con.Idx + " " + logFlux);
+
+            float scaled = (float)((logFlux-minLogFlux) / (maxLogFlux-minLogFlux));
+            UnityEventsTodo.Add(()=> OnFluxSet.Invoke(res.Idx, con.Idx, scaled * scaledAbundances[res]*scaledAbundances[con]));
+            // UnityActionsTodo.Add(()=> OnFluxSet.Invoke(res.Idx, con.Idx, scaled));
         }
 
 
@@ -208,7 +250,7 @@ namespace EcoBuilder.Model
 
         private void Start()
         {
-            StartCoroutine(Pulse(60f / heartRate));
+            // StartCoroutine(Pulse(60f / heartRate));
         }
 
         IEnumerator Pulse(float delay)

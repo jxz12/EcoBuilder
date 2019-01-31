@@ -40,6 +40,7 @@ namespace EcoBuilder.Nichess
                     s.Init(i, j, c, size, squareBorder);
 
                     s.OnClicked += ()=> ClickSquare(s);
+                    s.OnHeld += ()=> HoldSquare(s);
                     s.OnDragStarted += ()=> DragStartFromSquare(s);
                     s.OnDragEnded += ()=> DragEndFromSquare(s);
                     s.OnDraggedInto += ()=> DragIntoSquare(s);
@@ -85,48 +86,6 @@ namespace EcoBuilder.Nichess
             }
         }
 
-        private void ClickSquare(Square sqr)
-        {
-            if (sqr != selectedSquare)
-            {
-                // undo previous stuff
-                if (State == BoardState.Idle)
-                {} // do nothing
-                else if (State == BoardState.SquareSelected)
-                {
-                    selectedSquare.Deselect();
-                }
-                else if (State == BoardState.PieceSelected)
-                {
-                    selectedSquare.Deselect();
-                    selectedSquare.Occupant.Deselect();
-                }
-
-                // do current stuff
-                if (sqr != null)
-                {
-                    sqr.Select();
-                    if (sqr.Occupant != null)
-                    {
-                        sqr.Occupant.Select();
-                        State = BoardState.PieceSelected;
-                        // OnPieceSelected(sqr.Occupant);
-                    }
-                    else
-                    {
-                        State = BoardState.SquareSelected;
-                        OnSquareSelected(sqr);
-                    }
-                }
-                else
-                {
-                    State = BoardState.Idle;
-                    cam.ViewBoard(this);
-                }
-                selectedSquare = sqr;
-            }
-        }
-
         public void SelectPieceExternal(Piece pce)
         {
             // ClickSquare(p.NichePos); // cannot do this because it will wrongly invoke events
@@ -156,47 +115,85 @@ namespace EcoBuilder.Nichess
             EraseLasso();
         }
 
+        private void ClickSquare(Square sqr)
+        {
+            if (sqr != selectedSquare)
+            {
+                // undo previous stuff first 
+
+                if (State == BoardState.Idle)
+                {} // do nothing
+                else if (State == BoardState.SquareSelected)
+                {
+                    selectedSquare.Deselect();
+                }
+                else if (State == BoardState.PieceSelected)
+                {
+                    selectedSquare.Deselect();
+                    selectedSquare.Occupant.Deselect();
+                }
+
+                // do current stuff
+                if (sqr != null)
+                {
+                    sqr.Select();
+                    if (sqr.Occupant != null)
+                    {
+                        sqr.Occupant.Select();
+                        State = BoardState.PieceSelected;
+                    }
+                    else
+                    {
+                        State = BoardState.SquareSelected;
+                        OnSquareSelected(sqr);
+                    }
+                }
+                else
+                {
+                    State = BoardState.Idle;
+                    cam.ViewBoard(this);
+                }
+                selectedSquare = sqr;
+            }
+        }
+        private void HoldSquare(Square sqr)
+        {
+            if (sqr.Occupant != null)
+            {
+                if (sqr.Occupant.StaticPos)
+                {
+                    print("cannot move! TODO: make this show a message instead");
+                }
+                else
+                {
+                    ClickSquare(sqr);
+                    sqr.Occupant.Lift();
+                    draggedSquare = sqr;
+                    State = BoardState.PieceDragging;
+                }
+            }
+        }
+
         private void DragStartFromSquare(Square sqr)
         {
             if (State == BoardState.Idle || State == BoardState.SquareSelected)
             {
-                // if there is something to drag then click it first
-                if (sqr.Occupant != null && !sqr.Occupant.StaticPos)
-                {
-                    ClickSquare(sqr);
-                    sqr.Occupant.Lift();
-                    State = BoardState.PieceDragging;
-                }
+                // do nothing
+            }
+            else if (State == BoardState.PieceDragging)
+            {
+                // do nothing, as should already be dragged from the hold
             }
             else if (State == BoardState.PieceSelected)
             {
-                // if we are dragging the same square
-                if (sqr == selectedSquare)
+                // change niche range
+                bool updated = UpdateNiche(selectedSquare.Occupant, sqr, sqr);
+                if (updated)
                 {
-                    if (!sqr.Occupant.StaticPos)
-                    {
-                        sqr.Occupant.Lift();
-                        State = BoardState.PieceDragging;
-                    }
-                }
-                else // otherwise, change niche range
-                {
-                    bool updated = UpdateNiche(selectedSquare.Occupant, sqr, sqr);
-                    if (updated)
-                    {
-                        State = BoardState.NicheDragging;
-                        RescaleMarkersIfNeeded();
-                        OnPieceNicheRangeChanged(selectedSquare.Occupant);
-                    }
-                    else
-                    {
-                        if (sqr.Occupant != null && !sqr.Occupant.StaticPos)
-                        {
-                            ClickSquare(sqr);
-                            sqr.Occupant.Lift();
-                            State = BoardState.PieceDragging;
-                        }
-                    }
+                    RescaleMarkersIfNeeded();
+                    OnPieceNicheRangeChanged(selectedSquare.Occupant);
+                    DrawLasso(selectedSquare.Occupant);
+                    State = BoardState.NicheDragging;
                 }
             }
             else
@@ -207,7 +204,7 @@ namespace EcoBuilder.Nichess
         }
         private void DragIntoSquare(Square sqr)
         {
-            if (sqr != draggedSquare)
+            if (sqr != draggedSquare) // in case pointer leaves board entirely and enters same square
             {
                 if (State == BoardState.PieceDragging)
                 {
@@ -217,7 +214,7 @@ namespace EcoBuilder.Nichess
                         sqr.Occupant = draggedSquare.Occupant;
                         draggedSquare.Occupant = null;
                         draggedSquare = sqr;
-                        DrawLasso(draggedSquare.Occupant);
+                        DrawLasso(draggedSquare.Occupant); // only to change colour
                     }
                     else {} // otherwise keep the previous draggedSquare
                 }
@@ -231,6 +228,7 @@ namespace EcoBuilder.Nichess
                         DrawLasso(selectedSquare.Occupant);
                         draggedSquare = sqr;
                     }
+                    else {} // again, keep previous draggedSquare to make it seem as if it was invisibly being moved
                 }
             }
         }
@@ -239,7 +237,7 @@ namespace EcoBuilder.Nichess
             if (State == BoardState.PieceDragging)
             {
                 draggedSquare.Occupant.Drop();
-                // we no not want to reselect the piece, so do not call 
+                // we no not want to reselect the piece, so do not call Select()
                 selectedSquare.Deselect();
                 sqr.Select();
                 selectedSquare = sqr;
@@ -258,7 +256,7 @@ namespace EcoBuilder.Nichess
         // always happens after drop
         private void DragEndFromSquare(Square sqr)
         {
-            if (draggedSquare != null)
+            if (draggedSquare != null) // if not dropped on a square
             {
                 if (State == BoardState.PieceDragging)
                 {
@@ -334,6 +332,7 @@ namespace EcoBuilder.Nichess
             sqr.RemoveConsumer(con);
             AddMarkerCount(sqr.NumMarkers);
         }
+        [SerializeField] float maxMarkerSize = .9f;
         private int prevMaxNumMarkers=0;
         private void RescaleMarkersIfNeeded()
         {
@@ -341,7 +340,7 @@ namespace EcoBuilder.Nichess
             if (newMaxNumMarkers != prevMaxNumMarkers && newMaxNumMarkers != 0)
             {
                 // minus because we are storing negative in order to access largest first
-                float newSize = -1f/newMaxNumMarkers;
+                float newSize = maxMarkerSize / -newMaxNumMarkers;
                 foreach (Square s in squares)
                 {
                     s.ResizeMarkers(newSize);
@@ -361,10 +360,16 @@ namespace EcoBuilder.Nichess
                 if (from != to)
                     throw new Exception("impossible niche update");
 
-                toUpdate.NicheMin = toUpdate.NicheMax = from;
-                AddConsumerToSquare(to, toUpdate);
-                DrawLasso(toUpdate);
-                return true;
+                if (from == toUpdate.NichePos)
+                {
+                    return false;
+                }
+                else
+                {
+                    toUpdate.NicheMin = toUpdate.NicheMax = from;
+                    AddConsumerToSquare(from, toUpdate);
+                    return true;
+                }
             }
             else
             {
@@ -374,15 +379,28 @@ namespace EcoBuilder.Nichess
 
                 if (from == to) // if it's the start of the drag
                 {
-                    // return whether a niche should be dragged or not
-                    if ( ((l0<=from.X && from.X<=r0) && (from.Y==b0 || from.Y==t0)) ||
-                         ((b0<=from.Y && from.Y<=t0) && (from.X==l0 || from.X==r0))
+                    if (from == toUpdate.NichePos)
+                    {
+                        return false;
+                    }
+                    else if (
+                        ((l0<=from.X && from.X<=r0) && (from.Y==b0 || from.Y==t0)) ||
+                        ((b0<=from.Y && from.Y<=t0) && (from.X==l0 || from.X==r0))
                     ) {
-                        return true;
+                        return true; // return dragged, but don't do anything else
                     }
                     else
                     {
-                        return false; // add niche lasso change back here pls, and make piece movement into hold
+                        for (int i=l0; i<=r0; i++)
+                        {
+                            for (int j=b0; j<=t0; j++)
+                            {
+                                RemoveConsumerFromSquare(squares[i,j], toUpdate);
+                            }
+                        }
+                        toUpdate.NicheMin = toUpdate.NicheMax = from;
+                        AddConsumerToSquare(from, toUpdate);
+                        return true;
                     }
                 }
                 else
@@ -432,7 +450,6 @@ namespace EcoBuilder.Nichess
                     else
                     {
                         throw new Exception("impossible drag");
-                        // return false;
                     }
 
                     // flip niche start or end back around to make calculation simpler
@@ -513,7 +530,7 @@ namespace EcoBuilder.Nichess
             else
             {
                 lasso.enabled = true;
-                lasso.material.color = toDraw.Col;
+                lasso.material.color = toDraw.Col + new Color(.1f,.1f,.1f);
                 int l = toDraw.NicheMin.X, r = toDraw.NicheMax.X;
                 int b = toDraw.NicheMin.Y, t = toDraw.NicheMax.Y;
 

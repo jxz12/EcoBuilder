@@ -16,14 +16,14 @@ namespace EcoBuilder.NodeLink
         [SerializeField] IntEvent OnFocus;
 
         [SerializeField] Node nodePrefab;
-        [SerializeField] GameObject diskPrefab;
+        // [SerializeField] GameObject diskPrefab;
         [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
         [SerializeField] Link linkPrefab;
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
 
-        [SerializeField] Transform graphParent, nodesParent, linksParent;
+        [SerializeField] Transform graphParent, nodesParent, linksParent, disk;
 
         public void AddNode(int idx)
         {
@@ -33,9 +33,9 @@ namespace EcoBuilder.NodeLink
             Node newNode;
             newNode = Instantiate(nodePrefab, nodesParent);
 
-            newNode.Init(idx);
-            // newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 1, UnityEngine.Random.Range(-1f, 1f));
-            newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1, 1f), UnityEngine.Random.Range(-1f, 1f));
+            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
+            newNode.Init(idx, startPos);
+            // newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1, 1f), UnityEngine.Random.Range(-1f, 1f));
             nodes[idx] = newNode;
 
             adjacency[idx] = new HashSet<int>();
@@ -110,12 +110,15 @@ namespace EcoBuilder.NodeLink
                 throw new Exception("size cannot be negative");
 
             nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
-            // TODO: do some tweening here!
+            // TODO: do some pulse animation here!
             // TODO: maybe do cube root here? although the visual on screen will increase linearly
         }
+
+        [SerializeField] float maxEdgeWidth;
         public void ResizeEdge(int i, int j, float width)
         {
-            links[i,j].Width = width;
+            links[i,j].Width = .1f + maxEdgeWidth*width;
+            // TODO: some pulse here too
         }
 
         Node focus=null;
@@ -142,6 +145,13 @@ namespace EcoBuilder.NodeLink
                 return;
 
             int dq = toBFS.Dequeue(); // only do one vertex per frame
+            if (dq == myNull)
+            {
+                SGDStep = Mathf.Max(SGDStep * SGDMultiplier, minSGDStep); // decay step size
+                dq = toBFS.Dequeue();
+                toBFS.Enqueue(myNull);
+            }
+
             var d_j = ShortestPathsBFS(dq);
             if (focus != null)
             {
@@ -162,7 +172,6 @@ namespace EcoBuilder.NodeLink
             }
 
             toBFS.Enqueue(dq);
-            SGDStep = Mathf.Max(SGDStep * SGDMultiplier, minSGDStep); // decay step size
 
             bool solvable = UpdateTrophicEquations();
             if (solvable)
@@ -171,6 +180,7 @@ namespace EcoBuilder.NodeLink
                 print("LAPLACIAN DET=0"); //TODO: replace this with a warning message
 
             SetYAxis(i=>trophicLevels[i]-1, trophicStep);
+            TweenDisk(focus);
 
             Rotate();
         }
@@ -267,12 +277,13 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        [SerializeField] float SGDStep=.1f, SGDMultiplier=.7f, minSGDStep=.1f;
+        [SerializeField] float SGDStep=.1f, SGDMultiplier=.5f, minSGDStep=.1f;
         [SerializeField] float separationStep=1, focusStep=4;
         [SerializeField] float centeringStep=.05f, focusCenteringStep=1;
 
         private Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
-        private Queue<int> toBFS = new Queue<int>();
+        private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
+        private static readonly int myNull = int.MinValue;
 
         private Dictionary<int, int> visited; // ugly, but reuse here to ease GC
         private Dictionary<int, int> ShortestPathsBFS(int source)
@@ -285,7 +296,6 @@ namespace EcoBuilder.NodeLink
             visited[source] = 0;
             var q = new Queue<int>();
             q.Enqueue(source);
-            int myNull = int.MinValue;
             q.Enqueue(myNull); // use this as null value
             int depth = 1;
 
@@ -319,7 +329,7 @@ namespace EcoBuilder.NodeLink
             {
                 if (i != j)
                 {
-                    Vector3 X_ij = nodes[i].Pos - nodes[j].Pos;
+                    Vector3 X_ij = nodes[i].TargetPos - nodes[j].TargetPos;
                     float mag = X_ij.magnitude;
 
                     if (d_j.ContainsKey(j)) // if there is a path between the two
@@ -329,8 +339,8 @@ namespace EcoBuilder.NodeLink
 
                         Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
                         // r.y = 0; // use to keep y position
-                        nodes[i].Pos -= mu * r;
-                        nodes[j].Pos += mu * r;
+                        nodes[i].TargetPos -= mu * r;
+                        nodes[j].TargetPos += mu * r;
                     }
                     else // otherwise try to move the vertices at least a distance of 2 away
                     {
@@ -341,8 +351,8 @@ namespace EcoBuilder.NodeLink
 
                             Vector3 r = ((mag-2)/2) * (X_ij/mag);
                             // r.y = 0; // use to keep y position
-                            nodes[i].Pos -= mu * r;
-                            nodes[j].Pos += mu * r;
+                            nodes[i].TargetPos -= mu * r;
+                            nodes[j].TargetPos += mu * r;
                         }
                     }
                 }
@@ -350,8 +360,8 @@ namespace EcoBuilder.NodeLink
         }
         private void CenteringSGD(int i, float eta)
         {
-            var fromCenter = new Vector3(nodes[i].Pos.x, 0, nodes[i].Pos.z);
-            nodes[i].Pos -= eta * fromCenter;
+            var fromCenter = new Vector3(nodes[i].TargetPos.x, 0, nodes[i].TargetPos.z);
+            nodes[i].TargetPos -= eta * fromCenter;
         }
 
         ////////////////////////////////////
@@ -415,33 +425,50 @@ namespace EcoBuilder.NodeLink
                 float targetY = YAxisPos(no.Idx);
                 if (targetY == 0)
                 {
-                    no.Pos -= new Vector3(0, no.Pos.y, 0);
+                    no.TargetPos -= new Vector3(0, no.TargetPos.y, 0);
                 }
                 else
                 {
-                    float toAdd = (targetY - no.Pos.y) * force;
-                    no.Pos += new Vector3(0, toAdd, 0);
+                    float toAdd = (targetY - no.TargetPos.y) * force;
+                    no.TargetPos += new Vector3(0, toAdd, 0);
                 }
             }
         }
+        [SerializeField] float diskStep=.2f;
 
-        private Stack<GameObject> disks = new Stack<GameObject>();
-        void SetCorrectYDisks(float maxY)
+        void TweenDisk(Node target)
         {
-            // assume one disk always present
-            int numDisks = disks.Count;
-            if (maxY >= numDisks+1) // add disk
+            if (target == null)
             {
-                var newDisk = Instantiate(diskPrefab, nodesParent, false);
-                newDisk.transform.localPosition = new Vector3(0,numDisks+1,0);
-                disks.Push(newDisk);
+                disk.localPosition = Vector3.Lerp(disk.localPosition, Vector3.zero, diskStep);
+                disk.localScale = Vector3.Lerp(disk.localScale, 2*Vector3.one, diskStep);
             }
-            else if (maxY < numDisks)
+            else
             {
-                var oldDisk = disks.Pop();
-                Destroy(oldDisk);
+                float dist = focus.TargetPos.y - disk.localPosition.y;
+                // disk.localPosition = Vector3.Lerp(disk.localPosition, focus.transform.localPosition, diskStep);
+                disk.localPosition = Vector3.Lerp(disk.localPosition, focus.TargetPos, diskStep);
+                disk.localScale = Vector3.Lerp(disk.localScale, Vector3.one, diskStep);
             }
         }
+
+        // private Stack<GameObject> disks = new Stack<GameObject>();
+        // void SetCorrectYDisks(float maxY)
+        // {
+        //     // assume one disk always present
+        //     int numDisks = disks.Count;
+        //     if (maxY >= numDisks+1) // add disk
+        //     {
+        //         var newDisk = Instantiate(diskPrefab, nodesParent, false);
+        //         newDisk.transform.localPosition = new Vector3(0,numDisks+1,0);
+        //         disks.Push(newDisk);
+        //     }
+        //     else if (maxY < numDisks)
+        //     {
+        //         var oldDisk = disks.Pop();
+        //         Destroy(oldDisk);
+        //     }
+        // }
 
         private int ConnectedComponentBFS(IEnumerable<int> sources)
         {

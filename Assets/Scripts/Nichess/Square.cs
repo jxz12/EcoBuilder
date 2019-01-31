@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,7 +9,7 @@ namespace EcoBuilder.Nichess
     [RequireComponent(typeof(MeshRenderer))]
     [RequireComponent(typeof(BoxCollider))]
     public class Square : MonoBehaviour,
-        IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler,
+        IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler,
         IDragHandler, IBeginDragHandler, IEndDragHandler, IDropHandler
     {
         [SerializeField] float defaultAlpha=.2f, hoverAlpha=1f;
@@ -191,6 +192,7 @@ namespace EcoBuilder.Nichess
         // TODO: make this deal with two touches
 
         public event Action OnClicked;
+        public event Action OnHeld;
         public event Action OnDragStarted;
         public event Action OnDraggedInto;
         public event Action OnDragEnded;
@@ -209,17 +211,35 @@ namespace EcoBuilder.Nichess
             var c = Col;
             c.a = defaultAlpha;
             Col = c;
+            held = false; // prevent hold & click if left and reentered
         }
-        public void OnPointerClick(PointerEventData ped)
+        bool held = false;
+        public void OnPointerDown(PointerEventData ped)
+        {
+            held = true;
+            StartCoroutine(WaitForHold(1, ped));
+        }
+        IEnumerator WaitForHold(float seconds, PointerEventData ped)
+        {
+            yield return new WaitForSecondsRealtime(seconds);
+            if (held)
+            {
+                held = false;
+                OnHeld();
+            }
+        }
+        public void OnPointerUp(PointerEventData ped)
         {
             // don't throw a click if this is already being dragged, because EndDrag will be
-            if (!ped.dragging || ped.pointerDrag != this.gameObject)
+            if (held)
             {
+                held = false;
                 OnClicked();
             }
         }
         public void OnBeginDrag(PointerEventData ped)
         {
+            // held = false;
             OnDragStarted();
         }
         public void OnEndDrag(PointerEventData ped)

@@ -14,11 +14,7 @@ namespace EcoBuilder.NodeLink
             get { return mr.material.GetColor("_Color"); }
             set { mr.material.SetColor("_Color", value); }
         }
-        private Vector3 target;
-        public Vector3 Pos {
-            get { return target; }
-            set { target = value; }
-        }
+        public Vector3 TargetPos { get; set; }
         private Vector3 velocity = Vector3.zero;
         [SerializeField] private float smoothTime = .2f;
         // public Vector3 Pos {
@@ -39,10 +35,12 @@ namespace EcoBuilder.NodeLink
         }
 
         //Rigidbody rb;
-        public void Init(int idx)
+        public void Init(int idx, Vector3 pos)
         {
             Idx = idx;
             name = idx.ToString();
+            transform.localPosition = pos;
+            TargetPos = pos;
         }
         public void SetShape(Mesh node, Mesh outline)
         {
@@ -51,7 +49,7 @@ namespace EcoBuilder.NodeLink
         }
         void FixedUpdate()
         {
-            transform.localPosition = Vector3.SmoothDamp(transform.localPosition, target, ref velocity, smoothTime);
+            transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPos, ref velocity, smoothTime);
         }
         // public void Inspect()
         // {

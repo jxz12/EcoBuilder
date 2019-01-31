@@ -97,7 +97,7 @@ namespace EcoBuilder.Nichess
             else
                 OnConsumerSet.Invoke(idxCounter);
             OnMetabolismSet.Invoke(idxCounter, newSpecies.metabolism);
-            // OnGreedinessSet.Invoke(idxCounter, newSpecies.greediness);
+            OnGreedinessSet.Invoke(idxCounter, newSpecies.greediness);
 
             speciesDict[idxCounter] = newSpecies;
             InspectSpecies(idxCounter);

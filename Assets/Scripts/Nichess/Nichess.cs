@@ -44,7 +44,7 @@ namespace EcoBuilder.Nichess
             pieces[newPiece.Idx] = newPiece;
 
             board.PlaceNewPieceOnSelectedSquare(newPiece);
-            FixPiecePos(idx); // can be removed
+            // FixPiecePos(idx); // can be removed
 
             StartCoroutine(WaitThenInitPiece(newPiece));
         }
