@@ -6,11 +6,11 @@ using UnityEngine.EventSystems;
 
 public class Backdrop : MonoBehaviour, IPointerClickHandler, IDragHandler
 {
-    [SerializeField] UnityEvent ClickedEvent;
+    [SerializeField] UnityEvent OnClicked;
 
     public void OnPointerClick(PointerEventData ped)
     {
-        ClickedEvent.Invoke();
+        OnClicked.Invoke();
     }
 	public void OnDrag(PointerEventData ped)
 	{

@@ -65,6 +65,7 @@ namespace EcoBuilder.Inspector
         }
         public void Reload()
         {
+            GetComponent<Animator>().SetTrigger("Enter");
             // spawnButton.interactable = true;
             // if (nextIsProducer)
             //     nameText.text = GenerateProducerName();
@@ -131,6 +132,7 @@ namespace EcoBuilder.Inspector
         }
         public void Uninspect()
         {
+            GetComponent<Animator>().SetTrigger("Exit");
             // nameText.text = "";
             // spawnButton.interactable = false;
 
