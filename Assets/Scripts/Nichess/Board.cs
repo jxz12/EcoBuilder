@@ -14,8 +14,6 @@ namespace EcoBuilder.Nichess
         [SerializeField] float squareBorder=.05f;
         [SerializeField] LineRenderer lasso;
 
-        [SerializeField] PieceCamera cam;
-
         Square[,] squares;
         public event Action<Square> OnSquareSelected;
         // public event Action<Piece> OnPieceSelected;
@@ -53,7 +51,6 @@ namespace EcoBuilder.Nichess
         }
         private void Start()
         {
-            OnSquareSelected += s=> cam.ViewBoard(this);
             OnSquareSelected += s=> EraseLasso();
         }
 
@@ -78,7 +75,6 @@ namespace EcoBuilder.Nichess
                 pce.NichePos = selectedSquare;
                 selectedSquare.Occupant = pce;
 
-                pce.OnSelected += ()=> cam.ViewPiece(pce);
                 pce.OnSelected += ()=> DrawLasso(pce);
                 pce.Select();
 
@@ -102,7 +98,6 @@ namespace EcoBuilder.Nichess
             pce.Select();
             selectedSquare = pce.NichePos;
 
-            cam.ViewPiece(pce);
             DrawLasso(selectedSquare.Occupant);
 
             State = BoardState.PieceSelected;
@@ -111,7 +106,6 @@ namespace EcoBuilder.Nichess
         public void DeselectAll()
         {
             ClickSquare(null);
-            cam.ViewBoard(this);
             EraseLasso();
         }
 
@@ -151,7 +145,6 @@ namespace EcoBuilder.Nichess
                 else
                 {
                     State = BoardState.Idle;
-                    cam.ViewBoard(this);
                 }
                 selectedSquare = sqr;
             }
