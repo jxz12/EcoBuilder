@@ -19,13 +19,6 @@ namespace EcoBuilder.Inspector
         [SerializeField] IntFloatEvent OnMetabolismSet;
         [SerializeField] IntFloatEvent OnGreedinessSet;
 
-        // [SerializeField] Button spawnButton;
-        // [SerializeField] Text nameText;
-        // [SerializeField] Button producerButton;
-        // [SerializeField] Button consumerButton;
-        // [SerializeField] Slider metabolismSlider;
-        // [SerializeField] Slider greedinessSlider;
-
         bool nextIsProducer;
         int idxCounter;
         // HashSet<int> producerSet = new HashSet<int>();
@@ -43,46 +36,48 @@ namespace EcoBuilder.Inspector
             }
         }
 
+        [SerializeField] Token producer;
+        [SerializeField] Token consumer;
+        [SerializeField] Egg egg;
+        [SerializeField] List<GameObject> numbers;
+
         void Awake()
         {
             idxCounter = 0;
+            producer.OnChosen += ()=> nextIsProducer = true;
+            producer.OnChosen += ()=> producer.Center();
+            producer.OnChosen += ()=> consumer.Exit();
+            producer.OnMetabolismChosen += ()=> egg.MakeHatchable();
+
+            consumer.OnChosen += ()=> nextIsProducer = false;
+            consumer.OnChosen += ()=> consumer.Center();
+            consumer.OnChosen += ()=> producer.Exit();
+            consumer.OnMetabolismChosen += ()=> egg.MakeHatchable();
+            // producer.OnMetabolismChosen += ()=> Instantiate(numbers[producer.Number-1], producer.transform);
+
+            egg.OnHatched += ()=> Spawn();
+            egg.OnHatched += ()=> { if (nextIsProducer) producer.Reset(); else consumer.Reset(); };
         }
         void Start()
         {
             // producersCounter = GameManager.Instance.MaxProducers;
             // nextIsProducer = consumerButton.interactable;
-            // producerButton.onClick.AddListener(() => nextIsProducer=true);
-            // producerButton.onClick.AddListener(() => nameText.text = GenerateProducerName());
-            // consumerButton.onClick.AddListener(() => nextIsProducer=false);
-            // consumerButton.onClick.AddListener(() => nameText.text = GenerateConsumerName());
-            // nameText.text = "";
-
-            //////////////////////////////////////////////////
-            // producerButton.gameObject.SetActive(false);
-            // consumerButton.gameObject.SetActive(false);
-            // metabolismSlider.gameObject.SetActive(false);
-            // greedinessSlider.gameObject.SetActive(false);
         }
+        bool loaded = false;
         public void Reload()
         {
-            GetComponent<Animator>().SetTrigger("Enter");
+            if (!loaded)
+            {
+                egg.Enter();
+                producer.Enter();
+                consumer.Enter();
+                loaded = true;
+            }
             // spawnButton.interactable = true;
             // if (nextIsProducer)
             //     nameText.text = GenerateProducerName();
             // else
             //     nameText.text = GenerateConsumerName();
-
-            // ///////////////////////////////////////////////
-            // producerButton.gameObject.SetActive(true);
-            // consumerButton.gameObject.SetActive(true);
-            // metabolismSlider.gameObject.SetActive(true);
-            // greedinessSlider.gameObject.SetActive(true);
-
-            // producerButton.targetGraphic.raycastTarget = true;
-            // consumerButton.targetGraphic.raycastTarget = true;
-            // metabolismSlider.interactable = true;
-            // greedinessSlider.interactable = true;
-            // spawnButton.interactable = true; // TODO: only allow after choosing attributes
         }
         public void Spawn()
         {
@@ -90,57 +85,49 @@ namespace EcoBuilder.Inspector
             //     nameText.text, nextIsProducer,
             //     metabolismSlider.normalizedValue, greedinessSlider.normalizedValue
             // );
+            Species newSpecies;
+            OnSpawned.Invoke(idxCounter);
+            if (nextIsProducer)
+            {
+                newSpecies = new Species(
+                    "bob", true,
+                    producer.Metabolism, 0.5f
+                );
+                OnProducerSet.Invoke(idxCounter);
+            }
+            else
+            {
+                newSpecies = new Species(
+                    "susan", false,
+                    consumer.Metabolism, 0.5f
+                );
+                OnConsumerSet.Invoke(idxCounter);
+            }
+            OnMetabolismSet.Invoke(idxCounter, newSpecies.metabolism);
+            OnGreedinessSet.Invoke(idxCounter, newSpecies.greediness);
 
-            // OnSpawned.Invoke(idxCounter);
-
-            // if (newSpecies.isProducer)
-            //     OnProducerSet.Invoke(idxCounter);
-            // else
-            //     OnConsumerSet.Invoke(idxCounter);
-            // OnMetabolismSet.Invoke(idxCounter, newSpecies.metabolism);
-            // OnGreedinessSet.Invoke(idxCounter, newSpecies.greediness);
-
-            // speciesDict[idxCounter] = newSpecies;
-            // InspectSpecies(idxCounter);
-            // idxCounter += 1;
+            speciesDict[idxCounter] = newSpecies;
+            idxCounter += 1;
+            loaded = false;
         }
         public void Extinguish(int idx)
         {
-            speciesDict.Remove(idx);
-            Uninspect();
+            // speciesDict.Remove(idx);
+            // Uninspect();
         }
         Dictionary<int, Species> speciesDict = new Dictionary<int, Species>();
         public void InspectSpecies(int idx)
         {
-            // nameText.text = speciesDict[idx].name;
-            // producerButton.interactable = !speciesDict[idx].isProducer;
-            // consumerButton.interactable = speciesDict[idx].isProducer;
-            // metabolismSlider.normalizedValue = speciesDict[idx].metabolism;
-            // greedinessSlider.normalizedValue = speciesDict[idx].greediness;
-            
-            // ////////////////////////////////////////////////////////////////////
-            // producerButton.gameObject.SetActive(true);
-            // consumerButton.gameObject.SetActive(true);
-            // metabolismSlider.gameObject.SetActive(true);
-            // greedinessSlider.gameObject.SetActive(true);
-
-            // producerButton.targetGraphic.raycastTarget = false; // TODO: move these into an animator
-            // consumerButton.targetGraphic.raycastTarget = false;
-            // metabolismSlider.interactable = false;
-            // greedinessSlider.interactable = false;
-            // spawnButton.interactable = false;
         }
         public void Uninspect()
         {
-            GetComponent<Animator>().SetTrigger("Exit");
-            // nameText.text = "";
-            // spawnButton.interactable = false;
-
-            // ///////////////////////////////////////////////////////
-            // producerButton.gameObject.SetActive(false);
-            // consumerButton.gameObject.SetActive(false);
-            // metabolismSlider.gameObject.SetActive(false);
-            // greedinessSlider.gameObject.SetActive(false);
+            if (loaded)
+            {
+                egg.Reset();
+                producer.Reset();
+                consumer.Reset();
+                loaded = false;
+            }
         }
 
         public static string[] adjectives = new string[]

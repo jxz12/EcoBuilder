@@ -390,7 +390,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd395c9079810294f9b533fac813c91b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardSize: 4
+  boardSize: 3
   maxProducers: 3
   fpsText: {fileID: 2087513293}
 --- !u!1 &2087513292
