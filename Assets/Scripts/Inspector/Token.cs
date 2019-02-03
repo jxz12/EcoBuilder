@@ -28,30 +28,37 @@ namespace EcoBuilder.Inspector
 		void Awake()
 		{
 			button.onClick.AddListener(()=> OnChosen());
-			slider.onValueChanged.AddListener(x=> OnMetabolismChosen());
+			slider.onValueChanged.AddListener(x=> ChooseMetabolism(x));
 
 			// hatchable = x=> WaitForHatchable();
 		}
 		public void Enter()
 		{
-			gameObject.SetActive(true);
 			slider.normalizedValue = .5f;
+			button.interactable = true;
 			button.GetComponent<Animator>().SetTrigger("Enter");
+			slider.GetComponent<Animator>().SetTrigger("Choosing");
 		}
 		public void Exit()
 		{
 			slider.GetComponent<Animator>().SetTrigger("Exit");
+			button.GetComponent<Animator>().SetTrigger("Exit");
 		}
-		public void Reset()
-		{
-			button.GetComponent<Animator>().SetTrigger("Reset");
-			slider.GetComponent<Animator>().SetTrigger("Reset");
-			gameObject.SetActive(false);
-		}
-		public void Center()
+		public void Choose()
 		{
 			slider.GetComponent<Animator>().SetTrigger("Enter");
-			button.GetComponent<Animator>().SetTrigger("Exit");
+			button.interactable = false;
+			chosen = false;
+		}
+
+		bool chosen = false;
+		public void ChooseMetabolism(float metabolism)
+		{
+			if (chosen == false)
+			{
+				OnMetabolismChosen();
+			}
+			chosen = true;
 		}
 	}
 

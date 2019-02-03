@@ -141,46 +141,47 @@ namespace EcoBuilder.NodeLink
 
         private void Update()
         {
-            if (nodes.Count < 1)
-                return;
-
-            int dq = toBFS.Dequeue(); // only do one vertex per frame
-            if (dq == myNull)
+            if (nodes.Count > 0)
             {
-                SGDStep = Mathf.Max(SGDStep * SGDMultiplier, minSGDStep); // decay step size
-                dq = toBFS.Dequeue();
-                toBFS.Enqueue(myNull);
-            }
 
-            var d_j = ShortestPathsBFS(dq);
-            if (focus != null)
-            {
-                if (focus.Idx == dq)
+                int dq = toBFS.Dequeue(); // only do one vertex per frame
+                if (dq == myNull)
                 {
-                    LayoutSGD(dq, d_j, focusStep);
-                    CenteringSGD(dq, focusCenteringStep);
+                    SGDStep = Mathf.Max(SGDStep * SGDMultiplier, minSGDStep); // decay step size
+                    dq = toBFS.Dequeue();
+                    toBFS.Enqueue(myNull);
+                }
+
+                var d_j = ShortestPathsBFS(dq);
+                if (focus != null)
+                {
+                    if (focus.Idx == dq)
+                    {
+                        LayoutSGD(dq, d_j, focusStep);
+                        CenteringSGD(dq, focusCenteringStep);
+                    }
+                    else
+                    {
+                        LayoutSGD(dq, d_j, SGDStep);
+                    }
                 }
                 else
                 {
                     LayoutSGD(dq, d_j, SGDStep);
+                    CenteringSGD(dq, centeringStep);
                 }
+
+                toBFS.Enqueue(dq);
+
+                bool solvable = UpdateTrophicEquations();
+                if (solvable)
+                    TrophicGaussSeidel();
+                else
+                    print("LAPLACIAN DET=0"); //TODO: replace this with a warning message
+
+                SetYAxis(i=>trophicLevels[i]-1, trophicStep);
+                TweenDisk(focus);
             }
-            else
-            {
-                LayoutSGD(dq, d_j, SGDStep);
-                CenteringSGD(dq, centeringStep);
-            }
-
-            toBFS.Enqueue(dq);
-
-            bool solvable = UpdateTrophicEquations();
-            if (solvable)
-                TrophicGaussSeidel();
-            else
-                print("LAPLACIAN DET=0"); //TODO: replace this with a warning message
-
-            SetYAxis(i=>trophicLevels[i]-1, trophicStep);
-            TweenDisk(focus);
 
             Rotate();
         }

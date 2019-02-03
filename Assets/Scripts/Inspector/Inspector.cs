@@ -19,7 +19,8 @@ namespace EcoBuilder.Inspector
         [SerializeField] IntFloatEvent OnMetabolismSet;
         [SerializeField] IntFloatEvent OnGreedinessSet;
 
-        bool nextIsProducer;
+        enum ChosenType { None, Producer, Consumer };
+        ChosenType chosenType = ChosenType.None;
         int idxCounter;
         // HashSet<int> producerSet = new HashSet<int>();
         private class Species {
@@ -44,19 +45,18 @@ namespace EcoBuilder.Inspector
         void Awake()
         {
             idxCounter = 0;
-            producer.OnChosen += ()=> nextIsProducer = true;
-            producer.OnChosen += ()=> producer.Center();
+            producer.OnChosen += ()=> chosenType = ChosenType.Producer;
+            producer.OnChosen += ()=> producer.Choose();
             producer.OnChosen += ()=> consumer.Exit();
             producer.OnMetabolismChosen += ()=> egg.MakeHatchable();
 
-            consumer.OnChosen += ()=> nextIsProducer = false;
-            consumer.OnChosen += ()=> consumer.Center();
+            consumer.OnChosen += ()=> chosenType = ChosenType.Consumer;
+            consumer.OnChosen += ()=> consumer.Choose();
             consumer.OnChosen += ()=> producer.Exit();
             consumer.OnMetabolismChosen += ()=> egg.MakeHatchable();
             // producer.OnMetabolismChosen += ()=> Instantiate(numbers[producer.Number-1], producer.transform);
 
             egg.OnHatched += ()=> Spawn();
-            egg.OnHatched += ()=> { if (nextIsProducer) producer.Reset(); else consumer.Reset(); };
         }
         void Start()
         {
@@ -71,13 +71,9 @@ namespace EcoBuilder.Inspector
                 egg.Enter();
                 producer.Enter();
                 consumer.Enter();
+                chosenType = ChosenType.None;
                 loaded = true;
             }
-            // spawnButton.interactable = true;
-            // if (nextIsProducer)
-            //     nameText.text = GenerateProducerName();
-            // else
-            //     nameText.text = GenerateConsumerName();
         }
         public void Spawn()
         {
@@ -87,21 +83,27 @@ namespace EcoBuilder.Inspector
             // );
             Species newSpecies;
             OnSpawned.Invoke(idxCounter);
-            if (nextIsProducer)
+            if (chosenType == ChosenType.Producer)
             {
                 newSpecies = new Species(
                     "bob", true,
                     producer.Metabolism, 0.5f
                 );
                 OnProducerSet.Invoke(idxCounter);
+                producer.Exit();
             }
-            else
+            else if (chosenType == ChosenType.Consumer)
             {
                 newSpecies = new Species(
                     "susan", false,
                     consumer.Metabolism, 0.5f
                 );
                 OnConsumerSet.Invoke(idxCounter);
+                consumer.Exit();
+            }
+            else
+            {
+                throw new Exception("not possible type");
             }
             OnMetabolismSet.Invoke(idxCounter, newSpecies.metabolism);
             OnGreedinessSet.Invoke(idxCounter, newSpecies.greediness);
@@ -109,6 +111,7 @@ namespace EcoBuilder.Inspector
             speciesDict[idxCounter] = newSpecies;
             idxCounter += 1;
             loaded = false;
+            chosenType = ChosenType.None;
         }
         public void Extinguish(int idx)
         {
@@ -118,14 +121,26 @@ namespace EcoBuilder.Inspector
         Dictionary<int, Species> speciesDict = new Dictionary<int, Species>();
         public void InspectSpecies(int idx)
         {
+            Uninspect();
         }
         public void Uninspect()
         {
             if (loaded)
             {
-                egg.Reset();
-                producer.Reset();
-                consumer.Reset();
+                if (chosenType == ChosenType.None)
+                {
+                    producer.Exit();
+                    consumer.Exit();
+                }
+                else if (chosenType == ChosenType.Producer)
+                {
+                    producer.Exit();
+                }
+                else if (chosenType == ChosenType.Consumer)
+                {
+                    consumer.Exit();
+                }
+                egg.Exit();
                 loaded = false;
             }
         }

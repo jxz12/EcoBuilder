@@ -13,10 +13,10 @@ namespace EcoBuilder.Nichess
         [SerializeField] float YUVRange=.8f;
         [SerializeField] float squareBorder=.05f;
         [SerializeField] LineRenderer lasso;
+        [SerializeField] MeshRenderer glow;
 
         Square[,] squares;
         public event Action<Square> OnSquareSelected;
-        // public event Action<Piece> OnPieceSelected;
         public event Action<Piece> OnPieceNicheRangeChanged;
 
         private void Awake()
@@ -51,19 +51,44 @@ namespace EcoBuilder.Nichess
         }
         private void Start()
         {
-            OnSquareSelected += s=> EraseLasso();
         }
 
         private Square selectedSquare = null;
         private Square draggedSquare = null;
         private enum BoardState {
             Idle, SquareSelected, PieceSelected,
-            /*EmptyDragging,*/ PieceDragging, NicheDragging
+            PieceDragging, NicheDragging
         };
         private BoardState myState = BoardState.Idle;
         private BoardState State {
             get { return myState; }
-            set { /*print(value);*/ myState = value; }
+            set {
+                myState = value;
+                if (myState == BoardState.Idle)
+                {
+                    EraseLasso();
+                    EraseGlow();
+                }
+                else if (myState == BoardState.SquareSelected)
+                {
+                    EraseLasso();
+                    DrawGlow(selectedSquare);
+                }
+                else if (myState == BoardState.PieceSelected)
+                {
+                    DrawLasso(selectedSquare.Occupant);
+                    EraseGlow();
+                }
+                else if (myState == BoardState.NicheDragging)
+                {
+                    DrawLasso(selectedSquare.Occupant);
+                }
+                else if (myState == BoardState.PieceDragging)
+                {
+                    DrawLasso(selectedSquare.Occupant);
+                    EraseGlow();
+                }
+            }
         }
 
         public void PlaceNewPieceOnSelectedSquare(Piece pce)
@@ -75,16 +100,12 @@ namespace EcoBuilder.Nichess
                 pce.NichePos = selectedSquare;
                 selectedSquare.Occupant = pce;
 
-                pce.OnSelected += ()=> DrawLasso(pce);
-                pce.Select();
-
                 State = BoardState.PieceSelected;
             }
         }
 
         public void SelectPieceExternal(Piece pce)
         {
-            // ClickSquare(p.NichePos); // cannot do this because it will wrongly invoke events
             if (State == BoardState.SquareSelected)
             {
                 selectedSquare.Deselect();
@@ -97,8 +118,6 @@ namespace EcoBuilder.Nichess
             pce.NichePos.Select();
             pce.Select();
             selectedSquare = pce.NichePos;
-
-            DrawLasso(selectedSquare.Occupant);
 
             State = BoardState.PieceSelected;
         }
@@ -128,6 +147,7 @@ namespace EcoBuilder.Nichess
                 }
 
                 // do current stuff
+                selectedSquare = sqr;
                 if (sqr != null)
                 {
                     sqr.Select();
@@ -139,6 +159,7 @@ namespace EcoBuilder.Nichess
                     else
                     {
                         State = BoardState.SquareSelected;
+                        DrawGlow(sqr);
                         OnSquareSelected(sqr);
                     }
                 }
@@ -146,7 +167,6 @@ namespace EcoBuilder.Nichess
                 {
                     State = BoardState.Idle;
                 }
-                selectedSquare = sqr;
             }
         }
         private void HoldSquare(Square sqr)
@@ -159,7 +179,20 @@ namespace EcoBuilder.Nichess
                 }
                 else
                 {
-                    ClickSquare(sqr);
+                    if (State == BoardState.SquareSelected)
+                    {
+                        selectedSquare.Deselect();
+                    }
+                    else if (State == BoardState.PieceSelected)
+                    {
+                        if (sqr != selectedSquare)
+                        {
+                            selectedSquare.Deselect();
+                            sqr.Select();
+                            selectedSquare.Occupant.Deselect();
+                        }
+                    }
+                    selectedSquare = sqr;
                     sqr.Occupant.Lift();
                     draggedSquare = sqr;
                     State = BoardState.PieceDragging;
@@ -185,7 +218,6 @@ namespace EcoBuilder.Nichess
                 {
                     RescaleMarkersIfNeeded();
                     OnPieceNicheRangeChanged(selectedSquare.Occupant);
-                    DrawLasso(selectedSquare.Occupant);
                     State = BoardState.NicheDragging;
                 }
             }
@@ -255,25 +287,25 @@ namespace EcoBuilder.Nichess
                 {
                     // the following is for deletion
                     ///////////////
-                    // cam.ViewBoard(this);
-                    // RemoveNiche(draggedSquare.Occupant);
-                    // draggedSquare.Occupant.ThrowAway();
-                    // draggedSquare.Occupant = null;
-                    // selectedSquare.Deselect();
-                    // selectedSquare = null;
+                    RemoveNiche(draggedSquare.Occupant);
+                    draggedSquare.Occupant.ThrowAway();
+                    draggedSquare.Occupant = null;
+                    selectedSquare.Deselect();
+                    selectedSquare = null;
 
-                    // EraseLasso();
-                    // State = BoardState.Idle;
+                    State = BoardState.Idle;
                     ///////////////
 
                     // return to original position
-                    selectedSquare.Occupant = draggedSquare.Occupant;
-                    selectedSquare.Occupant.NichePos = selectedSquare;
-                    selectedSquare.Occupant.Drop();
-                    DrawLasso(selectedSquare.Occupant);
-                    draggedSquare.Occupant = null;
+                    ///////////////
+                    // selectedSquare.Occupant = draggedSquare.Occupant;
+                    // selectedSquare.Occupant.NichePos = selectedSquare;
+                    // selectedSquare.Occupant.Drop();
+                    // DrawLasso(selectedSquare.Occupant);
+                    // draggedSquare.Occupant = null;
 
-                    State = BoardState.PieceSelected;
+                    // State = BoardState.PieceSelected;
+                    ///////////////
                 }
                 else if (State == BoardState.NicheDragging)
                 {
@@ -519,6 +551,7 @@ namespace EcoBuilder.Nichess
             if (toDraw.NicheMin == null || toDraw.NicheMax == null)
             {
                 EraseLasso();
+                toDraw.LookNowhere();
             }
             else
             {
@@ -531,11 +564,24 @@ namespace EcoBuilder.Nichess
                 lasso.SetPosition(1, squares[l,t].transform.TransformPoint(new Vector3(-.5f, 0, .5f)));
                 lasso.SetPosition(2, squares[r,t].transform.TransformPoint(new Vector3(.5f, 0, .5f)));
                 lasso.SetPosition(3, squares[r,b].transform.TransformPoint(new Vector3(.5f, 0, -.5f)));
+
+                toDraw.LookAt((squares[l,b].transform.position + squares[r,t].transform.position) / 2);
             }
         }
         private void EraseLasso()
         {
             lasso.enabled = false;
+        }
+        
+        private void DrawGlow(Square toDraw)
+        {
+            glow.transform.parent = toDraw.transform;
+            glow.transform.localPosition = Vector3.zero;
+            glow.GetComponent<Animator>().SetBool("Pulse", true);
+        }
+        private void EraseGlow()
+        {
+            glow.GetComponent<Animator>().SetBool("Pulse", false);
         }
     }
 }
