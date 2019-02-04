@@ -10,7 +10,8 @@ namespace EcoBuilder.Nichess
         [SerializeField] Transform meshTransform;
         [SerializeField] MeshRenderer baseRenderer;
         [SerializeField] MeshFilter baseMesh;
-        [SerializeField] MeshRenderer numberRenderer;
+        [SerializeField] MeshFilter numberMesh;
+        // [SerializeField] MeshRenderer numberRenderer;
         Animator anim;
 
         public Color Col {
@@ -41,9 +42,13 @@ namespace EcoBuilder.Nichess
             // Lightness = lightness;
             // this.lightness = lightness;
         }
-        public void SetShape(Mesh shape)
+        public void SetBaseMesh(Mesh mesh)
         {
-            baseMesh.mesh = shape;
+            baseMesh.mesh = mesh;
+        }
+        public void SetNumberMesh(Mesh mesh)
+        {
+            numberMesh.mesh = mesh;
         }
 
         private void ParentTo(Transform parent)

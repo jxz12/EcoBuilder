@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33311354464286024}
   - component: {fileID: 23181017379693990}
   m_Layer: 0
-  m_Name: 1
+  m_Name: Number
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -113,7 +113,7 @@ Transform:
   m_GameObject: {fileID: 1727378478019514}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.2, y: 0, z: 0.20000003}
-  m_LocalScale: {x: 0.40000004, y: 0.4, z: 0.40000004}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children:
   - {fileID: 4715905196697128}
   m_Father: {fileID: 4144485982298710}
@@ -249,4 +249,4 @@ MonoBehaviour:
   meshTransform: {fileID: 4886179033063118}
   baseRenderer: {fileID: 23897057404763220}
   baseMesh: {fileID: 33826745219738312}
-  numberRenderer: {fileID: 23181017379693990}
+  numberMesh: {fileID: 33311354464286024}

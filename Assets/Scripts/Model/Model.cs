@@ -37,14 +37,14 @@ namespace EcoBuilder.Model
             double metabolism;
             public double Metabolism {
                 set {
-                    metabolism = (value+.1);
-                    Growth = isProducer? (value+.1)*b0 : -(value+.1)*d0;
-                    Attack = (value+.1) * a0;
+                    metabolism = value;
+                    Growth = isProducer? value*b0 : -value*d0;
+                    Attack = value * a0;
                 }
             }
             public double Greediness {
                 set {
-                    SelfReg = a_ii0 * (-1.1 + value);
+                    SelfReg = a_ii0 * value;
                 }
             }
             public double Growth { get; private set; } = 0;

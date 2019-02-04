@@ -136,7 +136,7 @@ RectTransform:
   m_GameObject: {fileID: 7736510}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1172226442}
   - {fileID: 881908281}
@@ -887,7 +887,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 862883997}
-        m_MethodName: SetPieceLightness
+        m_MethodName: SetPieceValue
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

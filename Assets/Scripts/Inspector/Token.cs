@@ -15,7 +15,7 @@ namespace EcoBuilder.Inspector
 		// [SerializeField] Image fill;
 
 		public float Metabolism {
-			get { return slider.normalizedValue; }
+			get { return .1f + .9f*slider.normalizedValue; }
 		}
 		public int Number {
 			get { return (int)slider.value; }

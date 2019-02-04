@@ -81,16 +81,20 @@ namespace EcoBuilder.Nichess
         }
         public void ShapePieceIntoSquare(int idx)
         {
-            pieces[idx].SetShape(squareMesh);
+            pieces[idx].SetBaseMesh(squareMesh);
         }
         public void ShapePieceIntoCircle(int idx)
         {
-            pieces[idx].SetShape(circleMesh);
+            pieces[idx].SetBaseMesh(circleMesh);
         }
-        public void SetPieceLightness(int idx, float lightness)
+        public void SetPieceValue(int idx, float value)
         {
-            float pieceLightness = .2f + .7f*lightness; // make sure that the color is not too light or dark
+            float pieceLightness = .1f + .8f*value; // make sure that the color is not too light or dark
             pieces[idx].Lightness = pieceLightness;
+
+            int number = (int)((((value-.1f)/.9f))*8) + 1;
+            print(value + " " + number);
+            pieces[idx].SetNumberMesh(GameManager.Instance.GetNumberMesh(number));
         }
 
         public void FixPiecePos(int idx) { pieces[idx].StaticPos = true; }

@@ -90,5 +90,16 @@ namespace EcoBuilder
 
             timeDeltas.Enqueue(newDelta);
         }
+
+        [SerializeField] List<Mesh> numbers;
+        public Mesh GetNumberMesh(int number)
+        {
+            if (number < 1)
+                throw new Exception("MAKE 0 YOU DUMMY");
+            if (number < 0 || number > 9)
+                throw new Exception("number out of range");
+
+            return numbers[number];
+        }
     }
 }
