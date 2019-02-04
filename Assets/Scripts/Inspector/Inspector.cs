@@ -13,6 +13,8 @@ namespace EcoBuilder.Inspector
         [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
         [Serializable] class IntStringEvent : UnityEvent<int, string> { }
 
+        [SerializeField] UnityEvent OnDisplayed;
+        [SerializeField] UnityEvent OnHidden;
         [SerializeField] IntEvent OnSpawned;
         [SerializeField] IntEvent OnProducerSet;
         [SerializeField] IntEvent OnConsumerSet;
@@ -63,7 +65,7 @@ namespace EcoBuilder.Inspector
             // producersCounter = GameManager.Instance.MaxProducers;
             // nextIsProducer = consumerButton.interactable;
         }
-        bool loaded = false;
+        bool loaded;
         public void Reload()
         {
             if (!loaded)
@@ -73,6 +75,7 @@ namespace EcoBuilder.Inspector
                 consumer.Enter();
                 chosenType = ChosenType.None;
                 loaded = true;
+                OnDisplayed.Invoke();
             }
         }
         public void Spawn()
@@ -110,8 +113,10 @@ namespace EcoBuilder.Inspector
 
             speciesDict[idxCounter] = newSpecies;
             idxCounter += 1;
-            loaded = false;
             chosenType = ChosenType.None;
+
+            loaded = false;
+            OnHidden.Invoke();
         }
         public void Extinguish(int idx)
         {
@@ -142,6 +147,7 @@ namespace EcoBuilder.Inspector
                 }
                 egg.Exit();
                 loaded = false;
+                OnHidden.Invoke();
             }
         }
 

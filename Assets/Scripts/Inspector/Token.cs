@@ -10,6 +10,7 @@ namespace EcoBuilder.Inspector
 	{
 		[SerializeField] Slider slider;
 		[SerializeField] Button button;
+		[SerializeField] MeshFilter numberMesh;
 
 		// [SerializeField] Image background;
 		// [SerializeField] Image fill;
@@ -29,8 +30,6 @@ namespace EcoBuilder.Inspector
 		{
 			button.onClick.AddListener(()=> OnChosen());
 			slider.onValueChanged.AddListener(x=> ChooseMetabolism(x));
-
-			// hatchable = x=> WaitForHatchable();
 		}
 		public void Enter()
 		{
@@ -58,6 +57,7 @@ namespace EcoBuilder.Inspector
 			{
 				OnMetabolismChosen();
 			}
+			numberMesh.mesh = GameManager.Instance.GetNumberMesh(Number);
 			chosen = true;
 		}
 	}

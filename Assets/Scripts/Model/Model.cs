@@ -14,13 +14,14 @@ namespace EcoBuilder.Model
         [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
 
         [SerializeField] IntEvent OnEndangered;
+        [SerializeField] IntEvent OnCritical;
         [SerializeField] IntEvent OnRescued;
         [SerializeField] IntEvent OnExtinction;
         [SerializeField] IntFloatEvent OnAbundanceSet;
         [SerializeField] IntIntFloatEvent OnFluxSet;
 
         [SerializeField] float heartRate=60; // frequency of LAS calculations
-        // [SerializeField] int countdown=5; // how many heartbeats until death
+        [SerializeField] int countdownMax=5; // how many heartbeats until death
         [SerializeField] Monitor monitor;
 
         class Species
@@ -44,7 +45,7 @@ namespace EcoBuilder.Model
             }
             public double Greediness {
                 set {
-                    SelfReg = a_ii0 * value;
+                    SelfReg = -a_ii0 * value;
                 }
             }
             public double Growth { get; private set; } = 0;
@@ -78,7 +79,7 @@ namespace EcoBuilder.Model
             simulation.AddSpecies(newSpecies);
             idx2Species.Add(idx, newSpecies);
 
-            scaledAbundances[newSpecies] = 0;
+            scaledAbundances[newSpecies.Idx] = .5f;
         }
         public void RemoveSpecies(int idx)
         {
@@ -86,7 +87,8 @@ namespace EcoBuilder.Model
             simulation.RemoveSpecies(toRemove);
             idx2Species.Remove(idx);
 
-            scaledAbundances.Remove(toRemove);
+            abundances.Remove(toRemove);
+            scaledAbundances.Remove(idx);
         }
         public void SetSpeciesAsProducer(int idx)
         {
@@ -130,44 +132,184 @@ namespace EcoBuilder.Model
                 (r,c)=> r.Attack,
                 (r,c)=> r.Efficiency
             );
-            simulation.OnAbundanceSet += SetAndScaleAbundance;
-            simulation.OnFluxSet += SetAndScaleFlux;
+            simulation.OnAbundanceSet += (s,x)=> abundances[s] = x;
+            // simulation.OnFluxSet += SetAndScaleFlux;
+        }
+
+        private void Start()
+        {
+            StartCoroutine(Pulse(60f / heartRate));
+        }
+        public UnityEvent OnPulse;
+        IEnumerator Pulse(float delay)
+        {
+            while (true)
+            {
+                OnPulse.Invoke();
+                if (idx2Species.Count > 0)
+                    Equilibrium();
+                yield return new WaitForSeconds(delay);
+            }
         }
 
         /////////////////////
         // mathy bits here
 
+        Dictionary<Species, double> abundances = new Dictionary<Species, double>();
+        Dictionary<int, float> scaledAbundances = new Dictionary<int, float>();
+
+        int countdown = -1;
         List<Action> UnityEventsTodo = new List<Action>();
         async void Equilibrium()
         {
             bool feasible = await Task.Run(() => simulation.SolveEquilibrium());
 
-            foreach (Action a in UnityEventsTodo)
-                a();
-            UnityEventsTodo.Clear();
+            // foreach (Action a in UnityEventsTodo)
+            //     a();
+            // UnityEventsTodo.Clear();
 
-            print("Abund: " + minLogAbund + " " + maxLogAbund);
+            // print("Abund: " + minLogAbund + " " + maxLogAbund);
 
-            // move mins and maxs slowly towards each other, so that any huge min/max isn't permanent
-            if (minLogAbund != double.MaxValue && maxLogAbund != double.MinValue)
-            {
-                double minMaxGapAbund = maxLogAbund - minLogAbund;
-                minLogAbund += minMaxGapAbund * minMaxTweenSpeed;
-                maxLogAbund -= minMaxGapAbund * minMaxTweenSpeed;
-            }
+            // // move mins and maxs slowly towards each other, so that any huge min/max isn't permanent
+            // if (minLogAbund != double.MaxValue && maxLogAbund != double.MinValue)
+            // {
+            //     double minMaxGapAbund = maxLogAbund - minLogAbund;
+            //     minLogAbund += minMaxGapAbund * minMaxTweenSpeed;
+            //     maxLogAbund -= minMaxGapAbund * minMaxTweenSpeed;
+            // }
 
-            if (minLogFlux != double.MaxValue && maxLogFlux != double.MinValue)
-            {
-                double minMaxGapFlux = maxLogFlux - minLogFlux;
-                minLogFlux += minMaxGapFlux * minMaxTweenSpeed;
-                maxLogFlux -= minMaxGapFlux * minMaxTweenSpeed;
-            }
+            // if (minLogFlux != double.MaxValue && maxLogFlux != double.MinValue)
+            // {
+            //     double minMaxGapFlux = maxLogFlux - minLogFlux;
+            //     minLogFlux += minMaxGapFlux * minMaxTweenSpeed;
+            //     maxLogFlux -= minMaxGapFlux * minMaxTweenSpeed;
+            // }
 
+            SetAndScaleAbundances();
 
             if (feasible)
+            {
                 CalculateAndSetStability();
+                countdown = -1;
+            }
             else
+            {
                 monitor.Debug("infeasible");
+
+                if (countdown == -1) // if newly endangered
+                    countdown = countdownMax;
+                else
+                    countdown -= 1;
+
+                if (countdown == 2)
+                {
+                    OnCritical.Invoke(critical.Idx); // TODO: THIS MIGHT CHANGE AND BE WRONG
+                }
+                // print(countdown);
+                if (countdown == 0)
+                {
+                    RemoveSpecies(critical.Idx);
+                    OnExtinction.Invoke(critical.Idx);
+                    // make extinct
+                    // if two species are tied, then kill the newer one?
+                    countdown = -1;
+                }
+            }
+        }
+        private static readonly double myEps = 1e-10f; // real double.Epsilon = 5e-324
+        HashSet<Species> endangered = new HashSet<Species>();
+        Species critical = null;
+
+        private void SetAndScaleAbundances() // return most endangered
+        {
+            // double minPosAbund = double.MaxValue, maxAbund = 0;
+            // double minNegAbund = 0;
+
+            // foreach (Species s in abundances.Keys)
+            // {
+            //     double abund = abundances[s];
+            //     if (abund <= 0)
+            //     {
+            //         if (!endangered.Contains(s))
+            //         {
+            //             endangered.Add(s);
+            //             OnEndangered.Invoke(s.Idx);
+            //         }
+            //         if (abund < minNegAbund)
+            //         {
+            //             minNegAbund = abund;
+            //             critical = s;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (endangered.Contains(s))
+            //         {
+            //             endangered.Remove(s);
+            //             OnRescued.Invoke(s.Idx);
+            //         }
+            //         minPosAbund = Math.Min(minPosAbund, abund-myEps);
+            //         maxAbund = Math.Max(maxAbund, abund+myEps);
+            //     }
+            // }
+            // Func<double, float> Scale = x=> (float)((x-minPosAbund)/(maxAbund-minPosAbund));
+            // foreach (Species s in abundances.Keys)
+            // {
+            //     double abund = abundances[s];
+            //     if (abund <= 0)
+            //     {
+            //         float newAbund = Mathf.Lerp(scaledAbundances[s.Idx], 0, .5f);
+            //         scaledAbundances[s.Idx] = newAbund;
+            //     }
+            //     else
+            //     {
+            //         float scaledAbund = Scale(abund);
+            //         float newAbund = Mathf.Lerp(scaledAbundances[s.Idx], scaledAbund, .5f);
+            //         scaledAbundances[s.Idx] = newAbund;
+            //     }
+            // }
+            // foreach (int idx in scaledAbundances.Keys)
+            // {
+            //     OnAbundanceSet.Invoke(idx, scaledAbundances[idx]);
+            // }
+
+            Func<double, float> Scale = x=>(float)x;
+
+            double minNegAbund = 0;
+            foreach (Species s in abundances.Keys)
+            {
+                double abund = abundances[s];
+                // print(s.Idx + " " + abund);
+                if (abund <= 0)
+                {
+                    if (!endangered.Contains(s))
+                    {
+                        endangered.Add(s);
+                        OnEndangered.Invoke(s.Idx);
+                    }
+                    if (abund < minNegAbund)
+                    {
+                        minNegAbund = abund;
+                        critical = s;
+                    }
+                    float lerpedAbund = Mathf.Lerp(scaledAbundances[s.Idx], 0, .25f);
+                    scaledAbundances[s.Idx] = lerpedAbund;
+                }
+                else
+                {
+                    if (endangered.Contains(s))
+                    {
+                        endangered.Remove(s);
+                        OnRescued.Invoke(s.Idx);
+                    }
+                    float lerpedAbund = Mathf.Lerp(scaledAbundances[s.Idx], Scale(abund), .25f);
+                    scaledAbundances[s.Idx] = lerpedAbund;
+                }
+            }
+            foreach (int idx in scaledAbundances.Keys)
+            {
+                OnAbundanceSet.Invoke(idx, scaledAbundances[idx]);
+            }
         }
 
         // ------------------ topTop
@@ -178,89 +320,68 @@ namespace EcoBuilder.Model
         // always leave a buffer, if entered simply tween buffer STARTs slowly
         // if ends of buffer are reached, set buffer ENDs instantly
 
-        [SerializeField] double minMaxTweenSpeed = .1f;
-        double minLogAbund = double.MaxValue, maxLogAbund = double.MinValue;
-        private static readonly double myEps = 1e-10f; // real double.Epsilon = 5e-324
+        // [SerializeField] double minMaxTweenSpeed = .1f;
+        // double minLogAbund = double.MaxValue, maxLogAbund = double.MinValue;
 
-        Dictionary<Species, float> scaledAbundances = new Dictionary<Species, float>();
-        HashSet<Species> endangered = new HashSet<Species>();
-        private void SetAndScaleAbundance(Species s, double abundance)
-        {
-            if (abundance <= 0)
-            {
-                if (!endangered.Contains(s))
-                {
-                    endangered.Add(s);
-                    UnityEventsTodo.Add(()=> OnEndangered.Invoke(s.Idx));
-                }
-                // TODO: start countdown to zero if any species is in endangered
-                //  Keep track of which species has the most negative abundance
-                //  only kill that one species if countdown reaches zero
-                //   then start countdown again
-                //   if two species are tied, then kill the newer one?
-                scaledAbundances[s] = 0;
-            }
-            else
-            {
-                if (endangered.Contains(s))
-                {
-                    endangered.Remove(s);
-                    UnityEventsTodo.Add(()=>OnRescued.Invoke(s.Idx));
-                }
-                // TODO: this will have to be changed back once logs are put back in
-                // double logAbundance = Math.Log10(abundance);
-                double logAbundance = abundance;
-                minLogAbund = Math.Min(logAbundance, minLogAbund) - myEps;
-                maxLogAbund = Math.Max(logAbundance, maxLogAbund) + myEps;
+        // Dictionary<Species, float> scaledAbundances = new Dictionary<Species, float>();
+        // private void SetAndScaleAbundance(Species s, double abundance)
+        // {
+        //     if (abundance <= 0)
+        //     {
+        //         if (!endangered.Contains(s))
+        //         {
+        //             endangered.Add(s);
+        //             UnityEventsTodo.Add(()=> OnEndangered.Invoke(s.Idx));
+        //         }
+        //         scaledAbundances[s] = Mathf.Lerp(scaledAbundances[s], 0, .5f);
+        //     }
+        //     else
+        //     {
+        //         if (endangered.Contains(s))
+        //         {
+        //             endangered.Remove(s);
+        //             UnityEventsTodo.Add(()=>OnRescued.Invoke(s.Idx));
+        //         }
+        //         // TODO: this will have to be changed back once logs are put back in
+        //         // double logAbundance = Math.Log10(abundance);
+        //         double logAbundance = abundance;
+        //         minLogAbund = Math.Min(logAbundance, minLogAbund) - myEps;
+        //         maxLogAbund = Math.Max(logAbundance, maxLogAbund) + myEps;
 
-                print(s.Idx + ": " + logAbundance);
+        //         // print(s.Idx + ": " + logAbundance);
 
-                float scaled = (float)((logAbundance-minLogAbund) / (maxLogAbund-minLogAbund));
-                scaledAbundances[s] = scaled;
-            }
-            UnityEventsTodo.Add(()=> OnAbundanceSet.Invoke(s.Idx, scaledAbundances[s]));
-        }
+        //         float scaled = (float)((logAbundance-minLogAbund) / (maxLogAbund-minLogAbund));
+        //         scaledAbundances[s] = Mathf.Lerp(scaledAbundances[s], scaled, .5f);
+        //     }
 
-        double minLogFlux = double.MaxValue, maxLogFlux = double.MinValue;
-        private void SetAndScaleFlux(Species res, Species con, double flux)
-        {
-            // TODO: this will have to be changed back once logs are put back in
-            // double logFlux = Math.Log10(flux);
+        //     UnityEventsTodo.Add(()=> OnAbundanceSet.Invoke(s.Idx, scaledAbundances[s]));
+        // }
+
+        // double minLogFlux = double.MaxValue, maxLogFlux = double.MinValue;
+        // private void SetAndScaleFlux(Species res, Species con, double flux)
+        // {
+        //     // TODO: this will have to be changed back once logs are put back in
+        //     // double logFlux = Math.Log10(flux);
 
 
-            // TODO: This method is making lines way too thin almost all the time
-            double logFlux = flux;
-            // double logFlux = flux * scaledAbundances[res]*scaledAbundances[con]; // might be better otherwise
-            minLogFlux = Math.Min(logFlux, minLogFlux) - myEps;
-            maxLogFlux = Math.Max(logFlux, maxLogFlux) + myEps;
+        //     // TODO: This method is making lines way too thin almost all the time
+        //     double logFlux = flux;
+        //     // double logFlux = flux * scaledAbundances[res]*scaledAbundances[con]; // might be better otherwise
+        //     minLogFlux = Math.Min(logFlux, minLogFlux) - myEps;
+        //     maxLogFlux = Math.Max(logFlux, maxLogFlux) + myEps;
 
-            print(res.Idx + " " + con.Idx + " " + logFlux);
+        //     // print(res.Idx + " " + con.Idx + " " + logFlux);
 
-            float scaled = (float)((logFlux-minLogFlux) / (maxLogFlux-minLogFlux));
-            UnityEventsTodo.Add(()=> OnFluxSet.Invoke(res.Idx, con.Idx, scaled * scaledAbundances[res]*scaledAbundances[con]));
-            // UnityActionsTodo.Add(()=> OnFluxSet.Invoke(res.Idx, con.Idx, scaled));
-        }
+        //     float scaled = (float)((logFlux-minLogFlux) / (maxLogFlux-minLogFlux));
+        //     // UnityEventsTodo.Add(()=> OnFluxSet.Invoke(res.Idx, con.Idx, scaled * scaledAbundances[res]*scaledAbundances[con]));
+        //     // UnityActionsTodo.Add(()=> OnFluxSet.Invoke(res.Idx, con.Idx, scaled));
+        // }
 
 
         private async void CalculateAndSetStability()
         {
             double stability = await Task.Run(() => simulation.LocalAsymptoticStability());
             monitor.Debug(stability.ToString("E"));
-        }
-
-        private void Start()
-        {
-            // StartCoroutine(Pulse(60f / heartRate));
-        }
-
-        IEnumerator Pulse(float delay)
-        {
-            while (true)
-            {
-                if (idx2Species.Count > 0)
-                    Equilibrium();
-                yield return new WaitForSeconds(delay);
-            }
         }
 
     }

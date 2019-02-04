@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using SparseMatrix;
 using System;
-// using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
@@ -16,14 +16,13 @@ namespace EcoBuilder.NodeLink
         [SerializeField] IntEvent OnFocus;
 
         [SerializeField] Node nodePrefab;
-        // [SerializeField] GameObject diskPrefab;
         [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
         [SerializeField] Link linkPrefab;
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
 
-        [SerializeField] Transform graphParent, nodesParent, linksParent, disk;
+        [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         public void AddNode(int idx)
         {
@@ -117,7 +116,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float maxEdgeWidth;
         public void ResizeEdge(int i, int j, float width)
         {
-            links[i,j].Width = .1f + maxEdgeWidth*width;
+            links[i,j].Width = .2f + maxEdgeWidth*width;
             // TODO: some pulse here too
         }
 
@@ -133,6 +132,10 @@ namespace EcoBuilder.NodeLink
         public void FlashNode(int idx)
         {
             nodes[idx].Flash();
+        }
+        public void HeavyFlashNode(int idx)
+        {
+            nodes[idx].HeavyFlash();
         }
         public void UnflashNode(int idx)
         {
@@ -184,6 +187,7 @@ namespace EcoBuilder.NodeLink
             }
 
             Rotate();
+            baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2*Vector3.one, .1f);
         }
 
         ////////////////////////////////////
@@ -436,20 +440,34 @@ namespace EcoBuilder.NodeLink
             }
         }
         [SerializeField] float diskStep=.2f;
+        [SerializeField] Transform focusDisk, baseDisk;
 
         void TweenDisk(Node target)
         {
             if (target == null)
             {
-                disk.localPosition = Vector3.Lerp(disk.localPosition, Vector3.zero, diskStep);
-                disk.localScale = Vector3.Lerp(disk.localScale, 2*Vector3.one, diskStep);
+                focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, Vector3.zero, diskStep);
+                focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, 2*Vector3.one, diskStep);
             }
             else
             {
-                float dist = focus.TargetPos.y - disk.localPosition.y;
-                // disk.localPosition = Vector3.Lerp(disk.localPosition, focus.transform.localPosition, diskStep);
-                disk.localPosition = Vector3.Lerp(disk.localPosition, focus.TargetPos, diskStep);
-                disk.localScale = Vector3.Lerp(disk.localScale, Vector3.one, diskStep);
+                float dist = focus.TargetPos.y - focusDisk.localPosition.y;
+                // focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.transform.localPosition, focusDiskStep);
+                focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.TargetPos, diskStep);
+                focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, Vector3.one, diskStep);
+            }
+        }
+
+        public void Pulse()
+        {
+            StartCoroutine(AnimatePulse());
+        }
+        IEnumerator AnimatePulse()
+        {
+            for (int i=0; i<10; i++)
+            {
+                baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2.3f*Vector3.one, .333f);
+                yield return null;
             }
         }
 

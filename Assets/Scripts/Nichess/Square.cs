@@ -211,35 +211,38 @@ namespace EcoBuilder.Nichess
             var c = Col;
             c.a = defaultAlpha;
             Col = c;
-            held = false; // prevent hold & click if left and reentered
+            potentialHold = false; // prevent hold & click if left and reentered
         }
-        bool held = false;
+        bool potentialHold = false;
         public void OnPointerDown(PointerEventData ped)
         {
-            held = true;
+            potentialHold = true;
             StartCoroutine(WaitForHold(1, ped));
         }
         IEnumerator WaitForHold(float seconds, PointerEventData ped)
         {
-            yield return new WaitForSecondsRealtime(seconds);
-            if (held)
+            float endTime = Time.time + seconds;
+            while (Time.time < endTime)
             {
-                held = false;
-                OnHeld();
+                if (potentialHold == false)
+                    yield break;
+                else
+                    yield return null;
             }
+            // potentialHold = false;
+            OnHeld();
         }
         public void OnPointerUp(PointerEventData ped)
         {
-            // don't throw a click if this is already being dragged, because EndDrag will be
-            if (held)
+            if (potentialHold)
             {
-                held = false;
                 OnClicked();
             }
+            potentialHold = false;
         }
         public void OnBeginDrag(PointerEventData ped)
         {
-            // held = false;
+            potentialHold = false;
             OnDragStarted();
         }
         public void OnEndDrag(PointerEventData ped)

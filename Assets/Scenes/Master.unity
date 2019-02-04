@@ -391,10 +391,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardSize: 3
-  maxProducers: 3
   fpsText: {fileID: 2087513293}
   numbers:
-  - {fileID: 0}
+  - {fileID: 4300020, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
   - {fileID: 4300002, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
   - {fileID: 4300004, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
   - {fileID: 4300000, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
@@ -404,6 +403,9 @@ MonoBehaviour:
   - {fileID: 4300012, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
   - {fileID: 4300014, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
   - {fileID: 4300016, guid: 0080bf850eba6d0419eb05309b138589, type: 3}
+  landscapes:
+  - {fileID: 1364368197350122, guid: 487b7499ce3a8d04999ad015a9061430, type: 2}
+  - {fileID: 1630965847293640, guid: f11bdda3fb562dd429e086d95fe8b909, type: 2}
 --- !u!1 &2087513292
 GameObject:
   m_ObjectHideFlags: 0

@@ -35,6 +35,8 @@ namespace EcoBuilder.Nichess
             board.OnPieceNicheRangeChanged += p=> {
                 UpdateSelectedResources();
             };
+
+            Instantiate(GameManager.Instance.SelectedLandscape, transform);
         }
 
         public void AddPiece(int idx)
@@ -44,7 +46,6 @@ namespace EcoBuilder.Nichess
             pieces[newPiece.Idx] = newPiece;
 
             board.PlaceNewPieceOnSelectedSquare(newPiece);
-            // FixPiecePos(idx); // can be removed
 
             StartCoroutine(WaitThenInitPiece(newPiece));
         }
@@ -68,6 +69,8 @@ namespace EcoBuilder.Nichess
             };
 
             OnPieceColored.Invoke(toInit.Idx, toInit.Col);
+            toInit.OnSelected += ()=> OnPieceSelected.Invoke(toInit.Idx);
+            // toInit.OnSelected += ()=> UnityEditor.Selection.activeGameObject = toInit.gameObject;
             toInit.OnPosChanged += ()=> UpdateSelectedConsumers();
             toInit.OnPosChanged += ()=> OnPieceColored.Invoke(toInit.Idx, toInit.Col);
             toInit.OnThrownAway += ()=> RemovePiece(toInit.Idx);
@@ -75,7 +78,11 @@ namespace EcoBuilder.Nichess
 
             OnPieceSelected.Invoke(toInit.Idx);
         }
-        public void RemovePiece(int idx)
+        public void RemovePieceExternal(int idx)
+        {
+            board.RemovePieceExternal(pieces[idx]); // TODO: DO THIS BETTER THAN JUST EXTERNAL
+        }
+        private void RemovePiece(int idx)
         {
             pieces.Remove(idx);
         }
@@ -92,8 +99,7 @@ namespace EcoBuilder.Nichess
             float pieceLightness = .1f + .8f*value; // make sure that the color is not too light or dark
             pieces[idx].Lightness = pieceLightness;
 
-            int number = (int)((((value-.1f)/.9f))*8) + 1;
-            print(value + " " + number);
+            int number = (int)((((value-.09f)/.9f))*8) + 1; // lol
             pieces[idx].SetNumberMesh(GameManager.Instance.GetNumberMesh(number));
         }
 

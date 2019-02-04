@@ -117,7 +117,7 @@ namespace EcoBuilder.Model
         }
 
         public event Action<T, double> OnAbundanceSet;
-        public event Action<T, T, double> OnFluxSet;
+        // public event Action<T, T, double> OnFluxSet;
 
         ///////////////////////////////////////
         // should be run async because O(n^3)
@@ -143,7 +143,7 @@ namespace EcoBuilder.Model
                     A[i,j] -= a;
                     double flux = e*a;
                     A[j,i] += flux;
-                    OnFluxSet(res, con, flux);
+                    // OnFluxSet(res, con, flux);
                 }
             }
             // UnityEngine.Debug.Log(MathNetMatStr(A));
@@ -163,6 +163,7 @@ namespace EcoBuilder.Model
             }
             return feasible;
         }
+
 
         // Depends on A and b being correct
         void BuildCommunityMatrix()

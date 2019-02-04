@@ -103,9 +103,17 @@ namespace EcoBuilder.Nichess
         }
         public void ThrowAway()
         {
-            anim.SetTrigger("Destroy");
+            anim.SetTrigger("Destroy"); // Destroy(gameObject) called in script
             OnThrownAway();
-            // Destroy(gameObject);
+        }
+        public void ThrowAwayExternal()
+        {
+            anim.SetTrigger("Destroy");
+        }
+
+        public void DestroyMe()
+        {
+            Destroy(gameObject);
         }
         public void Lift()
         {

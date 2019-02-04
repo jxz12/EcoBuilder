@@ -91,14 +91,14 @@ namespace EcoBuilder.Nichess
             }
         }
 
-        public void PlaceNewPieceOnSelectedSquare(Piece pce)
+        public void PlaceNewPieceOnSelectedSquare(Piece newPiece)
         {
             if (selectedSquare == null)
                 throw new Exception("square not selected first!");
             else
             {
-                pce.NichePos = selectedSquare;
-                selectedSquare.Occupant = pce;
+                newPiece.NichePos = selectedSquare;
+                selectedSquare.Occupant = newPiece;
 
                 State = BoardState.PieceSelected;
             }
@@ -120,6 +120,42 @@ namespace EcoBuilder.Nichess
             selectedSquare = pce.NichePos;
 
             State = BoardState.PieceSelected;
+        }
+        public void RemovePieceExternal(Piece toRemove)
+        {
+            if (State == BoardState.Idle || State == BoardState.SquareSelected)
+            {
+                // nothing extra needed
+            }
+            else if (State == BoardState.PieceSelected)
+            {
+                if (selectedSquare.Occupant == toRemove)
+                {
+                    selectedSquare.Deselect();
+                    selectedSquare = null;
+                    State = BoardState.Idle;
+                }
+            }
+            else if (State == BoardState.PieceDragging)
+            {
+                if (draggedSquare.Occupant == toRemove)
+                {
+                    selectedSquare.Deselect();
+                    selectedSquare = null;
+                    State = BoardState.Idle;
+                }
+            }
+            else if (State == BoardState.NicheDragging)
+            {
+                if (selectedSquare.Occupant == toRemove)
+                {
+                    selectedSquare.Deselect();
+                    selectedSquare = null;
+                    State = BoardState.Idle;
+                }
+            }
+            RemoveNiche(toRemove);
+            toRemove.ThrowAwayExternal();
         }
 
         public void DeselectAll()
@@ -158,9 +194,8 @@ namespace EcoBuilder.Nichess
                     }
                     else
                     {
-                        State = BoardState.SquareSelected;
-                        DrawGlow(sqr);
                         OnSquareSelected(sqr);
+                        State = BoardState.SquareSelected;
                     }
                 }
                 else
@@ -168,34 +203,67 @@ namespace EcoBuilder.Nichess
                     State = BoardState.Idle;
                 }
             }
-        }
-        private void HoldSquare(Square sqr)
-        {
-            if (sqr.Occupant != null)
+            else
             {
-                if (sqr.Occupant.StaticPos)
+                if (State == BoardState.PieceDragging)
+                {
+                    selectedSquare.Occupant.Drop();
+                }
+            }
+        }
+        private void HoldSquare(Square heldSquare)
+        {
+            if (heldSquare.Occupant != null)
+            {
+                if (heldSquare.Occupant.StaticPos)
                 {
                     print("cannot move! TODO: make this show a message instead");
                 }
                 else
                 {
-                    if (State == BoardState.SquareSelected)
+                    if (State == BoardState.Idle)
                     {
+                        heldSquare.Select();
+                        heldSquare.Occupant.Select();
+                        heldSquare.Occupant.Lift();
+
+                        selectedSquare = heldSquare;
+                        State = BoardState.PieceDragging;
+                    }
+                    else if (State == BoardState.SquareSelected)
+                    {
+                        if (selectedSquare == heldSquare)
+                        {
+                            throw new Exception("impossibly occupied square");
+                        }
                         selectedSquare.Deselect();
+
+                        heldSquare.Select();
+                        heldSquare.Occupant.Select();
+                        heldSquare.Occupant.Lift();
+
+                        selectedSquare = heldSquare;
+                        State = BoardState.PieceDragging;
                     }
                     else if (State == BoardState.PieceSelected)
                     {
-                        if (sqr != selectedSquare)
+                        if (selectedSquare != heldSquare)
                         {
                             selectedSquare.Deselect();
-                            sqr.Select();
                             selectedSquare.Occupant.Deselect();
+
+                            heldSquare.Select();
+                            heldSquare.Occupant.Select();
+                            selectedSquare = heldSquare;
                         }
+                        heldSquare.Occupant.Lift();
+
+                        State = BoardState.PieceDragging;
+                    }   
+                    else
+                    {
+                        throw new Exception("impossible state");
                     }
-                    selectedSquare = sqr;
-                    sqr.Occupant.Lift();
-                    draggedSquare = sqr;
-                    State = BoardState.PieceDragging;
                 }
             }
         }
@@ -357,7 +425,7 @@ namespace EcoBuilder.Nichess
             sqr.RemoveConsumer(con);
             AddMarkerCount(sqr.NumMarkers);
         }
-        [SerializeField] float maxMarkerSize = .9f;
+        [SerializeField] float maxMarkerSize = .5f;
         private int prevMaxNumMarkers=0;
         private void RescaleMarkersIfNeeded()
         {

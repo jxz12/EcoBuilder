@@ -41,19 +41,20 @@ namespace EcoBuilder
         [SerializeField] int boardSize = 50;
         public int BoardSize { get { return boardSize; } }
 
-        [SerializeField] int maxProducers = 3;
-        public int MaxProducers { get { return maxProducers; } }
+        // [SerializeField] int maxProducers = 3;
+        // public int MaxProducers { get { return maxProducers; } }
 
         void Start()
         {
-            // LoadScene("Play");
+            if (SceneManager.sceneCount == 1)
+                LoadScene("Menu");
         }
         
 
-        private void LoadScene(string sceneName) {
+        public void LoadScene(string sceneName) {
             StartCoroutine(LoadSceneThenSetActive(sceneName));
         }
-        private void UnloadScene(string sceneName) {
+        public void UnloadScene(string sceneName) {
             SceneManager.UnloadSceneAsync(sceneName);
         }
         //[SerializeField] UnityEvent startLoadEvent, endLoadEvent;
@@ -94,12 +95,26 @@ namespace EcoBuilder
         [SerializeField] List<Mesh> numbers;
         public Mesh GetNumberMesh(int number)
         {
-            if (number < 1)
-                throw new Exception("MAKE 0 YOU DUMMY");
             if (number < 0 || number > 9)
                 throw new Exception("number out of range");
 
             return numbers[number];
         }
+
+        int landscapeNumber = 0;
+		[SerializeField] List<GameObject> landscapes;
+        public void SwitchLandscape(bool increment)
+        {
+            if (increment)
+                landscapeNumber += 1;
+            else
+                landscapeNumber -= 1;
+
+            if (landscapeNumber < 0)
+                landscapeNumber = landscapes.Count - 1;
+            if (landscapeNumber >= landscapes.Count)
+                landscapeNumber = 0;
+        }
+        public GameObject SelectedLandscape { get { return landscapes[landscapeNumber]; } }
     }
 }

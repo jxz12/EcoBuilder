@@ -63,6 +63,10 @@ namespace EcoBuilder.NodeLink
         {
             anim.SetTrigger("Flash");
         }
+        public void HeavyFlash()
+        {
+            anim.SetTrigger("Heavy Flash");
+        }
         public void Idle()
         {
             anim.SetTrigger("Idle");
