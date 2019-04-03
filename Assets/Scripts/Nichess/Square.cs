@@ -12,7 +12,7 @@ namespace EcoBuilder.Nichess
         IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler,
         IDragHandler, IBeginDragHandler, IEndDragHandler, IDropHandler
     {
-        [SerializeField] float defaultAlpha=.2f, hoverAlpha=1f;
+        // [SerializeField] float defaultAlpha=.2f, hoverAlpha=1f;
         [SerializeField] Marker markerPrefab;
         [SerializeField] Transform markersParent;
         MeshRenderer mr;
@@ -50,19 +50,94 @@ namespace EcoBuilder.Nichess
         }
         void Start()
         {
-            var c = Col;
-            c.a = defaultAlpha;
-            Col = c;
         }
-        // TODO: change this to some animation that glows
         public void Select()
         {
-            transform.localPosition += .01f*Vector3.up;
+            // transform.localPosition += .01f*Vector3.up;
         }
         public void Deselect()
         {
-            transform.localPosition -= .01f*Vector3.up;
+            // transform.localPosition -= .01f*Vector3.up;
         }
+
+
+        /////////////////////////////////////////////////////////
+        // TODO: make this deal with two touches
+
+        public event Action OnEnter;
+        public event Action OnExit;
+        public event Action OnClicked;
+        public event Action OnHeld;
+        public event Action OnDragStarted;
+        public event Action OnDraggedInto;
+        public event Action OnDragEnded;
+        public event Action OnDroppedOn;
+        public void OnPointerEnter(PointerEventData ped)
+        {
+            OnEnter();
+
+            if (ped.dragging)
+                OnDraggedInto();
+        }
+        public void OnPointerExit(PointerEventData ped)
+        {
+            OnExit();
+            potentialHold = false; // prevent hold & click if left and reentered
+        }
+        bool potentialHold = false;
+        public void OnPointerDown(PointerEventData ped)
+        {
+            potentialHold = true;
+            StartCoroutine(WaitForHold(1, ped));
+        }
+        IEnumerator WaitForHold(float seconds, PointerEventData ped)
+        {
+            float endTime = Time.time + seconds;
+            while (Time.time < endTime)
+            {
+                if (potentialHold == false)
+                    yield break;
+                else
+                    yield return null;
+            }
+            // potentialHold = false;
+            OnHeld();
+        }
+        public void OnPointerUp(PointerEventData ped)
+        {
+            if (potentialHold)
+            {
+                OnClicked();
+            }
+            potentialHold = false;
+        }
+        public void OnBeginDrag(PointerEventData ped)
+        {
+            potentialHold = false;
+            OnDragStarted();
+        }
+        public void OnEndDrag(PointerEventData ped)
+        {
+            OnDragEnded();
+            // // so that you can drop on yourself
+            // if (ped.pointerEnter == this.gameObject)
+            //     OnDroppedOn();
+            // else
+            //     OnDragEnded();
+        }
+        public void OnDrag(PointerEventData ped)
+        {
+        }
+        public void OnDrop(PointerEventData ped)
+        {
+            OnDroppedOn();
+        }
+
+
+
+
+        /////////////////////////////////////
+        // markers
 
         // pool markers because they will get added and removed often
         private static Marker markerPoolPrefab;
@@ -109,7 +184,7 @@ namespace EcoBuilder.Nichess
         // need to go through once to resize anyway, so use a LL
         public int NumMarkers { get { return markersLL.Count; } }
 
-        public void AddConsumer(Piece con)
+        public void AddMarker(Piece con)
         {
             if (con == this)
                 throw new Exception("cannot eat itself");
@@ -144,7 +219,7 @@ namespace EcoBuilder.Nichess
                 markersLL.AddLast(newMarker);
             }
         }
-        public void RemoveConsumer(Piece con)
+        public void RemoveMarker(Piece con)
         {
             if (con == this)
                 throw new Exception("cannot eat itself");
@@ -186,79 +261,6 @@ namespace EcoBuilder.Nichess
         public void ResizeMarkers(float size)
         {
             markersParent.transform.localScale = new Vector3(size, size, size);
-        }
-
-        /////////////////////////////////////////////////////////
-        // TODO: make this deal with two touches
-
-        public event Action OnClicked;
-        public event Action OnHeld;
-        public event Action OnDragStarted;
-        public event Action OnDraggedInto;
-        public event Action OnDragEnded;
-        public event Action OnDroppedOn;
-        public void OnPointerEnter(PointerEventData ped)
-        {
-            var c = Col;
-            c.a = hoverAlpha;
-            Col = c;
-
-            if (ped.dragging)
-                OnDraggedInto();
-        }
-        public void OnPointerExit(PointerEventData ped)
-        {
-            var c = Col;
-            c.a = defaultAlpha;
-            Col = c;
-            potentialHold = false; // prevent hold & click if left and reentered
-        }
-        bool potentialHold = false;
-        public void OnPointerDown(PointerEventData ped)
-        {
-            potentialHold = true;
-            StartCoroutine(WaitForHold(1, ped));
-        }
-        IEnumerator WaitForHold(float seconds, PointerEventData ped)
-        {
-            float endTime = Time.time + seconds;
-            while (Time.time < endTime)
-            {
-                if (potentialHold == false)
-                    yield break;
-                else
-                    yield return null;
-            }
-            // potentialHold = false;
-            OnHeld();
-        }
-        public void OnPointerUp(PointerEventData ped)
-        {
-            if (potentialHold)
-            {
-                OnClicked();
-            }
-            potentialHold = false;
-        }
-        public void OnBeginDrag(PointerEventData ped)
-        {
-            potentialHold = false;
-            OnDragStarted();
-        }
-        public void OnEndDrag(PointerEventData ped)
-        {
-            // so that you can drop on yourself
-            if (ped.pointerEnter == this.gameObject)
-                OnDroppedOn();
-            else
-                OnDragEnded();
-        }
-        public void OnDrag(PointerEventData ped)
-        {
-        }
-        public void OnDrop(PointerEventData ped)
-        {
-            OnDroppedOn();
         }
     }
 }

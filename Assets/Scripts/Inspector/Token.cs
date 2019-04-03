@@ -34,6 +34,8 @@ namespace EcoBuilder.Inspector
 		public void Enter()
 		{
 			slider.normalizedValue = .5f;
+			numberMesh.mesh = GameManager.Instance.GetNumberMesh(5);
+
 			button.interactable = true;
 			button.GetComponent<Animator>().SetTrigger("Enter");
 			slider.GetComponent<Animator>().SetTrigger("Choosing");

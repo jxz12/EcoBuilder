@@ -7,59 +7,98 @@ namespace EcoBuilder.Nichess
 {
     public class Piece : MonoBehaviour
     {
-        [SerializeField] Transform meshTransform;
-        [SerializeField] MeshRenderer baseRenderer;
-        [SerializeField] MeshFilter baseMesh;
-        [SerializeField] MeshFilter numberMesh;
-        // [SerializeField] MeshRenderer numberRenderer;
-        Animator anim;
-
+        [SerializeField] MeshRenderer mr;
         public Color Col {
-            get { return baseRenderer.material.color; }
-            set { baseRenderer.material.color = value; }
+            get { return mr.material.color; }
+            set { mr.material.color = value; }
+        }
+        [SerializeField] MeshFilter mf;
+        public Mesh Shape {
+            set { mf.mesh = value; }
         }
         public int Idx { get; private set; }
-        private float lightness;
-        public float Lightness {
-            private get { return lightness; }
-            set {
-                lightness = value;
-                Col = ColorHelper.SetY(NichePos.Col, value);
-            }
-        }
 
         public bool StaticPos { get; set; }
         public bool StaticRange { get; set; }
 
         private void Awake()
         {
-            anim = GetComponent<Animator>();
         }
         public void Init(int idx)
         {
             Idx = idx;
             name = idx.ToString();
-            // Lightness = lightness;
-            // this.lightness = lightness;
-        }
-        public void SetBaseMesh(Mesh mesh)
-        {
-            baseMesh.mesh = mesh;
-        }
-        public void SetNumberMesh(Mesh mesh)
-        {
-            numberMesh.mesh = mesh;
         }
 
-        private void ParentTo(Transform parent)
+        public void Select()
         {
-            // below is required to get colliders to work with eventsystem
-            transform.parent = parent;
-            transform.localScale = Vector3.one;
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
+            // TOOD: some animation here
+            OnSelected();
+        }
+        public Square NichePos { get; private set; }
+        public event Action OnPosChanged;
+        public event Action OnSelected;
+        public void PlaceOnSquare(Square newParent)
+        {
+            if (NichePos != null)
+                NichePos.Occupant = null;
+
+            transform.SetParent(newParent.transform, false);
+            NichePos = newParent;
+            OnPosChanged();
+
+            // // below is required to get colliders to work with eventsystem
+            // transform.parent = newParent.transform;
+            // transform.localScale = Vector3.one;
+            // transform.localPosition = Vector3.zero;
+            // transform.localRotation = Quaternion.identity;
+        }
+        public Square NicheMin { get; set; }
+        public Square NicheMax { get; set; }
+
+        public bool SquareInNiche(Square toConsume)
+        {
+            if (NicheMin == null || NicheMax == null)
+                return false;
+
+            int resX = toConsume.X;
+            int resY = toConsume.Y;
+
+            int conL = NicheMin.X;
+            int conR = NicheMax.X;
+            int conB = NicheMin.Y;
+            int conT = NicheMax.Y;
+
+            if (conL<=resX && resX<=conR && conB<=resY && resY<=conT)
+                return true;
+            else
+                return false;
+        }
+        public bool IsResourceOf(Piece consumer)
+        {
+            if (NichePos == null)
+                return false;
+
+            return consumer.SquareInNiche(NichePos);
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /*
         //////////////////////////////////////////////////////////////////
 
         public event Action OnSelected;
@@ -168,7 +207,7 @@ namespace EcoBuilder.Nichess
         {
             // meshTransform.localRotation = Quaternion.identity;
         }
-
+        */
 
     }
 }

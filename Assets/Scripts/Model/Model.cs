@@ -20,9 +20,9 @@ namespace EcoBuilder.Model
         [SerializeField] IntFloatEvent OnAbundanceSet;
         [SerializeField] IntIntFloatEvent OnFluxSet;
 
-        [SerializeField] float heartRate=60; // frequency of LAS calculations
-        [SerializeField] int countdownMax=5; // how many heartbeats until death
-        [SerializeField] Monitor monitor;
+        // [SerializeField] float heartRate=60; // frequency of LAS calculations
+        // [SerializeField] int countdownMax=5; // how many heartbeats until death
+        // [SerializeField] Monitor monitor;
 
         class Species
         {
@@ -138,7 +138,7 @@ namespace EcoBuilder.Model
 
         private void Start()
         {
-            StartCoroutine(Pulse(60f / heartRate));
+            // StartCoroutine(Pulse(60f / heartRate));
         }
         public UnityEvent OnPulse;
         IEnumerator Pulse(float delay)
@@ -160,13 +160,11 @@ namespace EcoBuilder.Model
 
         int countdown = -1;
         List<Action> UnityEventsTodo = new List<Action>();
+        Species toExtinct = null;
         async void Equilibrium()
         {
-            bool feasible = await Task.Run(() => simulation.SolveEquilibrium());
-
-            // foreach (Action a in UnityEventsTodo)
-            //     a();
-            // UnityEventsTodo.Clear();
+            // bool feasible = await Task.Run(() => simulation.SolveEquilibrium());
+            bool feasible = simulation.SolveEquilibrium();
 
             // print("Abund: " + minLogAbund + " " + maxLogAbund);
 
@@ -194,16 +192,26 @@ namespace EcoBuilder.Model
             }
             else
             {
-                monitor.Debug("infeasible");
+                // monitor.Debug("infeasible");
 
-                if (countdown == -1) // if newly endangered
-                    countdown = countdownMax;
-                else
-                    countdown -= 1;
+                // if (countdown == -1) // if newly endangered
+                //     countdown = countdownMax;
+                // else
+                //     countdown -= 1;
 
-                if (countdown == 2)
+                if (countdown <= 2)
                 {
-                    OnCritical.Invoke(critical.Idx); // TODO: THIS MIGHT CHANGE AND BE WRONG
+                    if (toExtinct == null)
+                    {
+                        OnCritical.Invoke(critical.Idx);
+                        toExtinct = critical;
+                    }
+                    else if (toExtinct != critical)
+                    {
+                        OnEndangered.Invoke(toExtinct.Idx);
+                        OnCritical.Invoke(critical.Idx);
+                        toExtinct = critical;
+                    }
                 }
                 // print(countdown);
                 if (countdown == 0)
@@ -212,7 +220,8 @@ namespace EcoBuilder.Model
                     OnExtinction.Invoke(critical.Idx);
                     // make extinct
                     // if two species are tied, then kill the newer one?
-                    countdown = -1;
+                    // countdown = countdownMax;
+                    toExtinct = null;
                 }
             }
         }
@@ -276,6 +285,7 @@ namespace EcoBuilder.Model
             Func<double, float> Scale = x=>(float)x;
 
             double minNegAbund = 0;
+            Species argMin;
             foreach (Species s in abundances.Keys)
             {
                 double abund = abundances[s];
@@ -380,8 +390,9 @@ namespace EcoBuilder.Model
 
         private async void CalculateAndSetStability()
         {
-            double stability = await Task.Run(() => simulation.LocalAsymptoticStability());
-            monitor.Debug(stability.ToString("E"));
+            // double stability = await Task.Run(() => simulation.LocalAsymptoticStability());
+            double stability = simulation.LocalAsymptoticStability();
+            // monitor.Debug(stability.ToString("E3"));
         }
 
     }

@@ -41,8 +41,7 @@ namespace EcoBuilder
         [SerializeField] int boardSize = 50;
         public int BoardSize { get { return boardSize; } }
 
-        // [SerializeField] int maxProducers = 3;
-        // public int MaxProducers { get { return maxProducers; } }
+        public bool[] Level { get; private set; } = {true, false, false, false, false};
 
         void Start()
         {

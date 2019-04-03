@@ -10,19 +10,13 @@ namespace EcoBuilder.NodeLink
 {
     public class NodeLink : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
-        [Serializable] class IntEvent : UnityEvent<int> { };
-
-        [SerializeField] UnityEvent OnUnfocus;
-        [SerializeField] IntEvent OnFocus;
-
         [SerializeField] Node nodePrefab;
-        [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
         [SerializeField] Link linkPrefab;
+        // [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
+        [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
-
-        [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         public void AddNode(int idx)
         {
@@ -34,20 +28,19 @@ namespace EcoBuilder.NodeLink
 
             var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
             newNode.Init(idx, startPos);
-            // newNode.Pos = new Vector3(UnityEngine.Random.Range(-1f, 1f), UnityEngine.Random.Range(-1, 1f), UnityEngine.Random.Range(-1f, 1f));
             nodes[idx] = newNode;
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
         }
-        public void ShapeNodeIntoCube(int idx)
-        {
-            nodes[idx].SetShape(cubeMesh, cubeOutlineMesh);
-        }
-        public void ShapeNodeIntoSphere(int idx)
-        {
-            nodes[idx].SetShape(sphereMesh, sphereOutlineMesh);
-        }
+        // public void ShapeNodeIntoCube(int idx)
+        // {
+        //     nodes[idx].SetShape(cubeMesh, cubeOutlineMesh);
+        // }
+        // public void ShapeNodeIntoSphere(int idx)
+        // {
+        //     nodes[idx].SetShape(sphereMesh, sphereOutlineMesh);
+        // }
         public void RemoveNode(int idx)
         {
             if (focus != null && focus.Idx == idx)
@@ -103,22 +96,21 @@ namespace EcoBuilder.NodeLink
             nodes[idx].Col = c;
         }
 
-        public void ResizeNode(int idx, float size)
-        {
-            if (size < 0)
-                throw new Exception("size cannot be negative");
+        // public void ResizeNode(int idx, float size)
+        // {
+        //     if (size < 0)
+        //         throw new Exception("size cannot be negative");
 
-            nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
-            // TODO: do some pulse animation here!
-            // TODO: maybe do cube root here? although the visual on screen will increase linearly
-        }
+        //     nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
+        //     // TODO: do some pulse animation here!
+        // }
 
-        [SerializeField] float maxEdgeWidth;
-        public void ResizeEdge(int i, int j, float width)
-        {
-            links[i,j].Width = .2f + maxEdgeWidth*width;
-            // TODO: some pulse here too
-        }
+        // [SerializeField] float maxEdgeWidth;
+        // public void ResizeEdge(int i, int j, float width)
+        // {
+        //     links[i,j].Width = .2f + maxEdgeWidth*width;
+        //     // TODO: some pulse here too
+        // }
 
         Node focus=null;
         public void FocusNode(int idx)
@@ -142,10 +134,32 @@ namespace EcoBuilder.NodeLink
             nodes[idx].Idle();
         }
 
-        private void Update()
+        bool laplacianDetNeg = false;
+        public event Action LaplacianUnsolvable;
+        public event Action LaplacianSolvable;
+        private void FixedUpdate()
         {
             if (nodes.Count > 0)
             {
+                bool solvable = UpdateTrophicEquations();
+                if (solvable)
+                {
+                    if (laplacianDetNeg == true)
+                    {
+                        laplacianDetNeg = false;
+                        LaplacianSolvable();
+                    }
+                    TrophicGaussSeidel();
+                    TweenYAxis(v=>trophicLevels[v.Idx]-1, trophicStep);
+                }
+                else
+                {
+                    if (laplacianDetNeg == false)
+                    {
+                        laplacianDetNeg = true;
+                        LaplacianUnsolvable();
+                    }
+                }
 
                 int dq = toBFS.Dequeue(); // only do one vertex per frame
                 if (dq == myNull)
@@ -173,75 +187,25 @@ namespace EcoBuilder.NodeLink
                     LayoutSGD(dq, d_j, SGDStep);
                     CenteringSGD(dq, centeringStep);
                 }
-
                 toBFS.Enqueue(dq);
 
-                bool solvable = UpdateTrophicEquations();
-                if (solvable)
-                    TrophicGaussSeidel();
-                else
-                    print("LAPLACIAN DET=0"); //TODO: replace this with a warning message
-
-                SetYAxis(i=>trophicLevels[i]-1, trophicStep);
-                TweenDisk(focus);
+                Rotate();
             }
-
-            Rotate();
-            baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2*Vector3.one, .1f);
+            // baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2*Vector3.one, .1f);
         }
 
         ////////////////////////////////////
         // for user-interaction rotation
 
         [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f;
-        [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f, xRotationForce=15;
-        [SerializeField] float clickRadius=100; // TODO: might want to change this into viewport coordinates
-        void Rotate()
-        {
-            if (!dragging)
-            {
-                yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
+        [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
+        [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
 
-                float xRotation = -graphParent.localRotation.x * xRotationForce;
-                graphParent.Rotate(Vector3.right, xRotation);
-            }
-        }
+        // TODO: might want to change this into viewport coordinates
+        [SerializeField] float clickRadius=100;
 
-        float yRotationMomentum = 0;
-        bool dragging = false;
-        public void OnBeginDrag(PointerEventData ped)
-        {
-            dragging = true;
-        }
-        public void OnEndDrag(PointerEventData ped)
-        {
-            yRotationMomentum = -ped.delta.x * rotationMultiplier;
-            dragging = false;
-        }
-        public void OnDrag(PointerEventData ped)
-        {
-            if (ped.button == PointerEventData.InputButton.Left)
-            {
-                float ySpin = -ped.delta.x * rotationMultiplier;
-                nodesParent.Rotate(Vector3.up, ySpin);
-                yRotationMomentum = ySpin;
-                yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
-
-                float xSpin = ped.delta.y * rotationMultiplier;
-                graphParent.Rotate(Vector3.right, xSpin);
-                // TODO: make SGD step go up when shaken
-            }
-            else if (ped.button == PointerEventData.InputButton.Right)
-            {
-                float zoom = ped.delta.y * zoomMultiplier;
-                if (zoom > .5f)
-                    zoom = .5f;
-                if (zoom < -.5f)
-                    zoom = -.5f;
-                nodesParent.localScale *= 1 + zoom;
-            }
-        }
+        public event Action<int> OnFocus;
+        public event Action OnUnfocus;
         public void OnPointerClick(PointerEventData ped)
         {
             if (!ped.dragging)
@@ -278,6 +242,52 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        float yRotationMomentum = 0;
+        bool dragging = false;
+        public void OnBeginDrag(PointerEventData ped)
+        {
+            dragging = true;
+        }
+        public void OnEndDrag(PointerEventData ped)
+        {
+            yRotationMomentum = -ped.delta.x * rotationMultiplier;
+            dragging = false;
+        }
+        public void OnDrag(PointerEventData ped)
+        {
+            if (ped.button == PointerEventData.InputButton.Left)
+            {
+                float ySpin = -ped.delta.x * rotationMultiplier;
+                nodesParent.Rotate(Vector3.up, ySpin);
+                yRotationMomentum = ySpin;
+                yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
+
+                float xSpin = ped.delta.y * rotationMultiplier;
+                graphParent.Rotate(Vector3.right, xSpin);
+            }
+            else if (ped.button == PointerEventData.InputButton.Right)
+            {
+                float zoom = ped.delta.y * zoomMultiplier;
+                if (zoom > .5f)
+                    zoom = .5f;
+                if (zoom < -.5f)
+                    zoom = -.5f;
+                nodesParent.localScale *= 1 + zoom;
+            }
+        }
+        void Rotate()
+        {
+            if (!dragging)
+            {
+                yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
+                nodesParent.Rotate(Vector3.up, yRotationMomentum);
+
+                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                var lerped = Quaternion.Lerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
+                graphParent.transform.localRotation = lerped;
+            }
+        }
+
 
         /////////////////////////////////
         // for stress-based layout
@@ -377,7 +387,7 @@ namespace EcoBuilder.NodeLink
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();
 
-        // update the system of linear equations (Laplacian)
+        // update the system of linear equations (Laplacian), return whether solvable
         private bool UpdateTrophicEquations()
         {
             foreach (Node no in nodes)
@@ -423,11 +433,11 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        void SetYAxis(Func<int, float> YAxisPos, float force)
+        void TweenYAxis(Func<Node, float> YAxisPos, float force)
         {
             foreach (Node no in nodes)
             {
-                float targetY = YAxisPos(no.Idx);
+                float targetY = YAxisPos(no);
                 if (targetY == 0)
                 {
                     no.TargetPos -= new Vector3(0, no.TargetPos.y, 0);
@@ -439,37 +449,25 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        [SerializeField] float diskStep=.2f;
-        [SerializeField] Transform focusDisk, baseDisk;
 
-        void TweenDisk(Node target)
-        {
-            if (target == null)
-            {
-                focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, Vector3.zero, diskStep);
-                focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, 2*Vector3.one, diskStep);
-            }
-            else
-            {
-                float dist = focus.TargetPos.y - focusDisk.localPosition.y;
-                // focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.transform.localPosition, focusDiskStep);
-                focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.TargetPos, diskStep);
-                focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, Vector3.one, diskStep);
-            }
-        }
+        // [SerializeField] float diskTween=.2f;
+        // [SerializeField] Transform focusDisk, baseDisk;
 
-        public void Pulse()
-        {
-            StartCoroutine(AnimatePulse());
-        }
-        IEnumerator AnimatePulse()
-        {
-            for (int i=0; i<10; i++)
-            {
-                baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2.3f*Vector3.one, .333f);
-                yield return null;
-            }
-        }
+        // void TweenDisk(Node target)
+        // {
+        //     if (target == null)
+        //     {
+        //         focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, Vector3.zero, diskTween);
+        //         focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, 2*Vector3.one, diskTween);
+        //     }
+        //     else
+        //     {
+        //         float dist = focus.TargetPos.y - focusDisk.localPosition.y;
+        //         // focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.transform.localPosition, focusDiskStep);
+        //         focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.TargetPos, diskTween);
+        //         focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, Vector3.one, diskTween);
+        //     }
+        // }
 
         // private Stack<GameObject> disks = new Stack<GameObject>();
         // void SetCorrectYDisks(float maxY)
