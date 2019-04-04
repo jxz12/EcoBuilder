@@ -74,14 +74,14 @@ namespace EcoBuilder.Nichess
         public event Action OnDroppedOn;
         public void OnPointerEnter(PointerEventData ped)
         {
-            OnEnter();
+            OnEnter.Invoke();
 
             if (ped.dragging)
                 OnDraggedInto();
         }
         public void OnPointerExit(PointerEventData ped)
         {
-            OnExit();
+            OnExit.Invoke();
             potentialHold = false; // prevent hold & click if left and reentered
         }
         bool potentialHold = false;
@@ -101,24 +101,24 @@ namespace EcoBuilder.Nichess
                     yield return null;
             }
             // potentialHold = false;
-            OnHeld();
+            OnHeld.Invoke();
         }
         public void OnPointerUp(PointerEventData ped)
         {
             if (potentialHold)
             {
-                OnClicked();
+                OnClicked.Invoke();
             }
             potentialHold = false;
         }
         public void OnBeginDrag(PointerEventData ped)
         {
             potentialHold = false;
-            OnDragStarted();
+            OnDragStarted.Invoke();
         }
         public void OnEndDrag(PointerEventData ped)
         {
-            OnDragEnded();
+            OnDragEnded.Invoke();
             // // so that you can drop on yourself
             // if (ped.pointerEnter == this.gameObject)
             //     OnDroppedOn();
@@ -130,7 +130,7 @@ namespace EcoBuilder.Nichess
         }
         public void OnDrop(PointerEventData ped)
         {
-            OnDroppedOn();
+            OnDroppedOn.Invoke();
         }
 
 

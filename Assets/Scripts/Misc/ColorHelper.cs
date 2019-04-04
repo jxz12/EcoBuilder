@@ -36,7 +36,7 @@ public static class ColorHelper
     {
         float r = col.r, g = col.g, b = col.b;
 
-        // float y = 0.2126f*r + 0.7152f*g + 0.0722f*b;
+        // float y =   0.2126f*r +  0.7152f*g +  0.0722f*b;
         float u = -0.09991f*r - 0.33609f*g +   0.436f*b;
         float v =    0.615f*r - 0.55861f*g - 0.05639f*b;
 

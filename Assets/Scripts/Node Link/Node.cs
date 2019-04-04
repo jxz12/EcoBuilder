@@ -17,10 +17,6 @@ namespace EcoBuilder.NodeLink
         public Vector3 TargetPos { get; set; }
         private Vector3 velocity = Vector3.zero;
         [SerializeField] private float smoothTime = .2f;
-        // public Vector3 Pos {
-        //     get { return transform.localPosition; }
-        //     set { transform.localPosition = value;}
-        // }
         public float Size {
             get { return shape.localScale.x; }
             set { shape.localScale = new Vector3(value, value, value); }
@@ -51,25 +47,17 @@ namespace EcoBuilder.NodeLink
         {
             transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPos, ref velocity, smoothTime);
         }
-        // public void Inspect()
+        // public void Flash()
         // {
-        //     anim.SetTrigger("Inspect");
+        //     anim.SetTrigger("Flash");
         // }
-        // public void Uninspect()
+        // public void HeavyFlash()
         // {
-        //     anim.SetTrigger("Uninspect");
+        //     anim.SetTrigger("Heavy Flash");
         // }
-        public void Flash()
-        {
-            anim.SetTrigger("Flash");
-        }
-        public void HeavyFlash()
-        {
-            anim.SetTrigger("Heavy Flash");
-        }
-        public void Idle()
-        {
-            anim.SetTrigger("Idle");
-        }
+        // public void Idle()
+        // {
+        //     anim.SetTrigger("Idle");
+        // }
     }
 }

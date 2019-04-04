@@ -50,24 +50,44 @@ namespace EcoBuilder.Nichess
         }
 
 
-
-
-        ///////////////////////////////////
-        // handle square events and state
-
-        public event Action OnNicheChanged;
-
-        enum BoardState {
-            Idle, DragOneFinger, DragTwoFingers
-        };
-        BoardState state = BoardState.Idle;
-
         Piece inspected = null;
-        public void AddNewPiece(Piece p)
+        public void AddPiece(Piece p)
         {
-            inspected = p;
             state = BoardState.Idle;
         }
+        public void InspectPiece(Piece p)
+        {
+            inspected = p;
+        }
+        public void RemovePiece(Piece p)
+        {
+            if (p.NicheMin != null && p.NicheMax != null)
+            {
+                int l = p.NicheMin.X, r = p.NicheMax.X;
+                int b = p.NicheMin.Y, t = p.NicheMax.Y;
+
+                for (int i=l; i<=r; i++)
+                    for (int j=b; j<=t; j++)
+                        RemoveMarkerFromSquare(squares[i,j], p);
+            }
+            RescaleMarkersIfNeeded();
+
+            if (p == inspected)
+            {
+                inspected = null;
+            }
+            p.Remove();
+        }
+
+
+        //////////////////////
+        // events and state
+
+        public event Action<Piece> OnPosChanged;
+        public event Action<Piece> OnNicheChanged;
+
+        enum BoardState { Idle, DragOneFinger, DragTwoFingers };
+        BoardState state = BoardState.Idle;
 
         HashSet<Square> enteredSquares = new HashSet<Square>();
         private void EnterSquare(Square s)
@@ -79,7 +99,7 @@ namespace EcoBuilder.Nichess
                 if (updated)
                 {
                     RescaleMarkersIfNeeded();
-                    OnNicheChanged();
+                    OnNicheChanged.Invoke(inspected);
                 }
             }
             enteredSquares.Add(s);
@@ -103,6 +123,7 @@ namespace EcoBuilder.Nichess
                     {
                         inspected.PlaceOnSquare(s);
                         s.Occupant = inspected;
+                        OnPosChanged.Invoke(inspected);
                     }
                 }
                 else
@@ -128,7 +149,7 @@ namespace EcoBuilder.Nichess
                     nicheStartSquare = s;
                     state = BoardState.DragOneFinger;
                     RescaleMarkersIfNeeded();
-                    OnNicheChanged();
+                    OnNicheChanged.Invoke(inspected);
                 }
             }
         }
@@ -140,14 +161,6 @@ namespace EcoBuilder.Nichess
         {
             if (state == BoardState.Idle)
             {
-                bool updated = UpdateNicheMarkers(inspected, s, s);
-                if (updated)
-                {
-                    nicheStartSquare = s;
-                    state = BoardState.DragOneFinger;
-                    RescaleMarkersIfNeeded();
-                    OnNicheChanged();
-                }
             }
             else if (state == BoardState.DragOneFinger)
             {
@@ -155,27 +168,18 @@ namespace EcoBuilder.Nichess
                 if (updated)
                 {
                     RescaleMarkersIfNeeded();
-                    OnNicheChanged();
+                    OnNicheChanged.Invoke(inspected);
                 }
             }
 
         }
         public void DropOnSquare(Square s)
         {
+            if (state == BoardState.Idle)
+            {
+                ClickSquare(s);
+            }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         //////////////////////////////
         // niche checks
@@ -393,26 +397,6 @@ namespace EcoBuilder.Nichess
 
 
 
-        // private void RemovePiece(Piece toRemove)
-        // {
-        //     if (toRemove.NicheMin == null || toRemove.NicheMax == null)
-        //     {
-        //         return;
-        //     }
-        //     else
-        //     {
-        //         int l = toRemove.NicheMin.X, r = toRemove.NicheMax.X;
-        //         int b = toRemove.NicheMin.Y, t = toRemove.NicheMax.Y;
-
-        //         for (int i=l; i<=r; i++)
-        //         {
-        //             for (int j=b; j<=t; j++)
-        //             {
-        //                 RemoveMarkerFromSquare(squares[i,j], toRemove);
-        //             }
-        //         }
-        //     }
-        // }
 
 
 

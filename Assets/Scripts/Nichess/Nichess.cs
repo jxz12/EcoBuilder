@@ -9,7 +9,9 @@ namespace EcoBuilder.Nichess
     public class Nichess : MonoBehaviour
     {
         // nichess handles individual edges, board handles squares and overlap
-        public event Action OnPiecePlaced;
+        public event Action<int, int, int> OnPiecePlaced; // idx, x, y
+        public event Action<int, int, int, int, int> OnPieceNiched; // idx, b, l, t, r
+        public event Action<int, Color> OnPieceColoured;
         public event Action<int> OnPieceSelected;
         public event Action<int, int> OnEdgeAdded;
         public event Action<int, int> OnEdgeRemoved;
@@ -17,33 +19,38 @@ namespace EcoBuilder.Nichess
         [SerializeField] Board board;
         void Start()
         {
-            board.OnNicheChanged += ()=> UpdateResources();
+            board.OnPosChanged +=   (p)=> UpdateConsumers(p);
+            board.OnNicheChanged += (p)=> UpdateResources(p);
+
+            board.OnPosChanged +=
+                (p)=> OnPiecePlaced.Invoke(p.Idx, p.NichePos.X, p.NichePos.Y);
+            board.OnNicheChanged +=
+                (p)=> OnPieceNiched.Invoke(p.Idx, p.NicheMin.X, p.NicheMin.Y, p.NicheMax.X, p.NicheMax.Y);
         }
 
         [SerializeField] Piece piecePrefab;
         [SerializeField] Mesh squareMesh, circleMesh;
 
         Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
-        Piece inspected;
-        HashSet<Piece> inspectedConsumers = new HashSet<Piece>();
-        HashSet<Piece> inspectedResources = new HashSet<Piece>();
-        public void AddNewPiece(int idx)
+        // Piece inspected = null;
+        public void InspectPiece(int idx)
+        {
+            board.InspectPiece(pieces[idx]);
+            InitResCon(pieces[idx]);
+        }
+        public void AddPiece(int idx)
         {
             Piece newPiece = Instantiate(piecePrefab);
             newPiece.Init(idx);
-            newPiece.OnPosChanged += ()=> UpdateConsumers();
-            newPiece.OnSelected +=   ()=> OnPieceSelected(newPiece.Idx);
+            newPiece.OnColoured += (c)=> OnPieceColoured(idx, c);
+            newPiece.OnSelected +=  ()=> OnPieceSelected.Invoke(newPiece.Idx);
 
-            // newPiece.Col = new Color(UnityEngine.Random.Range(0,1f), UnityEngine.Random.Range(0,1f), UnityEngine.Random.Range(0,1f));
-
-            board.AddNewPiece(newPiece);
+            board.AddPiece(newPiece);
             pieces[idx] = newPiece;
-            inspected = newPiece;
-            InitResCon();
         }
         public void RemovePiece(int idx)
         {
-            // TODOOO
+            board.RemovePiece(pieces[idx]);
         }
         public void FixPieceRange(int idx) {
             pieces[idx].StaticRange = true;
@@ -56,13 +63,14 @@ namespace EcoBuilder.Nichess
         {
             pieces[idx].Shape = circleMesh;
         }
-        public void ColourPieceUV(float u, float v)
+        public void ColourPiece2D(int idx, float x, float y)
         {
-            // TODO: colour according to YUV
-            inspected.Col = new Color(u, v, .1f);
+            pieces[idx].Colour2D(x, y);
         }
 
-        private void InitResCon()
+        HashSet<Piece> inspectedConsumers = new HashSet<Piece>();
+        HashSet<Piece> inspectedResources = new HashSet<Piece>();
+        private void InitResCon(Piece inspected)
         {
             inspectedConsumers.Clear();
             inspectedResources.Clear();
@@ -75,7 +83,7 @@ namespace EcoBuilder.Nichess
                     inspectedConsumers.Add(p);
             }
         }
-        private void UpdateResources()
+        private void UpdateResources(Piece inspected)
         {
             foreach (Piece res in pieces.Values)
             {
@@ -97,7 +105,7 @@ namespace EcoBuilder.Nichess
                 }
             }
         }
-        private void UpdateConsumers()
+        private void UpdateConsumers(Piece inspected)
         {
             foreach (Piece con in pieces.Values)
             {
@@ -119,45 +127,5 @@ namespace EcoBuilder.Nichess
                 }
             }
         }
-
-        // public Tuple<int, int> GetCurrentNichePos()
-        // {
-        //     return 
-        // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

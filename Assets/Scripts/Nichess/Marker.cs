@@ -27,21 +27,18 @@ namespace EcoBuilder.Nichess
 			defaultRenderQueue = mr.material.renderQueue;
 		}
 		
-		Action colorAction;
+		Action<Color> colorAction;
 		public void AttachPiece(Piece toAttach)
 		{
 			ConIdx = toAttach.Idx;
 			Col = toAttach.Col;
-			colorAction = ()=> Col = toAttach.Col;
-			toAttach.OnPosChanged += colorAction;
+			colorAction = (c)=> Col = c;
+			toAttach.OnColoured += colorAction;
 		}
 		public void DetachPiece(Piece toDetach)
 		{
-			toDetach.OnPosChanged -= colorAction;
+			// toDetach.OnPosChanged -= colorAction;
+			toDetach.OnColoured -= colorAction;
 		}
-		// public void ChangeColor(Color col)
-		// {
-		// 	Col = col;
-		// }
 	}
 }

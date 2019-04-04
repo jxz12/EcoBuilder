@@ -12,11 +12,13 @@ namespace EcoBuilder.NodeLink
     {
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        // [SerializeField] Mesh sphereMesh, sphereOutlineMesh, cubeMesh, cubeOutlineMesh;
+        [SerializeField] Mesh sphereMesh, cubeMesh;
+        [SerializeField] Mesh sphereOutline, cubeOutline;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
+        Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
 
         public void AddNode(int idx)
         {
@@ -33,14 +35,14 @@ namespace EcoBuilder.NodeLink
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
         }
-        // public void ShapeNodeIntoCube(int idx)
-        // {
-        //     nodes[idx].SetShape(cubeMesh, cubeOutlineMesh);
-        // }
-        // public void ShapeNodeIntoSphere(int idx)
-        // {
-        //     nodes[idx].SetShape(sphereMesh, sphereOutlineMesh);
-        // }
+        public void ShapeNodeIntoCube(int idx)
+        {
+            nodes[idx].SetShape(cubeMesh, cubeOutline);
+        }
+        public void ShapeNodeIntoSphere(int idx)
+        {
+            nodes[idx].SetShape(sphereMesh, sphereOutline);
+        }
         public void RemoveNode(int idx)
         {
             if (focus != null && focus.Idx == idx)
@@ -49,6 +51,7 @@ namespace EcoBuilder.NodeLink
             Destroy(nodes[idx].gameObject);
             nodes.RemoveAt(idx);
 
+            // prevent memory leak in sparse matrices
             var toRemove = new List<Tuple<int,int>>();
             foreach (int other in links.GetColumnIndicesInRow(idx))
                 toRemove.Add(Tuple.Create(idx, other));
@@ -121,18 +124,18 @@ namespace EcoBuilder.NodeLink
         {
             focus = null;
         }
-        public void FlashNode(int idx)
-        {
-            nodes[idx].Flash();
-        }
-        public void HeavyFlashNode(int idx)
-        {
-            nodes[idx].HeavyFlash();
-        }
-        public void UnflashNode(int idx)
-        {
-            nodes[idx].Idle();
-        }
+        // public void FlashNode(int idx)
+        // {
+        //     nodes[idx].Flash();
+        // }
+        // public void HeavyFlashNode(int idx)
+        // {
+        //     nodes[idx].HeavyFlash();
+        // }
+        // public void UnflashNode(int idx)
+        // {
+        //     nodes[idx].Idle();
+        // }
 
         bool laplacianDetNeg = false;
         public event Action LaplacianUnsolvable;
@@ -296,7 +299,6 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float separationStep=1, focusStep=4;
         [SerializeField] float centeringStep=.05f, focusCenteringStep=1;
 
-        private Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
         private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
         private static readonly int myNull = int.MinValue;
 
@@ -450,43 +452,6 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        // [SerializeField] float diskTween=.2f;
-        // [SerializeField] Transform focusDisk, baseDisk;
-
-        // void TweenDisk(Node target)
-        // {
-        //     if (target == null)
-        //     {
-        //         focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, Vector3.zero, diskTween);
-        //         focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, 2*Vector3.one, diskTween);
-        //     }
-        //     else
-        //     {
-        //         float dist = focus.TargetPos.y - focusDisk.localPosition.y;
-        //         // focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.transform.localPosition, focusDiskStep);
-        //         focusDisk.localPosition = Vector3.Lerp(focusDisk.localPosition, focus.TargetPos, diskTween);
-        //         focusDisk.localScale = Vector3.Lerp(focusDisk.localScale, Vector3.one, diskTween);
-        //     }
-        // }
-
-        // private Stack<GameObject> disks = new Stack<GameObject>();
-        // void SetCorrectYDisks(float maxY)
-        // {
-        //     // assume one disk always present
-        //     int numDisks = disks.Count;
-        //     if (maxY >= numDisks+1) // add disk
-        //     {
-        //         var newDisk = Instantiate(diskPrefab, nodesParent, false);
-        //         newDisk.transform.localPosition = new Vector3(0,numDisks+1,0);
-        //         disks.Push(newDisk);
-        //     }
-        //     else if (maxY < numDisks)
-        //     {
-        //         var oldDisk = disks.Pop();
-        //         Destroy(oldDisk);
-        //     }
-        // }
-
         private int ConnectedComponentBFS(IEnumerable<int> sources)
         {
             var visited = new HashSet<int>();
@@ -509,6 +474,35 @@ namespace EcoBuilder.NodeLink
                 }
             }
             return visited.Count;
+        }
+
+        ///////////////////////////
+        // for loops
+
+        public bool LoopExists()
+        {
+            throw new Exception("not implemented");
+        }
+        public bool LoopExists(int length)
+        {
+            throw new Exception("not implemented");
+        }
+
+        /////////////////////////
+        // for trophic coherence
+
+        public float CalculateOmnivory()
+        {
+            int L = 0;
+            float sum_x_sqr = 0;
+            foreach (Link li in links)
+            {
+                L += 1;
+                int res = li.Source.Idx, con = li.Target.Idx;
+                float x = trophicLevels[res] - trophicLevels[con];
+                sum_x_sqr += x * x;
+            }
+            return Mathf.Sqrt(sum_x_sqr - 1);
         }
     }
 }

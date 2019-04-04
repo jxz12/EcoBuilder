@@ -10,33 +10,46 @@ namespace EcoBuilder.Nichess
         [SerializeField] MeshRenderer mr;
         public Color Col {
             get { return mr.material.color; }
-            set { mr.material.color = value; }
+            private set { mr.material.color = value; }
         }
         [SerializeField] MeshFilter mf;
         public Mesh Shape {
             set { mf.mesh = value; }
         }
-        public int Idx { get; private set; }
+        [SerializeField] float lightPce, darkPce;
 
+        public int Idx { get; private set; }
         public bool StaticPos { get; set; }
         public bool StaticRange { get; set; }
 
-        private void Awake()
-        {
-        }
         public void Init(int idx)
         {
             Idx = idx;
             name = idx.ToString();
         }
-
         public void Select()
         {
             // TOOD: some animation here
             OnSelected();
         }
+        public void Remove()
+        {
+            // TODO: some animation here too
+            Destroy(gameObject);
+        }
+
+        [SerializeField] float uvRange = .7f;
+        float y=.5f, u=0, v=0;
+        public void Colour2D(float a, float b)
+        {
+            u = uvRange * (a-.5f);
+            v = uvRange * (b-.5f);
+            Col = ColorHelper.YUVtoRGBtruncated(y, u, v);
+            OnColoured.Invoke(Col);
+        }
+
         public Square NichePos { get; private set; }
-        public event Action OnPosChanged;
+        public event Action<Color> OnColoured;
         public event Action OnSelected;
         public void PlaceOnSquare(Square newParent)
         {
@@ -45,7 +58,16 @@ namespace EcoBuilder.Nichess
 
             transform.SetParent(newParent.transform, false);
             NichePos = newParent;
-            OnPosChanged();
+            if ((newParent.X + newParent.Y) % 2 == 0)
+            {
+                y = lightPce;
+            }
+            else
+            {
+                y = darkPce;
+            }
+            Col = ColorHelper.YUVtoRGBtruncated(y, u, v);
+            OnColoured.Invoke(Col);
 
             // // below is required to get colliders to work with eventsystem
             // transform.parent = newParent.transform;
@@ -101,36 +123,6 @@ namespace EcoBuilder.Nichess
         /*
         //////////////////////////////////////////////////////////////////
 
-        public event Action OnSelected;
-        public event Action OnPosChanged;
-        public event Action OnThrownAway;
-
-        Square nichePos, nicheMin, nicheMax;
-        public Square NichePos { 
-            get { return nichePos; }
-            set {
-                // this setter probably makes more sense as a function
-                if (value == nichePos)
-                    return;
-                
-                ParentTo(value.transform);
-                // transform.SetParent(value.transform);
-                nichePos = value;
-                Col = ColorHelper.SetY(value.Col, Lightness);
-
-                if (OnPosChanged != null)
-                    OnPosChanged();
-            }
-        }
-        public Square NicheMin {
-            get { return nicheMin; }
-            set { nicheMin = value; }
-        }
-        public Square NicheMax {
-            get { return nicheMax; }
-            set { nicheMax = value; }
-        }
-
         public void Select()
         {
             anim.SetTrigger("Select");
@@ -163,42 +155,6 @@ namespace EcoBuilder.Nichess
             anim.SetTrigger("Drop");
         }
 
-        public bool IsResourceOf(Piece consumer)
-        {
-            if (NichePos == null || consumer.NicheMin == null || consumer.NicheMax == null)
-                return false;
-
-            int resX = NichePos.X;
-            int resY = NichePos.Y;
-            int conL = consumer.NicheMin.X;
-            int conR = consumer.NicheMax.X;
-            int conB = consumer.NicheMin.Y;
-            int conT = consumer.NicheMax.Y;
-            if (conL<=resX && resX<=conR && conB<=resY && resY<=conT)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public bool IsPotentialNewSquare(Square newSquare)
-        {
-            if (newSquare.Occupant != null)
-                return false;
-
-            if (NicheMin == null && NicheMax == null)
-                return true;
-
-            // check if within range
-            int xNew = newSquare.X, yNew = newSquare.Y;
-            if (NicheMin.X<=xNew && xNew<=NicheMax.X && NicheMin.Y<=yNew && yNew<=NicheMax.Y)
-            {
-                return false;
-            }
-            return true;
-        }
         public void LookAt(Vector3 position)
         {
             // meshTransform.LookAt(position, Vector3.up);
