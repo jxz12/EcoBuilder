@@ -57,7 +57,41 @@ namespace EcoBuilder.Nichess
         }
         public void InspectPiece(Piece p)
         {
+            if (inspected != null)
+                inspected.Uninspect();
+
+            p.Inspect();
             inspected = p;
+        }
+        public void PlacePiece(Piece p, int x, int y)
+        {
+            int size = squares.GetLength(0);
+            if (x >= size || y >= size)
+                throw new Exception("out of bounds of board");
+
+            Square s = squares[x, y];
+            if (s.Occupant != null)
+                throw new Exception("square is occupied");
+
+            p.PlaceOnSquare(s);
+            OnPosChanged.Invoke(inspected);
+        }
+        public void NichePiece(Piece p, int l, int b, int r, int t)
+        {
+            int size = squares.GetLength(0);
+            if (l >= size || b >= size || r >= size || t >= size)
+                throw new Exception("out of bounds of board");
+
+            if (p.NichePos != null &&
+                l<=p.NichePos.X && p.NichePos.X<=r &&
+                b<=p.NichePos.Y && p.NichePos.Y<=t
+            ) {
+                throw new Exception("cannot eat itself");
+            }
+
+            UpdateNicheMarkers(p, squares[l, b], squares[r, t]);
+            // guaranteed to be updated
+            OnNicheChanged.Invoke(inspected);
         }
         public void RemovePiece(Piece p)
         {
@@ -70,7 +104,7 @@ namespace EcoBuilder.Nichess
                     for (int j=b; j<=t; j++)
                         RemoveMarkerFromSquare(squares[i,j], p);
             }
-            RescaleMarkersIfNeeded();
+            // OnNicheChanged.Invoke(p); // not needed because should be removed anyway
 
             if (p == inspected)
             {
@@ -86,49 +120,44 @@ namespace EcoBuilder.Nichess
         public event Action<Piece> OnPosChanged;
         public event Action<Piece> OnNicheChanged;
 
-        enum BoardState { Idle, DragOneFinger, DragTwoFingers };
+        enum BoardState { Idle, PieceDragging, NicheDragging };
         BoardState state = BoardState.Idle;
 
-        HashSet<Square> enteredSquares = new HashSet<Square>();
+        // HashSet<Square> enteredSquares = new HashSet<Square>();
         private void EnterSquare(Square s)
         {
-            if (enteredSquares.Count == 1)
-            {
-                state = BoardState.DragTwoFingers;
-                bool updated = UpdateNicheMarkers(inspected, enteredSquares.First(), s);
-                if (updated)
-                {
-                    RescaleMarkersIfNeeded();
-                    OnNicheChanged.Invoke(inspected);
-                }
-            }
-            enteredSquares.Add(s);
+            // if (enteredSquares.Count == 1)
+            // {
+            //     state = BoardState.DragTwoFingers;
+            //     bool updated = UpdateNicheMarkers(inspected, enteredSquares.First(), s);
+            //     if (updated)
+            //     {
+            //         OnNicheChanged.Invoke(inspected);
+            //     }
+            // }
+            // enteredSquares.Add(s);
         }
         private void ExitSquare(Square s)
         {
-            if (enteredSquares.Count == 2)
-            {
-                nicheStartSquare = s;
-                state = BoardState.DragOneFinger;
-            }
-            enteredSquares.Remove(s);
+            // if (enteredSquares.Count == 2)
+            // {
+            //     nicheStartSquare = s;
+            //     state = BoardState.DragOneFinger;
+            // }
+            // enteredSquares.Remove(s);
         }
         private void ClickSquare(Square s)
         {
             if (state == BoardState.Idle)
             {
-                if (s.Occupant == null)
+                bool updated = UpdateNicheMarkers(inspected, s, s);
+                if (updated)
                 {
-                    if (!inspected.SquareInNiche(s))
-                    {
-                        inspected.PlaceOnSquare(s);
-                        s.Occupant = inspected;
-                        OnPosChanged.Invoke(inspected);
-                    }
+                    OnNicheChanged.Invoke(inspected);
                 }
                 else
                 {
-                    s.Occupant.Select();
+                    // TODO: do a jiggle animation here
                 }
             }
         }
@@ -143,13 +172,20 @@ namespace EcoBuilder.Nichess
         {
             if (state == BoardState.Idle)
             {
-                bool updated = UpdateNicheMarkers(inspected, s, s);
-                if (updated)
+                if (s == inspected.NichePos || inspected.NichePos == null)
                 {
-                    nicheStartSquare = s;
-                    state = BoardState.DragOneFinger;
-                    RescaleMarkersIfNeeded();
-                    OnNicheChanged.Invoke(inspected);
+                    state = BoardState.PieceDragging;
+                    inspected.Lift();
+                }
+                else
+                {
+                    bool updated = UpdateNicheMarkers(inspected, s, s);
+                    if (updated)
+                    {
+                        nicheStartSquare = s;
+                        state = BoardState.NicheDragging;
+                        OnNicheChanged.Invoke(inspected);
+                    }
                 }
             }
         }
@@ -162,12 +198,20 @@ namespace EcoBuilder.Nichess
             if (state == BoardState.Idle)
             {
             }
-            else if (state == BoardState.DragOneFinger)
+            else if (state == BoardState.PieceDragging)
+            {
+                if (s.Occupant == null && !inspected.SquareInNiche(s))
+                {
+                    inspected.PlaceOnSquare(s);
+                    s.Occupant = inspected;
+                    OnPosChanged.Invoke(inspected);
+                }
+            }
+            else if (state == BoardState.NicheDragging)
             {
                 bool updated = UpdateNicheMarkers(inspected, nicheStartSquare, s);
                 if (updated)
                 {
-                    RescaleMarkersIfNeeded();
                     OnNicheChanged.Invoke(inspected);
                 }
             }
@@ -177,140 +221,65 @@ namespace EcoBuilder.Nichess
         {
             if (state == BoardState.Idle)
             {
-                ClickSquare(s);
+                // ClickSquare(s);
+            }
+            else if (state == BoardState.PieceDragging)
+            {
+                inspected.Drop();
+            }
+            else if (state == BoardState.NicheDragging)
+            {
+
             }
         }
 
         //////////////////////////////
         // niche checks
 
-        private bool UpdateNicheMarkers(Piece toUpdate, Square from, Square to)
+        // returns if the niche has been updated
+        private bool UpdateNicheMarkers(Piece toUpdate, Square min, Square max)
         {
             if (toUpdate.StaticRange)
             {
                 return false;
             }
-            else if (toUpdate.NicheMin == null || toUpdate.NicheMax == null) // new piece
-            {
-                if (from != to)
-                    throw new Exception("impossible niche update");
-
-                if (from == toUpdate.NichePos)
-                {
-                    return false;
-                }
-                else
-                {
-                    toUpdate.NicheMin = toUpdate.NicheMax = from;
-                    AddMarkerToSquare(from, toUpdate);
-                    return true;
-                }
-            }
             else
             {
-                // 0 is old niche range, l=left, r=right, b=bottom, t=top
-                int l0=toUpdate.NicheMin.X, r0=toUpdate.NicheMax.X;
-                int b0=toUpdate.NicheMin.Y, t0=toUpdate.NicheMax.Y;
+                // 1 is new niche range
+                int l1 = min.X, r1 = max.X;
+                int b1 = min.Y, t1 = max.Y;
 
-                if (from == to) // if it's the start of the drag
+                // flip niche start or end back around to make calculation simpler
+                if (l1 > r1) { int temp = l1; l1 = r1; r1 = temp; }
+                if (b1 > t1) { int temp = b1; b1 = t1; t1 = temp; }
+
+                if (toUpdate.NichePos != null &&
+                    l1<=toUpdate.NichePos.X && toUpdate.NichePos.X<=r1 &&
+                    b1<=toUpdate.NichePos.Y && toUpdate.NichePos.Y<=t1
+                ) {
+                    // cannot eat itself
+                    return false;
+                }
+
+                if (toUpdate.NicheMin == null || toUpdate.NicheMax == null) // new piece
                 {
-                    if (from == toUpdate.NichePos)
+                    // simply fill new squares
+                    for (int i=l1; i<=r1; i++)
                     {
-                        return false;
-                    }
-                    // else if (
-                    //     ((l0<=from.X && from.X<=r0) && (from.Y==b0 || from.Y==t0)) ||
-                    //     ((b0<=from.Y && from.Y<=t0) && (from.X==l0 || from.X==r0))
-                    // ) {
-                    //     return true; // return dragged, but don't do anything else
-                    // }
-                    else
-                    {
-                        for (int i=l0; i<=r0; i++)
+                        for (int j=b1; j<=t1; j++)
                         {
-                            for (int j=b0; j<=t0; j++)
-                            {
-                                RemoveMarkerFromSquare(squares[i,j], toUpdate);
-                            }
+                            AddMarkerToSquare(squares[i,j], toUpdate);
                         }
-                        toUpdate.NicheMin = toUpdate.NicheMax = from;
-                        AddMarkerToSquare(from, toUpdate);
-                        return true;
                     }
                 }
                 else
                 {
-                    /*
-                    int xFrom = from.X, yFrom = from.Y;
-                    int xTo = to.X, yTo = to.Y;
+                    // 0 is old niche range, l=left, r=right, b=bottom, t=top
+                    int l0=toUpdate.NicheMin.X, r0=toUpdate.NicheMax.X;
+                    int b0=toUpdate.NicheMin.Y, t0=toUpdate.NicheMax.Y;
 
-                    // 1 is new Niche Range
-                    int l1 = l0, r1 = r0;
-                    int b1 = b0, t1 = t0;
-                    if (xFrom==l0 && yFrom==b0) // bottom left
-                    {
-                        l1 = xTo;
-                        b1 = yTo;
-                    }
-                    else if (xFrom==l0 && yFrom==t0) // top left
-                    {
-                        l1 = xTo;
-                        t1 = yTo;
-                    }
-                    else if (xFrom==r0 && yFrom==t0) // top right
-                    {
-                        r1 = xTo;
-                        t1 = yTo;
-                    }
-                    else if (xFrom==r0 && yFrom==b0) // bottom right
-                    {
-                        r1 = xTo;
-                        b1 = yTo;
-                    }
-                    else if (xFrom==l0 && (b0<yFrom && yFrom<t0)) // left
-                    {
-                        l1 = xTo;
-                    } 
-                    else if ((l0<xFrom && xFrom<r0) && yFrom==t0) // top
-                    {
-                        t1 = yTo;
-                    }
-                    else if (xFrom==r0 && (t0>yFrom && yFrom>b0)) // right
-                    {
-                        r1 = xTo;
-                    }
-                    else if ((l0<xFrom && xFrom<r0) && yFrom==b0) // bottom
-                    {
-                        b1 = yTo;
-                    }
-                    else
-                    {
-                        throw new Exception("impossible drag");
-                    }
-                    */
-
-                    // 1 is new niche range
-                    int l1 = from.X, r1 = to.X;
-                    int b1 = from.Y, t1 = to.Y;
-
-                    // flip niche start or end back around to make calculation simpler
-                    if (l1 > r1) { int temp = l1; l1 = r1; r1 = temp; }
-                    if (b1 > t1) { int temp = b1; b1 = t1; t1 = temp; }
-
-                    if (toUpdate.NichePos != null &&
-                        l1<=toUpdate.NichePos.X && toUpdate.NichePos.X<=r1 &&
-                        b1<=toUpdate.NichePos.Y && toUpdate.NichePos.Y<=t1
-                    ) {
-                        // cannot eat itself
-                        return false;
-                    }
-
-                    toUpdate.NicheMin = squares[l1, b1];
-                    toUpdate.NicheMax = squares[r1, t1];
-
-                    //////////////////////////////////////////////////////////////
                     // make the following better? complexity isn't great, but in practice should be okay
-                     
+                        
                     // 2 is intersection of rectangles
                     int l2 = Math.Max(l0, l1);
                     int r2 = Math.Min(r0, r1);
@@ -339,8 +308,12 @@ namespace EcoBuilder.Nichess
                             }
                         }
                     }
-                    return true;
                 }
+                toUpdate.NicheMin = squares[l1, b1];
+                toUpdate.NicheMax = squares[r1, t1];
+
+                RescaleMarkersIfNeeded();
+                return true;
             }
         }
 
@@ -753,26 +726,6 @@ namespace EcoBuilder.Nichess
 
         }
 
-        private void RemoveNiche(Piece toRemove)
-        {
-            if (toRemove.NicheMin == null || toRemove.NicheMax == null)
-            {
-                return;
-            }
-            else
-            {
-                int l = toRemove.NicheMin.X, r = toRemove.NicheMax.X;
-                int b = toRemove.NicheMin.Y, t = toRemove.NicheMax.Y;
-
-                for (int i=l; i<=r; i++)
-                {
-                    for (int j=b; j<=t; j++)
-                    {
-                        RemoveConsumerFromSquare(squares[i,j], toRemove);
-                    }
-                }
-            }
-        }
         private void DrawLasso(Piece toDraw)
         {
             if (toDraw.NicheMin == null || toDraw.NicheMax == null)

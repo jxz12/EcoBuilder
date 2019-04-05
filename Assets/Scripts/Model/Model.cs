@@ -9,6 +9,12 @@ namespace EcoBuilder.Model
 {
     public class Model : MonoBehaviour
     {   
+        LotkaVolterra simulation;
+        void Awake()
+        {
+            simulation = new LotkaVolterra();
+        }
+        /*
         [Serializable] class IntEvent : UnityEvent<int> { }
         [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
         [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
@@ -394,6 +400,6 @@ namespace EcoBuilder.Model
             double stability = simulation.LocalAsymptoticStability();
             // monitor.Debug(stability.ToString("E3"));
         }
-
+        */
     }
 }

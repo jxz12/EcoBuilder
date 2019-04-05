@@ -11,18 +11,19 @@ namespace EcoBuilder
         [SerializeField] Inspector.Inspector inspector;
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
+        [SerializeField] StatusBar status;
 
         class Species
         {
             public bool isProducer = false;
             public float bodySize = 0;
             public float greediness = 0;
-            public int nichePosX = 0;
-            public int nichePosY = 0;
-            public int nicheStartX = 0;
-            public int nicheStartY = 0;
-            public int nicheEndX = 0;
-            public int nicheEndY = 0;
+            public int nichePosX = -1;
+            public int nichePosY = -1;
+            public int nicheStartX = -1;
+            public int nicheStartY = -1;
+            public int nicheEndX = -1;
+            public int nicheEndY = -1;
             // TODO:
             // public int randomSeed;
             // DO THISSS (with archie?)
@@ -37,8 +38,8 @@ namespace EcoBuilder
             inspector.OnGreedChosen +=  (a_ii)=> ChooseGreed(a_ii);
 
             nichess.OnPieceSelected +=       (i)=> print(i);
-            nichess.OnPiecePlaced +=     (i,x,y)=> PlacePiece(i, x, y);
-            nichess.OnPieceNiched += (i,l,b,r,t)=> NichePiece(i, l, b, r, t);
+            nichess.OnPiecePlaced +=     (i,x,y)=> UpdateSpeciesPos(i, x, y);
+            nichess.OnPieceNiched += (i,l,b,r,t)=> UpdateSpeciesNiche(i, l, b, r, t);
             nichess.OnEdgeAdded +=         (i,j)=> nodelink.AddLink(i, j);
             nichess.OnEdgeRemoved +=       (i,j)=> nodelink.RemoveLink(i, j);
             nichess.OnPieceColoured +=     (i,c)=> nodelink.ColorNode(i, c);
@@ -47,6 +48,10 @@ namespace EcoBuilder
             nodelink.OnUnfocus +=           ()=> print("hi");
             nodelink.LaplacianUnsolvable += ()=> print("unsolvable");
             nodelink.LaplacianSolvable +=   ()=> print("solvable");
+
+            status.OnMenu +=                ()=> print("MENU");
+            status.OnUndo +=                ()=> Undo();
+            status.OnRedo +=                ()=> Redo();
 
             PrepareNewMove();
         }
@@ -82,7 +87,7 @@ namespace EcoBuilder
             moves.Peek().greediness = greed;
             nichess.ColourPiece2D(idxCounter, moves.Peek().bodySize, greed);
         }
-        void PlacePiece(int i, int x, int y)
+        void UpdateSpeciesPos(int i, int x, int y)
         {
             if (i != idxCounter)
                 throw new Exception("NOT POSSIBLE PLACEMENT");
@@ -90,7 +95,7 @@ namespace EcoBuilder
             moves.Peek().nichePosX = x;
             moves.Peek().nichePosY = y;
         }
-        void NichePiece(int i, int l, int b, int r, int t)
+        void UpdateSpeciesNiche(int i, int l, int b, int r, int t)
         {
             if (i != idxCounter)
                 throw new Exception("NOT POSSIBLE NICHE");
@@ -102,29 +107,37 @@ namespace EcoBuilder
         }
 
         Stack<Species> redoStack = new Stack<Species>();
-        public void Do()
+        void Do()
         {
-            redoStack.Clear();
+            CalculateScore();
 
+            redoStack.Clear();
             idxCounter += 1;
             if (idxCounter < GameManager.Instance.Level.Length)
             {
                 PrepareNewMove();
             }
+            else
+            {
+                EndGame();
+            }
         }
-        public void Undo()
+        // TODO: keep track of calculated scores such that stack works properly
+        void Undo()
         {
             if (moves.Count > 1)
             {
                 nichess.RemovePiece(idxCounter);
                 nodelink.RemoveNode(idxCounter);
-                redoStack.Push(moves.Pop());
+
+                Species toUndo = moves.Pop();
+                redoStack.Push(toUndo);
 
                 idxCounter -= 1;
                 nichess.InspectPiece(idxCounter);
             }
         }
-        public void Redo()
+        void Redo()
         {
             if (redoStack.Count > 0)
             {
@@ -132,6 +145,9 @@ namespace EcoBuilder
                 idxCounter += 1;
                 nichess.AddPiece(idxCounter);
                 nodelink.AddNode(idxCounter);
+                nichess.InspectPiece(idxCounter);
+                moves.Push(toRedo);
+
                 if (toRedo.isProducer)
                 {
                     nichess.FixPieceRange(idxCounter);
@@ -145,11 +161,26 @@ namespace EcoBuilder
                 }
                 nichess.PlacePiece(idxCounter, toRedo.nichePosX, toRedo.nichePosY);
                 nichess.NichePiece(idxCounter, toRedo.nicheStartX, toRedo.nicheStartY, toRedo.nicheEndX, toRedo.nicheEndY);
-                moves.Push(redoStack.Pop());
+                nichess.ColourPiece2D(idxCounter, toRedo.bodySize, toRedo.greediness);
             }
         }
 
 
+        void CalculateScore()
+        {
+            if (idxCounter >= 2)
+            {
+                status.FillStar1();
+            }
+            else
+            {
+                status.EmptyStar1();
+            }
+        }
+        void EndGame()
+        {
+            print("game over!");
+        }
 
         
         public void Quit()

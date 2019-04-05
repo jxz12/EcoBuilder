@@ -69,6 +69,7 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
+            toBFS.Enqueue(myNull);
 
             // prevent memory leak in trophic level data structures
             trophicA.RemoveAt(idx);
@@ -77,6 +78,7 @@ namespace EcoBuilder.NodeLink
 
         public void AddLink(int i, int j)
         {
+            print("add " + i + " " + j);
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i, j] = newLink;
@@ -87,10 +89,14 @@ namespace EcoBuilder.NodeLink
         }
         public void RemoveLink(int i, int j)
         {
+            print("rem " + i + " " + j);
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
-            adjacency[i].Remove(j);
-            adjacency[j].Remove(i);
+            if (links[j, i] == null)
+            {
+                adjacency[i].Remove(j);
+                adjacency[j].Remove(i);
+            }
 
             SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
         }
@@ -191,9 +197,8 @@ namespace EcoBuilder.NodeLink
                     CenteringSGD(dq, centeringStep);
                 }
                 toBFS.Enqueue(dq);
-
-                Rotate();
             }
+            Rotate();
             // baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2*Vector3.one, .1f);
         }
 
@@ -302,13 +307,9 @@ namespace EcoBuilder.NodeLink
         private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
         private static readonly int myNull = int.MinValue;
 
-        private Dictionary<int, int> visited; // ugly, but reuse here to ease GC
         private Dictionary<int, int> ShortestPathsBFS(int source)
         {
-            if (visited == null)
-                visited = new Dictionary<int, int>();
-            else
-                visited.Clear();
+            var visited = new Dictionary<int, int>(); // ugly, but reuse here to ease GC
 
             visited[source] = 0;
             var q = new Queue<int>();
@@ -342,7 +343,7 @@ namespace EcoBuilder.NodeLink
         // SGD
         private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
         {
-            foreach (int j in nodes.Indices) // no shuffle, TODO: add later
+            foreach (int j in FYShuffle(nodes.Indices)) // no shuffle, TODO: add later
             {
                 if (i != j)
                 {
@@ -374,6 +375,23 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
+        }
+        private IEnumerable<int> FYShuffle(IEnumerable<int> toShuffle)
+        {
+            var shuffled = new List<int>();
+            foreach (int i in toShuffle)
+                shuffled.Add(i);
+            
+            int n = shuffled.Count;
+            for (int i=0; i<n-1; i++)
+            {
+                int j = UnityEngine.Random.Range(i, n);
+                // i = j
+                yield return shuffled[j];
+                // then j = i
+                shuffled[j] = shuffled[i];
+            }
+            yield return shuffled[n-1];
         }
         private void CenteringSGD(int i, float eta)
         {

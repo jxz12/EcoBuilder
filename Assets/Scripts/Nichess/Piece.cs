@@ -27,6 +27,22 @@ namespace EcoBuilder.Nichess
             Idx = idx;
             name = idx.ToString();
         }
+        public void Inspect()
+        {
+            transform.localScale *= 1.5f;
+        }
+        public void Uninspect()
+        {
+            transform.localScale /= 1.5f;
+        }
+        public void Lift()
+        {
+            transform.localScale *= 1.5f;
+        }
+        public void Drop()
+        {
+            transform.localScale /= 1.5f;
+        }
         public void Select()
         {
             // TOOD: some animation here
@@ -103,7 +119,6 @@ namespace EcoBuilder.Nichess
 
             return consumer.SquareInNiche(NichePos);
         }
-
 
 
 

@@ -56,8 +56,8 @@ namespace EcoBuilder
         public void UnloadScene(string sceneName) {
             SceneManager.UnloadSceneAsync(sceneName);
         }
-        //[SerializeField] UnityEvent startLoadEvent, endLoadEvent;
 
+        //[SerializeField] UnityEvent startLoadEvent, endLoadEvent;
         //[Serializable] public class FloatEvent : UnityEvent<float>{}
         //[SerializeField] FloatEvent progressEvent;
         private IEnumerator LoadSceneThenSetActive(string sceneName)

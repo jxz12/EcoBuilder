@@ -32,7 +32,6 @@ namespace EcoBuilder.Nichess
         [SerializeField] Mesh squareMesh, circleMesh;
 
         Dictionary<int, Piece> pieces = new Dictionary<int, Piece>();
-        // Piece inspected = null;
         public void InspectPiece(int idx)
         {
             board.InspectPiece(pieces[idx]);
@@ -51,6 +50,7 @@ namespace EcoBuilder.Nichess
         public void RemovePiece(int idx)
         {
             board.RemovePiece(pieces[idx]);
+            pieces.Remove(idx);
         }
         public void FixPieceRange(int idx) {
             pieces[idx].StaticRange = true;
@@ -65,8 +65,32 @@ namespace EcoBuilder.Nichess
         }
         public void ColourPiece2D(int idx, float x, float y)
         {
+            if (x < 0 || x > 1 || y < 0 || y > 1)
+                throw new Exception("colour out of bounds");
+
             pieces[idx].Colour2D(x, y);
         }
+        public void PlacePiece(int idx, int x, int y)
+        {
+            if (x < 0 || y < 0)
+                throw new Exception("negative coordinates");
+
+            // TODO: catch errors here
+            board.PlacePiece(pieces[idx], x, y);
+        }
+        public void NichePiece(int idx, int l, int b, int r, int t)
+        {
+            if (l < 0 || b < 0 || r < 0 || t < 0)
+                throw new Exception("negative coordinates");
+
+            // TODO: catch errors here too
+            board.NichePiece(pieces[idx], l, b, r, t);
+        }
+
+
+
+        ///////////////////////////////
+        // edge add/remove stuff
 
         HashSet<Piece> inspectedConsumers = new HashSet<Piece>();
         HashSet<Piece> inspectedResources = new HashSet<Piece>();
