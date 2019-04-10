@@ -1,91 +1,105 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Solvers;
+using MathNet.Numerics.LinearAlgebra.Double.Solvers;
 
 namespace EcoBuilder.Model
 {
-	public class LotkaVolterra
-	{
+    // a class to implement a simple lotka-volterra Type I functional response model
+    // can find equilibrium abundances, flux at equilibrium, local asymptotic stability
+    public class LotkaVolterra<T>
+    {
+        private Func<T, double> r_i;
+        private Func<T, double> a_ii;
+        private Func<T,T, double> a_ij;
+        private Func<T,T, double> e_ij;
+
+        public LotkaVolterra(
+            Func<T, double> Growth, Func<T, double> Intra,
+            Func<T,T, double> Attack, Func<T,T, double> Efficiency)
+        {
+            r_i = Growth;
+            a_ii = Intra;
+            a_ij = Attack;
+            e_ij = Efficiency;
+        }
+
         // external dictionary for lookup
-        Dictionary<int, int> externToIntern = new Dictionary<int, int>();
-        Dictionary<int, HashSet<int>> externAdjacency = new Dictionary<int, HashSet<int>>();
+        Dictionary<T, int> externToIntern = new Dictionary<T, int>();
+        Dictionary<T, HashSet<T>> externInteractions = new Dictionary<T, HashSet<T>>();
 
         // internal 0-based indexing for matrix operations
-        List<int> internToExtern = new List<int>();
-        List<HashSet<int>> adjacency = new List<HashSet<int>>();
+        List<T> internToExtern = new List<T>();
+        List<HashSet<int>> internInteractions = new List<HashSet<int>>();
 
-		public LotkaVolterra()
-		{
-
-		}
-
-        public void AddSpecies(int idx)
+        public void AddSpecies(T species)
         {
-            if (externToIntern.ContainsKey(idx))
+            if (externToIntern.ContainsKey(species))
                 throw new Exception("Ecosystem has that species already");
 
             int n = internToExtern.Count;
 
-            externToIntern[idx] = n;
-            externAdjacency[idx] = new HashSet<int>();
+            externToIntern[species] = n;
+            externInteractions[species] = new HashSet<T>();
 
-            internToExtern.Add(idx);
-            adjacency.Add(new HashSet<int>());
+            internToExtern.Add(species);
+            internInteractions.Add(new HashSet<int>());
 
-            RebuildMatrices(n+1);
+            InitMatrices(n+1);
         }
-        public void RemoveSpecies(int idx)
+        public void RemoveSpecies(T species)
         {
-            if (!externToIntern.ContainsKey(idx))
+            if (!externToIntern.ContainsKey(species))
                 throw new Exception("Ecosystem does not have that species");
 
             int n = internToExtern.Count;
 
-            externToIntern.Remove(idx);
-            externAdjacency.Remove(idx);
-            foreach (var hash in externAdjacency.Values)
-                hash.Remove(idx);
+            externToIntern.Remove(species);
+            externInteractions.Remove(species);
+            foreach (var hash in externInteractions.Values)
+                hash.Remove(species);
 
             // O(n) but that's okay, as it shifts indices as required
-            internToExtern.Remove(idx);
+            internToExtern.Remove(species);
 
             // iterate through all possible interactions
             // to fix adjacency indices according to the above shift
-            adjacency.RemoveAt(n-1);
+            internInteractions.RemoveAt(n-1);
             for (int i=0; i<n-1; i++)
             {
-                int res = internToExtern[i];
-                adjacency[i].Clear();
+                T res = internToExtern[i];
+                internInteractions[i].Clear();
                 for (int j=0; j<n-1; j++)
                 {
-                    int con = internToExtern[j];
-                    if (externAdjacency[res].Contains(con))
-                        adjacency[i].Add(j);
+                    T con = internToExtern[j];
+                    if (externInteractions[res].Contains(con))
+                        internInteractions[i].Add(j);
                 }
             }
 
-            RebuildMatrices(n-1);
+            InitMatrices(n-1);
         }
-        public void AddInteraction(int res, int con, double search, double efficiency)
+        public void AddInteraction(T res, T con)
         {
-            if (externAdjacency[res].Contains(con))
+            if (externInteractions[res].Contains(con))
                 throw new Exception("ecosystem has interaction already");
 
-            externAdjacency[res].Add(con);
-            adjacency[externToIntern[res]].Add(externToIntern[con]);
+            externInteractions[res].Add(con);
+            internInteractions[externToIntern[res]].Add(externToIntern[con]);
         }
-        public void RemoveInteraction(int res, int con, double search, double efficiency)
+        public void RemoveInteraction(T res, T con)
         {
-            if (!externAdjacency[res].Contains(con))
+            if (!externInteractions[res].Contains(con))
                 throw new Exception("ecosystem does not have that interaction");
 
-            externAdjacency[res].Remove(con);
-            adjacency[externToIntern[res]].Remove(externToIntern[con]);
+            externInteractions[res].Remove(con);
+            internInteractions[externToIntern[res]].Remove(externToIntern[con]);
         }
 
         Matrix<double> A, community;
         Vector<double> x, b;
-        public void RebuildMatrices(int n)
+        public void InitMatrices(int n)
         {
             if (n > 0)
             {
@@ -94,7 +108,7 @@ namespace EcoBuilder.Model
                 x = Vector<double>.Build.Dense(n);
                 b = Vector<double>.Build.Dense(n);
 
-                // community is Jacobian evaluated at x, flux is e*A
+                // community is Jacobian evaluated at x
                 community = Matrix<double>.Build.Dense(n, n);
             }
             else
@@ -107,10 +121,7 @@ namespace EcoBuilder.Model
         // public event Action<T, double> OnAbundanceSet;
         // public event Action<T, T, double> OnFluxSet;
 
-        ///////////////////////////////////////
-        // should be run async because O(n^3)
-
-        public bool SolveEquilibrium()
+        void BuildEquilibriumMatrix()
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
@@ -119,46 +130,120 @@ namespace EcoBuilder.Model
             b.Clear();
             for (int i=0; i<n; i++)
             {
-                // T res = internToExtern[i];
-                // b[i] = -r_i(res);
-                // A[i,i] = a_ii(res);
-                // foreach (int j in adjacency[i])
-                // {
-                //     T con = internToExtern[j];
-                //     double a = a_ij(res, con);
-                //     double e = e_ij(res, con);
+                T res = internToExtern[i];
+                b[i] = -r_i(res);
+                A[i,i] = a_ii(res);
+                foreach (int j in internInteractions[i])
+                {
+                    T con = internToExtern[j];
+                    double a = a_ij(res, con);
+                    double e = e_ij(res, con);
 
-                //     A[i,j] -= a;
-                //     double flux = e*a;
-                //     A[j,i] += flux;
-                //     // OnFluxSet(res, con, flux);
-                // }
+                    A[i,j] -= a;
+                    A[j,i] += e * a;
+                }
             }
+            // precond.Initialize(A);
+            // UnityEngine.Debug.Log(MathNetMatStr(A));
+            // UnityEngine.Debug.Log(MathNetVecStr(b));
+        }
+
+        /*
+        ILU0Preconditioner precond = new ILU0Preconditioner();
+        BiCgStab solver = new BiCgStab();
+        //////////////////////////////////////
+        // O(n^2), so can do it every frame
+        public void IterateEquilibrium()
+        {
+            var iterator = new Iterator<double>(
+                new IterationCountStopCriterion<double>(5),
+                // new ResidualStopCriterion<double>(tolerance),
+                new DivergenceStopCriterion<double>()
+            );
+
+            // solver.Solve(A, b, x, iterator, precond);
+
+            // MILU0Preconditioner precond = new MILU0Preconditioner();
+            // var precond = new DiagonalPreconditioner();
+            // BiCgStab solver = new BiCgStab();
+
+            precond.Initialize(A);
+            solver.Solve(A, b, x, iterator, precond);
+            UnityEngine.Debug.Log(A.Determinant() + ": " +  MathNetVecStr(x));
+        }
+        */
+
+        public void Test(int n = 1000)
+        {
+            var asd = Matrix<double>.Build.Dense(n, n);
+            var f = Vector<double>.Build.Dense(n);
+            Random rand = new Random();
+            for (int i=0; i<n; i++)
+            {
+                f[i] = rand.NextDouble();
+                for (int j=0; j<n; j++)
+                {
+                    asd[i,j] = rand.NextDouble();
+                }
+            }
+            var fgh = asd.Solve(f);
+            // var fgh = asd.Multiply(asd);
+        }
+
+        ///////////
+        // O(n^3)
+        public bool SolveEquilibrium()
+        {
+            BuildEquilibriumMatrix();
             // UnityEngine.Debug.Log(MathNetMatStr(A));
             // UnityEngine.Debug.Log(MathNetVecStr(b));
 
             // find fixed equilibrium point of system
-            x = A.Solve(b);
-
+            A.Solve(b, x);
             // UnityEngine.Debug.Log(MathNetVecStr(x));
 
-            bool feasible = true;
-            for (int i=0; i<internToExtern.Count; i++)
-            {
-                // OnAbundanceSet(internToExtern[i], x[i]);
-                if (x[i] <= 0)
-                    feasible = false;
-            }
-            return feasible;
+            return Feasible();
         }
+        public double GetSolvedAbundance(T species)
+        {
+            int idx = externToIntern[species];
+            return x[idx];
+        }
+        bool Feasible()
+        {
+            for (int i=0; i<x.Count; i++)
+            {
+                if (x[i] <= 0)
+                    return false;
+            }
+            return true;
+        }
+
+        public double GetTotalFlux()
+        {
+            double flux = 0;
+            foreach (T res in externInteractions.Keys)
+            {
+                int i = externToIntern[res];
+                double abundance = x[i];
+                foreach (T con in externInteractions[res])
+                {
+                    double a = a_ij(res, con);
+                    double e = e_ij(res, con);
+                    flux += a * e * abundance;
+                }
+            }
+            return flux;
+        }
+
 
 
         // Depends on A and b being correct
         void BuildCommunityMatrix()
         {
+            // calculates every element of the Jacobian, evaluated at equilibrium point
             int n = internToExtern.Count;
 
-            // calculates every element of the Jacobian, evaluated at equilibrium point
             community.Clear();
             for (int i=0; i<n; i++)
             {
@@ -184,7 +269,7 @@ namespace EcoBuilder.Model
             }
         }
 
-		// depends on community being correct, and also destroys it
+        // depends on community being correct, and also destroys it
 		void BuildHermitianMatrix()
 		{
 			int n = internToExtern.Count;
@@ -198,22 +283,22 @@ namespace EcoBuilder.Model
 			}
 		}
 
-        ///////////////////////////////////////////
-        // should also be run async because O(n^3)
-
-        public double LocalAsymptoticStability()
+        ////////////////////
+        // Both also O(n^3)
+        public bool SolveStability()
         {
-            // calculate community matrix with jacobian
+            // calculate community matrix with Jacobian
             BuildCommunityMatrix();
 
             // get largest real part of any eigenvalue of this community matrix
+            // implies the local asymptotic stability
             var eigenValues = community.Evd().EigenValues;
 
             double Lambda = eigenValues.Real().Maximum();
-            return Lambda;
+            return Lambda <= 0;
         }
 
-		public double LocalReactivity()
+        public bool SolveReactivity()
 		{
 			// calculate M + M^T
 			BuildHermitianMatrix();
@@ -222,8 +307,9 @@ namespace EcoBuilder.Model
 			var eigenValues = community.Evd().EigenValues;
 
 			double Lambda = eigenValues.Real().Maximum();
-			return Lambda;
+			return Lambda <= 0;
 		}
+
 
 
 
@@ -259,5 +345,5 @@ namespace EcoBuilder.Model
             sb.Remove(sb.Length - 1, 1);
             return sb.ToString();
         }
-	}
+    }
 }

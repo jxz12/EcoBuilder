@@ -260,7 +260,7 @@ namespace EcoBuilder.Nichess
         }
         public void ResizeMarkers(float size)
         {
-            markersParent.transform.localScale = new Vector3(size, size, size);
+            markersParent.transform.localScale = Mathf.Sqrt(size) * Vector3.one;
         }
     }
 }

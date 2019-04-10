@@ -33,7 +33,7 @@ namespace EcoBuilder
         int idxCounter = 0;
         void Start()
         {
-            inspector.OnSpawned +=          ()=> Do();
+            inspector.OnSpawned +=          ()=> DoMove();
             inspector.OnSizeChosen +=     (kg)=> ChooseSize(kg);
             inspector.OnGreedChosen +=  (a_ii)=> ChooseGreed(a_ii);
 
@@ -42,6 +42,8 @@ namespace EcoBuilder
             nichess.OnPieceNiched += (i,l,b,r,t)=> UpdateSpeciesNiche(i, l, b, r, t);
             nichess.OnEdgeAdded +=         (i,j)=> nodelink.AddLink(i, j);
             nichess.OnEdgeRemoved +=       (i,j)=> nodelink.RemoveLink(i, j);
+            nichess.OnEdgeAdded +=         (i,j)=> model.AddInteraction(i, j);
+            nichess.OnEdgeRemoved +=       (i,j)=> model.RemoveInteraction(i, j);
             nichess.OnPieceColoured +=     (i,c)=> nodelink.ColorNode(i, c);
 
             nodelink.OnFocus +=            (i)=> print(i);
@@ -49,9 +51,14 @@ namespace EcoBuilder
             nodelink.LaplacianUnsolvable += ()=> print("unsolvable");
             nodelink.LaplacianSolvable +=   ()=> print("solvable");
 
+            model.OnCalculated +=           ()=> CalculateScore();
+            // model.OnCalculated +=           ()=> ResizeNodes();
+            model.OnEndangered +=          (i)=> nodelink.FlashNode(i);
+            model.OnRescued +=             (i)=> nodelink.IdleNode(i);
+
             status.OnMenu +=                ()=> print("MENU");
-            status.OnUndo +=                ()=> Undo();
-            status.OnRedo +=                ()=> Redo();
+            status.OnUndo +=                ()=> UndoMove();
+            status.OnRedo +=                ()=> RedoMove();
 
             PrepareNewMove();
         }
@@ -59,6 +66,7 @@ namespace EcoBuilder
         {
             nichess.AddPiece(idxCounter);
             nodelink.AddNode(idxCounter);
+            model.AddSpecies(idxCounter);
             nichess.InspectPiece(idxCounter);
 
             var newSpecies = new Species();
@@ -67,12 +75,14 @@ namespace EcoBuilder
                 nichess.FixPieceRange(idxCounter);
                 nichess.ShapePieceIntoSquare(idxCounter);
                 nodelink.ShapeNodeIntoCube(idxCounter);
+                model.SetSpeciesAsProducer(idxCounter);
                 newSpecies.isProducer = true;
             }
             else
             {
                 nichess.ShapePieceIntoCircle(idxCounter);
                 nodelink.ShapeNodeIntoSphere(idxCounter);
+                model.SetSpeciesAsConsumer(idxCounter);
                 newSpecies.isProducer = false;
             }
             moves.Push(newSpecies);
@@ -81,11 +91,13 @@ namespace EcoBuilder
         {
             moves.Peek().bodySize = size;
             nichess.ColourPiece2D(idxCounter, size, moves.Peek().greediness);
+            model.SetSpeciesBodySize(idxCounter, size);
         }
         void ChooseGreed(float greed)
         {
             moves.Peek().greediness = greed;
             nichess.ColourPiece2D(idxCounter, moves.Peek().bodySize, greed);
+            model.SetSpeciesGreediness(idxCounter, greed);
         }
         void UpdateSpeciesPos(int i, int x, int y)
         {
@@ -107,10 +119,8 @@ namespace EcoBuilder
         }
 
         Stack<Species> redoStack = new Stack<Species>();
-        void Do()
+        void DoMove()
         {
-            CalculateScore();
-
             redoStack.Clear();
             idxCounter += 1;
             if (idxCounter < GameManager.Instance.Level.Length)
@@ -122,13 +132,13 @@ namespace EcoBuilder
                 EndGame();
             }
         }
-        // TODO: keep track of calculated scores such that stack works properly
-        void Undo()
+        void UndoMove()
         {
             if (moves.Count > 1)
             {
                 nichess.RemovePiece(idxCounter);
                 nodelink.RemoveNode(idxCounter);
+                model.RemoveSpecies(idxCounter);
 
                 Species toUndo = moves.Pop();
                 redoStack.Push(toUndo);
@@ -137,7 +147,7 @@ namespace EcoBuilder
                 nichess.InspectPiece(idxCounter);
             }
         }
-        void Redo()
+        void RedoMove()
         {
             if (redoStack.Count > 0)
             {
@@ -145,6 +155,8 @@ namespace EcoBuilder
                 idxCounter += 1;
                 nichess.AddPiece(idxCounter);
                 nodelink.AddNode(idxCounter);
+                model.AddSpecies(idxCounter);
+
                 nichess.InspectPiece(idxCounter);
                 moves.Push(toRedo);
 
@@ -153,32 +165,60 @@ namespace EcoBuilder
                     nichess.FixPieceRange(idxCounter);
                     nichess.ShapePieceIntoSquare(idxCounter);
                     nodelink.ShapeNodeIntoCube(idxCounter);
+                    model.SetSpeciesAsProducer(idxCounter);
                 }
                 else
                 {
                     nichess.ShapePieceIntoCircle(idxCounter);
                     nodelink.ShapeNodeIntoSphere(idxCounter);
+                    model.SetSpeciesAsConsumer(idxCounter);
                 }
                 nichess.PlacePiece(idxCounter, toRedo.nichePosX, toRedo.nichePosY);
                 nichess.NichePiece(idxCounter, toRedo.nicheStartX, toRedo.nicheStartY, toRedo.nicheEndX, toRedo.nicheEndY);
                 nichess.ColourPiece2D(idxCounter, toRedo.bodySize, toRedo.greediness);
+                model.SetSpeciesBodySize(idxCounter, toRedo.bodySize);
+                model.SetSpeciesGreediness(idxCounter, toRedo.greediness);
             }
         }
 
 
+        // void ResizeNodes()
+        // {
+        //     for (int i=0; i<moves.Count; i++)
+        //     {
+        //         float abundance = model.GetAbundance(i);
+        //         if (abundance > 0)
+        //         {
+        //             nodelink.ResizeNode(i, abundance);
+        //         }
+        //         else
+        //         {
+        //             nodelink.ResizeNode(i, 0);
+        //             nodelink.ResizeNodeOutline(i, -abundance);
+        //         }
+        //     }
+        // }
         void CalculateScore()
         {
-            if (idxCounter >= 2)
-            {
+            if (model.Feasible)
                 status.FillStar1();
-            }
             else
-            {
                 status.EmptyStar1();
-            }
+            if (model.Stable)
+                status.FillStar2();
+            else
+                status.EmptyStar2();
+            if (model.Nonreactive)
+                status.FillStar3();
+            else
+                status.EmptyStar3();
+
+            if (model.Feasible)
+                print("flux: " + model.Flux);
         }
         void EndGame()
         {
+            // TODO: stop the game here, and look for height, loops, omnivory
             print("game over!");
         }
 

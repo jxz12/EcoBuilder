@@ -82,6 +82,7 @@ namespace EcoBuilder.Nichess
         {
             if (l < 0 || b < 0 || r < 0 || t < 0)
                 throw new Exception("negative coordinates");
+            // TODO: it's possible for a redo piece to not have a niche
 
             // TODO: catch errors here too
             board.NichePiece(pieces[idx], l, b, r, t);

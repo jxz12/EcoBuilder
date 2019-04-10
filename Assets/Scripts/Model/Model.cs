@@ -9,55 +9,44 @@ namespace EcoBuilder.Model
 {
     public class Model : MonoBehaviour
     {   
-        LotkaVolterra simulation;
-        void Awake()
-        {
-            simulation = new LotkaVolterra();
-        }
-        /*
         [Serializable] class IntEvent : UnityEvent<int> { }
         [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
         [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
 
-        [SerializeField] IntEvent OnEndangered;
-        [SerializeField] IntEvent OnCritical;
-        [SerializeField] IntEvent OnRescued;
-        [SerializeField] IntEvent OnExtinction;
-        [SerializeField] IntFloatEvent OnAbundanceSet;
-        [SerializeField] IntIntFloatEvent OnFluxSet;
-
-        // [SerializeField] float heartRate=60; // frequency of LAS calculations
-        // [SerializeField] int countdownMax=5; // how many heartbeats until death
-        // [SerializeField] Monitor monitor;
+        // [SerializeField] IntFloatEvent OnAbundanceSet;
+        // [SerializeField] IntIntFloatEvent OnFluxSet;
 
         class Species
         {
             public int Idx { get; private set; }
-            bool isProducer;
+            bool isProducer = true;
             public bool IsProducer {
                 set {
                     isProducer = value;
-                    Growth = value? metabolism*b0 : -metabolism*d0;
-                    Efficiency = value? 0.2 : 0.5;
+                    Growth = isProducer? metabolism*b0 : -metabolism*d0;
+                    Efficiency = isProducer? 0.2 : 0.5;
                 }
             }
-            double metabolism;
-            public double Metabolism {
+            double metabolism = 1; // metabolism is mass^-.25
+            public double BodySize {
                 set {
-                    metabolism = value;
-                    Growth = isProducer? value*b0 : -value*d0;
-                    Attack = value * a0;
+                    // metabolism = Math.Pow(value, -.25);
+                    metabolism = 1.1 - value;
+                    Growth = isProducer? metabolism*b0 : -metabolism*d0;
+                    Attack = metabolism * a0;
                 }
             }
             public double Greediness {
                 set {
-                    SelfReg = -a_ii0 * value;
+                    SelfReg = -a_ii0 * (1.1 - value);
                 }
             }
             public double Growth { get; private set; } = 0;
-            public double SelfReg { get; private set; } = 0;
+            public double SelfReg { get; private set; } = -1;
             public double Attack { get; private set; } = 0;
             public double Efficiency { get; private set; } = 0;
+
+            public double Abundance { get; set; } = 1; // initialise as non-extinct
 
             public Species(int idx)
             {
@@ -66,7 +55,7 @@ namespace EcoBuilder.Model
 
             static readonly double b0 = 1,
                                    d0 = .1,
-                                   a_ii0 = 1,
+                                   a_ii0 = 10,
                                    a0 = 10;
 
             // static readonly double b0 = 1e0,
@@ -77,59 +66,6 @@ namespace EcoBuilder.Model
         }
 
         LotkaVolterra<Species> simulation;
-        Dictionary<int, Species> idx2Species = new Dictionary<int, Species>();
-
-        public void AddSpecies(int idx)
-        {
-            var newSpecies = new Species(idx);
-            simulation.AddSpecies(newSpecies);
-            idx2Species.Add(idx, newSpecies);
-
-            scaledAbundances[newSpecies.Idx] = .5f;
-        }
-        public void RemoveSpecies(int idx)
-        {
-            Species toRemove = idx2Species[idx];
-            simulation.RemoveSpecies(toRemove);
-            idx2Species.Remove(idx);
-
-            abundances.Remove(toRemove);
-            scaledAbundances.Remove(idx);
-        }
-        public void SetSpeciesAsProducer(int idx)
-        {
-            idx2Species[idx].IsProducer = true;
-        }
-        public void SetSpeciesAsConsumer(int idx)
-        {
-            idx2Species[idx].IsProducer = false;
-        }
-        public void SetSpeciesMetabolism(int idx, float metabolism)
-        {
-            idx2Species[idx].Metabolism = metabolism;
-        }
-        public void SetSpeciesGreediness(int idx, float greediness)
-        {
-            idx2Species[idx].Greediness = greediness;
-        }
-
-        public void AddInteraction(int resource, int consumer)
-        {
-            if (resource == consumer)
-                throw new Exception("can't eat itself");
-
-            Species res = idx2Species[resource], con = idx2Species[consumer];
-            simulation.AddInteraction(res, con);
-        }
-        public void RemoveInteraction(int resource, int consumer)
-        {
-            if (resource == consumer)
-                throw new Exception("can't eat itself");
-
-            Species res = idx2Species[resource], con = idx2Species[consumer];
-            simulation.RemoveInteraction(res, con);
-        }
-
         void Awake()
         {
             simulation = new LotkaVolterra<Species>(
@@ -138,99 +74,151 @@ namespace EcoBuilder.Model
                 (r,c)=> r.Attack,
                 (r,c)=> r.Efficiency
             );
-            simulation.OnAbundanceSet += (s,x)=> abundances[s] = x;
+
+            // simulation.OnAbundanceSet += (s,x)=> abundances[s] = x;
             // simulation.OnFluxSet += SetAndScaleFlux;
         }
+        Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
 
-        private void Start()
+        public void AddSpecies(int idx)
         {
-            // StartCoroutine(Pulse(60f / heartRate));
+            var newSpecies = new Species(idx);
+            simulation.AddSpecies(newSpecies);
+            idxToSpecies.Add(idx, newSpecies);
+            equilibriumSolved = false;
         }
-        public UnityEvent OnPulse;
-        IEnumerator Pulse(float delay)
+        public void RemoveSpecies(int idx)
         {
-            while (true)
+            Species toRemove = idxToSpecies[idx];
+            simulation.RemoveSpecies(toRemove);
+            idxToSpecies.Remove(idx);
+            equilibriumSolved = false;
+        }
+        public void SetSpeciesAsProducer(int idx)
+        {
+            idxToSpecies[idx].IsProducer = true;
+            equilibriumSolved = false;
+        }
+        public void SetSpeciesAsConsumer(int idx)
+        {
+            idxToSpecies[idx].IsProducer = false;
+            equilibriumSolved = false;
+        }
+        public void SetSpeciesBodySize(int idx, float size)
+        {
+            idxToSpecies[idx].BodySize = size;
+            equilibriumSolved = false;
+        }
+        public void SetSpeciesGreediness(int idx, float greed)
+        {
+            idxToSpecies[idx].Greediness = greed;
+            equilibriumSolved = false;
+        }
+
+        public void AddInteraction(int resource, int consumer)
+        {
+            if (resource == consumer)
+                throw new Exception("can't eat itself");
+
+            Species res = idxToSpecies[resource], con = idxToSpecies[consumer];
+            simulation.AddInteraction(res, con);
+            equilibriumSolved = false;
+        }
+        public void RemoveInteraction(int resource, int consumer)
+        {
+            if (resource == consumer)
+                throw new Exception("can't eat itself");
+
+            Species res = idxToSpecies[resource], con = idxToSpecies[consumer];
+            simulation.RemoveInteraction(res, con);
+            equilibriumSolved = false;
+        }
+
+
+
+
+
+
+
+
+
+        bool equilibriumSolved = true, calculating = false;
+        void LateUpdate()
+        {
+            if (!equilibriumSolved && !calculating)
             {
-                OnPulse.Invoke();
-                if (idx2Species.Count > 0)
-                    Equilibrium();
-                yield return new WaitForSeconds(delay);
+                equilibriumSolved = true;
+                Equilibrium();
+            }
+            else if (!equilibriumSolved && calculating)
+            {
+                print("busy");
             }
         }
+
+        public event Action OnCalculated;
+        public event Action<int> OnEndangered;
+        public event Action<int> OnRescued;
+
+        public bool Feasible { get; private set; } = false;
+        public bool Stable { get; private set; } = false;
+        public bool Nonreactive { get; private set; } = false;
+        public float Flux { get; private set; } = 0;
+        async void Equilibrium()
+        {
+            calculating = true;
+            Feasible = await Task.Run(() => simulation.SolveEquilibrium());
+
+            Flux = (float)simulation.GetTotalFlux();
+
+            if (Feasible)
+            {
+                Stable = await Task.Run(() => simulation.SolveStability());
+                if (Stable)
+                {
+                    Nonreactive = await Task.Run(() => simulation.SolveReactivity());
+                }
+                else
+                {
+                    Nonreactive = false;
+                }
+            }
+            else
+            {
+                Stable = Nonreactive = false;
+            }
+
+            // show abundance warnings
+            foreach (int i in idxToSpecies.Keys)
+            {
+                Species s = idxToSpecies[i];
+                double newAbundance = simulation.GetSolvedAbundance(s);
+                if (s.Abundance > 0 && newAbundance <= 0)
+                {
+                    OnEndangered.Invoke(i);
+                }
+                if (s.Abundance <= 0 && newAbundance > 0)
+                {
+                    OnRescued.Invoke(i);
+                }
+                s.Abundance = newAbundance;
+            }
+
+            calculating = false;
+            OnCalculated.Invoke();
+        }
+
+        public float GetAbundance(int idx)
+        {
+            return (float)idxToSpecies[idx].Abundance;
+        }
+
+
 
         /////////////////////
         // mathy bits here
 
-        Dictionary<Species, double> abundances = new Dictionary<Species, double>();
-        Dictionary<int, float> scaledAbundances = new Dictionary<int, float>();
-
-        int countdown = -1;
-        List<Action> UnityEventsTodo = new List<Action>();
-        Species toExtinct = null;
-        async void Equilibrium()
-        {
-            // bool feasible = await Task.Run(() => simulation.SolveEquilibrium());
-            bool feasible = simulation.SolveEquilibrium();
-
-            // print("Abund: " + minLogAbund + " " + maxLogAbund);
-
-            // // move mins and maxs slowly towards each other, so that any huge min/max isn't permanent
-            // if (minLogAbund != double.MaxValue && maxLogAbund != double.MinValue)
-            // {
-            //     double minMaxGapAbund = maxLogAbund - minLogAbund;
-            //     minLogAbund += minMaxGapAbund * minMaxTweenSpeed;
-            //     maxLogAbund -= minMaxGapAbund * minMaxTweenSpeed;
-            // }
-
-            // if (minLogFlux != double.MaxValue && maxLogFlux != double.MinValue)
-            // {
-            //     double minMaxGapFlux = maxLogFlux - minLogFlux;
-            //     minLogFlux += minMaxGapFlux * minMaxTweenSpeed;
-            //     maxLogFlux -= minMaxGapFlux * minMaxTweenSpeed;
-            // }
-
-            SetAndScaleAbundances();
-
-            if (feasible)
-            {
-                CalculateAndSetStability();
-                countdown = -1;
-            }
-            else
-            {
-                // monitor.Debug("infeasible");
-
-                // if (countdown == -1) // if newly endangered
-                //     countdown = countdownMax;
-                // else
-                //     countdown -= 1;
-
-                if (countdown <= 2)
-                {
-                    if (toExtinct == null)
-                    {
-                        OnCritical.Invoke(critical.Idx);
-                        toExtinct = critical;
-                    }
-                    else if (toExtinct != critical)
-                    {
-                        OnEndangered.Invoke(toExtinct.Idx);
-                        OnCritical.Invoke(critical.Idx);
-                        toExtinct = critical;
-                    }
-                }
-                // print(countdown);
-                if (countdown == 0)
-                {
-                    RemoveSpecies(critical.Idx);
-                    OnExtinction.Invoke(critical.Idx);
-                    // make extinct
-                    // if two species are tied, then kill the newer one?
-                    // countdown = countdownMax;
-                    toExtinct = null;
-                }
-            }
-        }
+        /*
         private static readonly double myEps = 1e-10f; // real double.Epsilon = 5e-324
         HashSet<Species> endangered = new HashSet<Species>();
         Species critical = null;

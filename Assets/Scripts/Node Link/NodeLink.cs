@@ -69,7 +69,7 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
-            toBFS.Enqueue(myNull);
+            // toBFS.Enqueue(myNull);
 
             // prevent memory leak in trophic level data structures
             trophicA.RemoveAt(idx);
@@ -78,41 +78,56 @@ namespace EcoBuilder.NodeLink
 
         public void AddLink(int i, int j)
         {
-            print("add " + i + " " + j);
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i, j] = newLink;
+
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            SGDStep = adjacency.Count * adjacency.Count; // adapt step size to new distance matrix
+            if (links[j, i] != null)
+            {
+                links[j, i].Curve();
+                links[i, j].Curve();
+            }
+
+            // SGDStep = adjacency.Count * adjacency.Count; // adapt step size to new distance matrix
         }
         public void RemoveLink(int i, int j)
         {
-            print("rem " + i + " " + j);
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
-            if (links[j, i] == null)
+            if (links[j, i] != null)
+            {
+                links[j, i].Straighten();
+            }
+            else
             {
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
             }
 
-            SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
+            // SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
         }
         public void ColorNode(int idx, Color c)
         {
             nodes[idx].Col = c;
         }
 
-        // public void ResizeNode(int idx, float size)
-        // {
-        //     if (size < 0)
-        //         throw new Exception("size cannot be negative");
+        public void ResizeNode(int idx, float size)
+        {
+            if (size < 0)
+                throw new Exception("size cannot be negative");
 
-        //     nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
-        //     // TODO: do some pulse animation here!
-        // }
+            nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
+        }
+        public void ResizeNodeOutline(int idx, float size)
+        {
+            if (size < 0)
+                throw new Exception("size cannot be negative");
+
+            nodes[idx].OutlineSize = .5f + Mathf.Sqrt(size);
+        }
 
         // [SerializeField] float maxEdgeWidth;
         // public void ResizeEdge(int i, int j, float width)
@@ -130,17 +145,17 @@ namespace EcoBuilder.NodeLink
         {
             focus = null;
         }
-        // public void FlashNode(int idx)
-        // {
-        //     nodes[idx].Flash();
-        // }
+        public void FlashNode(int idx)
+        {
+            nodes[idx].Flash();
+        }
+        public void IdleNode(int idx)
+        {
+            nodes[idx].Idle();
+        }
         // public void HeavyFlashNode(int idx)
         // {
         //     nodes[idx].HeavyFlash();
-        // }
-        // public void UnflashNode(int idx)
-        // {
-        //     nodes[idx].Idle();
         // }
 
         bool laplacianDetNeg = false;
@@ -150,8 +165,12 @@ namespace EcoBuilder.NodeLink
         {
             if (nodes.Count > 0)
             {
-                bool solvable = UpdateTrophicEquations();
-                if (solvable)
+                HashSet<int> basal = BuildTrophicEquations();
+
+                // returns whether determinant of the Laplacian is 0
+                var heights = HeightBFS(basal);
+
+                if (heights.Count == nodes.Count) // if every node can be reached from basal
                 {
                     if (laplacianDetNeg == true)
                     {
@@ -159,7 +178,8 @@ namespace EcoBuilder.NodeLink
                         LaplacianSolvable();
                     }
                     TrophicGaussSeidel();
-                    TweenYAxis(v=>trophicLevels[v.Idx]-1, trophicStep);
+                    // TweenYAxis(v=> heights[v.Idx], trophicStep);
+                    TweenYAxis(v=> .5f*heights[v.Idx]+.5f*(trophicLevels[v.Idx]-1), trophicStep);
                 }
                 else
                 {
@@ -171,12 +191,6 @@ namespace EcoBuilder.NodeLink
                 }
 
                 int dq = toBFS.Dequeue(); // only do one vertex per frame
-                if (dq == myNull)
-                {
-                    SGDStep = Mathf.Max(SGDStep * SGDMultiplier, minSGDStep); // decay step size
-                    dq = toBFS.Dequeue();
-                    toBFS.Enqueue(myNull);
-                }
 
                 var d_j = ShortestPathsBFS(dq);
                 if (focus != null)
@@ -199,7 +213,6 @@ namespace EcoBuilder.NodeLink
                 toBFS.Enqueue(dq);
             }
             Rotate();
-            // baseDisk.localScale = Vector3.Lerp(baseDisk.localScale, 2*Vector3.one, .1f);
         }
 
         ////////////////////////////////////
@@ -300,12 +313,13 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        [SerializeField] float SGDStep=.1f, SGDMultiplier=.5f, minSGDStep=.1f;
-        [SerializeField] float separationStep=1, focusStep=4;
+        [SerializeField] float SGDStep=.2f;
+        [SerializeField] float separationStep=1, focusStep=4, jitterStep=.001f;
         [SerializeField] float centeringStep=.05f, focusCenteringStep=1;
 
-        private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
-        private static readonly int myNull = int.MinValue;
+        // private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
+        private Queue<int> toBFS = new Queue<int>();
+        // private static readonly int myNull = int.MinValue;
 
         private Dictionary<int, int> ShortestPathsBFS(int source)
         {
@@ -314,26 +328,16 @@ namespace EcoBuilder.NodeLink
             visited[source] = 0;
             var q = new Queue<int>();
             q.Enqueue(source);
-            q.Enqueue(myNull); // use this as null value
-            int depth = 1;
 
-            while (q.Count > 1) // will always have one myNull somewhere
+            while (q.Count > 0)
             {
                 int current = q.Dequeue();
-                if (current == myNull) // we have reached the end of this depth level
+                foreach (int next in adjacency[current])
                 {
-                    q.Enqueue(myNull);
-                    depth += 1;
-                }
-                else
-                {
-                    foreach (int next in adjacency[current])
+                    if (!visited.ContainsKey(next))
                     {
-                        if (!visited.ContainsKey(next))
-                        {
-                            q.Enqueue(next);
-                            visited[next] = depth;
-                        }
+                        q.Enqueue(next);
+                        visited[next] = visited[current] + 1;
                     }
                 }
             }
@@ -374,6 +378,7 @@ namespace EcoBuilder.NodeLink
                         }
                     }
                 }
+                nodes[i].TargetPos += jitterStep * UnityEngine.Random.insideUnitSphere;
             }
         }
         private IEnumerable<int> FYShuffle(IEnumerable<int> toShuffle)
@@ -399,60 +404,6 @@ namespace EcoBuilder.NodeLink
             nodes[i].TargetPos -= eta * fromCenter;
         }
 
-        ////////////////////////////////////
-        // for trophic level calculation
-
-        [SerializeField] float trophicStep=.05f;
-
-        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
-        private SparseVector<float> trophicLevels = new SparseVector<float>();
-
-        // update the system of linear equations (Laplacian), return whether solvable
-        private bool UpdateTrophicEquations()
-        {
-            foreach (Node no in nodes)
-                trophicA[no.Idx] = 0;
-
-            foreach (Link li in links)
-            {
-                int res = li.Source.Idx, con = li.Target.Idx;
-                // if (links[li.Target.Idx, li.Source.Idx] == null) // prevent intraguild predation (TODO: MAY NOT BE NECESSARY)
-                    trophicA[con] += 1f;
-            }
-
-            var basal = new HashSet<int>();
-            foreach (Node no in nodes)
-            {
-                if (trophicA[no.Idx] != 0)
-                    trophicA[no.Idx] = -1f / trophicA[no.Idx]; // ensures diagonal dominance
-                else
-                    basal.Add(no.Idx);
-            }
-
-            // returns whether determinant of the Laplacian is 0
-            int cc = ConnectedComponentBFS(basal);
-            if (cc != nodes.Count)
-                return false;
-            else
-                return true;
-        }
-
-        // simplified gauss-seidel iteration because of the simplicity of the laplacian
-        void TrophicGaussSeidel()
-        {
-            SparseVector<float> temp = new SparseVector<float>();
-            foreach (Link li in links)
-            {
-                int res = li.Source.Idx, con = li.Target.Idx;
-                // if (links[con, res] == null) // prevent intraguild predation
-                    temp[con] += trophicA[con] * trophicLevels[res];
-            }
-            foreach (Node no in nodes)
-            {
-                trophicLevels[no.Idx] = (1 - temp[no.Idx]);
-            }
-        }
-
         void TweenYAxis(Func<Node, float> YAxisPos, float force)
         {
             foreach (Node no in nodes)
@@ -470,28 +421,94 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        private int ConnectedComponentBFS(IEnumerable<int> sources)
+        private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
         {
-            var visited = new HashSet<int>();
+            var visited = new Dictionary<int, int>();
             var q = new Queue<int>();
             foreach (int source in sources)
             {
                 q.Enqueue(source);
-                visited.Add(source);
+                visited[source] = 0;
             }
-            while (q.Count != 0)
+
+            while (q.Count > 0)
             {
                 int current = q.Dequeue();
                 foreach (int next in links.GetColumnIndicesInRow(current))
                 {
-                    if (!visited.Contains(next))
+                    if (!visited.ContainsKey(next))
                     {
                         q.Enqueue(next);
-                        visited.Add(next);
+                        visited[next] = visited[current] + 1;
                     }
                 }
             }
-            return visited.Count;
+            return visited;
+        }
+
+        ////////////////////////////////////
+        // for trophic level calculation
+
+        [SerializeField] float trophicStep = .01f;
+
+        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
+        private SparseVector<float> trophicLevels = new SparseVector<float>();
+
+        // update the system of linear equations (Laplacian)
+        // return set of roots to the tree
+        private HashSet<int> BuildTrophicEquations()
+        {
+            foreach (int i in nodes.Indices)
+                trophicA[i] = 0;
+
+            foreach (var ij in links.IndexPairs)
+            {
+                int res = ij.Item1, con = ij.Item2;
+                trophicA[con] += 1f;
+            }
+
+            var basal = new HashSet<int>();
+            foreach (int i in nodes.Indices)
+            {
+                if (trophicA[i] != 0)
+                    trophicA[i] = -1f / trophicA[i]; // ensures diagonal dominance
+                else
+                    basal.Add(i);
+            }
+            return basal;
+        }
+
+        // simplified gauss-seidel iteration because of the simplicity of the laplacian
+        void TrophicGaussSeidel()
+        {
+            SparseVector<float> temp = new SparseVector<float>();
+            foreach (var ij in links.IndexPairs)
+            {
+                int res = ij.Item1, con = ij.Item2;
+                temp[con] += trophicA[con] * trophicLevels[res];
+            }
+            foreach (int i in nodes.Indices)
+            {
+                trophicLevels[i] = (1 - temp[i]);
+            }
+        }
+        public void TrophicGaussSeidel(int iter)
+        {
+            for (int i=0; i<iter; i++)
+            {
+                TrophicGaussSeidel();
+            }
+        }
+
+        public float MaxTrophicHeight()
+        {
+            float max = 0;
+            foreach (float trophicLevel in trophicLevels)
+            {
+                if (trophicLevel > max)
+                    max = trophicLevel;
+            }
+            return max;
         }
 
         ///////////////////////////

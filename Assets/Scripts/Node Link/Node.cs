@@ -7,6 +7,7 @@ namespace EcoBuilder.NodeLink
     {
         public int Idx { get; private set; }
         [SerializeField] Transform shape;
+        [SerializeField] Transform outline;
         [SerializeField] MeshFilter nodeMesh;
         [SerializeField] MeshFilter outlineMesh;
 
@@ -20,6 +21,10 @@ namespace EcoBuilder.NodeLink
         public float Size {
             get { return shape.localScale.x; }
             set { shape.localScale = new Vector3(value, value, value); }
+        }
+        public float OutlineSize {
+            get { return outline.localScale.x; }
+            set { outline.localScale = new Vector3(value, value, value); }
         }
 
         Animator anim;
@@ -47,17 +52,17 @@ namespace EcoBuilder.NodeLink
         {
             transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPos, ref velocity, smoothTime);
         }
-        // public void Flash()
-        // {
-        //     anim.SetTrigger("Flash");
-        // }
+        public void Flash()
+        {
+            anim.SetTrigger("Flash");
+        }
+        public void Idle()
+        {
+            anim.SetTrigger("Idle");
+        }
         // public void HeavyFlash()
         // {
         //     anim.SetTrigger("Heavy Flash");
-        // }
-        // public void Idle()
-        // {
-        //     anim.SetTrigger("Idle");
         // }
     }
 }

@@ -16,8 +16,8 @@ namespace EcoBuilder.Nichess
 			set { mr.material.renderQueue = defaultRenderQueue - value; }
 		}
 		public float Size {
-			get { return transform.localScale.x; }
-			set { transform.localScale = new Vector3(value, value, value); }
+			get { return Mathf.Pow(transform.localScale.x, 2); }
+			set { transform.localScale = Mathf.Sqrt(value) * Vector3.one; }
 		}
 		MeshRenderer mr;
 		int defaultRenderQueue;

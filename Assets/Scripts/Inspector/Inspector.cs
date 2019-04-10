@@ -11,6 +11,7 @@ namespace EcoBuilder.Inspector
         public event Action OnSpawned;
         public void Spawn()
         {
+            // TODO: only let this happen if all calculations are done, and if only one touch
             OnSpawned();
         }
         public event Action<float> OnSizeChosen;
