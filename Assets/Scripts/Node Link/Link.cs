@@ -14,36 +14,27 @@ namespace EcoBuilder.NodeLink
             set { lr.widthMultiplier = value; }
         }
 
-        public void Init(Node source, Node target)
+        public void Init(Node source, Node target, bool curved=false)
         {
             Source = source;
             Target = target;
             name = Source.Idx + " " + Target.Idx;
+            Curved = curved;
         }
 
         [SerializeField] float curveRatio = .2f;
         [SerializeField] int curveSegments = 5;
-        bool curved = false;
-        public void Curve()
-        {
-            curved = true;
-        }
-        public void Straighten()
-        {
-            curved = false;
-        }
+        bool Curved { get; set; }
 
         private void Update()
         {
-            if (curved)
+            if (Curved)
             {
                 lr.positionCount = curveSegments + 1;
-                // lr.positionCount = 3;
 
                 var from = Source.transform.position;
                 var to = Target.transform.position;
                 var mid = (from+to) / 2;
-                // mid += Vector3.Cross(to-from, Vector3.back);
                 mid += Vector3.Cross(to-from, Vector3.back) * curveRatio;
 
                 lr.SetPosition(0, from);
@@ -51,7 +42,7 @@ namespace EcoBuilder.NodeLink
                 {
                     float t = (float)i / curveSegments; 
                     float t1 = 1-t;
-                    Vector3 pos = from*t1*t1 + mid*2*t*t1 + to*t*t;
+                    Vector3 pos = from*t1*t1 + mid*2*t*t1 + to*t*t; // Bezier curve
                     lr.SetPosition(i, pos);
                 }
                 lr.SetPosition(curveSegments, to);
@@ -64,7 +55,8 @@ namespace EcoBuilder.NodeLink
             }
             // lr.startColor = Target.Col;
             // lr.endColor = Source.Col;
-            lr.material.color = Source.Col;
+            lr.material.color = Target.Col;
+            // lr.material.color = Source.Col;
         }
     }
 }

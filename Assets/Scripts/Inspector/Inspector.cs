@@ -8,22 +8,33 @@ namespace EcoBuilder.Inspector
 {
     public class Inspector : MonoBehaviour
     {
-        public event Action OnSpawned;
-        public void Spawn()
-        {
-            // TODO: only let this happen if all calculations are done, and if only one touch
-            OnSpawned();
-        }
+
+        // public event Action OnSpawned;
+        // public void Spawn()
+        // {
+        //     // TODO: only let this happen if all calculations are done, and if only one touch
+        //     OnSpawned();
+        // }
+
         public event Action<float> OnSizeChosen;
         public event Action<float> OnGreedChosen;
 
-        public void ChooseSize(float size)
+        [SerializeField] Slider sizeSlider;
+        [SerializeField] Slider greedSlider;
+
+        void Start()
         {
-            OnSizeChosen(size);
+            sizeSlider.onValueChanged.AddListener(x=> OnSizeChosen.Invoke(x));
+            greedSlider.onValueChanged.AddListener(x=> OnGreedChosen.Invoke(x));
         }
-        public void ChooseGreed(float greed)
+
+        public void SetSize(float size)
         {
-            OnGreedChosen(greed);
+            sizeSlider.value = size;
+        }
+        public void SetGreed(float greed)
+        {
+            greedSlider.value = greed;
         }
 
 

@@ -37,14 +37,41 @@ namespace EcoBuilder
 
 
 
-
         [SerializeField] int boardSize = 50;
         public int BoardSize { get { return boardSize; } }
 
-        public bool[] Level { get; private set; } = {true, false, false, false, false};
+        public class Level
+        {
+            public List<bool> IsProducers { get; private set; }
+            public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
+            public string Description { get; private set; }
+            public string ConstraintNotMetMessage { get; private set; }
+            public Level()
+            {
+                IsProducers = new List<bool>() { true, false, false, false, false };
+                // GraphConstraints = g=> g.LoopExists(3);
+                GraphConstraints = g=> true;
+                Description = "one producer, 4 consumers! Must contain at least one loop.";
+                ConstraintNotMetMessage = "NO LOOP!";
+            }
+        }
+        public Level SelectedLevel { get; private set; }
+        /*
+        graph constraints:
+            min/max chain length
+            must contain a cycle of length n
+            omnivory (coherence)
+            min energy flow (flux)
+        
+        vertex constraints:
+            min/max number of resources
+            min/max size or greediness
+        */
 
         void Start()
         {
+            SelectedLevel = new Level();
+
             if (SceneManager.sceneCount == 1)
                 LoadScene("Menu");
         }

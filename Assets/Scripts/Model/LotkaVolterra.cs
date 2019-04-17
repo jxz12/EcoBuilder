@@ -16,13 +16,13 @@ namespace EcoBuilder.Model
         private Func<T,T, double> e_ij;
 
         public LotkaVolterra(
-            Func<T, double> Growth, Func<T, double> Intra,
-            Func<T,T, double> Attack, Func<T,T, double> Efficiency)
+            Func<T, double> r_i, Func<T, double> a_ii,
+            Func<T,T, double> a_ij, Func<T,T, double> e_ij)
         {
-            r_i = Growth;
-            a_ii = Intra;
-            a_ij = Attack;
-            e_ij = Efficiency;
+            this.r_i = r_i;
+            this.a_ii = a_ii;
+            this.a_ij = a_ij;
+            this.e_ij = e_ij;
         }
 
         // external dictionary for lookup
@@ -143,9 +143,6 @@ namespace EcoBuilder.Model
                     A[j,i] += e * a;
                 }
             }
-            // precond.Initialize(A);
-            // UnityEngine.Debug.Log(MathNetMatStr(A));
-            // UnityEngine.Debug.Log(MathNetVecStr(b));
         }
 
         /*

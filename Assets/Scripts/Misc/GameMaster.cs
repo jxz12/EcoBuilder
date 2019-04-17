@@ -7,7 +7,6 @@ namespace EcoBuilder
 {
     public class GameMaster : MonoBehaviour
     {
-        [SerializeField] Nichess.Nichess nichess;
         [SerializeField] Inspector.Inspector inspector;
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
@@ -15,171 +14,257 @@ namespace EcoBuilder
 
         class Species
         {
-            public bool isProducer = false;
-            public float bodySize = 0;
-            public float greediness = 0;
-            public int nichePosX = -1;
-            public int nichePosY = -1;
-            public int nicheStartX = -1;
-            public int nicheStartY = -1;
-            public int nicheEndX = -1;
-            public int nicheEndY = -1;
-            // TODO:
-            // public int randomSeed;
-            // DO THISSS (with archie?)
-        }
-        Stack<Species> moves = new Stack<Species>();
+            public int Idx { get; private set; }
+            public bool IsProducer { get; private set; }
+            public float BodySize { get; set; } = -1;
+            public float Greediness { get; set; } = -1;
+            public HashSet<int> resources = new HashSet<int>();
 
+            public Species(int idx, bool isProducer)
+            {
+                Idx = idx;
+                IsProducer = isProducer;
+            }
+            public Color GetColor()
+            {
+                float y = .8f - .5f*BodySize;
+                float u = IsProducer? -.4f : .4f;
+                float v = -.4f + .8f*Greediness;
+                return ColorHelper.YUVtoRGBtruncated(y, u, v);
+            }
+
+            readonly float minKg = .001f, maxKg = 1000; // 1 gram to 1 tonne
+            public float GetKg()
+            {
+                // float min = Mathf.Log10(minKg);
+                // float max = Mathf.Log10(maxKg);
+                // float mid = min + input*(max-min);
+                // return Mathf.Pow(10, mid);
+
+                // same as above commented
+                return Mathf.Pow(minKg, 1-BodySize) * Mathf.Pow(maxKg, BodySize);
+            }
+
+            // TODO: with Archie?
+            // public int randomSeed;
+            // public Mesh GetMesh()
+            // {
+
+            // }
+        }
+        // Stack<Species> moves = new Stack<Species>();
+        Dictionary<int, Species> allSpecies = new Dictionary<int, Species>();
+        Species toAdd = null;
         int idxCounter = 0;
+
         void Start()
         {
-            inspector.OnSpawned +=          ()=> DoMove();
-            inspector.OnSizeChosen +=     (kg)=> ChooseSize(kg);
-            inspector.OnGreedChosen +=  (a_ii)=> ChooseGreed(a_ii);
+            inspector.OnSizeChosen +=      (x)=> ChangeSize(x);
+            inspector.OnGreedChosen +=     (x)=> ChangeGreed(x);
 
-            nichess.OnPieceSelected +=       (i)=> print(i);
-            nichess.OnPiecePlaced +=     (i,x,y)=> UpdateSpeciesPos(i, x, y);
-            nichess.OnPieceNiched += (i,l,b,r,t)=> UpdateSpeciesNiche(i, l, b, r, t);
-            nichess.OnEdgeAdded +=         (i,j)=> nodelink.AddLink(i, j);
-            nichess.OnEdgeRemoved +=       (i,j)=> nodelink.RemoveLink(i, j);
-            nichess.OnEdgeAdded +=         (i,j)=> model.AddInteraction(i, j);
-            nichess.OnEdgeRemoved +=       (i,j)=> model.RemoveInteraction(i, j);
-            nichess.OnPieceColoured +=     (i,c)=> nodelink.ColorNode(i, c);
-
-            nodelink.OnFocus +=            (i)=> print(i);
-            nodelink.OnUnfocus +=           ()=> print("hi");
+            nodelink.OnNodeHeld +=         (i)=> Inspect(i);
+            nodelink.OnNodeClicked +=      (i)=> MakeInteraction(i);
+            nodelink.OnEmptyClicked +=      ()=> Uninspect();
             nodelink.LaplacianUnsolvable += ()=> print("unsolvable");
             nodelink.LaplacianSolvable +=   ()=> print("solvable");
+            nodelink.OnDroppedOn +=         ()=> AddNewSpecies();
 
             model.OnCalculated +=           ()=> CalculateScore();
             // model.OnCalculated +=           ()=> ResizeNodes();
-            model.OnEndangered +=          (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=             (i)=> nodelink.IdleNode(i);
+            // model.OnEndangered +=          (i)=> nodelink.FlashNode(i);
+            // model.OnRescued +=             (i)=> nodelink.IdleNode(i);
+            model.OnEndangered +=          (i)=> print("neg: " + i);
+            model.OnRescued +=             (i)=> print("pos: " + i);
 
-            status.OnMenu +=                ()=> print("MENU");
-            status.OnUndo +=                ()=> UndoMove();
-            status.OnRedo +=                ()=> RedoMove();
+            // status.OnMenu +=                ()=> print("MENU");
+            // status.OnUndo +=                ()=> UndoMove();
+            // status.OnRedo +=                ()=> RedoMove();
 
-            PrepareNewMove();
+            // AddNewSpecies(idxCounter++);
+            toAdd = new Species(idxCounter, GameManager.Instance.SelectedLevel.IsProducers[0]);
         }
-        void PrepareNewMove()
-        {
-            nichess.AddPiece(idxCounter);
-            nodelink.AddNode(idxCounter);
-            model.AddSpecies(idxCounter);
-            nichess.InspectPiece(idxCounter);
 
-            var newSpecies = new Species();
-            if (GameManager.Instance.Level[idxCounter] == true) // if producer, change later
+        void AddNewSpecies()
+        {
+            if (allSpecies.Count >= GameManager.Instance.SelectedLevel.IsProducers.Count)
             {
-                nichess.FixPieceRange(idxCounter);
-                nichess.ShapePieceIntoSquare(idxCounter);
-                nodelink.ShapeNodeIntoCube(idxCounter);
-                model.SetSpeciesAsProducer(idxCounter);
-                newSpecies.isProducer = true;
-            }
-            else
-            {
-                nichess.ShapePieceIntoCircle(idxCounter);
-                nodelink.ShapeNodeIntoSphere(idxCounter);
-                model.SetSpeciesAsConsumer(idxCounter);
-                newSpecies.isProducer = false;
-            }
-            moves.Push(newSpecies);
-        }
-        void ChooseSize(float size)
-        {
-            moves.Peek().bodySize = size;
-            nichess.ColourPiece2D(idxCounter, size, moves.Peek().greediness);
-            model.SetSpeciesBodySize(idxCounter, size);
-        }
-        void ChooseGreed(float greed)
-        {
-            moves.Peek().greediness = greed;
-            nichess.ColourPiece2D(idxCounter, moves.Peek().bodySize, greed);
-            model.SetSpeciesGreediness(idxCounter, greed);
-        }
-        void UpdateSpeciesPos(int i, int x, int y)
-        {
-            if (i != idxCounter)
-                throw new Exception("NOT POSSIBLE PLACEMENT");
-
-            moves.Peek().nichePosX = x;
-            moves.Peek().nichePosY = y;
-        }
-        void UpdateSpeciesNiche(int i, int l, int b, int r, int t)
-        {
-            if (i != idxCounter)
-                throw new Exception("NOT POSSIBLE NICHE");
-
-            moves.Peek().nicheStartX = l;
-            moves.Peek().nicheStartY = b;
-            moves.Peek().nicheEndX = r;
-            moves.Peek().nicheEndY = t;
-        }
-
-        Stack<Species> redoStack = new Stack<Species>();
-        void DoMove()
-        {
-            redoStack.Clear();
-            idxCounter += 1;
-            if (idxCounter < GameManager.Instance.Level.Length)
-            {
-                PrepareNewMove();
-            }
-            else
-            {
-                EndGame();
-            }
-        }
-        void UndoMove()
-        {
-            if (moves.Count > 1)
-            {
-                nichess.RemovePiece(idxCounter);
-                nodelink.RemoveNode(idxCounter);
-                model.RemoveSpecies(idxCounter);
-
-                Species toUndo = moves.Pop();
-                redoStack.Push(toUndo);
-
-                idxCounter -= 1;
-                nichess.InspectPiece(idxCounter);
-            }
-        }
-        void RedoMove()
-        {
-            if (redoStack.Count > 0)
-            {
-                Species toRedo = redoStack.Pop();
-                idxCounter += 1;
-                nichess.AddPiece(idxCounter);
-                nodelink.AddNode(idxCounter);
-                model.AddSpecies(idxCounter);
-
-                nichess.InspectPiece(idxCounter);
-                moves.Push(toRedo);
-
-                if (toRedo.isProducer)
+                bool constraintSatisfied = GameManager.Instance.SelectedLevel.GraphConstraints(nodelink);
+                if (constraintSatisfied)
                 {
-                    nichess.FixPieceRange(idxCounter);
-                    nichess.ShapePieceIntoSquare(idxCounter);
-                    nodelink.ShapeNodeIntoCube(idxCounter);
-                    model.SetSpeciesAsProducer(idxCounter);
+                    print("game over!");
                 }
                 else
                 {
-                    nichess.ShapePieceIntoCircle(idxCounter);
-                    nodelink.ShapeNodeIntoSphere(idxCounter);
-                    model.SetSpeciesAsConsumer(idxCounter);
+                    print(GameManager.Instance.SelectedLevel.ConstraintNotMetMessage);
                 }
-                nichess.PlacePiece(idxCounter, toRedo.nichePosX, toRedo.nichePosY);
-                nichess.NichePiece(idxCounter, toRedo.nicheStartX, toRedo.nicheStartY, toRedo.nicheEndX, toRedo.nicheEndY);
-                nichess.ColourPiece2D(idxCounter, toRedo.bodySize, toRedo.greediness);
-                model.SetSpeciesBodySize(idxCounter, toRedo.bodySize);
-                model.SetSpeciesGreediness(idxCounter, toRedo.greediness);
+                return;
+            }
+            else if (toAdd.BodySize >= 0 && toAdd.Greediness >= 0)
+            {
+                nodelink.AddNode(toAdd.Idx);
+                model.AddSpecies(toAdd.Idx);
+                if (toAdd.IsProducer)
+                {
+                    nodelink.ShapeNodeIntoCube(toAdd.Idx);
+                    model.SetSpeciesAsProducer(toAdd.Idx);
+                }
+                else
+                {
+                    nodelink.ShapeNodeIntoSphere(toAdd.Idx);
+                    model.SetSpeciesAsConsumer(toAdd.Idx);
+                }
+                nodelink.ColourNode(toAdd.Idx, toAdd.GetColor());
+                model.SetSpeciesBodySize(toAdd.Idx, toAdd.GetKg());
+                model.SetSpeciesGreediness(toAdd.Idx, toAdd.Greediness);
+
+                allSpecies[toAdd.Idx] = toAdd;
+                Inspect(toAdd.Idx);
+
+                idxCounter += 1;
+                if (idxCounter < GameManager.Instance.SelectedLevel.IsProducers.Count)
+                {
+                    toAdd = new Species(idxCounter, GameManager.Instance.SelectedLevel.IsProducers[idxCounter]);
+                }
+                else
+                {
+                    toAdd = null;
+                }
             }
         }
+        void ChangeSize(float size)
+        {
+            print("hello");
+            if (inspected == null)
+            {
+                if (toAdd != null) // TODO: change this to disabling the sliders completely
+                    toAdd.BodySize = size;
+            }
+            else
+            {
+                inspected.BodySize = size;
+                nodelink.ColourNode(inspected.Idx, inspected.GetColor());
+                model.SetSpeciesBodySize(inspected.Idx, inspected.GetKg());
+            }
+        }
+        void ChangeGreed(float greed)
+        {
+            if (inspected == null)
+            {
+                if (toAdd != null) // TODO: change this to disabling the sliders completely
+                    toAdd.Greediness = greed;
+            }
+            else
+            {
+                inspected.Greediness = greed;
+                nodelink.ColourNode(inspected.Idx, inspected.GetColor());
+                model.SetSpeciesGreediness(inspected.Idx, greed);
+            }
+        }
+
+        Species inspected;
+        void Inspect(int idx)
+        {
+            if (inspected != allSpecies[idx])
+            {
+                inspected = allSpecies[idx];
+                inspector.SetSize(inspected.BodySize);
+                inspector.SetGreed(inspected.Greediness);
+
+                nodelink.FocusNode(idx);
+            }
+        }
+        void Uninspect()
+        {
+            if (inspected != null)
+            {
+                inspected = null;
+                inspector.SetSize(toAdd.BodySize);
+                inspector.SetGreed(toAdd.Greediness);
+
+                nodelink.Unfocus();
+            }
+        }
+        void MakeInteraction(int res)
+        {
+            if (inspected == null)
+            {
+                // TODO: maybe inspect in this case
+                return;
+            }
+            if (inspected.IsProducer)
+            {
+                return;
+            }
+            int con = inspected.Idx;
+            if (res != con)
+            {
+                if (!inspected.resources.Contains(res))
+                {
+                    inspected.resources.Add(res);
+                    nodelink.AddLink(res, con);
+                    model.AddInteraction(res, con);
+                }
+                else
+                {
+                    inspected.resources.Remove(res);
+                    nodelink.RemoveLink(res, con);
+                    model.RemoveInteraction(res, con);
+                }
+            }
+        }
+
+        // Stack<Species> redoStack = new Stack<Species>();
+        // void DoMove()
+        // {
+        //     redoStack.Clear();
+        //     idxCounter += 1;
+        //     if (idxCounter < GameManager.Instance.Level.Length)
+        //     {
+        //         PrepareNewMove();
+        //     }
+        //     else
+        //     {
+        //         EndGame();
+        //     }
+        // }
+        // void UndoMove()
+        // {
+        //     if (moves.Count > 1)
+        //     {
+        //         nodelink.RemoveNode(idxCounter);
+        //         model.RemoveSpecies(idxCounter);
+
+        //         Species toUndo = moves.Pop();
+        //         redoStack.Push(toUndo);
+
+        //         idxCounter -= 1;
+        //     }
+        // }
+        // void RedoMove()
+        // {
+        //     if (redoStack.Count > 0)
+        //     {
+        //         Species toRedo = redoStack.Pop();
+        //         idxCounter += 1;
+        //         nodelink.AddNode(idxCounter);
+        //         model.AddSpecies(idxCounter);
+
+        //         moves.Push(toRedo);
+
+        //         if (toRedo.isProducer)
+        //         {
+        //             nodelink.ShapeNodeIntoCube(idxCounter);
+        //             model.SetSpeciesAsProducer(idxCounter);
+        //         }
+        //         else
+        //         {
+        //             nodelink.ShapeNodeIntoSphere(idxCounter);
+        //             model.SetSpeciesAsConsumer(idxCounter);
+        //         }
+        //         model.SetSpeciesBodySize(idxCounter, toRedo.bodySize);
+        //         model.SetSpeciesGreediness(idxCounter, toRedo.greediness);
+        //     }
+        // }
 
 
         // void ResizeNodes()
@@ -198,6 +283,7 @@ namespace EcoBuilder
         //         }
         //     }
         // }
+        
         void CalculateScore()
         {
             if (model.Feasible)

@@ -8,7 +8,9 @@ using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
-    public class NodeLink : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class NodeLink : MonoBehaviour,
+        IPointerDownHandler, IPointerUpHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
@@ -45,8 +47,8 @@ namespace EcoBuilder.NodeLink
         }
         public void RemoveNode(int idx)
         {
-            if (focus != null && focus.Idx == idx)
-                UnfocusAll();
+            // if (focus != null && focus.Idx == idx)
+            //     UnfocusAll();
 
             Destroy(nodes[idx].gameObject);
             nodes.RemoveAt(idx);
@@ -79,17 +81,17 @@ namespace EcoBuilder.NodeLink
         public void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
-            newLink.Init(nodes[i], nodes[j]);
+            newLink.Init(nodes[i], nodes[j], true);
             links[i, j] = newLink;
 
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            if (links[j, i] != null)
-            {
-                links[j, i].Curve();
-                links[i, j].Curve();
-            }
+            // if (links[j, i] != null)
+            // {
+            //     links[j, i].Curve();
+            //     links[i, j].Curve();
+            // }
 
             // SGDStep = adjacency.Count * adjacency.Count; // adapt step size to new distance matrix
         }
@@ -97,11 +99,7 @@ namespace EcoBuilder.NodeLink
         {
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
-            if (links[j, i] != null)
-            {
-                links[j, i].Straighten();
-            }
-            else
+            if (links[j, i] == null)
             {
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
@@ -109,7 +107,7 @@ namespace EcoBuilder.NodeLink
 
             // SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
         }
-        public void ColorNode(int idx, Color c)
+        public void ColourNode(int idx, Color c)
         {
             nodes[idx].Col = c;
         }
@@ -141,7 +139,7 @@ namespace EcoBuilder.NodeLink
         {
             focus = nodes[idx];
         }
-        public void UnfocusAll()
+        public void Unfocus()
         {
             focus = null;
         }
@@ -158,116 +156,87 @@ namespace EcoBuilder.NodeLink
         //     nodes[idx].HeavyFlash();
         // }
 
-        bool laplacianDetNeg = false;
-        public event Action LaplacianUnsolvable;
-        public event Action LaplacianSolvable;
-        private void FixedUpdate()
-        {
-            if (nodes.Count > 0)
-            {
-                HashSet<int> basal = BuildTrophicEquations();
-
-                // returns whether determinant of the Laplacian is 0
-                var heights = HeightBFS(basal);
-
-                if (heights.Count == nodes.Count) // if every node can be reached from basal
-                {
-                    if (laplacianDetNeg == true)
-                    {
-                        laplacianDetNeg = false;
-                        LaplacianSolvable();
-                    }
-                    TrophicGaussSeidel();
-                    // TweenYAxis(v=> heights[v.Idx], trophicStep);
-                    TweenYAxis(v=> .5f*heights[v.Idx]+.5f*(trophicLevels[v.Idx]-1), trophicStep);
-                }
-                else
-                {
-                    if (laplacianDetNeg == false)
-                    {
-                        laplacianDetNeg = true;
-                        LaplacianUnsolvable();
-                    }
-                }
-
-                int dq = toBFS.Dequeue(); // only do one vertex per frame
-
-                var d_j = ShortestPathsBFS(dq);
-                if (focus != null)
-                {
-                    if (focus.Idx == dq)
-                    {
-                        LayoutSGD(dq, d_j, focusStep);
-                        CenteringSGD(dq, focusCenteringStep);
-                    }
-                    else
-                    {
-                        LayoutSGD(dq, d_j, SGDStep);
-                    }
-                }
-                else
-                {
-                    LayoutSGD(dq, d_j, SGDStep);
-                    CenteringSGD(dq, centeringStep);
-                }
-                toBFS.Enqueue(dq);
-            }
-            Rotate();
-        }
-
         ////////////////////////////////////
         // for user-interaction rotation
+
+        public event Action<int> OnNodeHeld;
+        public event Action<int> OnNodeClicked;
+        public event Action OnEmptyClicked;
 
         [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f;
         [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
         [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
 
         // TODO: might want to change this into viewport coordinates
-        [SerializeField] float clickRadius=100;
-
-        public event Action<int> OnFocus;
-        public event Action OnUnfocus;
-        public void OnPointerClick(PointerEventData ped)
+        [SerializeField] float clickRadius=15;
+        private Node ClosestNodeToPointer(Vector2 pointerPos)
         {
-            if (!ped.dragging)
+            Node closest = null;
+            float closestDist = float.MaxValue;
+            float radius = clickRadius * clickRadius;
+            foreach (Node node in nodes)
             {
-                Node closest = null;
-                float closestDist = float.MaxValue;
-                foreach (Node node in nodes)
+                Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
+
+                // if the click is within the clickable radius 
+                if ((pointerPos-screenPos).sqrMagnitude < radius)
                 {
-                    Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
-                    // if the click is within the clickable radius 
-                    if ((ped.position-screenPos).sqrMagnitude < clickRadius)
+                    // choose the node closer to the screen
+                    float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
+                    if (dist < closestDist)
                     {
-                        // choose the node closer to the screen
-                        float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
-                        if (dist < closestDist)
-                        {
-                            closest = node;
-                            closestDist = dist;
-                        }
+                        closest = node;
+                        closestDist = dist;
                     }
-                }
-                if (closest != null)
-                {
-                    if (focus != closest)
-                    {
-                        FocusNode(closest.Idx);
-                        OnFocus.Invoke(closest.Idx);
-                    }
-                }
-                else
-                {
-                    UnfocusAll();
-                    OnUnfocus.Invoke();
                 }
             }
+            return closest;
         }
-        float yRotationMomentum = 0;
+
+        [SerializeField] float holdThreshold = .5f;
+        bool potentialHold = false;
         bool dragging = false;
+        public void OnPointerDown(PointerEventData ped)
+        {
+            potentialHold = true;
+            dragging = true;
+            StartCoroutine(WaitForHold(holdThreshold, ped));
+        }
+        IEnumerator WaitForHold(float seconds, PointerEventData ped)
+        {
+            float endTime = Time.time + seconds;
+            while (Time.time < endTime)
+            {
+                if (potentialHold == false)
+                    yield break;
+                else
+                    yield return null;
+            }
+            potentialHold = false;
+            Node held = ClosestNodeToPointer(ped.position);
+            if (held != null)
+            {
+                OnNodeHeld.Invoke(held.Idx);
+            }
+        }
+        public void OnPointerUp(PointerEventData ped)
+        {
+            if (potentialHold)
+            {
+                potentialHold = false;
+                Node clicked = ClosestNodeToPointer(ped.position);
+                if (clicked != null)
+                    OnNodeClicked.Invoke(clicked.Idx);
+                else
+                    OnEmptyClicked.Invoke();
+            }
+            dragging = false;
+        }
+
+        float yRotationMomentum = 0;
         public void OnBeginDrag(PointerEventData ped)
         {
-            dragging = true;
+            potentialHold = false;
         }
         public void OnEndDrag(PointerEventData ped)
         {
@@ -286,6 +255,7 @@ namespace EcoBuilder.NodeLink
                 float xSpin = ped.delta.y * rotationMultiplier;
                 graphParent.Rotate(Vector3.right, xSpin);
             }
+            // TODO: make this two fingers instead
             else if (ped.button == PointerEventData.InputButton.Right)
             {
                 float zoom = ped.delta.y * zoomMultiplier;
@@ -296,17 +266,20 @@ namespace EcoBuilder.NodeLink
                 nodesParent.localScale *= 1 + zoom;
             }
         }
-        void Rotate()
+        public event Action OnDroppedOn;
+        public void OnDrop(PointerEventData ped)
         {
-            if (!dragging)
-            {
-                yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
+            if (ped.pointerDrag != this.gameObject)
+                OnDroppedOn.Invoke();
+        }
+        private void Rotate()
+        {
+            yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
+            nodesParent.Rotate(Vector3.up, yRotationMomentum);
 
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                var lerped = Quaternion.Lerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
-                graphParent.transform.localRotation = lerped;
-            }
+            var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+            var lerped = Quaternion.Lerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
+            graphParent.transform.localRotation = lerped;
         }
 
 
@@ -314,12 +287,49 @@ namespace EcoBuilder.NodeLink
         // for stress-based layout
 
         [SerializeField] float SGDStep=.2f;
-        [SerializeField] float separationStep=1, focusStep=4, jitterStep=.001f;
-        [SerializeField] float centeringStep=.05f, focusCenteringStep=1;
+        [SerializeField] float separationStep=1;//, focusStep=4;//, jitterStep=.001f;
+        // [SerializeField] bool constrainY = false;
 
         // private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
         private Queue<int> toBFS = new Queue<int>();
         // private static readonly int myNull = int.MinValue;
+
+        // SGD
+        private void LayoutSGD(int i, Dictionary<int, int> d_j)
+        {
+            foreach (int j in FYShuffle(nodes.Indices))
+            {
+                if (i != j)
+                {
+                    Vector3 X_ij = nodes[i].TargetPos - nodes[j].TargetPos;
+                    float mag = X_ij.magnitude;
+
+                    if (d_j.ContainsKey(j)) // if there is a path between the two
+                    {
+                        int d_ij = d_j[j];
+                        float mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+
+                        Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                        r.y = 0; // use to keep y position
+                        nodes[i].TargetPos -= mu * r;
+                        nodes[j].TargetPos += mu * r;
+                    }
+                    else // otherwise try to move the vertices at least a distance of 2 away
+                    {
+                        if (mag < 1) // only push away
+                        {
+                            float mu = Mathf.Min(separationStep, 1);
+
+                            Vector3 r = ((mag-1)/2) * (X_ij/mag);
+                            r.y = 0; // use to keep y position
+                            nodes[i].TargetPos -= mu * r;
+                            nodes[j].TargetPos += mu * r;
+                        }
+                    }
+                }
+                // nodes[i].TargetPos += jitterStep * UnityEngine.Random.insideUnitSphere;
+            }
+        }
 
         private Dictionary<int, int> ShortestPathsBFS(int source)
         {
@@ -344,44 +354,7 @@ namespace EcoBuilder.NodeLink
             return visited;
         }
 
-        // SGD
-        private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
-        {
-            foreach (int j in FYShuffle(nodes.Indices)) // no shuffle, TODO: add later
-            {
-                if (i != j)
-                {
-                    Vector3 X_ij = nodes[i].TargetPos - nodes[j].TargetPos;
-                    float mag = X_ij.magnitude;
-
-                    if (d_j.ContainsKey(j)) // if there is a path between the two
-                    {
-                        int d_ij = d_j[j];
-                        float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
-
-                        Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
-                        // r.y = 0; // use to keep y position
-                        nodes[i].TargetPos -= mu * r;
-                        nodes[j].TargetPos += mu * r;
-                    }
-                    else // otherwise try to move the vertices at least a distance of 2 away
-                    {
-                        if (mag < 2) // only push away
-                        {
-                            // float mu = Mathf.Min(eta * .25f, 1); // w = 1/d^2 = 1/2^2 = .25
-                            float mu = Mathf.Min(separationStep*.25f, 1);
-
-                            Vector3 r = ((mag-2)/2) * (X_ij/mag);
-                            // r.y = 0; // use to keep y position
-                            nodes[i].TargetPos -= mu * r;
-                            nodes[j].TargetPos += mu * r;
-                        }
-                    }
-                }
-                nodes[i].TargetPos += jitterStep * UnityEngine.Random.insideUnitSphere;
-            }
-        }
-        private IEnumerable<int> FYShuffle(IEnumerable<int> toShuffle)
+        public static IEnumerable<int> FYShuffle(IEnumerable<int> toShuffle)
         {
             var shuffled = new List<int>();
             foreach (int i in toShuffle)
@@ -398,13 +371,39 @@ namespace EcoBuilder.NodeLink
             }
             yield return shuffled[n-1];
         }
-        private void CenteringSGD(int i, float eta)
+
+        [SerializeField] float centeringStep=.1f;
+        void TweenCentering()
         {
-            var fromCenter = new Vector3(nodes[i].TargetPos.x, 0, nodes[i].TargetPos.z);
-            nodes[i].TargetPos -= eta * fromCenter;
+            Vector3 toAdd;
+            if (focus == null)
+            {
+                // get average of all positions, and center
+                Vector3 averageXZ = Vector3.zero;
+                foreach (Node no in nodes)
+                {
+                    Vector3 pos = no.TargetPos;
+                    pos.y = 0;
+                    averageXZ += pos;
+                }
+                averageXZ /= nodes.Count;
+                toAdd = -averageXZ * centeringStep;
+            }
+            else
+            {
+                // center to focus
+                toAdd = focus.TargetPos;
+                toAdd.y = 0;
+                toAdd = -toAdd * centeringStep;
+            }
+            foreach (Node no in nodes)
+            {
+                no.TargetPos += toAdd;
+            }
         }
 
-        void TweenYAxis(Func<Node, float> YAxisPos, float force)
+        [SerializeField] float yStep=.1f;
+        void TweenYAxis(Func<Node, float> YAxisPos)
         {
             foreach (Node no in nodes)
             {
@@ -415,7 +414,7 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    float toAdd = (targetY - no.TargetPos.y) * force;
+                    float toAdd = (targetY - no.TargetPos.y) * yStep;
                     no.TargetPos += new Vector3(0, toAdd, 0);
                 }
             }
@@ -448,8 +447,6 @@ namespace EcoBuilder.NodeLink
 
         ////////////////////////////////////
         // for trophic level calculation
-
-        [SerializeField] float trophicStep = .01f;
 
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();
@@ -539,5 +536,59 @@ namespace EcoBuilder.NodeLink
             }
             return Mathf.Sqrt(sum_x_sqr - 1);
         }
+
+        bool laplacianDetNeg = false;
+        public event Action LaplacianUnsolvable;
+        public event Action LaplacianSolvable;
+        private void FixedUpdate()
+        {
+            if (nodes.Count > 0)
+            {
+
+                if (!potentialHold)
+                {
+                    ///////////////////////////////
+                    // First do height calculations
+                    HashSet<int> basal = BuildTrophicEquations();
+                    var heights = HeightBFS(basal);
+
+                    if (heights.Count == nodes.Count) // if every node can be reached from basal
+                    {
+                        if (laplacianDetNeg == true)
+                        {
+                            laplacianDetNeg = false;
+                            LaplacianSolvable();
+                        }
+                        TrophicGaussSeidel();
+                        TweenYAxis(v=> .6f*heights[v.Idx]+.2f*(trophicLevels[v.Idx]-1));
+                        // TweenYAxis(v=> .5f*heights[v.Idx]);
+                    }
+                    else
+                    {
+                        if (laplacianDetNeg == false)
+                        {
+                            laplacianDetNeg = true;
+                            LaplacianUnsolvable();
+                        }
+                    }
+
+                    //////////////////////
+                    // then do stress SGD
+                    int dq = toBFS.Dequeue(); // only do one vertex per frame
+                    var d_j = ShortestPathsBFS(dq);
+
+                    LayoutSGD(dq, d_j);
+                    toBFS.Enqueue(dq);
+
+                    // center
+                    TweenCentering();
+                }
+                if (!dragging)
+                {
+                    Rotate();
+                }
+            }
+        }
+
     }
 }
