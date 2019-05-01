@@ -14,15 +14,15 @@ namespace EcoBuilder.NodeLink
     {
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        [SerializeField] Mesh sphereMesh, cubeMesh;
-        [SerializeField] Mesh sphereOutline, cubeOutline;
+        // [SerializeField] Mesh sphereMesh, cubeMesh;
+        // [SerializeField] Mesh sphereOutline, cubeOutline;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
         Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
 
-        public void AddNode(int idx)
+        public void AddNode(int idx, GameObject shape)
         {
             if (nodes[idx] != null)
                 throw new Exception("already has idx " + idx);
@@ -31,20 +31,20 @@ namespace EcoBuilder.NodeLink
             newNode = Instantiate(nodePrefab, nodesParent);
 
             var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
-            newNode.Init(idx, startPos);
+            newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
         }
-        public void ShapeNodeIntoCube(int idx)
-        {
-            nodes[idx].SetShape(cubeMesh, cubeOutline);
-        }
-        public void ShapeNodeIntoSphere(int idx)
-        {
-            nodes[idx].SetShape(sphereMesh, sphereOutline);
-        }
+        // public void ShapeNodeIntoCube(int idx)
+        // {
+        //     nodes[idx].SetShape(cubeMesh, cubeOutline);
+        // }
+        // public void ShapeNodeIntoSphere(int idx)
+        // {
+        //     nodes[idx].SetShape(sphereMesh, sphereOutline);
+        // }
         public void RemoveNode(int idx)
         {
             // if (focus != null && focus.Idx == idx)
@@ -107,9 +107,16 @@ namespace EcoBuilder.NodeLink
 
             // SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
         }
-        public void ColourNode(int idx, Color c)
+        public IEnumerable<Tuple<int, int>> GetLinks()
         {
-            nodes[idx].Col = c;
+            foreach (var ij in links.IndexPairs)
+            {
+                yield return ij;
+            }
+        }
+        public void ReshapeNode(int idx, GameObject shape)
+        {
+            nodes[idx].Reshape(shape);
         }
 
         public void ResizeNode(int idx, float size)
@@ -119,13 +126,13 @@ namespace EcoBuilder.NodeLink
 
             nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
         }
-        public void ResizeNodeOutline(int idx, float size)
-        {
-            if (size < 0)
-                throw new Exception("size cannot be negative");
+        // public void ResizeNodeOutline(int idx, float size)
+        // {
+        //     if (size < 0)
+        //         throw new Exception("size cannot be negative");
 
-            nodes[idx].OutlineSize = .5f + Mathf.Sqrt(size);
-        }
+        //     nodes[idx].OutlineSize = .5f + Mathf.Sqrt(size);
+        // }
 
         // [SerializeField] float maxEdgeWidth;
         // public void ResizeEdge(int i, int j, float width)
@@ -544,7 +551,6 @@ namespace EcoBuilder.NodeLink
         {
             if (nodes.Count > 0)
             {
-
                 if (!potentialHold)
                 {
                     ///////////////////////////////
@@ -583,10 +589,10 @@ namespace EcoBuilder.NodeLink
                     // center
                     TweenCentering();
                 }
-                if (!dragging)
-                {
-                    Rotate();
-                }
+            }
+            if (!dragging)
+            {
+                Rotate();
             }
         }
 

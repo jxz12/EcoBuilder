@@ -6,10 +6,6 @@ namespace EcoBuilder.NodeLink
     public class Node : MonoBehaviour
     {
         public int Idx { get; private set; }
-        [SerializeField] Transform shape;
-        [SerializeField] Transform outline;
-        [SerializeField] MeshFilter nodeMesh;
-        [SerializeField] MeshFilter outlineMesh;
 
         public Color Col {
             get { return mr.material.GetColor("_Color"); }
@@ -17,14 +13,10 @@ namespace EcoBuilder.NodeLink
         }
         public Vector3 TargetPos { get; set; }
         private Vector3 velocity = Vector3.zero;
-        [SerializeField] private float smoothTime = .2f;
+        [SerializeField] private float smoothTime = .2f; // TODO: scale this with body size?
         public float Size {
             get { return shape.localScale.x; }
             set { shape.localScale = new Vector3(value, value, value); }
-        }
-        public float OutlineSize {
-            get { return outline.localScale.x; }
-            set { outline.localScale = new Vector3(value, value, value); }
         }
 
         Animator anim;
@@ -32,21 +24,38 @@ namespace EcoBuilder.NodeLink
         private void Awake()
         {
             anim = GetComponent<Animator>();
-            mr = shape.GetComponent<MeshRenderer>();
         }
 
-        //Rigidbody rb;
-        public void Init(int idx, Vector3 pos)
+        Transform shape, outline;
+        // MeshFilter nodeMesh;
+        public void Init(int idx, Vector3 target, GameObject shapeObject)
         {
             Idx = idx;
             name = idx.ToString();
-            transform.localPosition = pos;
-            TargetPos = pos;
+            TargetPos = target;
+
+            shape = shapeObject.transform;
+            shape.SetParent(transform, false);
+            Size = 1;
+
+            mr = shapeObject.GetComponent<MeshRenderer>();
+            if (mr == null)
+                throw new System.Exception("shape has no meshrenderer!");
+
+            outline = shape; // TODO: change to a system that copies the shape dynamically!
         }
-        public void SetShape(Mesh node, Mesh outline)
+        public void Reshape(GameObject shapeObject)
         {
-            nodeMesh.mesh = node;
-            outlineMesh.mesh = outline;
+            Destroy(shape.gameObject);
+            shape = shapeObject.transform;
+            shape.SetParent(transform, false);
+            Size = 1;
+
+            mr = shapeObject.GetComponent<MeshRenderer>();
+            if (mr == null)
+                throw new System.Exception("shape has no meshrenderer!");
+            
+            outline = shape; // TODO: change here too, as above
         }
         void FixedUpdate()
         {

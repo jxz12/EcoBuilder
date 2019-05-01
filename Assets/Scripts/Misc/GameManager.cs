@@ -118,6 +118,11 @@ namespace EcoBuilder
             timeDeltas.Enqueue(newDelta);
         }
 
+        [SerializeField] JonnyGenerator factory;
+        public GameObject GetSpeciesObject(bool isProducer, float size, float greed, int randomSeed)
+        {
+            return factory.GenerateSpecies(isProducer, size, greed, randomSeed);
+        }
         [SerializeField] List<Mesh> numbers;
         public Mesh GetNumberMesh(int number)
         {
