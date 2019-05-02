@@ -549,9 +549,9 @@ namespace EcoBuilder.NodeLink
         public event Action LaplacianSolvable;
         private void FixedUpdate()
         {
-            if (nodes.Count > 0)
+            if (!potentialHold)
             {
-                if (!potentialHold)
+                if (nodes.Count > 0)
                 {
                     ///////////////////////////////
                     // First do height calculations
@@ -566,7 +566,7 @@ namespace EcoBuilder.NodeLink
                             LaplacianSolvable();
                         }
                         TrophicGaussSeidel();
-                        TweenYAxis(v=> .6f*heights[v.Idx]+.2f*(trophicLevels[v.Idx]-1));
+                        TweenYAxis(v=> .4f*heights[v.Idx]+.3f*(trophicLevels[v.Idx]-1));
                         // TweenYAxis(v=> .5f*heights[v.Idx]);
                     }
                     else
@@ -589,10 +589,10 @@ namespace EcoBuilder.NodeLink
                     // center
                     TweenCentering();
                 }
-            }
-            if (!dragging)
-            {
-                Rotate();
+                if (!dragging)
+                {
+                    Rotate();
+                }
             }
         }
 

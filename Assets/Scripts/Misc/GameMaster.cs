@@ -2,27 +2,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace EcoBuilder
 {
     public class GameMaster : MonoBehaviour
     {
         [SerializeField] Inspector.Inspector inspector;
+        [SerializeField] Inspector.Spawner spawner;
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
-        [SerializeField] SpawnArea spawnArea;
         [SerializeField] StatusBar status;
 
         class Species
         {
             public int Idx { get; private set; }
-            public bool IsProducer { get; set; }
+            public bool IsProducer { get; private set; }
             public Species(int idx, bool isProducer)
             {
                 Idx = idx;
                 IsProducer = isProducer;
                 RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
             }
+            public string Name { get; set; }
             public HashSet<int> resources { get; private set; } = new HashSet<int>();
             public float BodySize { get; set; } = .5f;
             public float Greediness { get; set; } = .5f;
@@ -35,15 +37,13 @@ namespace EcoBuilder
         {
             inspector.OnSizeChanged +=      (x)=> ChangeSize(x);
             inspector.OnGreedChanged +=     (x)=> ChangeGreed(x);
-            inspector.OnProducerPressed +=  ()=> InitNewSpecies(true);
-            inspector.OnConsumerPressed +=  ()=> InitNewSpecies(false);
 
             nodelink.OnNodeHeld +=         (i)=> Inspect(i);
             nodelink.OnNodeClicked +=      (j)=> MakeInteraction(j);
             nodelink.OnEmptyClicked +=      ()=> Uninspect();
             nodelink.LaplacianUnsolvable += ()=> print("unsolvable");
             nodelink.LaplacianSolvable +=   ()=> print("solvable");
-            nodelink.OnDroppedOn +=         ()=> TryAddNewSpecies();
+            nodelink.OnDroppedOn +=         ()=> TrySpawnNewSpecies();
 
             model.OnCalculated +=           ()=> CalculateScore();
             // model.OnCalculated +=           ()=> ResizeNodes();
@@ -55,141 +55,130 @@ namespace EcoBuilder
             // status.OnMenu +=                ()=> print("MENU");
             // status.OnUndo +=                ()=> UndoMove();
             // status.OnRedo +=                ()=> RedoMove();
-
         }
 
-        bool shown = false;
-        Species toAdd = null;
-        GameObject newObject = null;
-        void InitNewSpecies(bool isProducer)
+        Species toSpawn = null;
+        public void IncubateNewSpecies(bool isProducer)
         {
-            Uninspect();
-
-            // TODO: temporary - use animation instead
-            if (!shown)
+            if (toSpawn == null)
             {
-                shown = true;
-                spawnArea.Show();
-                nodelink.transform.localScale *= .5f;
+                toSpawn = new Species(idxCounter, isProducer);
+                inspector.SetSize(toSpawn.BodySize);
+                inspector.SetGreed(toSpawn.Greediness);
+
+                Incubate();
+                inspected = null;
             }
-
-            toAdd = new Species(idxCounter, isProducer);
-            inspector.SetSize(toAdd.BodySize);
-            inspector.SetGreed(toAdd.Greediness);
-            SetNewSpeciesObject();
-        }
-        void SetNewSpeciesObject()
-        {
-            if (newObject != null)
-                Destroy(newObject);
-            newObject = GenerateSpeciesObject(toAdd);
-            spawnArea.PrepareSpawn(newObject);
-        }
-        static GameObject GenerateSpeciesObject(Species s)
-        {
-            GameObject newObject = GameManager.Instance.GetSpeciesObject(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            return newObject;
-        }
-
-        void TryAddNewSpecies()
-        {
-            if (shown)
+            else
             {
-                nodelink.AddNode(toAdd.Idx, newObject);
-                model.AddSpecies(toAdd.Idx);
-                if (toAdd.IsProducer)
-                {
-                    model.SetSpeciesAsProducer(toAdd.Idx);
-                }
-                else
-                {
-                    model.SetSpeciesAsConsumer(toAdd.Idx);
-                }
-                // model.SetSpeciesBodySize(toAdd.Idx, toAdd.GetKg());
-                model.SetSpeciesBodySize(toAdd.Idx, toAdd.BodySize);
-                model.SetSpeciesGreediness(toAdd.Idx, toAdd.Greediness);
-
-                allSpecies[toAdd.Idx] = toAdd;
-                Inspect(toAdd.Idx);
-                idxCounter += 1;
-
-                // TODO: end game if enough species are added
-
-                toAdd = null;
-                newObject = null;
+                RefreshIncubated();
             }
+        }
+        public void RefreshIncubated()
+        {
+            Species old = toSpawn;
+            toSpawn = new Species(old.Idx, old.IsProducer);
+            toSpawn.BodySize = old.BodySize;
+            toSpawn.Greediness = old.Greediness;
 
+            // TODO: CHANGE EVERYTHING
+            Incubate();
+            inspected = null;
+        }
+        public void Incubate()
+        {
+            GameObject toIncubate = spawner.GenerateObject(toSpawn.IsProducer, toSpawn.BodySize, toSpawn.Greediness, toSpawn.RandomSeed);
+            toSpawn.Name = toIncubate.name;
+            inspector.SetName(toSpawn.Name);
+            spawner.IncubateSpecies(toIncubate);
+        }
+
+        public void TrySpawnNewSpecies()
+        {
+            if (toSpawn == null)
+                return;
+
+            var newObject = spawner.TakeIncubated();
+            nodelink.AddNode(toSpawn.Idx, newObject);
+            model.AddSpecies(toSpawn.Idx);
+            if (toSpawn.IsProducer)
+            {
+                model.SetSpeciesAsProducer(toSpawn.Idx);
+            }
+            else
+            {
+                model.SetSpeciesAsConsumer(toSpawn.Idx);
+            }
+            // model.SetSpeciesBodySize(toSpawn.Idx, toSpawn.GetKg());
+            model.SetSpeciesBodySize(toSpawn.Idx, toSpawn.BodySize);
+            model.SetSpeciesGreediness(toSpawn.Idx, toSpawn.Greediness);
+
+            allSpecies[toSpawn.Idx] = toSpawn;
+            Inspect(toSpawn.Idx);
+
+            // TODO: end game if enough species are added
+            toSpawn = null;
+            idxCounter += 1;
         }
         Species inspected;
-        void Inspect(int idx)
+        public void Inspect(int idx)
         {
             if (inspected != allSpecies[idx])
             {
                 inspected = allSpecies[idx];
-                // inspector.SetSize(inspected.BodySize);
-                // inspector.SetGreed(inspected.Greediness);
+                inspector.SetSize(inspected.BodySize);
+                inspector.SetGreed(inspected.Greediness);
+                inspector.SetName(inspected.Name);
 
                 nodelink.FocusNode(idx);
+                GetComponent<Animator>().SetTrigger("Inspect");
 
-                if (shown)
-                {
-                    spawnArea.Hide();
-                    nodelink.transform.localScale *= 2;
-                    shown = false;
-                }
+                toSpawn = null;
             }
         }
         void Uninspect()
         {
-            if (shown)
+            if (toSpawn != null)
             {
-                spawnArea.Hide();
-                nodelink.transform.localScale *= 2;
-                shown = false;
+                toSpawn = null;
+                Destroy(spawner.TakeIncubated());
+                GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else if (inspected != null)
             {
                 inspected = null;
-                // inspector.SetSize(toAdd.BodySize);
-                // inspector.SetGreed(toAdd.Greediness);
-
                 nodelink.Unfocus();
+                GetComponent<Animator>().SetTrigger("Uninspect");
             }
         }
         void ChangeSize(float size)
         {
-            if (inspected == null)
+            if (toSpawn != null)
             {
-                if (shown)
-                {
-                    toAdd.BodySize = size;
-                    SetNewSpeciesObject();
-                }
+                toSpawn.BodySize = size;
+                Incubate();
             }
-            else
+            else if (inspected != null)
             {
                 inspected.BodySize = size;
                 // nodelink.ColourNode(inspected.Idx, inspected.GetColor());
-                nodelink.ReshapeNode(inspected.Idx, GenerateSpeciesObject(inspected));
+                nodelink.ReshapeNode(inspected.Idx, spawner.GenerateObject(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed));
                 // model.SetSpeciesBodySize(inspected.Idx, inspected.GetKg());
                 model.SetSpeciesBodySize(inspected.Idx, inspected.BodySize);
             }
         }
         void ChangeGreed(float greed)
         {
-            if (inspected == null)
+            if (toSpawn != null)
             {
-                if (shown)
-                {
-                    toAdd.Greediness = greed;
-                    SetNewSpeciesObject();
-                }
+                toSpawn.Greediness = greed;
+                Incubate();
             }
-            else
+            else if (inspected != null)
             {
                 inspected.Greediness = greed;
                 // nodelink.ColourNode(inspected.Idx, inspected.GetColor());
-                nodelink.ReshapeNode(inspected.Idx, GenerateSpeciesObject(inspected));
+                nodelink.ReshapeNode(inspected.Idx, spawner.GenerateObject(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed));
                 model.SetSpeciesGreediness(inspected.Idx, greed);
             }
         }
