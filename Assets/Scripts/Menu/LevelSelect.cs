@@ -13,18 +13,18 @@ namespace EcoBuilder.Menu
 		int chosen = 0;
 		void Start()
 		{
-			NewMiniLevel(GameManager.Instance.SelectedLandscape);
+			// NewMiniLevel(GameManager.Instance.SelectedLandscape);
 		}
 
 		public void ScrollLeft()
 		{
-			GameManager.Instance.SwitchLandscape(false);
-			NewMiniLevel(GameManager.Instance.SelectedLandscape);
+			// GameManager.Instance.SwitchLandscape(false);
+			// NewMiniLevel(GameManager.Instance.SelectedLandscape);
 		}
 		public void ScrollRight()
 		{
-			GameManager.Instance.SwitchLandscape(false);
-			NewMiniLevel(GameManager.Instance.SelectedLandscape);
+			// GameManager.Instance.SwitchLandscape(false);
+			// NewMiniLevel(GameManager.Instance.SelectedLandscape);
 		}
 		void NewMiniLevel(GameObject newLevel)
 		{

@@ -98,14 +98,9 @@ namespace EcoBuilder.Model
             idxToSpecies.Remove(idx);
             equilibriumSolved = false;
         }
-        public void SetSpeciesAsProducer(int idx)
+        public void SetSpeciesProduction(int idx, bool isProducer)
         {
-            idxToSpecies[idx].IsProducer = true;
-            equilibriumSolved = false;
-        }
-        public void SetSpeciesAsConsumer(int idx)
-        {
-            idxToSpecies[idx].IsProducer = false;
+            idxToSpecies[idx].IsProducer = isProducer;
             equilibriumSolved = false;
         }
         public void SetSpeciesBodySize(int idx, float kg)

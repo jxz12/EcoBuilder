@@ -520,8 +520,8 @@ namespace EcoBuilder.NodeLink
         }
 
         bool laplacianDetNeg = false;
-        public event Action LaplacianUnsolvable;
-        public event Action LaplacianSolvable;
+        public event Action OnLaplacianUnsolvable;
+        public event Action OnLaplacianSolvable;
         private void FixedUpdate()
         {
             if (potentialHold)
@@ -539,7 +539,7 @@ namespace EcoBuilder.NodeLink
                     if (laplacianDetNeg == true)
                     {
                         laplacianDetNeg = false;
-                        LaplacianSolvable();
+                        OnLaplacianSolvable.Invoke();
                     }
                     TrophicGaussSeidel();
                     foreach (Node no in nodes)
@@ -553,7 +553,7 @@ namespace EcoBuilder.NodeLink
                     if (laplacianDetNeg == false)
                     {
                         laplacianDetNeg = true;
-                        LaplacianUnsolvable();
+                        OnLaplacianUnsolvable.Invoke();
                     }
                 }
 
