@@ -2042,7 +2042,7 @@ MonoBehaviour:
   holdThreshold: 0.2
   SGDStep: 0.2
   separationStep: 1
-  layoutTween: 0.1
+  layoutTween: 0.05
 --- !u!1 &1112903650
 GameObject:
   m_ObjectHideFlags: 0

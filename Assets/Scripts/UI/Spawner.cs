@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,30 +9,36 @@ namespace EcoBuilder.UI
 {
     public class Spawner : MonoBehaviour, IDragHandler
     {
+        public event Action<GameObject> OnIncubated;
         [SerializeField] Transform incubator;
-        GameObject toSpawn = null;
+        GameObject incubated = null;
         public GameObject TakeIncubated()
         {
-            var temp = toSpawn;
-            toSpawn = null;
+            var temp = incubated;
+            incubated = null;
             return temp;
         }
-        public void IncubateSpecies(GameObject toIncubate)
+        public void RefreshIncubated()
         {
-            if (toSpawn != null)
-                Destroy(toSpawn);
+            if (incubated != null)
+                Destroy(incubated);
 
-            toSpawn = toIncubate;
-            toSpawn.transform.SetParent(incubator, false);
+            incubated = GameManager.Instance.GetSpeciesObject();
+            incubated.transform.SetParent(incubator, false);
         }
         public GameObject GenerateObject(bool isProducer, float size, float greed, int randomSeed)
         {
-            var generated = GameManager.Instance.GetSpeciesObject(isProducer, size, greed, randomSeed);
             return generated;
         }
         public void OnDrag(PointerEventData ped)
         {
 
         }
+        [SerializeField] JonnyGenerator factory;
+        public GameObject GetSpeciesObject(bool isProducer, float size, float greed, int randomSeed)
+        {
+            return factory.GenerateSpecies(isProducer, size, greed, randomSeed);
+        }
+
     }
 }
