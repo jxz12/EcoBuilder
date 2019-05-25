@@ -12,8 +12,8 @@ namespace EcoBuilder.NodeLink
             set { mr.material.SetColor("_Color", value); }
         }
         public Vector3 TargetPos { get; set; }
-        private Vector3 velocity = Vector3.zero;
-        [SerializeField] private float smoothTime = .2f; // TODO: scale this with body size?
+        // private Vector3 velocity = Vector3.zero;
+        // [SerializeField] private float smoothTime = .2f; // TODO: scale this with body size?
         public float Size {
             get { return shape.localScale.x; }
             set { shape.localScale = new Vector3(value, value, value); }
@@ -57,10 +57,11 @@ namespace EcoBuilder.NodeLink
             
             outline = shape; // TODO: change here too, as above
         }
-        void FixedUpdate()
-        {
-            transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPos, ref velocity, smoothTime);
-        }
+        // public void TweenToTarget()
+        // {
+        //     transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPos, ref velocity, smoothTime);
+        //     // transform.localPosition = TargetPos;
+        // }
         public void Flash()
         {
             anim.SetTrigger("Flash");

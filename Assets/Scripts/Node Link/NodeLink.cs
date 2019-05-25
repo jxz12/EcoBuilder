@@ -92,8 +92,6 @@ namespace EcoBuilder.NodeLink
             //     links[j, i].Curve();
             //     links[i, j].Curve();
             // }
-
-            // SGDStep = adjacency.Count * adjacency.Count; // adapt step size to new distance matrix
         }
         public void RemoveLink(int i, int j)
         {
@@ -104,8 +102,6 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
             }
-
-            // SGDStep = adjacency.Count * adjacency.Count; // max shortest path squared so that mu=1
         }
         public IEnumerable<Tuple<int, int>> GetLinks()
         {
@@ -209,6 +205,7 @@ namespace EcoBuilder.NodeLink
             dragging = true;
             StartCoroutine(WaitForHold(holdThreshold, ped));
         }
+        // TODO: if nothing is selected, then make even a normal click select
         IEnumerator WaitForHold(float seconds, PointerEventData ped)
         {
             float endTime = Time.time + seconds;
@@ -294,12 +291,9 @@ namespace EcoBuilder.NodeLink
         // for stress-based layout
 
         [SerializeField] float SGDStep=.2f;
-        [SerializeField] float separationStep=1;//, focusStep=4;//, jitterStep=.001f;
-        // [SerializeField] bool constrainY = false;
+        [SerializeField] float separationStep=1;
 
-        // private Queue<int> toBFS = new Queue<int>(new int[]{ myNull });
         private Queue<int> toBFS = new Queue<int>();
-        // private static readonly int myNull = int.MinValue;
 
         // SGD
         private void LayoutSGD(int i, Dictionary<int, int> d_j)
@@ -379,77 +373,33 @@ namespace EcoBuilder.NodeLink
             yield return shuffled[n-1];
         }
 
-        [SerializeField] float centeringStep=.1f;
-        void TweenCentering()
+        [SerializeField] float layoutTween=.05f;//, centeringTween=.1f;
+        void TweenNodes()
         {
-            Vector3 toAdd;
+            Vector3 centroid = Vector3.zero;
             if (focus == null)
             {
                 // get average of all positions, and center
-                Vector3 averageXZ = Vector3.zero;
                 foreach (Node no in nodes)
                 {
                     Vector3 pos = no.TargetPos;
                     pos.y = 0;
-                    averageXZ += pos;
+                    centroid += pos;
                 }
-                averageXZ /= nodes.Count;
-                toAdd = -averageXZ * centeringStep;
+                centroid /= nodes.Count;
             }
             else
             {
                 // center to focus
-                toAdd = focus.TargetPos;
-                toAdd.y = 0;
-                toAdd = -toAdd * centeringStep;
+                centroid = focus.TargetPos;
+                centroid.y = 0;
             }
             foreach (Node no in nodes)
             {
-                no.TargetPos += toAdd;
+                no.TargetPos -= centroid;// * centeringTween;
+                no.transform.localPosition =
+                    Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
             }
-        }
-
-        [SerializeField] float yStep=.1f;
-        void TweenYAxis(Func<Node, float> YAxisPos)
-        {
-            foreach (Node no in nodes)
-            {
-                float targetY = YAxisPos(no);
-                if (targetY == 0)
-                {
-                    no.TargetPos -= new Vector3(0, no.TargetPos.y, 0);
-                }
-                else
-                {
-                    float toAdd = (targetY - no.TargetPos.y) * yStep;
-                    no.TargetPos += new Vector3(0, toAdd, 0);
-                }
-            }
-        }
-
-        private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
-        {
-            var visited = new Dictionary<int, int>();
-            var q = new Queue<int>();
-            foreach (int source in sources)
-            {
-                q.Enqueue(source);
-                visited[source] = 0;
-            }
-
-            while (q.Count > 0)
-            {
-                int current = q.Dequeue();
-                foreach (int next in links.GetColumnIndicesInRow(current))
-                {
-                    if (!visited.ContainsKey(next))
-                    {
-                        q.Enqueue(next);
-                        visited[next] = visited[current] + 1;
-                    }
-                }
-            }
-            return visited;
         }
 
         ////////////////////////////////////
@@ -515,6 +465,31 @@ namespace EcoBuilder.NodeLink
             return max;
         }
 
+        private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
+        {
+            var visited = new Dictionary<int, int>();
+            var q = new Queue<int>();
+            foreach (int source in sources)
+            {
+                q.Enqueue(source);
+                visited[source] = 0;
+            }
+
+            while (q.Count > 0)
+            {
+                int current = q.Dequeue();
+                foreach (int next in links.GetColumnIndicesInRow(current))
+                {
+                    if (!visited.ContainsKey(next))
+                    {
+                        q.Enqueue(next);
+                        visited[next] = visited[current] + 1;
+                    }
+                }
+            }
+            return visited;
+        }
+
         ///////////////////////////
         // for loops
 
@@ -549,51 +524,53 @@ namespace EcoBuilder.NodeLink
         public event Action LaplacianSolvable;
         private void FixedUpdate()
         {
-            if (!potentialHold)
+            if (potentialHold)
+                return;
+
+            if (nodes.Count > 0)
             {
-                if (nodes.Count > 0)
+                ///////////////////////////////
+                // First do height calculations
+                HashSet<int> basal = BuildTrophicEquations();
+                var heights = HeightBFS(basal);
+
+                if (heights.Count == nodes.Count) // if every node can be reached from basal
                 {
-                    ///////////////////////////////
-                    // First do height calculations
-                    HashSet<int> basal = BuildTrophicEquations();
-                    var heights = HeightBFS(basal);
-
-                    if (heights.Count == nodes.Count) // if every node can be reached from basal
+                    if (laplacianDetNeg == true)
                     {
-                        if (laplacianDetNeg == true)
-                        {
-                            laplacianDetNeg = false;
-                            LaplacianSolvable();
-                        }
-                        TrophicGaussSeidel();
-                        TweenYAxis(v=> .4f*heights[v.Idx]+.3f*(trophicLevels[v.Idx]-1));
-                        // TweenYAxis(v=> .5f*heights[v.Idx]);
+                        laplacianDetNeg = false;
+                        LaplacianSolvable();
                     }
-                    else
+                    TrophicGaussSeidel();
+                    foreach (Node no in nodes)
                     {
-                        if (laplacianDetNeg == false)
-                        {
-                            laplacianDetNeg = true;
-                            LaplacianUnsolvable();
-                        }
+                        float targetY = .4f*heights[no.Idx]+.3f*(trophicLevels[no.Idx]-1);
+                        no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
                     }
-
-                    //////////////////////
-                    // then do stress SGD
-                    int dq = toBFS.Dequeue(); // only do one vertex per frame
-                    var d_j = ShortestPathsBFS(dq);
-
-                    LayoutSGD(dq, d_j);
-                    toBFS.Enqueue(dq);
-
-                    // center
-                    TweenCentering();
                 }
-                if (!dragging)
+                else
                 {
-                    Rotate();
+                    if (laplacianDetNeg == false)
+                    {
+                        laplacianDetNeg = true;
+                        LaplacianUnsolvable();
+                    }
                 }
+
+                //////////////////////
+                // then do stress SGD
+                int dq = toBFS.Dequeue(); // only do one vertex per frame
+                var d_j = ShortestPathsBFS(dq);
+
+                LayoutSGD(dq, d_j);
+                toBFS.Enqueue(dq);
+
+                // center
+                TweenNodes();
             }
+
+            if (!dragging)
+                Rotate();
         }
 
     }

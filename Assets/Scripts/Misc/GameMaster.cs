@@ -8,11 +8,11 @@ namespace EcoBuilder
 {
     public class GameMaster : MonoBehaviour
     {
-        [SerializeField] Inspector.Inspector inspector;
-        [SerializeField] Inspector.Spawner spawner;
+        [SerializeField] UI.Inspector inspector;
+        [SerializeField] UI.Spawner spawner;
+        [SerializeField] UI.StatusBar status;
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
-        [SerializeField] StatusBar status;
 
         class Species
         {
@@ -81,7 +81,6 @@ namespace EcoBuilder
             toSpawn.BodySize = old.BodySize;
             toSpawn.Greediness = old.Greediness;
 
-            // TODO: CHANGE EVERYTHING
             Incubate();
             inspected = null;
         }
@@ -93,6 +92,7 @@ namespace EcoBuilder
             spawner.IncubateSpecies(toIncubate);
         }
 
+        // TODO: make this actually sense a drag from Spawner
         public void TrySpawnNewSpecies()
         {
             if (toSpawn == null)
@@ -113,8 +113,10 @@ namespace EcoBuilder
             model.SetSpeciesBodySize(toSpawn.Idx, toSpawn.BodySize);
             model.SetSpeciesGreediness(toSpawn.Idx, toSpawn.Greediness);
 
+
             allSpecies[toSpawn.Idx] = toSpawn;
             Inspect(toSpawn.Idx);
+            // GetComponent<Animator>().SetTrigger("Spawn");
 
             // TODO: end game if enough species are added
             toSpawn = null;
@@ -125,15 +127,20 @@ namespace EcoBuilder
         {
             if (inspected != allSpecies[idx])
             {
+                if (toSpawn != null)
+                {
+                    toSpawn = null;
+                    Destroy(spawner.TakeIncubated());
+                }
                 inspected = allSpecies[idx];
                 inspector.SetSize(inspected.BodySize);
                 inspector.SetGreed(inspected.Greediness);
                 inspector.SetName(inspected.Name);
 
                 nodelink.FocusNode(idx);
-                GetComponent<Animator>().SetTrigger("Inspect");
 
                 toSpawn = null;
+                GetComponent<Animator>().SetTrigger("Inspect");
             }
         }
         void Uninspect()

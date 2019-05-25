@@ -13,8 +13,19 @@ namespace EcoBuilder.Model
         [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
         [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
 
-        // [SerializeField] IntFloatEvent OnAbundanceSet;
-        // [SerializeField] IntIntFloatEvent OnFluxSet;
+        [SerializeField] double beta = .75,   // metabolic scaling
+                                b0 = 1.71e-6, // birth
+                                d0 = 4.15e-8, // death
+                                p_v = .26,    // velocity exponent
+                            //    v0 = .33,     // velocity constant
+                                p_r = .21,    // reaction exponent
+                            //    r0 = 1.62,    // reaction constant
+                                // p_e = .85, // empirical exponent
+                                a0 = 8.32e-4,
+                                e_p = .2, // plant efficiency
+                                e_c = .5, // animal efficiency
+                                a_ii_min = 1e-3,
+                                a_ii_max = 1e2;
 
         class Species
         {
@@ -23,25 +34,28 @@ namespace EcoBuilder.Model
             public bool IsProducer {
                 set {
                     isProducer = value;
-                    Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
-                    Efficiency = isProducer? e_p : e_c;
+                    // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
+                    // Efficiency = isProducer? e_p : e_c;
+                    Growth = isProducer? 1:-.1;
                 }
             }
-            double growth_exp = 1/b0;
-            double search_exp = 1;
+            // double growth_exp = 1/b0;
+            // double search_exp = 1;
             public double BodySize {
                 set {
-                    growth_exp = Math.Pow(value, beta-1);
-                    Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
+                    // growth_exp = Math.Pow(value, beta-1);
+                    // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
 
-                    search_exp = Math.Pow(value, (p_v+2*p_r) - 1);
-                    Search = search_exp * a0;
+                    // search_exp = Math.Pow(value, (p_v+2*p_r) - 1);
+                    // Search = search_exp * a0;
+                    Search = 1;
                 }
             }
             public double Greediness {
                 set {
                     // this is the same as scaling on a log scale
-                    SelfReg = -Math.Pow(a_ii_min, 1-value) * Math.Pow(a_ii_max, value);
+                    // SelfReg = -Math.Pow(a_ii_min, 1-value) * Math.Pow(a_ii_max, value);
+                    SelfReg = -10;
                 }
             }
             public double Growth { get; private set; } = 1;
@@ -56,20 +70,6 @@ namespace EcoBuilder.Model
             {
                 Idx = idx;
             }
-
-            static readonly double beta = .75,   // metabolic scaling
-                                   b0 = 1.71e-6, // birth
-                                   d0 = 4.15e-8, // death
-                                   p_v = .26,    // velocity exponent
-                                //    v0 = .33,     // velocity constant
-                                   p_r = .21,    // reaction exponent
-                                //    r0 = 1.62,    // reaction constant
-                                   // p_e = .85, // empirical exponent
-                                   a0 = 8.32e-4,
-                                   e_p = .2, // plant efficiency
-                                   e_c = .5, // animal efficiency
-                                   a_ii_min = 1e-3,
-                                   a_ii_max = 1e2;
         }
 
         LotkaVolterra<Species> simulation;
@@ -156,6 +156,7 @@ namespace EcoBuilder.Model
             }
             else if (!equilibriumSolved && calculating)
             {
+                // TODO: change this to a little icon instead of a print
                 print("busy");
             }
         }

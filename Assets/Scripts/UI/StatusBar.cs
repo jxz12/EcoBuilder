@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EcoBuilder
+namespace EcoBuilder.UI
 {
 	public class StatusBar : MonoBehaviour
 	{

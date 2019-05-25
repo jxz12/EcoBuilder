@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace EcoBuilder.Inspector
+namespace EcoBuilder.UI
 {
     public class Spawner : MonoBehaviour, IDragHandler
     {

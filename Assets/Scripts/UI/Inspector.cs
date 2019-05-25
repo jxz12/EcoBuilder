@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 
-namespace EcoBuilder.Inspector
+namespace EcoBuilder.UI
 {
     public class Inspector : MonoBehaviour
     {
