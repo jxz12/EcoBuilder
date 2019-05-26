@@ -39,6 +39,9 @@ namespace EcoBuilder.UI
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
 
+        public event Action OnIncubated;
+        public event Action OnUnincubated;
+
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
         [SerializeField] Slider sizeSlider;
@@ -72,6 +75,7 @@ namespace EcoBuilder.UI
             nameText.text = s.Object.name;
 
             inspected = s;
+            OnIncubated.Invoke();
         }
         void RefreshIncubated()
         {
@@ -79,7 +83,9 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             Destroy(inspected.Object);
-            IncubateNew(inspected.IsProducer);
+            inspected.Object = factory.GenerateSpecies(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+            inspected.Object.transform.SetParent(incubatorParent, false);
+            nameText.text = inspected.Object.name;
         }
         void SetInspectedSize(float bodySize)
         {
@@ -119,6 +125,7 @@ namespace EcoBuilder.UI
             {
                 Destroy(inspected.Object);
                 spawnedSpecies.Remove(inspected.Idx); // lol memory leak but not really
+                OnUnincubated.Invoke(); // maybe don't need this
             }
             GetComponent<Animator>().SetTrigger("Uninspect");
         }
@@ -140,6 +147,7 @@ namespace EcoBuilder.UI
             nextIdx += 1;
 
             GetComponent<Animator>().SetTrigger("Spawn");
+            OnUnincubated.Invoke(); // maybe don't need this
         }
         // public float GetKg(float normalizedBodySize)
         // {
@@ -152,7 +160,7 @@ namespace EcoBuilder.UI
         //     return Mathf.Pow(minKg, 1-normalizedBodySize) * Mathf.Pow(maxKg, normalizedBodySize);
         // }
 
-        // public int InspectedIdx { get { return inspected.Idx; } }
+        public int? InspectedIdx { get { return inspected==null? null : (int?)inspected.Idx; } }
         public bool Dragging { get; private set; }
         public void OnBeginDrag(PointerEventData ped)
         {

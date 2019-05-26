@@ -19,15 +19,16 @@ namespace EcoBuilder
             inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
             inspector.OnProducerSet +=     (i,b)=> model.SetSpeciesProduction(i,b);
+            inspector.OnProducerSet +=     (i,b)=> nodelink.SetNodeAsSourceOnly(i,b);
             inspector.OnSizeSet +=         (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=        (i,x)=> model.SetSpeciesGreediness(i,x);
+            inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
+            inspector.OnUnincubated +=        ()=> nodelink.MoveRight();
 
-            nodelink.OnNodeHeld +=           (i)=> inspector.InspectSpecies(i);
-            nodelink.OnNodeHeld +=           (i)=> nodelink.FocusNode(i);
-            nodelink.OnEmptyClicked +=        ()=> inspector.Uninspect();
-            nodelink.OnEmptyClicked +=        ()=> nodelink.Unfocus();
-
-            nodelink.OnNodeClicked +=        (j)=> TryAddNewInteraction(j);
+            nodelink.OnNodeFocused +=        (i)=> inspector.InspectSpecies(i);
+            nodelink.OnUnfocused +=           ()=> inspector.Uninspect();
+            nodelink.OnLinkAdded +=        (i,j)=> model.AddInteraction(i,j);
+            nodelink.OnLinkRemoved +=      (i,j)=> model.RemoveInteraction(i,j);
             nodelink.OnDroppedOn +=           ()=> TryAddNewSpecies();
             // nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
             // nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
@@ -49,11 +50,8 @@ namespace EcoBuilder
             if (inspector.Dragging)
             {
                 inspector.Spawn();
+                // nodelink.FocusNode((int)inspector.InspectedIdx);
             }
-        }
-        void TryAddNewInteraction(int i)
-        {
-            print(i);
         }
         void CalculateScore()
         {

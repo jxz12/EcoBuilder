@@ -18,6 +18,12 @@ namespace EcoBuilder.NodeLink
             get { return shape.localScale.x; }
             set { shape.localScale = new Vector3(value, value, value); }
         }
+        public bool IsSourceOnly {
+            get; set;
+        }
+        public bool IsSinkOnly {
+            get; set;
+        }
 
         Animator anim;
         MeshRenderer mr;

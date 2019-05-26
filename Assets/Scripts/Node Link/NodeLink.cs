@@ -12,6 +12,11 @@ namespace EcoBuilder.NodeLink
         IPointerDownHandler, IPointerUpHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
+        public event Action<int> OnNodeFocused;
+        public event Action<int, int> OnLinkAdded;
+        public event Action<int, int> OnLinkRemoved;
+        public event Action OnUnfocused;
+
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
         // [SerializeField] Mesh sphereMesh, cubeMesh;
@@ -32,6 +37,8 @@ namespace EcoBuilder.NodeLink
             var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
+
+            focus = newNode;
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
@@ -88,7 +95,7 @@ namespace EcoBuilder.NodeLink
             trophicLevels.RemoveAt(idx);
         }
 
-        public void AddLink(int i, int j)
+        private void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j], true);
@@ -102,8 +109,10 @@ namespace EcoBuilder.NodeLink
             //     links[j, i].Curve();
             //     links[i, j].Curve();
             // }
+
+            OnLinkAdded.Invoke(i, j);
         }
-        public void RemoveLink(int i, int j)
+        private void RemoveLink(int i, int j)
         {
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
@@ -112,40 +121,27 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
             }
-        }
-        public IEnumerable<Tuple<int, int>> GetLinks()
-        {
-            foreach (var ij in links.IndexPairs)
-            {
-                yield return ij;
-            }
-        }
 
-
-        Node focus=null;
-        public void FocusNode(int idx)
-        {
-            focus = nodes[idx];
+            OnLinkRemoved.Invoke(i,j);
         }
-        public void Unfocus()
+        public void SetNodeAsSourceOnly(int idx, bool isSource) // basal
         {
-            focus = null;
+            nodes[idx].IsSourceOnly = isSource;
         }
-        public void FlashNode(int idx)
+        public void SetNodeAsSinkOnly(int idx, bool isSink) // apex predator
         {
-            nodes[idx].Flash();
+            nodes[idx].IsSinkOnly = isSink;
         }
-        public void IdleNode(int idx)
-        {
-            nodes[idx].Idle();
-        }
+        // public IEnumerable<Tuple<int, int>> GetLinks()
+        // {
+        //     foreach (var ij in links.IndexPairs)
+        //     {
+        //         yield return ij;
+        //     }
+        // }
 
         ////////////////////////////////////
         // for user-interaction rotation
-
-        public event Action<int> OnNodeHeld;
-        public event Action<int> OnNodeClicked;
-        public event Action OnEmptyClicked;
 
         [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f;
         [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
@@ -201,7 +197,7 @@ namespace EcoBuilder.NodeLink
             Node held = ClosestNodeToPointer(ped.position);
             if (held != null)
             {
-                OnNodeHeld.Invoke(held.Idx);
+                FocusNode(held.Idx);
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -211,11 +207,49 @@ namespace EcoBuilder.NodeLink
                 potentialHold = false;
                 Node clicked = ClosestNodeToPointer(ped.position);
                 if (clicked != null)
-                    OnNodeClicked.Invoke(clicked.Idx);
+                {
+                    if (focus == null)
+                    {
+                        FocusNode(clicked.Idx);
+                    }
+                    else
+                    {
+                        int i=clicked.Idx, j=focus.Idx;
+                        if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
+                        {
+                            if (links[i,j] != null)
+                                RemoveLink(i, j);
+                            else
+                                AddLink(i, j);
+                        }
+                    }
+                }
                 else
-                    OnEmptyClicked.Invoke();
+                {
+                    Unfocus();
+                }
             }
             dragging = false;
+        }
+
+        Node focus=null;
+        public void FocusNode(int idx)
+        {
+            focus = nodes[idx];
+            OnNodeFocused.Invoke(idx);
+        }
+        public void Unfocus()
+        {
+            focus = null;
+            OnUnfocused.Invoke();
+        }
+        public void FlashNode(int idx)
+        {
+            nodes[idx].Flash();
+        }
+        public void IdleNode(int idx)
+        {
+            nodes[idx].Idle();
         }
 
         float yRotationMomentum = 0;
@@ -265,6 +299,15 @@ namespace EcoBuilder.NodeLink
             var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
             var lerped = Quaternion.Lerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
             graphParent.transform.localRotation = lerped;
+        }
+
+        public void MoveLeft()
+        {
+            GetComponent<Animator>().SetTrigger("Left");
+        }
+        public void MoveRight()
+        {
+            GetComponent<Animator>().SetTrigger("Right");
         }
 
 
