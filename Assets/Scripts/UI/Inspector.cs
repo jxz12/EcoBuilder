@@ -30,7 +30,8 @@ namespace EcoBuilder.UI
     }
 
     // handles keeping track of species gameobjects and stats
-    public class Inspector : MonoBehaviour, IDragHandler, IPointerClickHandler
+    public class Inspector : MonoBehaviour,
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
         public event Action<int, GameObject> OnSpawned;
@@ -45,7 +46,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
-        [SerializeField] Transform incubator;
+        [SerializeField] RectTransform incubatorParent;
 
         Dictionary<int, Species> spawnedSpecies = new Dictionary<int, Species>();
         int nextIdx = 0;
@@ -53,36 +54,32 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            producerButton.onClick.AddListener(()=>IncubateNew(true));
-            consumerButton.onClick.AddListener(()=>IncubateNew(false));
+            producerButton.onClick.AddListener(()=> IncubateNew(true));
+            consumerButton.onClick.AddListener(()=> IncubateNew(false));
+            refreshButton.onClick.AddListener(()=> RefreshIncubated());
 
             sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize(x));
             greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
-
-            refreshButton.onClick.AddListener(()=>RefreshInspected());
         }
 
         [SerializeField] JonnyGenerator factory;
-        public GameObject GenerateSpeciesObject(Species s)
-        {
-            return factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-        }
-        public void RegenerateInspectedObject()
-        {
-            print("not yet");
-        }
-        void RefreshInspected()
-        {
-            print("not yet either");
-        }
+        
         void IncubateNew(bool isProducer)
         {
             Species s = new Species(nextIdx, isProducer, sizeSlider.value, greedSlider.value);
-            s.Object = GenerateSpeciesObject(s);
-            s.Object.transform.SetParent(incubator, false);
-            nameText.name = s.Object.name;
+            s.Object = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
+            s.Object.transform.SetParent(incubatorParent, false);
+            nameText.text = s.Object.name;
 
             inspected = s;
+        }
+        void RefreshIncubated()
+        {
+            if (inspected == null || inspected.Spawned)
+                throw new Exception("nothing incubated");
+
+            Destroy(inspected.Object);
+            IncubateNew(inspected.IsProducer);
         }
         void SetInspectedSize(float bodySize)
         {
@@ -90,7 +87,7 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing inspected");
 
             inspected.BodySize = bodySize;
-            RegenerateInspectedObject();
+            factory.RegenerateSpecies(inspected.Object, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             if (inspected.Spawned)
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
         }
@@ -100,17 +97,15 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing inspected");
 
             inspected.Greediness = greed;
-            RegenerateInspectedObject();
+            factory.RegenerateSpecies(inspected.Object, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             if (inspected.Spawned)
                 OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
         }
         public void InspectSpecies(int idx)
         {
             if (inspected != null && !inspected.Spawned)
-            {
                 Destroy(inspected.Object);
-                spawnedSpecies.Remove(inspected.Idx); // lol memory leak but not really
-            }
+
             inspected = spawnedSpecies[idx];
 
             nameText.text = inspected.Object.name;
@@ -127,14 +122,15 @@ namespace EcoBuilder.UI
             }
             GetComponent<Animator>().SetTrigger("Uninspect");
         }
-        void Spawn()
+        public void Spawn()
         {
             if (inspected == null)
                 throw new Exception("nothing inspected");
             if (inspected.Spawned)
                 throw new Exception("already spawned");
             
-            OnSpawned.Invoke(inspected.Idx, inspected.Object);
+            OnSpawned.Invoke(inspected.Idx, inspected.Object); // must be invoked first
+            
             OnProducerSet.Invoke(inspected.Idx, inspected.IsProducer);
             OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
             OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
@@ -145,14 +141,50 @@ namespace EcoBuilder.UI
 
             GetComponent<Animator>().SetTrigger("Spawn");
         }
-        public void OnDrag(PointerEventData ped)
-        {
+        // public float GetKg(float normalizedBodySize)
+        // {
+        //     // float min = Mathf.Log10(minKg);
+        //     // float max = Mathf.Log10(maxKg);
+        //     // float mid = min + input*(max-min);
+        //     // return Mathf.Pow(10, mid);
 
-        }
-        public void OnPointerClick(PointerEventData ped)
+        //     // same as above commented
+        //     return Mathf.Pow(minKg, 1-normalizedBodySize) * Mathf.Pow(maxKg, normalizedBodySize);
+        // }
+
+        // public int InspectedIdx { get { return inspected.Idx; } }
+        public bool Dragging { get; private set; }
+        public void OnBeginDrag(PointerEventData ped)
         {
             if (inspected != null && !inspected.Spawned)
-                Spawn();
+            {
+                inspected.Object.transform.SetParent(null, true);
+                Dragging = true;
+            }
+        }
+        public void OnDrag(PointerEventData ped)
+        {
+            if (Dragging)
+            {
+                Vector3 camPos = Camera.main.ScreenToWorldPoint(ped.position);
+                camPos.z = 0;
+                inspected.Object.transform.position = camPos;
+            }
+        }
+        public void OnEndDrag(PointerEventData ped)
+        {
+            if (Dragging)
+            {
+                Dragging = false;
+                // incubatorParent.position = Vector3.zero;
+                if (!inspected.Spawned)
+                {
+                    inspected.Object.transform.SetParent(incubatorParent);
+                    inspected.Object.transform.localPosition = Vector3.zero;
+                    inspected.Object.transform.localScale = Vector3.one * .5f; // TODO: change to save original
+                    inspected.Object.transform.localRotation = Quaternion.identity;
+                }
+            }
         }
     }
 }

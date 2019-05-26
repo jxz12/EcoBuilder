@@ -23,12 +23,14 @@ namespace EcoBuilder
             inspector.OnGreedSet +=        (i,x)=> model.SetSpeciesGreediness(i,x);
 
             nodelink.OnNodeHeld +=           (i)=> inspector.InspectSpecies(i);
+            nodelink.OnNodeHeld +=           (i)=> nodelink.FocusNode(i);
             nodelink.OnEmptyClicked +=        ()=> inspector.Uninspect();
+            nodelink.OnEmptyClicked +=        ()=> nodelink.Unfocus();
 
-            // nodelink.OnNodeClicked +=        (j)=> MakeInteraction(j);
+            nodelink.OnNodeClicked +=        (j)=> TryAddNewInteraction(j);
+            nodelink.OnDroppedOn +=           ()=> TryAddNewSpecies();
             // nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
             // nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
-            // nodelink.OnDroppedOn +=           ()=> TrySpawnNewSpecies();
 
             model.OnCalculated +=             ()=> CalculateScore();
             // model.OnCalculated +=             ()=> ResizeNodes();
@@ -42,6 +44,17 @@ namespace EcoBuilder
             // status.OnRedo +=                  ()=> RedoMove();
         }
 
+        void TryAddNewSpecies()
+        {
+            if (inspector.Dragging)
+            {
+                inspector.Spawn();
+            }
+        }
+        void TryAddNewInteraction(int i)
+        {
+            print(i);
+        }
         void CalculateScore()
         {
             if (model.Feasible)

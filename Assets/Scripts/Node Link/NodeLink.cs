@@ -27,8 +27,7 @@ namespace EcoBuilder.NodeLink
             if (nodes[idx] != null)
                 throw new Exception("already has idx " + idx);
 
-            Node newNode;
-            newNode = Instantiate(nodePrefab, nodesParent);
+            Node newNode = Instantiate(nodePrefab, nodesParent);
 
             var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
             newNode.Init(idx, startPos, shape);
@@ -37,14 +36,25 @@ namespace EcoBuilder.NodeLink
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
         }
-        // public void ShapeNodeIntoCube(int idx)
+        public void ReshapeNode(int idx, GameObject shape)
+        {
+            nodes[idx].Reshape(shape);
+        }
+        public void ResizeNode(int idx, float size)
+        {
+            if (size < 0)
+                throw new Exception("size cannot be negative");
+
+            nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
+        }
+        // public void ResizeNodeOutline(int idx, float size)
         // {
-        //     nodes[idx].SetShape(cubeMesh, cubeOutline);
+        //     if (size < 0)
+        //         throw new Exception("size cannot be negative");
+
+        //     nodes[idx].OutlineSize = .5f + Mathf.Sqrt(size);
         // }
-        // public void ShapeNodeIntoSphere(int idx)
-        // {
-        //     nodes[idx].SetShape(sphereMesh, sphereOutline);
-        // }
+
         public void RemoveNode(int idx)
         {
             // if (focus != null && focus.Idx == idx)
@@ -110,32 +120,7 @@ namespace EcoBuilder.NodeLink
                 yield return ij;
             }
         }
-        public void ReshapeNode(int idx, GameObject shape)
-        {
-            nodes[idx].Reshape(shape);
-        }
 
-        public void ResizeNode(int idx, float size)
-        {
-            if (size < 0)
-                throw new Exception("size cannot be negative");
-
-            nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
-        }
-        // public void ResizeNodeOutline(int idx, float size)
-        // {
-        //     if (size < 0)
-        //         throw new Exception("size cannot be negative");
-
-        //     nodes[idx].OutlineSize = .5f + Mathf.Sqrt(size);
-        // }
-
-        // [SerializeField] float maxEdgeWidth;
-        // public void ResizeEdge(int i, int j, float width)
-        // {
-        //     links[i,j].Width = .2f + maxEdgeWidth*width;
-        //     // TODO: some pulse here too
-        // }
 
         Node focus=null;
         public void FocusNode(int idx)
@@ -154,10 +139,6 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Idle();
         }
-        // public void HeavyFlashNode(int idx)
-        // {
-        //     nodes[idx].HeavyFlash();
-        // }
 
         ////////////////////////////////////
         // for user-interaction rotation

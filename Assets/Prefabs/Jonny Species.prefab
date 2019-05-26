@@ -258,9 +258,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fcd0754b6c08e94eb4c15122d66ceaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
   body: {fileID: 4822296920973503334}
   eyes: {fileID: 1886545499}
   nose: {fileID: 455293267}

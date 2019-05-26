@@ -28,21 +28,23 @@ namespace EcoBuilder.NodeLink
 
         Transform shape, outline;
         // MeshFilter nodeMesh;
-        public void Init(int idx, Vector3 target, GameObject shapeObject)
+        public void Init(int idx, Vector3 pos, GameObject shapeObject)
         {
             Idx = idx;
             name = idx.ToString();
-            TargetPos = target;
+            TargetPos = pos;
 
             shape = shapeObject.transform;
             shape.SetParent(transform, false);
+            shape.localPosition = Vector3.zero;
+            shape.localRotation = Quaternion.identity;
             Size = 1;
 
             mr = shapeObject.GetComponent<MeshRenderer>();
             if (mr == null)
                 throw new System.Exception("shape has no meshrenderer!");
 
-            outline = shape; // TODO: change to a system that copies the shape dynamically!
+            // outline = shape; // TODO: change to a system that copies the shape (mesh) dynamically!
         }
         public void Reshape(GameObject shapeObject)
         {
