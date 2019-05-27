@@ -65,6 +65,18 @@ namespace EcoBuilder.UI
             greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
         }
 
+        // TODO: make it show how many are remaining
+        int numProducers=0, maxProducers=int.MaxValue, numConsumers=0, maxConsumers=int.MaxValue;
+        public void ConstrainTypes(int producers, int consumers)
+        {
+            if (numProducers < 0 || numConsumers < 0)
+                throw new Exception("Cannot have negative numbers of species");
+            
+            maxProducers = producers;
+            maxConsumers = consumers;
+        }
+
+
         [SerializeField] JonnyGenerator factory;
         
         void IncubateNew(bool isProducer)
@@ -83,6 +95,7 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             Destroy(inspected.Object);
+            inspected = new Species(inspected.Idx, inspected.IsProducer, sizeSlider.value, greedSlider.value);
             inspected.Object = factory.GenerateSpecies(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             inspected.Object.transform.SetParent(incubatorParent, false);
             nameText.text = inspected.Object.name;
@@ -147,20 +160,26 @@ namespace EcoBuilder.UI
             nextIdx += 1;
 
             GetComponent<Animator>().SetTrigger("Spawn");
-            OnUnincubated.Invoke(); // maybe don't need this
+            OnUnincubated.Invoke();
+
+            if (inspected.IsProducer)
+            {
+                numProducers += 1;
+                if (numProducers >= maxProducers)
+                    producerButton.interactable = false;
+            }
+            else
+            {
+                numConsumers += 1;
+                if (numConsumers >= maxConsumers)
+                    consumerButton.interactable = false;
+            }
         }
-        // public float GetKg(float normalizedBodySize)
-        // {
-        //     // float min = Mathf.Log10(minKg);
-        //     // float max = Mathf.Log10(maxKg);
-        //     // float mid = min + input*(max-min);
-        //     // return Mathf.Pow(10, mid);
+        public void Unspawn(int idx)
+        {
+            print("NOT IMPLEMENTED YET");
+        }
 
-        //     // same as above commented
-        //     return Mathf.Pow(minKg, 1-normalizedBodySize) * Mathf.Pow(maxKg, normalizedBodySize);
-        // }
-
-        public int? InspectedIdx { get { return inspected==null? null : (int?)inspected.Idx; } }
         public bool Dragging { get; private set; }
         public void OnBeginDrag(PointerEventData ped)
         {

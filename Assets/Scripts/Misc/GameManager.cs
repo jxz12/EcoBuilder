@@ -82,32 +82,46 @@ namespace EcoBuilder
             timeDeltas.Enqueue(newDelta);
         }
 
-        // public class Level
-        // {
-        //     public List<bool> IsProducers { get; private set; }
-        //     public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
-        //     public string Description { get; private set; }
-        //     public string ConstraintNotMetMessage { get; private set; }
-        //     public Level()
-        //     {
-        //         IsProducers = new List<bool>() { true, false, false, false, false };
-        //         // GraphConstraints = g=> g.LoopExists(3);
-        //         GraphConstraints = g=> true;
-        //         Description = "one producer, 4 consumers! Must contain at least one loop.";
-        //         ConstraintNotMetMessage = "NO LOOP!";
-        //     }
-        // }
+
+
+
+
+
+
+
+
+        //////////////////////////
+        // used for stuff
+
         /*
         graph constraints:
             min/max chain length
             must contain a cycle of length n
             omnivory (coherence)
-            min energy flow (flux)
-        
-        vertex constraints:
-            min/max number of resources
-            min/max size or greediness
+            min/max number of basals or apex predators
+
+        model constraints:
+            flux
+            size/greediness (e.g. only big species)
         */
+        public class Level
+        {
+            public int numProducers;
+            public int numConsumers;
+            public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
+            public string Description { get; private set; }
+            public string ConstraintNotMetMessage { get; private set; }
+            public Level()
+            {
+                numProducers = 1;
+                numConsumers = 5;
+                // GraphConstraints = g=> g.LoopExists(3);
+                GraphConstraints = g=> true;
+                Description = "one producer, 4 consumers! Must contain at least one loop.";
+                ConstraintNotMetMessage = "NO LOOP!";
+            }
+        }
+        public Level level = new Level();
 
 
 

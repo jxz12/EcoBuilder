@@ -19,6 +19,7 @@ namespace EcoBuilder.UI
 			menu.onClick.AddListener(()=> OnMenu());
 		}
 
+		// TODO: make stars dance and stuff
 		public void FillStar1()
 		{
 			star1.material = starFilled;

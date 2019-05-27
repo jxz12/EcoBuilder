@@ -19,9 +19,62 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        // [SerializeField] Mesh sphereMesh, cubeMesh;
-        // [SerializeField] Mesh sphereOutline, cubeOutline;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
+
+        public event Action OnLaplacianUnsolvable;
+        public event Action OnLaplacianSolvable;
+
+        bool laplacianDetNeg = false;
+        private void FixedUpdate()
+        {
+            if (potentialHold)
+                return;
+
+            if (nodes.Count > 0)
+            {
+                ///////////////////////////////
+                // First do height calculations
+                HashSet<int> basal = BuildTrophicEquations();
+                var heights = HeightBFS(basal);
+
+                if (heights.Count == nodes.Count) // if every node can be reached from basal
+                {
+                    if (laplacianDetNeg == true)
+                    {
+                        laplacianDetNeg = false;
+                        OnLaplacianSolvable.Invoke();
+                    }
+                    TrophicGaussSeidel();
+                    foreach (Node no in nodes)
+                    {
+                        float targetY = .4f*heights[no.Idx]+.3f*(trophicLevels[no.Idx]-1);
+                        no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
+                    }
+                }
+                else
+                {
+                    if (laplacianDetNeg == false)
+                    {
+                        laplacianDetNeg = true;
+                        OnLaplacianUnsolvable.Invoke();
+                    }
+                }
+
+                //////////////////////
+                // then do stress SGD
+                int dq = toBFS.Dequeue(); // only do one vertex per frame
+                var d_j = ShortestPathsBFS(dq);
+
+                LayoutSGD(dq, d_j);
+                toBFS.Enqueue(dq);
+
+                // center
+                TweenNodes();
+            }
+
+            if (!dragging)
+                Rotate();
+        }
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
@@ -478,17 +531,6 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        public float MaxTrophicHeight()
-        {
-            float max = 0;
-            foreach (float trophicLevel in trophicLevels)
-            {
-                if (trophicLevel > max)
-                    max = trophicLevel;
-            }
-            return max;
-        }
-
         private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
         {
             var visited = new Dictionary<int, int>();
@@ -512,6 +554,15 @@ namespace EcoBuilder.NodeLink
                 }
             }
             return visited;
+        }
+
+
+        //////////////////////////
+        // for chain length
+
+        public int MaxChainLength()
+        {
+            return 1;
         }
 
         ///////////////////////////
@@ -541,60 +592,6 @@ namespace EcoBuilder.NodeLink
                 sum_x_sqr += x * x;
             }
             return Mathf.Sqrt(sum_x_sqr - 1);
-        }
-
-        bool laplacianDetNeg = false;
-        public event Action OnLaplacianUnsolvable;
-        public event Action OnLaplacianSolvable;
-        private void FixedUpdate()
-        {
-            if (potentialHold)
-                return;
-
-            if (nodes.Count > 0)
-            {
-                ///////////////////////////////
-                // First do height calculations
-                HashSet<int> basal = BuildTrophicEquations();
-                var heights = HeightBFS(basal);
-
-                if (heights.Count == nodes.Count) // if every node can be reached from basal
-                {
-                    if (laplacianDetNeg == true)
-                    {
-                        laplacianDetNeg = false;
-                        OnLaplacianSolvable.Invoke();
-                    }
-                    TrophicGaussSeidel();
-                    foreach (Node no in nodes)
-                    {
-                        float targetY = .4f*heights[no.Idx]+.3f*(trophicLevels[no.Idx]-1);
-                        no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
-                    }
-                }
-                else
-                {
-                    if (laplacianDetNeg == false)
-                    {
-                        laplacianDetNeg = true;
-                        OnLaplacianUnsolvable.Invoke();
-                    }
-                }
-
-                //////////////////////
-                // then do stress SGD
-                int dq = toBFS.Dequeue(); // only do one vertex per frame
-                var d_j = ShortestPathsBFS(dq);
-
-                LayoutSGD(dq, d_j);
-                toBFS.Enqueue(dq);
-
-                // center
-                TweenNodes();
-            }
-
-            if (!dragging)
-                Rotate();
         }
 
     }

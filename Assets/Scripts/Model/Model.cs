@@ -7,6 +7,50 @@ using System.Threading.Tasks;
 
 namespace EcoBuilder.Model
 {
+    class Species
+    {
+        public int Idx { get; private set; }
+        bool isProducer = true;
+        public bool IsProducer {
+            set {
+                isProducer = value;
+                // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
+                // Efficiency = isProducer? e_p : e_c;
+                Growth = isProducer? 1:-.1;
+            }
+        }
+        // double growth_exp = 1/b0;
+        // double search_exp = 1;
+        public double BodySize {
+            set {
+                // growth_exp = Math.Pow(value, beta-1);
+                // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
+
+                // search_exp = Math.Pow(value, (p_v+2*p_r) - 1);
+                // Search = search_exp * a0;
+                Search = 1;
+            }
+        }
+        public double Greediness {
+            set {
+                // this is the same as scaling on a log scale
+                // SelfReg = -Math.Pow(a_ii_min, 1-value) * Math.Pow(a_ii_max, value);
+                SelfReg = -10;
+            }
+        }
+        public double Growth { get; private set; } = 1;
+        public double Search { get; private set; } = 1;
+        public double Find { get; private set; } = 1;
+        public double SelfReg { get; private set; } = -1;
+        public double Efficiency { get; private set; } = 1;
+
+        public double Abundance { get; set; } = 1; // initialise as non-extinct
+
+        public Species(int idx)
+        {
+            Idx = idx;
+        }
+    }
     public class Model : MonoBehaviour
     {   
         [Serializable] class IntEvent : UnityEvent<int> { }
@@ -27,50 +71,17 @@ namespace EcoBuilder.Model
                                 a_ii_min = 1e-3,
                                 a_ii_max = 1e2;
 
-        class Species
-        {
-            public int Idx { get; private set; }
-            bool isProducer = true;
-            public bool IsProducer {
-                set {
-                    isProducer = value;
-                    // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
-                    // Efficiency = isProducer? e_p : e_c;
-                    Growth = isProducer? 1:-.1;
-                }
-            }
-            // double growth_exp = 1/b0;
-            // double search_exp = 1;
-            public double BodySize {
-                set {
-                    // growth_exp = Math.Pow(value, beta-1);
-                    // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
+        // public float GetKg(float normalizedBodySize)
+        // {
+        //     // float min = Mathf.Log10(minKg);
+        //     // float max = Mathf.Log10(maxKg);
+        //     // float mid = min + input*(max-min);
+        //     // return Mathf.Pow(10, mid);
 
-                    // search_exp = Math.Pow(value, (p_v+2*p_r) - 1);
-                    // Search = search_exp * a0;
-                    Search = 1;
-                }
-            }
-            public double Greediness {
-                set {
-                    // this is the same as scaling on a log scale
-                    // SelfReg = -Math.Pow(a_ii_min, 1-value) * Math.Pow(a_ii_max, value);
-                    SelfReg = -10;
-                }
-            }
-            public double Growth { get; private set; } = 1;
-            public double Search { get; private set; } = 1;
-            public double Find { get; private set; } = 1;
-            public double SelfReg { get; private set; } = -1;
-            public double Efficiency { get; private set; } = 1;
+        //     // same as above commented
+        //     return Mathf.Pow(minKg, 1-normalizedBodySize) * Mathf.Pow(maxKg, normalizedBodySize);
+        // }
 
-            public double Abundance { get; set; } = 1; // initialise as non-extinct
-
-            public Species(int idx)
-            {
-                Idx = idx;
-            }
-        }
 
         LotkaVolterra<Species> simulation;
         void Awake()
