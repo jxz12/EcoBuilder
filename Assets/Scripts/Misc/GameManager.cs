@@ -106,22 +106,24 @@ namespace EcoBuilder
         */
         public class Level
         {
-            public int numProducers;
-            public int numConsumers;
+            public int NumProducers { get; private set; }
+            public int NumConsumers { get; private set; }
             public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
+            public Func<Model.Model, bool> ModelConstraints { get; private set; }
             public string Description { get; private set; }
             public string ConstraintNotMetMessage { get; private set; }
             public Level()
             {
-                numProducers = 1;
-                numConsumers = 5;
+                NumProducers = 1;
+                NumConsumers = 4;
                 // GraphConstraints = g=> g.LoopExists(3);
-                GraphConstraints = g=> true;
+                GraphConstraints = g=> g.MaxChainLength() > 2;
+                ModelConstraints = g=> true;
                 Description = "one producer, 4 consumers! Must contain at least one loop.";
                 ConstraintNotMetMessage = "NO LOOP!";
             }
         }
-        public Level level = new Level();
+        public Level ChosenLevel { get; private set; } = new Level();
 
 
 

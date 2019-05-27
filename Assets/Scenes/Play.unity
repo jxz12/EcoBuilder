@@ -2196,7 +2196,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 160
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 450, y: 800}
+  m_ReferenceResolution: {x: 800, y: 800}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 1
   m_PhysicalUnit: 3
@@ -2356,6 +2356,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 789c3b4da1c391c41a89cf5d2e24ac82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  goButton: {fileID: 1835094442}
   producerButton: {fileID: 1021513685}
   consumerButton: {fileID: 716169088}
   sizeSlider: {fileID: 1977185968}
@@ -3369,7 +3370,7 @@ GameObject:
   - component: {fileID: 1835094443}
   - component: {fileID: 1835094442}
   m_Layer: 0
-  m_Name: Plus
+  m_Name: Go
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3437,18 +3438,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1835094443}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1168393884}
-        m_MethodName: SetTrigger
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Begin
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &1835094443

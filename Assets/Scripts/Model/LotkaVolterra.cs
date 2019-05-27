@@ -145,47 +145,6 @@ namespace EcoBuilder.Model
             }
         }
 
-        /*
-        ILU0Preconditioner precond = new ILU0Preconditioner();
-        BiCgStab solver = new BiCgStab();
-        //////////////////////////////////////
-        // O(n^2), so can do it every frame
-        public void IterateEquilibrium()
-        {
-            var iterator = new Iterator<double>(
-                new IterationCountStopCriterion<double>(5),
-                // new ResidualStopCriterion<double>(tolerance),
-                new DivergenceStopCriterion<double>()
-            );
-
-            // solver.Solve(A, b, x, iterator, precond);
-
-            // MILU0Preconditioner precond = new MILU0Preconditioner();
-            // var precond = new DiagonalPreconditioner();
-            // BiCgStab solver = new BiCgStab();
-
-            precond.Initialize(A);
-            solver.Solve(A, b, x, iterator, precond);
-            UnityEngine.Debug.Log(A.Determinant() + ": " +  MathNetVecStr(x));
-        }
-        */
-
-        public void Test(int n = 1000)
-        {
-            var asd = Matrix<double>.Build.Dense(n, n);
-            var f = Vector<double>.Build.Dense(n);
-            Random rand = new Random();
-            for (int i=0; i<n; i++)
-            {
-                f[i] = rand.NextDouble();
-                for (int j=0; j<n; j++)
-                {
-                    asd[i,j] = rand.NextDouble();
-                }
-            }
-            var fgh = asd.Solve(f);
-            // var fgh = asd.Multiply(asd);
-        }
 
         ///////////
         // O(n^3)

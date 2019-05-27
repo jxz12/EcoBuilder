@@ -24,6 +24,7 @@ namespace EcoBuilder
             inspector.OnGreedSet +=        (i,x)=> model.SetSpeciesGreediness(i,x);
             inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
             inspector.OnUnincubated +=        ()=> nodelink.MoveRight();
+            inspector.OnGameEnded +=          ()=> EndGame();
 
             nodelink.OnNodeFocused +=        (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=           ()=> inspector.Uninspect();
@@ -33,16 +34,18 @@ namespace EcoBuilder
             // nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
             // nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
 
-            model.OnCalculated +=             ()=> CalculateScore();
             // model.OnCalculated +=             ()=> ResizeNodes();
             // model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
             // model.OnRescued +=               (i)=> nodelink.IdleNode(i);
+            model.OnCalculated +=             ()=> CalculateScore();
             model.OnEndangered +=            (i)=> print("neg: " + i);
             model.OnRescued +=               (i)=> print("pos: " + i);
 
-            // status.OnMenu +=                  ()=> print("MENU");
-            // status.OnUndo +=                  ()=> UndoMove();
-            // status.OnRedo +=                  ()=> RedoMove();
+            status.OnMenu +=                  ()=> print(nodelink.MaxChainLength());
+            status.OnUndo +=                  ()=> print(nodelink.LongestLoop());
+
+            inspector.ConstrainTypes(GameManager.Instance.ChosenLevel.NumProducers, GameManager.Instance.ChosenLevel.NumConsumers);
+            print(GameManager.Instance.ChosenLevel.Description);
         }
 
         void TryAddNewSpecies()
@@ -50,7 +53,7 @@ namespace EcoBuilder
             if (inspector.Dragging)
             {
                 inspector.Spawn();
-                // nodelink.FocusNode((int)inspector.InspectedIdx);
+                // TODO: check for all species done here
             }
         }
         void CalculateScore()
@@ -63,7 +66,7 @@ namespace EcoBuilder
                 status.FillStar2();
             else
                 status.EmptyStar2();
-            if (model.Nonreactive)
+            if (model.Nonreactive) // might be too hard
                 status.FillStar3();
             else
                 status.EmptyStar3();
@@ -71,11 +74,18 @@ namespace EcoBuilder
             if (model.Feasible)
                 print("flux: " + model.Flux);
         }
-        // void EndGame()
-        // {
-        //     // TODO: stop the game here, and look for height, loops, omnivory
-        //     print("game over!");
-        // }
+        void EndGame()
+        {
+            // TODO: stop the game here, and look for height, loops, omnivory
+            if (GameManager.Instance.ChosenLevel.GraphConstraints(nodelink))
+            {
+                print("Well done!");
+            }
+            else
+            {
+                print(GameManager.Instance.ChosenLevel.ConstraintNotMetMessage);
+            }
+        }
 
         
         public void Quit()

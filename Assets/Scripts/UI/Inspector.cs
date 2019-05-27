@@ -38,10 +38,12 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
+        public event Action OnGameEnded;
 
         public event Action OnIncubated;
         public event Action OnUnincubated;
 
+        [SerializeField] Button goButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
         [SerializeField] Slider sizeSlider;
@@ -57,6 +59,7 @@ namespace EcoBuilder.UI
 
         void Start()
         {
+            goButton.onClick.AddListener(()=> Go());
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
@@ -79,6 +82,17 @@ namespace EcoBuilder.UI
 
         [SerializeField] JonnyGenerator factory;
         
+        void Go()
+        {
+            if (numProducers==maxProducers && numConsumers==maxConsumers)
+            {
+                OnGameEnded.Invoke();
+            }
+            else
+            {
+                GetComponent<Animator>().SetTrigger("Go");
+            }
+        }
         void IncubateNew(bool isProducer)
         {
             Species s = new Species(nextIdx, isProducer, sizeSlider.value, greedSlider.value);
@@ -137,7 +151,8 @@ namespace EcoBuilder.UI
             if (inspected != null && !inspected.Spawned)
             {
                 Destroy(inspected.Object);
-                spawnedSpecies.Remove(inspected.Idx); // lol memory leak but not really
+                spawnedSpecies.Remove(inspected.Idx);
+                inspected = null; // lol memory leak but not really
                 OnUnincubated.Invoke(); // maybe don't need this
             }
             GetComponent<Animator>().SetTrigger("Uninspect");
