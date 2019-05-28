@@ -5,6 +5,29 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
+        ////////////////////////
+        // for basal/apex
+
+        public HashSet<int> GetBasal()
+        {
+            var basal = new HashSet<int>();
+            foreach (Node no in nodes)
+                if (links.GetColumnDataCount(no.Idx) == 0) // slow, but WHATEVER
+                    basal.Add(no.Idx);
+            
+            return basal;
+        }
+        public HashSet<int> GetApex()
+        {
+            var apex = new HashSet<int>();
+            foreach (Node no in nodes)
+                if (links.GetRowDataCount(no.Idx) == 0)
+                    apex.Add(no.Idx);
+            
+            return apex;
+        }
+
+
         //////////////////////////
         // for chain length
 
@@ -34,11 +57,7 @@ namespace EcoBuilder.NodeLink
 
         public int MaxChainLength()
         {
-            var basal = new HashSet<int>();
-            foreach (Node no in nodes)
-                if (links.GetColumnDataCount(no.Idx) == 0) // slow, but WHATEVER
-                    basal.Add(no.Idx);
-
+            HashSet<int> basal = GetBasal();
             var heights = HeightBFS(basal);
             int maxChain = 0;
             foreach (int height in heights.Values)

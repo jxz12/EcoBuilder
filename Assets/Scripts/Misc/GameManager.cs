@@ -104,26 +104,26 @@ namespace EcoBuilder
             flux
             size/greediness (e.g. only big species)
         */
-        public class Level
-        {
-            public int NumProducers { get; private set; }
-            public int NumConsumers { get; private set; }
-            public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
-            public Func<Model.Model, bool> ModelConstraints { get; private set; }
-            public string Description { get; private set; }
-            public string ConstraintNotMetMessage { get; private set; }
-            public Level()
-            {
-                NumProducers = 1;
-                NumConsumers = 4;
-                // GraphConstraints = g=> g.LoopExists(3);
-                GraphConstraints = g=> g.MaxChainLength() > 2;
-                ModelConstraints = g=> true;
-                Description = "one producer, 4 consumers! Must contain at least one loop.";
-                ConstraintNotMetMessage = "NO LOOP!";
-            }
-        }
-        public Level ChosenLevel { get; private set; } = new Level();
+        // public class Level
+        // {
+        //     public int NumProducers { get; private set; }
+        //     public int NumConsumers { get; private set; }
+        //     public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
+        //     public Func<Model.Model, bool> ModelConstraints { get; private set; }
+        //     public string Description { get; private set; }
+        //     public string ConstraintNotMetMessage { get; private set; }
+        //     public Level()
+        //     {
+        //         NumProducers = 1;
+        //         NumConsumers = 4;
+        //         // GraphConstraints = g=> g.LoopExists(3);
+        //         GraphConstraints = g=> g.MaxChainLength() > 2;
+        //         ModelConstraints = g=> true;
+        //         Description = "one producer, 4 consumers! Must contain at least one loop.";
+        //         ConstraintNotMetMessage = "NO LOOP!";
+        //     }
+        // }
+        // public Level ChosenLevel { get; private set; } = new Level();
 
 
 
