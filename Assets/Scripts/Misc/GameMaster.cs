@@ -44,8 +44,8 @@ namespace EcoBuilder
             status.OnMenu +=                  ()=> print(nodelink.MaxChainLength());
             status.OnUndo +=                  ()=> print(nodelink.LongestLoop());
 
-            inspector.ConstrainTypes(GameManager.Instance.ChosenLevel.NumProducers, GameManager.Instance.ChosenLevel.NumConsumers);
-            print(GameManager.Instance.ChosenLevel.Description);
+            // inspector.ConstrainTypes(GameManager.Instance.ChosenLevel.NumProducers, GameManager.Instance.ChosenLevel.NumConsumers);
+            // print(GameManager.Instance.ChosenLevel.Description);
         }
 
         void TryAddNewSpecies()
@@ -76,15 +76,15 @@ namespace EcoBuilder
         }
         void EndGame()
         {
-            // TODO: stop the game here, and look for height, loops, omnivory
-            if (GameManager.Instance.ChosenLevel.GraphConstraints(nodelink))
-            {
-                print("Well done!");
-            }
-            else
-            {
-                print(GameManager.Instance.ChosenLevel.ConstraintNotMetMessage);
-            }
+            // // TODO: stop the game here, and look for height, loops, omnivory
+            // if (GameManager.Instance.ChosenLevel.GraphConstraints(nodelink))
+            // {
+            //     print("Well done!");
+            // }
+            // else
+            // {
+            //     print(GameManager.Instance.ChosenLevel.ConstraintNotMetMessage);
+            // }
         }
 
         

@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Level : MonoBehaviour
+namespace EcoBuilder.Menu
 {
-    [SerializeField] string description;
-    [SerializeField] int numProducers, numConsumers;
-    [SerializeField] int minLoop, maxLoop;
-    [SerializeField] int minChain, maxChain;
-    [SerializeField] float minOmnivory, maxOmnivory;
-    // Start is called before the first frame update
-    void Start()
+    public class Level : MonoBehaviour
     {
-        
-    }
+        [SerializeField] string title;
+        [SerializeField] string description;
+        [SerializeField] int numProducers, numConsumers;
+        [SerializeField] int minLoop, maxLoop;
+        [SerializeField] int minChain, maxChain;
+        [SerializeField] float minOmnivory, maxOmnivory;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public void ShowLevelCard()
+        {
+            // TODO: set things here
+            GameManager.Instance.ShowLevelCard();
+        }
     }
 }

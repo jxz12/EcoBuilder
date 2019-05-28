@@ -82,6 +82,11 @@ namespace EcoBuilder
             timeDeltas.Enqueue(newDelta);
         }
 
+        [SerializeField] Menu.LevelCard level;
+        public void ShowLevelCard()
+        {
+            level.gameObject.SetActive(true);
+        }
 
 
 
