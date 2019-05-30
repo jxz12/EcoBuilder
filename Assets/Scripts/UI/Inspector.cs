@@ -223,7 +223,7 @@ namespace EcoBuilder.UI
                 {
                     inspected.Object.transform.SetParent(incubatorParent);
                     inspected.Object.transform.localPosition = Vector3.zero;
-                    inspected.Object.transform.localScale = Vector3.one * .5f; // TODO: change to save original
+                    inspected.Object.transform.localScale = Vector3.one;
                     inspected.Object.transform.localRotation = Quaternion.identity;
                 }
             }

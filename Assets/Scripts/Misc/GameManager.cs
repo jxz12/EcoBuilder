@@ -6,6 +6,10 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+// for load/save progress
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+
 namespace EcoBuilder
 {
     public class GameManager : MonoBehaviour
@@ -36,8 +40,19 @@ namespace EcoBuilder
         }
         void Start()
         {
+            LoadProgress();
+
             if (SceneManager.sceneCount == 1)
                 LoadScene("Menu");
+        }
+        void OnApplicationQuit()
+        {
+            if (Progress.Count >= 4)
+                Progress = new List<int>();
+            else
+                Progress.Add(0);
+
+            SaveProgress();
         }
         
 
@@ -82,21 +97,31 @@ namespace EcoBuilder
             timeDeltas.Enqueue(newDelta);
         }
 
-        [SerializeField] Menu.LevelCard level;
-        public void ShowLevelCard()
+
+        // -1 is locked, 0,1,2,3 unlocked plus number of stars
+        public List<int> Progress { get; private set; }
+        void SaveProgress()
         {
-            level.gameObject.SetActive(true);
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Create(Application.persistentDataPath + "/levels.gd");
+            bf.Serialize(file, Progress);
+            file.Close();
         }
-
-
-
-
-
-
-
-
-        //////////////////////////
-        // used for stuff
+        void LoadProgress()
+        {
+            if (File.Exists(Application.persistentDataPath + "/levels.gd"))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                FileStream file = File.Open(Application.persistentDataPath + "/levels.gd", FileMode.Open);
+                Progress = (List<int>)bf.Deserialize(file);
+                file.Close();
+            }
+            else
+            {
+                Progress = new List<int>();
+                Progress.Add(0); // if no save file, only unlock first level, no stars
+            }
+        }
 
         /*
         graph constraints:
@@ -106,29 +131,50 @@ namespace EcoBuilder
             min/max number of basals or apex predators
 
         model constraints:
-            flux
+            min/max flux
             size/greediness (e.g. only big species)
         */
-        // public class Level
-        // {
-        //     public int NumProducers { get; private set; }
-        //     public int NumConsumers { get; private set; }
-        //     public Func<NodeLink.NodeLink, bool> GraphConstraints { get; private set; }
-        //     public Func<Model.Model, bool> ModelConstraints { get; private set; }
-        //     public string Description { get; private set; }
-        //     public string ConstraintNotMetMessage { get; private set; }
-        //     public Level()
-        //     {
-        //         NumProducers = 1;
-        //         NumConsumers = 4;
-        //         // GraphConstraints = g=> g.LoopExists(3);
-        //         GraphConstraints = g=> g.MaxChainLength() > 2;
-        //         ModelConstraints = g=> true;
-        //         Description = "one producer, 4 consumers! Must contain at least one loop.";
-        //         ConstraintNotMetMessage = "NO LOOP!";
-        //     }
-        // }
-        // public Level ChosenLevel { get; private set; } = new Level();
+        [SerializeField] Menu.LevelCard levelCard;
+        public int LevelNumber { get; private set; }
+        public int NumProducers { get; private set; }
+        public int NumConsumers { get; private set; }
+        public void ShowLevelCard(int number, string title, string description,
+            int numProducers, int numConsumers,
+            int minLoop=0, int maxLoop=0, int minChain=0, int maxChain=0, float minOmnivory=0, float maxOmnivory=0 )
+        {
+            LevelNumber = number;
+            NumProducers = numProducers;
+            NumConsumers = numConsumers;
+            levelCard.Show(title, description, numProducers, numConsumers);
+        }
+        public void ShowLevelCard()
+        {
+            levelCard.Show();
+        }
+        public void HideLevelCard()
+        {
+            levelCard.Hide();
+        }
+        public void PlayGame()
+        {
+            GameManager.Instance.UnloadScene("Menu");
+            GameManager.Instance.LoadScene("Play");
+        }
+        public void EndGame(int numStars)
+        {
+            if (numStars < 0 || numStars > 3)
+                throw new Exception("cannot pass with less than 1 or more than 3 stars");
+
+            // TODO: unlock new levels and stuff
+
+            GameManager.Instance.UnloadScene("Play");
+            GameManager.Instance.LoadScene("Menu");
+        }
+
+
+
+
+
 
 
 

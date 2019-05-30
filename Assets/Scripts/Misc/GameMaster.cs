@@ -16,36 +16,35 @@ namespace EcoBuilder
 
         void Start()
         {
+            inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
+            inspector.OnUnincubated +=        ()=> nodelink.MoveRight();
             inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnProducerSet +=     (i,b)=> model.SetSpeciesProduction(i,b);
+            inspector.OnGameEnded +=          ()=> EndGame();
+
+            inspector.OnProducerSet +=     (i,b)=> model.SetSpeciesIsProducer(i,b);
             inspector.OnProducerSet +=     (i,b)=> nodelink.SetNodeAsSourceOnly(i,b);
             inspector.OnSizeSet +=         (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=        (i,x)=> model.SetSpeciesGreediness(i,x);
-            inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
-            inspector.OnUnincubated +=        ()=> nodelink.MoveRight();
-            inspector.OnGameEnded +=          ()=> EndGame();
 
             nodelink.OnNodeFocused +=        (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=           ()=> inspector.Uninspect();
             nodelink.OnLinkAdded +=        (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=      (i,j)=> model.RemoveInteraction(i,j);
             nodelink.OnDroppedOn +=           ()=> TryAddNewSpecies();
-            // nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
-            // nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
+            nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
+            nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
 
-            // model.OnCalculated +=             ()=> ResizeNodes();
-            // model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
-            // model.OnRescued +=               (i)=> nodelink.IdleNode(i);
             model.OnCalculated +=             ()=> CalculateScore();
             model.OnEndangered +=            (i)=> print("neg: " + i);
             model.OnRescued +=               (i)=> print("pos: " + i);
+            // model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
+            // model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 
-            status.OnMenu +=                  ()=> print(nodelink.MaxChainLength());
+            status.OnMenu +=                  ()=> GameManager.Instance.ShowLevelCard();
             status.OnUndo +=                  ()=> print(nodelink.LongestLoop());
 
-            // inspector.ConstrainTypes(GameManager.Instance.ChosenLevel.NumProducers, GameManager.Instance.ChosenLevel.NumConsumers);
-            // print(GameManager.Instance.ChosenLevel.Description);
+            inspector.ConstrainTypes(GameManager.Instance.NumProducers, GameManager.Instance.NumConsumers);
         }
 
         void TryAddNewSpecies()
@@ -53,7 +52,6 @@ namespace EcoBuilder
             if (inspector.Dragging)
             {
                 inspector.Spawn();
-                // TODO: check for all species done here
             }
         }
         void CalculateScore()
@@ -73,31 +71,12 @@ namespace EcoBuilder
 
             if (model.Feasible)
                 print("flux: " + model.Flux);
+            // TODO: add May's (or Tang's) complexity criteria here, directly
         }
         void EndGame()
         {
-            // // TODO: stop the game here, and look for height, loops, omnivory
-            // if (GameManager.Instance.ChosenLevel.GraphConstraints(nodelink))
-            // {
-            //     print("Well done!");
-            // }
-            // else
-            // {
-            //     print(GameManager.Instance.ChosenLevel.ConstraintNotMetMessage);
-            // }
-        }
-
-        
-        public void Quit()
-        {
-        }
-        public void Save()
-        {
-            // set gamemanager file here
-        }
-        public void Load()
-        {
-            // grab gamemanager file here
+            // TODO: check for other constraints and set stars
+            GameManager.Instance.EndGame(2);
         }
     }
 }

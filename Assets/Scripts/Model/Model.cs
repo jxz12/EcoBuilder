@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Events;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,39 +9,13 @@ namespace EcoBuilder.Model
     class Species
     {
         public int Idx { get; private set; }
-        bool isProducer = true;
-        public bool IsProducer {
-            set {
-                isProducer = value;
-                // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
-                // Efficiency = isProducer? e_p : e_c;
-                Growth = isProducer? 1:-.1;
-            }
-        }
-        // double growth_exp = 1/b0;
-        // double search_exp = 1;
-        public double BodySize {
-            set {
-                // growth_exp = Math.Pow(value, beta-1);
-                // Growth = isProducer? growth_exp*b0 : -growth_exp*d0;
+        public bool IsProducer { get; set; }
+        public double BodySize { get; set; }
+        public double SelfReg { get; set; }
 
-                // search_exp = Math.Pow(value, (p_v+2*p_r) - 1);
-                // Search = search_exp * a0;
-                Search = 1;
-            }
-        }
-        public double Greediness {
-            set {
-                // this is the same as scaling on a log scale
-                // SelfReg = -Math.Pow(a_ii_min, 1-value) * Math.Pow(a_ii_max, value);
-                SelfReg = -10;
-            }
-        }
-        public double Growth { get; private set; } = 1;
-        public double Search { get; private set; } = 1;
-        public double Find { get; private set; } = 1;
-        public double SelfReg { get; private set; } = -1;
-        public double Efficiency { get; private set; } = 1;
+        public double Growth { get; set; }
+        public double Search { get; set; }
+        public double Efficiency { get; set; }
 
         public double Abundance { get; set; } = 1; // initialise as non-extinct
 
@@ -53,10 +26,6 @@ namespace EcoBuilder.Model
     }
     public class Model : MonoBehaviour
     {   
-        [Serializable] class IntEvent : UnityEvent<int> { }
-        [Serializable] class IntFloatEvent : UnityEvent<int, float> { }
-        [Serializable] class IntIntFloatEvent : UnityEvent<int, int, float> { }
-
         [SerializeField] double beta = .75,   // metabolic scaling
                                 b0 = 1.71e-6, // birth
                                 d0 = 4.15e-8, // death
@@ -68,21 +37,11 @@ namespace EcoBuilder.Model
                                 a0 = 8.32e-4,
                                 e_p = .2, // plant efficiency
                                 e_c = .5, // animal efficiency
+                                kg_min = 1e-3,
+                                kg_max = 1e3,
                                 a_ii_min = 1e-3,
                                 a_ii_max = 1e2;
-
-        // public float GetKg(float normalizedBodySize)
-        // {
-        //     // float min = Mathf.Log10(minKg);
-        //     // float max = Mathf.Log10(maxKg);
-        //     // float mid = min + input*(max-min);
-        //     // return Mathf.Pow(10, mid);
-
-        //     // same as above commented
-        //     return Mathf.Pow(minKg, 1-normalizedBodySize) * Mathf.Pow(maxKg, normalizedBodySize);
-        // }
-
-
+                                
         LotkaVolterra<Species> simulation;
         void Awake()
         {
@@ -109,19 +68,51 @@ namespace EcoBuilder.Model
             idxToSpecies.Remove(idx);
             equilibriumSolved = false;
         }
-        public void SetSpeciesProduction(int idx, bool isProducer)
+        static double GetOnLogScale(float normalised, double minVal, double maxVal)
         {
-            idxToSpecies[idx].IsProducer = isProducer;
+            // float min = Mathf.Log10(minVal);
+            // float max = Mathf.Log10(maxVal);
+            // float mid = min + normalised*(max-min);
+            // return Mathf.Pow(10, mid);
+
+            // same as above commented
+            return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
+        }
+
+        public void SetSpeciesIsProducer(int idx, bool isProducer)
+        {
+            Species s = idxToSpecies[idx];
+            double metabolism = Math.Pow(s.BodySize, beta-1);
+            if (isProducer)
+            {
+                s.IsProducer = true;
+                s.Efficiency = e_p;
+                s.Growth = metabolism * b0;
+            }
+            else
+            {
+                s.IsProducer = false;
+                s.Efficiency = e_c;
+                s.Growth = -metabolism * d0;
+            }
+
             equilibriumSolved = false;
         }
-        public void SetSpeciesBodySize(int idx, float kg)
+        public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
-            idxToSpecies[idx].BodySize = kg;
+            Species s = idxToSpecies[idx];
+            s.BodySize = GetOnLogScale(sizeNormalised, kg_min, kg_max);
+
+            double metabolism = Math.Pow(s.BodySize, beta-1);
+            double search_exp = Math.Pow(s.BodySize, (p_v+2*p_r) - 1);
+
+            s.Search = search_exp * a0;
+            s.Growth = s.IsProducer? metabolism * b0 : -metabolism * d0;
             equilibriumSolved = false;
         }
         public void SetSpeciesGreediness(int idx, float greedNormalised)
         {
-            idxToSpecies[idx].Greediness = greedNormalised;
+            idxToSpecies[idx].SelfReg = GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
             equilibriumSolved = false;
         }
 
@@ -174,7 +165,11 @@ namespace EcoBuilder.Model
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
         public bool Nonreactive { get; private set; } = false;
+
+        // TODO: both of these
+        public float Complexity { get; private set; } = 0;
         public float Flux { get; private set; } = 0;
+
         async void Equilibrium()
         {
             calculating = true;

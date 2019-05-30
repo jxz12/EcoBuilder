@@ -2,54 +2,51 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace EcoBuilder.Menu
 {
 	public class LevelCard : MonoBehaviour
 	{
+		[SerializeField] Text title;
+		[SerializeField] Text description;
+		[SerializeField] Text producers;
+		[SerializeField] Text consumers;
+		[SerializeField] Button startEnd;
+		[SerializeField] Text startEndText;
 
-		// [SerializeField] Transform miniLevelParent;
-		// GameObject miniLevel = null;
-
-		// 	int chosen = 0;
-		// 	void Start()
-		// 	{
-		// 		// NewMiniLevel(GameManager.Instance.SelectedLandscape);
-		// 	}
-
-		// 	public void ScrollLeft()
-		// 	{
-		// 		// GameManager.Instance.SwitchLandscape(false);
-		// 		// NewMiniLevel(GameManager.Instance.SelectedLandscape);
-		// 	}
-		// 	public void ScrollRight()
-		// 	{
-		// 		// GameManager.Instance.SwitchLandscape(false);
-		// 		// NewMiniLevel(GameManager.Instance.SelectedLandscape);
-		// 	}
-		// 	void NewMiniLevel(GameObject newLevel)
-		// 	{
-		// 		Quaternion previousRotation;
-		// 		if (miniLevel == null)
-		// 		{
-		// 			previousRotation = Quaternion.Euler(0, -180, 0);
-		// 		}
-		// 		else
-		// 		{
-		// 			Destroy(miniLevel);
-		// 			previousRotation = miniLevel.transform.localRotation;
-		// 		}
-		// 		miniLevel = Instantiate(newLevel, miniLevelParent);
-		// 		miniLevel.transform.localRotation = previousRotation;
-		// 		var animators = miniLevel.GetComponentsInChildren<Animator>();
-		// 		foreach (Animator anim in animators)
-		// 		{
-		// 			anim.enabled = false;
-		// 		}
-		// 	}
-		// 	void Update()
-		// 	{
-		// 		miniLevel.transform.Rotate(Vector3.up * .3f);
-		// 	}
+		// TODO: maybe animation?
+        public void Show(string title, string description, int numProducers, int numConsumers)
+		{
+			this.title.text = title;
+			this.description.text = description;
+			this.producers.text = numProducers.ToString();
+			this.consumers.text = numConsumers.ToString();
+			gameObject.SetActive(true);
+		}
+		public void Show()
+		{
+			gameObject.SetActive(true);
+		}
+		public void Hide()
+		{
+			gameObject.SetActive(false);
+		}
+		public void StartEndGame()
+		{
+			// TODO: probably store a variable instead of this
+			if (startEndText.text == "Go!")
+			{
+				GameManager.Instance.PlayGame();
+				startEndText.text = "Quit?";
+				gameObject.SetActive(false);
+			}
+			else
+			{
+				GameManager.Instance.EndGame(0);
+				startEndText.text = "Go!";
+				gameObject.SetActive(false);
+			}
+		}
 	}
 }

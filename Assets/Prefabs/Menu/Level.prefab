@@ -202,6 +202,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 508576e334c084d819bff098d411f8a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  title: 
   description: 
   numProducers: 0
   numConsumers: 0
@@ -211,6 +212,10 @@ MonoBehaviour:
   maxChain: 0
   minOmnivory: 0
   maxOmnivory: 0
+  numberText: {fileID: 3298662015470128372}
+  starsImage: {fileID: 3298662015200627692}
+  lockImage: {fileID: 4297244884304339903}
+  chooseButton: {fileID: 3298662016124299584}
 --- !u!1 &3298662016124299586
 GameObject:
   m_ObjectHideFlags: 0
