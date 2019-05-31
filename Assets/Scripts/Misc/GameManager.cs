@@ -47,11 +47,7 @@ namespace EcoBuilder
         }
         void OnApplicationQuit()
         {
-            if (Progress.Count >= 4)
-                Progress = new List<int>();
-            else
-                Progress.Add(0);
-
+                Progress = new List<int>() {0};
             SaveProgress();
         }
         
@@ -135,9 +131,9 @@ namespace EcoBuilder
             size/greediness (e.g. only big species)
         */
         [SerializeField] Menu.LevelCard levelCard;
-        public int LevelNumber { get; private set; }
-        public int NumProducers { get; private set; }
-        public int NumConsumers { get; private set; }
+        public int LevelNumber { get; private set; } = 0;
+        public int NumProducers { get; private set; } = 10;
+        public int NumConsumers { get; private set; } = 10;
         public void ShowLevelCard(int number, string title, string description,
             int numProducers, int numConsumers,
             int minLoop=0, int maxLoop=0, int minChain=0, int maxChain=0, float minOmnivory=0, float maxOmnivory=0 )
@@ -165,7 +161,14 @@ namespace EcoBuilder
             if (numStars < 0 || numStars > 3)
                 throw new Exception("cannot pass with less than 1 or more than 3 stars");
 
-            // TODO: unlock new levels and stuff
+            if (LevelNumber >= Progress.Count)
+            {
+                for (int i=Progress.Count; i<LevelNumber; i++)
+                    Progress.Add(-1);
+            }
+            Progress[LevelNumber] = numStars;
+            if (numStars >= 1)
+                Progress.Add(0); // unlock next level
 
             GameManager.Instance.UnloadScene("Play");
             GameManager.Instance.LoadScene("Menu");

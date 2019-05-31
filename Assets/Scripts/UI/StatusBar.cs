@@ -19,28 +19,45 @@ namespace EcoBuilder.UI
 			menu.onClick.AddListener(()=> OnMenu());
 		}
 
+		public void FillStars(bool feasible, bool stable, bool nonreactive)
+		{
+            if (feasible)
+                FillStar1();
+            else
+                EmptyStar1();
+            if (stable)
+                FillStar2();
+            else
+                EmptyStar2();
+            if (nonreactive) // might be too hard
+                FillStar3();
+            else
+                EmptyStar3();
+		}
+
+
 		// TODO: make stars dance and stuff
-		public void FillStar1()
+		void FillStar1()
 		{
 			star1.material = starFilled;
 		}
-		public void FillStar2()
+		void FillStar2()
 		{
 			star2.material = starFilled;
 		}
-		public void FillStar3()
+		void FillStar3()
 		{
 			star3.material = starFilled;
 		}
-		public void EmptyStar1()
+		void EmptyStar1()
 		{
 			star1.material = starEmpty;
 		}
-		public void EmptyStar2()
+		void EmptyStar2()
 		{
 			star2.material = starEmpty;
 		}
-		public void EmptyStar3()
+		void EmptyStar3()
 		{
 			star3.material = starEmpty;
 		}

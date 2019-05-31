@@ -46,6 +46,8 @@ namespace EcoBuilder.UI
         [SerializeField] Button goButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
+        [SerializeField] Text producerCount;
+        [SerializeField] Text consumerCount;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
 
@@ -68,7 +70,6 @@ namespace EcoBuilder.UI
             greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
         }
 
-        // TODO: make it show how many are remaining
         int numProducers=0, maxProducers=int.MaxValue, numConsumers=0, maxConsumers=int.MaxValue;
         public void ConstrainTypes(int producers, int consumers)
         {
@@ -77,6 +78,8 @@ namespace EcoBuilder.UI
             
             maxProducers = producers;
             maxConsumers = consumers;
+            producerCount.text = maxProducers.ToString();
+            consumerCount.text = maxConsumers.ToString();
         }
 
 
@@ -142,7 +145,14 @@ namespace EcoBuilder.UI
             inspected = spawnedSpecies[idx];
 
             nameText.text = inspected.Object.name;
-            // find a way to set the sliders without triggering events please
+
+            // this is ugly as heck, but sliders are stupid
+            sizeSlider.onValueChanged.RemoveListener(x=> SetInspectedSize(x));
+            sizeSlider.value = inspected.BodySize;
+            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize(x));
+            greedSlider.onValueChanged.RemoveListener(x=> SetInspectedGreed(x));
+            greedSlider.value = inspected.Greediness;
+            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
 
             GetComponent<Animator>().SetTrigger("Inspect");
         }
@@ -180,16 +190,27 @@ namespace EcoBuilder.UI
             if (inspected.IsProducer)
             {
                 numProducers += 1;
+                producerCount.text = (maxProducers-numProducers).ToString();
                 if (numProducers >= maxProducers)
                     producerButton.interactable = false;
             }
             else
             {
                 numConsumers += 1;
+                consumerCount.text = (maxConsumers-numConsumers).ToString();
                 if (numConsumers >= maxConsumers)
                     consumerButton.interactable = false;
             }
+            // TODO: do this better with animation
+            if (numProducers==maxProducers && numConsumers==maxConsumers)
+            {
+                goImage.color = Color.white;
+                goImage.sprite = finishFlag;
+            }
         }
+        [SerializeField] Image goImage;
+        [SerializeField] Sprite finishFlag;
+
         public void Unspawn(int idx)
         {
             print("NOT IMPLEMENTED YET");

@@ -56,27 +56,17 @@ namespace EcoBuilder
         }
         void CalculateScore()
         {
-            if (model.Feasible)
-                status.FillStar1();
-            else
-                status.EmptyStar1();
-            if (model.Stable)
-                status.FillStar2();
-            else
-                status.EmptyStar2();
-            if (model.Nonreactive) // might be too hard
-                status.FillStar3();
-            else
-                status.EmptyStar3();
+            status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
 
-            if (model.Feasible)
-                print("flux: " + model.Flux);
+            // if (model.Feasible)
+            //     print("flux: " + model.Flux);
             // TODO: add May's (or Tang's) complexity criteria here, directly
         }
         void EndGame()
         {
             // TODO: check for other constraints and set stars
-            GameManager.Instance.EndGame(2);
+            if (model.Feasible)
+                GameManager.Instance.EndGame(2);
         }
     }
 }

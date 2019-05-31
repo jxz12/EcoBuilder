@@ -15,7 +15,6 @@ namespace EcoBuilder.Model
 
         public double Growth { get; set; }
         public double Search { get; set; }
-        public double Efficiency { get; set; }
 
         public double Abundance { get; set; } = 1; // initialise as non-extinct
 
@@ -39,8 +38,10 @@ namespace EcoBuilder.Model
                                 e_c = .5, // animal efficiency
                                 kg_min = 1e-3,
                                 kg_max = 1e3,
-                                a_ii_min = 1e-3,
+                                a_ii_min = 1e-2,
                                 a_ii_max = 1e2;
+        
+        [SerializeField] GameObject busyIcon;
                                 
         LotkaVolterra<Species> simulation;
         void Awake()
@@ -48,8 +49,8 @@ namespace EcoBuilder.Model
             simulation = new LotkaVolterra<Species>(
                 s=> s.Growth,
                 s=> s.SelfReg,
-                (r,c)=> r.Search,
-                (r,c)=> r.Efficiency
+                (r,c)=> c.Search,
+                (r,c)=> r.IsProducer? e_p : e_c
             );
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
@@ -82,19 +83,10 @@ namespace EcoBuilder.Model
         public void SetSpeciesIsProducer(int idx, bool isProducer)
         {
             Species s = idxToSpecies[idx];
+            s.IsProducer = isProducer;
+
             double metabolism = Math.Pow(s.BodySize, beta-1);
-            if (isProducer)
-            {
-                s.IsProducer = true;
-                s.Efficiency = e_p;
-                s.Growth = metabolism * b0;
-            }
-            else
-            {
-                s.IsProducer = false;
-                s.Efficiency = e_c;
-                s.Growth = -metabolism * d0;
-            }
+            s.Growth = s.IsProducer? metabolism * b0 : -metabolism * d0;
 
             equilibriumSolved = false;
         }
@@ -104,15 +96,17 @@ namespace EcoBuilder.Model
             s.BodySize = GetOnLogScale(sizeNormalised, kg_min, kg_max);
 
             double metabolism = Math.Pow(s.BodySize, beta-1);
-            double search_exp = Math.Pow(s.BodySize, (p_v+2*p_r) - 1);
-
-            s.Search = search_exp * a0;
             s.Growth = s.IsProducer? metabolism * b0 : -metabolism * d0;
+
+                                                // velocity    mass-specific
+            double velocity = Math.Pow(s.BodySize, (p_v+2*p_r) - 1);
+            s.Search = velocity * a0;
+
             equilibriumSolved = false;
         }
         public void SetSpeciesGreediness(int idx, float greedNormalised)
         {
-            idxToSpecies[idx].SelfReg = GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
+            idxToSpecies[idx].SelfReg = -GetOnLogScale(greedNormalised, a_ii_max, a_ii_min);
             equilibriumSolved = false;
         }
 
@@ -151,11 +145,7 @@ namespace EcoBuilder.Model
                 equilibriumSolved = true;
                 Equilibrium();
             }
-            else if (!equilibriumSolved && calculating)
-            {
-                // TODO: change this to a little icon instead of a print
-                print("busy");
-            }
+            busyIcon.SetActive(calculating);
         }
 
         public event Action OnCalculated;
@@ -173,7 +163,7 @@ namespace EcoBuilder.Model
         async void Equilibrium()
         {
             calculating = true;
-            Feasible = await Task.Run(() => simulation.SolveEquilibrium());
+            Feasible = await Task.Run(() => simulation.SolveFeasibility());
 
             Flux = (float)simulation.GetTotalFlux();
 

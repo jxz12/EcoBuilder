@@ -14,6 +14,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f;
         [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
         [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
+        [SerializeField] float holdThreshold = .3f;
 
         // TODO: might want to change this into viewport coordinates
         [SerializeField] float clickRadius=15;
@@ -41,7 +42,6 @@ namespace EcoBuilder.NodeLink
             return closest;
         }
 
-        [SerializeField] float holdThreshold = .5f;
         bool potentialHold = false;
         bool dragging = false;
         public void OnPointerDown(PointerEventData ped)
@@ -65,7 +65,21 @@ namespace EcoBuilder.NodeLink
             Node held = ClosestNodeToPointer(ped.position);
             if (held != null)
             {
-                FocusNode(held.Idx);
+                if (focus != null)
+                {
+                    int i=held.Idx, j=focus.Idx;
+                    if (i != j && !held.IsSinkOnly && !focus.IsSourceOnly)
+                    {
+                        if (links[i,j] != null)
+                            RemoveLink(i, j);
+                        else
+                            AddLink(i, j);
+                    }
+                }
+                else
+                {
+                    FocusNode(held.Idx);
+                }
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -76,21 +90,7 @@ namespace EcoBuilder.NodeLink
                 Node clicked = ClosestNodeToPointer(ped.position);
                 if (clicked != null)
                 {
-                    if (focus == null)
-                    {
-                        FocusNode(clicked.Idx);
-                    }
-                    else
-                    {
-                        int i=clicked.Idx, j=focus.Idx;
-                        if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
-                        {
-                            if (links[i,j] != null)
-                                RemoveLink(i, j);
-                            else
-                                AddLink(i, j);
-                        }
-                    }
+                    FocusNode(clicked.Idx);
                 }
                 else
                 {
