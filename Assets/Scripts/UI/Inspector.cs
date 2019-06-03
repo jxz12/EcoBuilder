@@ -39,7 +39,8 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
-        public event Action OnGameEnded;
+        public event Action OnGameFinished;
+        public event Action OnMainMenu;
 
         public event Action OnIncubated;
         public event Action OnUnincubated;
@@ -51,6 +52,7 @@ namespace EcoBuilder.UI
         [SerializeField] Text consumerCount;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
+        [SerializeField] Button menuButton;
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
@@ -66,6 +68,7 @@ namespace EcoBuilder.UI
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
+            menuButton.onClick.AddListener(()=> OnMainMenu.Invoke());
 
             sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize(x));
             greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
@@ -90,7 +93,7 @@ namespace EcoBuilder.UI
         {
             if (numProducers==maxProducers && numConsumers==maxConsumers)
             {
-                OnGameEnded.Invoke();
+                OnGameFinished.Invoke();
                 // GetComponent<Animator>().SetTrigger("Finish");
             }
             else
@@ -262,5 +265,9 @@ namespace EcoBuilder.UI
                 }
             }
         }
+		public void Finish()
+		{
+			GetComponent<Animator>().SetTrigger("Finish");
+		}
     }
 }

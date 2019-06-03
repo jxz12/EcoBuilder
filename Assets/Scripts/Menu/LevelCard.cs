@@ -44,7 +44,7 @@ namespace EcoBuilder.Menu
 			}
 			else
 			{
-				GameManager.Instance.EndGame(0);
+				GameManager.Instance.ReturnToMenu(0);
 				gameObject.SetActive(false);
 			}
 		}

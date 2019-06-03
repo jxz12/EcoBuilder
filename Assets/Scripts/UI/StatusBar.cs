@@ -7,8 +7,7 @@ namespace EcoBuilder.UI
 	public class StatusBar : MonoBehaviour
 	{
 		[SerializeField] Button undo, menu;
-		[SerializeField] MeshRenderer star1, star2, star3;
-		[SerializeField] Material starEmpty, starFilled;
+		[SerializeField] Animator star1, star2, star3;
 
 		public event Action OnUndo;
 		public event Action OnMenu;
@@ -39,32 +38,36 @@ namespace EcoBuilder.UI
 		// TODO: make stars dance and stuff
 		void FillStar1()
 		{
-			star1.material = starFilled;
+			star1.SetBool("Filled", true);
 		}
 		void FillStar2()
 		{
-			star2.material = starFilled;
+			star2.SetBool("Filled", true);
 		}
 		void FillStar3()
 		{
-			star3.material = starFilled;
+			star3.SetBool("Filled", true);
 		}
 		void EmptyStar1()
 		{
-			star1.material = starEmpty;
+			star1.SetBool("Filled", false);
 		}
 		void EmptyStar2()
 		{
-			star2.material = starEmpty;
+			star2.SetBool("Filled", false);
 		}
 		void EmptyStar3()
 		{
-			star3.material = starEmpty;
+			star3.SetBool("Filled", false);
 		}
 
 		public void ShowErrorMessage(string message)
 		{
 			print(message);
+		}
+		public void Finish()
+		{
+			GetComponent<Animator>().SetTrigger("Finish");
 		}
 	}
 }

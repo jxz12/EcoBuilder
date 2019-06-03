@@ -182,5 +182,9 @@ namespace EcoBuilder.NodeLink
         {
             GetComponent<Animator>().SetTrigger("Right");
         }
+		public void Finish()
+		{
+			GetComponent<Animator>().SetTrigger("Finish");
+		}
 	}
 }

@@ -177,7 +177,5 @@ namespace EcoBuilder.NodeLink
         //         yield return ij;
         //     }
         // }
-
-
     }
 }

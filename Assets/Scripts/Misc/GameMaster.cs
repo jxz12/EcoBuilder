@@ -22,7 +22,8 @@ namespace EcoBuilder
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
             inspector.OnUnspawned +=         (i)=> model.RemoveSpecies(i);
             inspector.OnUnspawned +=         (i)=> nodelink.RemoveNode(i);
-            inspector.OnGameEnded +=          ()=> EndGame();
+            inspector.OnGameFinished +=       ()=> FinishGame();
+            inspector.OnMainMenu +=           ()=> BackToMenu();
 
             inspector.OnProducerSet +=     (i,b)=> model.SetSpeciesIsProducer(i,b);
             inspector.OnProducerSet +=     (i,b)=> nodelink.SetNodeAsSourceOnly(i,b);
@@ -55,7 +56,7 @@ namespace EcoBuilder
                 inspector.Spawn();
             }
         }
-        void EndGame()
+        void FinishGame()
         {
             bool passed = true;
             if (!model.Feasible)
@@ -68,22 +69,29 @@ namespace EcoBuilder
                 passed = false;
                 status.ShowErrorMessage("No loop longer than " + GameManager.Instance.MinLoop + " exists");
             }
-            if (nodelink.LongestLoop() < GameManager.Instance.MinLoop)
+            if (nodelink.MaxChainLength() < GameManager.Instance.MinChain)
             {
                 passed = false;
                 status.ShowErrorMessage("No chain taller than " + GameManager.Instance.MinChain + " exists");
             }
             if (passed)
             {
-                int score = 1;
-                if (model.Stable)
-                    score += 1;
-                if (model.Nonreactive)
-                    score += 1;
-
-                // TODO: make this do an animation instead
-                GameManager.Instance.EndGame(score);
+                status.Finish();
+                nodelink.Finish();
+                inspector.Finish();
             }
+        }
+        void BackToMenu()
+        {
+            int score = 0;
+            if (model.Feasible)
+                score += 1;
+            if (model.Stable)
+                score += 1;
+            if (model.Nonreactive)
+                score += 1;
+
+            GameManager.Instance.ReturnToMenu(score);
         }
     }
 }

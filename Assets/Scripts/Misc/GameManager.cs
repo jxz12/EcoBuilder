@@ -171,12 +171,12 @@ namespace EcoBuilder
             GameManager.Instance.UnloadScene("Menu");
             GameManager.Instance.LoadScene("Play");
         }
-        public void EndGame(int numStars)
+        public void ReturnToMenu(int numStars)
         {
             if (numStars < 0 || numStars > 3)
-                throw new Exception("cannot pass with less than 1 or more than 3 stars");
+                throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            Progress[LevelNumber] = numStars;
+            Progress[LevelNumber] = Math.Max(Progress[LevelNumber], numStars);
 
             // unlock new level if possible
             if (numStars >= 1 && Progress.Count > LevelNumber+1 && Progress[LevelNumber+1] == -1)
