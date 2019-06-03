@@ -15,8 +15,8 @@ namespace EcoBuilder.NodeLink
         // private Vector3 velocity = Vector3.zero;
         // [SerializeField] private float smoothTime = .2f; // TODO: scale this with body size?
         public float Size {
-            get { return shape.localScale.x; }
-            set { shape.localScale = new Vector3(value, value, value); }
+            get { return transform.localScale.x; }
+            set { transform.localScale = new Vector3(value, value, value); }
         }
         public bool IsSourceOnly {
             get; set;
@@ -44,13 +44,14 @@ namespace EcoBuilder.NodeLink
             shape.SetParent(transform, false);
             shape.localPosition = Vector3.zero;
             shape.localRotation = Quaternion.identity;
-            Size = 1;
+            shape.localScale = Vector3.one * .8f;
 
             mr = shapeObject.GetComponent<MeshRenderer>();
             if (mr == null)
                 throw new System.Exception("shape has no meshrenderer!");
 
-            // outline = shape; // TODO: change to a system that copies the shape (mesh) dynamically!
+            Mesh shapeMesh = shapeObject.GetComponent<MeshFilter>().mesh;
+            GetComponent<MeshFilter>().mesh = shapeMesh;
         }
         public void Reshape(GameObject shapeObject)
         {

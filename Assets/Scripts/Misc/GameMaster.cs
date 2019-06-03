@@ -36,10 +36,8 @@ namespace EcoBuilder
             nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
 
             model.OnCalculated +=             ()=> CalculateScore();
-            model.OnEndangered +=            (i)=> print("neg: " + i);
-            model.OnRescued +=               (i)=> print("pos: " + i);
-            // model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
-            // model.OnRescued +=               (i)=> nodelink.IdleNode(i);
+            model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
+            model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 
             status.OnMenu +=                  ()=> GameManager.Instance.ShowLevelCard();
             status.OnUndo +=                  ()=> print(nodelink.LongestLoop());

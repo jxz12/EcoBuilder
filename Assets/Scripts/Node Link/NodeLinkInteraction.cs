@@ -65,32 +65,32 @@ namespace EcoBuilder.NodeLink
             Node held = ClosestNodeToPointer(ped.position);
             if (held != null)
             {
-                if (focus != null)
-                {
-                    int i=held.Idx, j=focus.Idx;
-                    if (i != j && !held.IsSinkOnly && !focus.IsSourceOnly)
-                    {
-                        if (links[i,j] != null)
-                            RemoveLink(i, j);
-                        else
-                            AddLink(i, j);
-                    }
-                }
-                else
-                {
-                    FocusNode(held.Idx);
-                }
+                FocusNode(held.Idx);
             }
         }
         public void OnPointerUp(PointerEventData ped)
         {
-            if (potentialHold)
+            if (potentialHold) // if click
             {
                 potentialHold = false;
                 Node clicked = ClosestNodeToPointer(ped.position);
                 if (clicked != null)
                 {
-                    FocusNode(clicked.Idx);
+                    if (focus != null && focus != clicked)
+                    {
+                        int i=clicked.Idx, j=focus.Idx;
+                        if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
+                        {
+                            if (links[i,j] != null)
+                                RemoveLink(i, j);
+                            else
+                                AddLink(i, j);
+                        }
+                    }
+                    else
+                    {
+                        FocusNode(clicked.Idx);
+                    }
                 }
                 else
                 {

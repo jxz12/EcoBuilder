@@ -89,8 +89,8 @@ namespace EcoBuilder.UI
         {
             if (numProducers==maxProducers && numConsumers==maxConsumers)
             {
-                // OnGameEnded.Invoke();
-                GetComponent<Animator>().SetTrigger("Finish");
+                OnGameEnded.Invoke();
+                // GetComponent<Animator>().SetTrigger("Finish");
             }
             else
             {
