@@ -89,7 +89,8 @@ namespace EcoBuilder.UI
         {
             if (numProducers==maxProducers && numConsumers==maxConsumers)
             {
-                OnGameEnded.Invoke();
+                // OnGameEnded.Invoke();
+                GetComponent<Animator>().SetTrigger("Finish");
             }
             else
             {
@@ -206,6 +207,7 @@ namespace EcoBuilder.UI
             {
                 goImage.color = Color.white;
                 goImage.sprite = finishFlag;
+                // GetComponent<Animator>().SetTrigger("IdleFinish");
             }
         }
         [SerializeField] Image goImage;

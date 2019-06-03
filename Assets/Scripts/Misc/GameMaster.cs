@@ -66,7 +66,7 @@ namespace EcoBuilder
         {
             // TODO: check for other constraints and set stars
             if (model.Feasible)
-                GameManager.Instance.EndGame(2);
+                GameManager.Instance.EndGame(1);
         }
     }
 }
