@@ -82,9 +82,15 @@ namespace EcoBuilder.NodeLink
                         if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
                         {
                             if (links[i,j] != null)
+                            {
                                 RemoveLink(i, j);
+                                OnLinkRemoved.Invoke(i,j);
+                            }
                             else
+                            {
                                 AddLink(i, j);
+                                OnLinkAdded.Invoke(i, j);
+                            }
                         }
                     }
                     else

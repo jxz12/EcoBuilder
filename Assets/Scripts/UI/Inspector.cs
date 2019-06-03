@@ -35,6 +35,7 @@ namespace EcoBuilder.UI
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
         public event Action<int, GameObject> OnSpawned;
+        public event Action<int> OnUnspawned;
         public event Action<int, bool> OnProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
@@ -141,7 +142,10 @@ namespace EcoBuilder.UI
         public void InspectSpecies(int idx)
         {
             if (inspected != null && !inspected.Spawned)
+            {
                 Destroy(inspected.Object);
+                OnUnincubated.Invoke();
+            }
 
             inspected = spawnedSpecies[idx];
 
@@ -159,14 +163,16 @@ namespace EcoBuilder.UI
         }
         public void Uninspect()
         {
-            if (inspected != null && !inspected.Spawned)
+            if (inspected != null)
             {
-                Destroy(inspected.Object);
-                spawnedSpecies.Remove(inspected.Idx);
+                if (!inspected.Spawned)
+                {
+                    Destroy(inspected.Object);
+                    OnUnincubated.Invoke();
+                }
                 inspected = null; // lol memory leak but not really
-                OnUnincubated.Invoke(); // maybe don't need this
+                GetComponent<Animator>().SetTrigger("Uninspect");
             }
-            GetComponent<Animator>().SetTrigger("Uninspect");
         }
         public void Spawn()
         {
@@ -213,9 +219,14 @@ namespace EcoBuilder.UI
         [SerializeField] Image goImage;
         [SerializeField] Sprite finishFlag;
 
-        public void Unspawn(int idx)
+        public void UnspawnLast()
         {
-            print("NOT IMPLEMENTED YET");
+            if (spawnedSpecies.Count > 0)
+            {
+                nextIdx -= 1;
+                OnUnspawned.Invoke(nextIdx);
+                spawnedSpecies.Remove(nextIdx);
+            }
         }
 
         public bool Dragging { get; private set; }

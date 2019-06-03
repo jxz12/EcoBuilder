@@ -18,28 +18,22 @@ namespace EcoBuilder.Menu
 
         void SetProgress()
         {
-            if (GameManager.Instance.Progress.Count > levels.Count)
+            GameManager.Instance.InitNumLevels(levels.Count);
+            for (int i=0; i<GameManager.Instance.Progress.Count; i++)
             {
-                throw new Exception("too many levels in save file");
-            }
-            else
-            {
-                for (int i=0; i<GameManager.Instance.Progress.Count; i++)
-                {
-                    if (GameManager.Instance.Progress[i] == -1)
-                    {
-                        levels[i].Lock();
-                    }
-                    else
-                    {
-                        levels[i].Unlock();
-                        levels[i].SetStars(starImages[GameManager.Instance.Progress[i]]);
-                    }
-                }
-                for (int i=GameManager.Instance.Progress.Count; i<levels.Count; i++)
+                if (GameManager.Instance.Progress[i] == -1)
                 {
                     levels[i].Lock();
                 }
+                else
+                {
+                    levels[i].Unlock();
+                    levels[i].SetStars(starImages[GameManager.Instance.Progress[i]]);
+                }
+            }
+            for (int i=GameManager.Instance.Progress.Count; i<levels.Count; i++)
+            {
+                levels[i].Lock();
             }
         }
     }

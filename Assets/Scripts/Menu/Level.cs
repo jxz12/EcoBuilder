@@ -13,7 +13,7 @@ namespace EcoBuilder.Menu
         [SerializeField] int numProducers, numConsumers;
         [SerializeField] int minLoop, maxLoop;
         [SerializeField] int minChain, maxChain;
-        [SerializeField] float minOmnivory, maxOmnivory;
+        // [SerializeField] float minOmnivory, maxOmnivory;
 
         [SerializeField] Button chooseButton;
         [SerializeField] Text numberText;
@@ -47,7 +47,7 @@ namespace EcoBuilder.Menu
 
         public void ShowLevelCard()
         {
-            GameManager.Instance.ShowLevelCard(number, title, description, numProducers, numConsumers);
+            GameManager.Instance.ShowLevelCard(number, title, description, numProducers, numConsumers, minLoop, minChain);
         }
     }
 }

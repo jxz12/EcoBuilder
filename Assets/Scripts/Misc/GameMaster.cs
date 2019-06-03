@@ -20,6 +20,8 @@ namespace EcoBuilder
             inspector.OnUnincubated +=        ()=> nodelink.MoveRight();
             inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
+            inspector.OnUnspawned +=         (i)=> model.RemoveSpecies(i);
+            inspector.OnUnspawned +=         (i)=> nodelink.RemoveNode(i);
             inspector.OnGameEnded +=          ()=> EndGame();
 
             inspector.OnProducerSet +=     (i,b)=> model.SetSpeciesIsProducer(i,b);
@@ -35,12 +37,13 @@ namespace EcoBuilder
             nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
             nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
 
-            model.OnCalculated +=             ()=> CalculateScore();
+            // TODO: add May's (or Tang's) complexity criteria here, directly
+            model.OnCalculated +=             ()=> status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
             model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
             model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 
             status.OnMenu +=                  ()=> GameManager.Instance.ShowLevelCard();
-            status.OnUndo +=                  ()=> print(nodelink.LongestLoop());
+            status.OnUndo +=                  ()=> inspector.UnspawnLast();
 
             inspector.ConstrainTypes(GameManager.Instance.NumProducers, GameManager.Instance.NumConsumers);
         }
@@ -52,19 +55,35 @@ namespace EcoBuilder
                 inspector.Spawn();
             }
         }
-        void CalculateScore()
-        {
-            status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
-
-            // if (model.Feasible)
-            //     print("flux: " + model.Flux);
-            // TODO: add May's (or Tang's) complexity criteria here, directly
-        }
         void EndGame()
         {
-            // TODO: check for other constraints and set stars
-            if (model.Feasible)
-                GameManager.Instance.EndGame(1);
+            bool passed = true;
+            if (!model.Feasible)
+            {
+                passed = false;
+                status.ShowErrorMessage("Not every species can coexist");
+            }
+            if (nodelink.LongestLoop() < GameManager.Instance.MinLoop)
+            {
+                passed = false;
+                status.ShowErrorMessage("No loop longer than " + GameManager.Instance.MinLoop + " exists");
+            }
+            if (nodelink.LongestLoop() < GameManager.Instance.MinLoop)
+            {
+                passed = false;
+                status.ShowErrorMessage("No chain taller than " + GameManager.Instance.MinChain + " exists");
+            }
+            if (passed)
+            {
+                int score = 1;
+                if (model.Stable)
+                    score += 1;
+                if (model.Nonreactive)
+                    score += 1;
+
+                // TODO: make this do an animation instead
+                GameManager.Instance.EndGame(score);
+            }
         }
     }
 }

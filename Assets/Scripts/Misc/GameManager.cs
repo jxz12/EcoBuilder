@@ -47,7 +47,7 @@ namespace EcoBuilder
         }
         void OnApplicationQuit()
         {
-                Progress = new List<int>() {0};
+            // Progress = new List<int>() {0};
             SaveProgress();
         }
         
@@ -118,6 +118,17 @@ namespace EcoBuilder
                 Progress.Add(0); // if no save file, only unlock first level, no stars
             }
         }
+        public void InitNumLevels(int numLevels)
+        {
+            if (Progress.Count > numLevels)
+                throw new Exception("Too many levels in save file to load");
+
+            if (Progress.Count < numLevels)
+            {
+                for (int i=Progress.Count; i<numLevels; i++) // init locked levels if the save file is wrong
+                    Progress.Add(-1);
+            }
+        }
 
         /*
         graph constraints:
@@ -134,13 +145,17 @@ namespace EcoBuilder
         public int LevelNumber { get; private set; } = 0;
         public int NumProducers { get; private set; } = 10;
         public int NumConsumers { get; private set; } = 10;
+        public int MinLoop { get; private set; } = -1;
+        public int MinChain { get; private set; } = -1;
         public void ShowLevelCard(int number, string title, string description,
             int numProducers, int numConsumers,
-            int minLoop=0, int maxLoop=0, int minChain=0, int maxChain=0, float minOmnivory=0, float maxOmnivory=0 )
+            int minLoop=-1, int minChain=-1)
         {
             LevelNumber = number;
             NumProducers = numProducers;
             NumConsumers = numConsumers;
+            MinLoop = minLoop;
+            MinChain = minChain;
             levelCard.Show(title, description, numProducers, numConsumers);
         }
         public void ShowLevelCard()
@@ -161,14 +176,11 @@ namespace EcoBuilder
             if (numStars < 0 || numStars > 3)
                 throw new Exception("cannot pass with less than 1 or more than 3 stars");
 
-            if (LevelNumber >= Progress.Count)
-            {
-                for (int i=Progress.Count; i<LevelNumber; i++)
-                    Progress.Add(-1);
-            }
             Progress[LevelNumber] = numStars;
-            if (numStars >= 1)
-                Progress.Add(0); // unlock next level
+
+            // unlock new level if possible
+            if (numStars >= 1 && Progress.Count > LevelNumber+1 && Progress[LevelNumber+1] == -1)
+                Progress[LevelNumber+1] = 0;
 
             GameManager.Instance.UnloadScene("Play");
             GameManager.Instance.LoadScene("Menu");

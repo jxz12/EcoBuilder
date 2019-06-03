@@ -38,8 +38,8 @@ namespace EcoBuilder.Model
                                 e_c = .5, // animal efficiency
                                 kg_min = 1e-3,
                                 kg_max = 1e3,
-                                a_ii_min = 1e-2,
-                                a_ii_max = 1e2;
+                                a_ii_min = 1e0,
+                                a_ii_max = 1e4;
         
         [SerializeField] GameObject busyIcon;
                                 
@@ -67,7 +67,15 @@ namespace EcoBuilder.Model
             Species toRemove = idxToSpecies[idx];
             simulation.RemoveSpecies(toRemove);
             idxToSpecies.Remove(idx);
-            equilibriumSolved = false;
+            if (idxToSpecies.Count > 0)
+            {
+                equilibriumSolved = false;
+            }
+            else
+            {
+                Feasible = Stable = Nonreactive = false;
+                OnCalculated.Invoke();
+            }
         }
         static double GetOnLogScale(float normalised, double minVal, double maxVal)
         {

@@ -23,10 +23,12 @@ namespace EcoBuilder.Menu
 			this.producers.text = numProducers.ToString();
 			this.consumers.text = numConsumers.ToString();
 			gameObject.SetActive(true);
+            startEndText.text = "Go!";
 		}
 		public void Show()
 		{
 			gameObject.SetActive(true);
+            startEndText.text = "Quit?";
 		}
 		public void Hide()
 		{
@@ -34,17 +36,15 @@ namespace EcoBuilder.Menu
 		}
 		public void StartEndGame()
 		{
-			// TODO: probably store a variable instead of this
+			// TODO: probably store a variable instead of this crap
 			if (startEndText.text == "Go!")
 			{
 				GameManager.Instance.PlayGame();
-				startEndText.text = "Quit?";
 				gameObject.SetActive(false);
 			}
 			else
 			{
 				GameManager.Instance.EndGame(0);
-				startEndText.text = "Go!";
 				gameObject.SetActive(false);
 			}
 		}

@@ -113,8 +113,8 @@ namespace EcoBuilder.NodeLink
 
         public void RemoveNode(int idx)
         {
-            // if (focus != null && focus.Idx == idx)
-            //     UnfocusAll();
+            if (focus != null && focus.Idx == idx)
+                Unfocus();
 
             Destroy(nodes[idx].gameObject);
             nodes.RemoveAt(idx);
@@ -137,7 +137,6 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
-            // toBFS.Enqueue(myNull);
 
             // prevent memory leak in trophic level data structures
             trophicA.RemoveAt(idx);
@@ -152,14 +151,6 @@ namespace EcoBuilder.NodeLink
 
             adjacency[i].Add(j);
             adjacency[j].Add(i);
-
-            // if (links[j, i] != null)
-            // {
-            //     links[j, i].Curve();
-            //     links[i, j].Curve();
-            // }
-
-            OnLinkAdded.Invoke(i, j);
         }
         private void RemoveLink(int i, int j)
         {
@@ -170,8 +161,6 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
             }
-
-            OnLinkRemoved.Invoke(i,j);
         }
         public void SetNodeAsSourceOnly(int idx, bool isSource) // basal
         {

@@ -61,5 +61,10 @@ namespace EcoBuilder.UI
 		{
 			star3.material = starEmpty;
 		}
+
+		public void ShowErrorMessage(string message)
+		{
+			print(message);
+		}
 	}
 }
