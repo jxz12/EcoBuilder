@@ -16,7 +16,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
         [SerializeField] float holdThreshold = .3f;
 
-        // TODO: might want to change this into viewport coordinates
+        // TODO: might want to change this into colliders
         [SerializeField] float clickRadius=15;
         private Node ClosestNodeToPointer(Vector2 pointerPos)
         {
@@ -63,6 +63,7 @@ namespace EcoBuilder.NodeLink
             potentialHold = false;
             
             // add links if possible on hold
+            // TODO: change this to actual object that raised the event
             Node held = ClosestNodeToPointer(ped.position);
             if (held != null)
             {
