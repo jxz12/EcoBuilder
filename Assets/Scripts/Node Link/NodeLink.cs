@@ -43,7 +43,7 @@ namespace EcoBuilder.NodeLink
                     TrophicGaussSeidel();
                     foreach (Node no in nodes)
                     {
-                        float targetY = .4f*heights[no.Idx]+.4f*(trophicLevels[no.Idx]-1);
+                        float targetY = .7f*heights[no.Idx]+.2f*(trophicLevels[no.Idx]-1);
                         no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
                     }
                 }
@@ -83,11 +83,11 @@ namespace EcoBuilder.NodeLink
 
             Node newNode = Instantiate(nodePrefab, nodesParent);
 
-            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
+            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, -2f));
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
 
-            focus = newNode;
+            FocusNode(idx);
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);

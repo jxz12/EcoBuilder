@@ -6,7 +6,8 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink :
         IPointerDownHandler, IPointerUpHandler,
-        IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+        IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler,
+        IScrollHandler
 	{
         ////////////////////////////////////
         // for user-interaction rotation
@@ -14,33 +15,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f;
         [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
         [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
-        [SerializeField] float holdThreshold = .3f;
-
-        // TODO: might want to change this into colliders
-        [SerializeField] float clickRadius=15;
-        private Node ClosestNodeToPointer(Vector2 pointerPos)
-        {
-            Node closest = null;
-            float closestDist = float.MaxValue;
-            float radius = clickRadius * clickRadius;
-            foreach (Node node in nodes)
-            {
-                Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
-
-                // if the click is within the clickable radius 
-                if ((pointerPos-screenPos).sqrMagnitude < radius)
-                {
-                    // choose the node closer to the screen
-                    float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
-                    if (dist < closestDist)
-                    {
-                        closest = node;
-                        closestDist = dist;
-                    }
-                }
-            }
-            return closest;
-        }
+        [SerializeField] float holdThreshold = .2f;
 
         bool potentialHold = false;
         bool dragging = false;
@@ -63,8 +38,7 @@ namespace EcoBuilder.NodeLink
             potentialHold = false;
             
             // add links if possible on hold
-            // TODO: change this to actual object that raised the event
-            Node held = ClosestNodeToPointer(ped.position);
+            Node held = ped.rawPointerPress.GetComponent<Node>();
             if (held != null)
             {
                 if (focus != null && focus != held)
@@ -84,10 +58,6 @@ namespace EcoBuilder.NodeLink
                         }
                     }
                 }
-                // else
-                // {
-                //     FocusNode(held.Idx);
-                // }
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -95,14 +65,16 @@ namespace EcoBuilder.NodeLink
             if (potentialHold) // if click
             {
                 potentialHold = false;
-                Node clicked = ClosestNodeToPointer(ped.position);
+                Node clicked = ped.rawPointerPress.GetComponent<Node>();
                 if (clicked != null)
                 {
                     FocusNode(clicked.Idx);
+                    OnNodeFocused.Invoke(clicked.Idx);
                 }
                 else
                 {
                     Unfocus();
+                    OnUnfocused.Invoke();
                 }
             }
             dragging = false;
@@ -111,13 +83,18 @@ namespace EcoBuilder.NodeLink
         Node focus=null;
         public void FocusNode(int idx)
         {
+            if (focus != null)
+                Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
+
             focus = nodes[idx];
-            OnNodeFocused.Invoke(idx);
+            focus.gameObject.AddComponent<cakeslice.Outline>();
         }
         public void Unfocus()
         {
+            if (focus != null)
+                Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
+
             focus = null;
-            OnUnfocused.Invoke();
         }
         public void FlashNode(int idx)
         {
@@ -140,7 +117,7 @@ namespace EcoBuilder.NodeLink
         }
         public void OnDrag(PointerEventData ped)
         {
-            if (ped.button == PointerEventData.InputButton.Left)
+            if (Input.touchCount < 2) // a bit hacky to not use ped, but isn't all of Unity?
             {
                 float ySpin = -ped.delta.x * rotationMultiplier;
                 nodesParent.Rotate(Vector3.up, ySpin);
@@ -150,18 +127,27 @@ namespace EcoBuilder.NodeLink
                 float xSpin = ped.delta.y * rotationMultiplier;
                 graphParent.Rotate(Vector3.right, xSpin);
             }
-            // TODO: make this two fingers instead
-            else if (ped.button == PointerEventData.InputButton.Right)
+            else if (Input.touchCount == 2)
             {
-                float zoom = ped.delta.y * zoomMultiplier;
-                if (zoom > .5f)
-                    zoom = .5f;
-                if (zoom < -.5f)
-                    zoom = -.5f;
+                Touch t1 = Input.touches[0];
+                Touch t2 = Input.touches[1];
+
+                float dist = (t1.position - t2.position).magnitude;
+                float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
+                float zoom = dist - prevDist;
+                zoom = Mathf.Min(zoom, .5f);
+                zoom = Mathf.Max(zoom, -.5f);
 
                 nodesParent.localScale *= 1 + zoom;
-                // graphParent.localScale *= 1 + zoom;
             }
+        }
+        public void OnScroll(PointerEventData ped)
+        {
+            float zoom = ped.scrollDelta.y * zoomMultiplier;
+            zoom = Mathf.Min(zoom, .5f);
+            zoom = Mathf.Max(zoom, -.5f);
+
+            nodesParent.localScale *= 1 + zoom;
         }
         public void OnDrop(PointerEventData ped)
         {

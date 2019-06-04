@@ -93,7 +93,7 @@ namespace EcoBuilder.NodeLink
             yield return shuffled[n-1];
         }
 
-        [SerializeField] float layoutTween=.05f;//, centeringTween=.1f;
+        [SerializeField] float layoutTween=.05f;
         void TweenNodes()
         {
             Vector3 centroid = Vector3.zero;
@@ -103,16 +103,15 @@ namespace EcoBuilder.NodeLink
                 foreach (Node no in nodes)
                 {
                     Vector3 pos = no.TargetPos;
-                    pos.y = 0;
                     centroid += pos;
                 }
                 centroid /= nodes.Count;
+                centroid.y = 0;
             }
             else
             {
                 // center to focus
                 centroid = focus.TargetPos;
-                centroid.y = 0;
             }
             foreach (Node no in nodes)
             {
@@ -120,7 +119,9 @@ namespace EcoBuilder.NodeLink
                 no.transform.localPosition =
                     Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
             }
+
         }
+
 
         ////////////////////////////////////
         // for trophic level calculation
