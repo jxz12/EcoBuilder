@@ -40,6 +40,7 @@ namespace EcoBuilder
 
             // TODO: add May's (or Tang's) complexity criteria here, directly
             model.OnCalculated +=             ()=> status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
+            model.OnCalculated +=             ()=> nodelink.ResizeNodes(i=>model.GetAbundance(i));
             model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
             model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 

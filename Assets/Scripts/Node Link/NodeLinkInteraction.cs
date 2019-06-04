@@ -62,10 +62,30 @@ namespace EcoBuilder.NodeLink
                     yield return null;
             }
             potentialHold = false;
-            Node held = ClosestNodeToPointer(ped.position);
-            if (held != null)
+            Node clicked = ClosestNodeToPointer(ped.position);
+            if (clicked != null)
             {
-                FocusNode(held.Idx);
+                if (focus != null && focus != clicked)
+                {
+                    int i=clicked.Idx, j=focus.Idx;
+                    if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
+                    {
+                        if (links[i,j] != null)
+                        {
+                            RemoveLink(i, j);
+                            OnLinkRemoved.Invoke(i,j);
+                        }
+                        else
+                        {
+                            AddLink(i, j);
+                            OnLinkAdded.Invoke(i, j);
+                        }
+                    }
+                }
+                // else
+                // {
+                //     FocusNode(clicked.Idx);
+                // }
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -76,27 +96,7 @@ namespace EcoBuilder.NodeLink
                 Node clicked = ClosestNodeToPointer(ped.position);
                 if (clicked != null)
                 {
-                    if (focus != null && focus != clicked)
-                    {
-                        int i=clicked.Idx, j=focus.Idx;
-                        if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
-                        {
-                            if (links[i,j] != null)
-                            {
-                                RemoveLink(i, j);
-                                OnLinkRemoved.Invoke(i,j);
-                            }
-                            else
-                            {
-                                AddLink(i, j);
-                                OnLinkAdded.Invoke(i, j);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        FocusNode(clicked.Idx);
-                    }
+                    FocusNode(clicked.Idx);
                 }
                 else
                 {

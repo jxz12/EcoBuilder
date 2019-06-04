@@ -92,17 +92,25 @@ namespace EcoBuilder.NodeLink
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
         }
-        public void ReshapeNode(int idx, GameObject shape)
+        public void ResizeNodes(Func<int, float> sizes)
         {
-            nodes[idx].Reshape(shape);
-        }
-        public void ResizeNode(int idx, float size)
-        {
-            if (size < 0)
-                throw new Exception("size cannot be negative");
+            // float max=0, min=float.MaxValue;
+            foreach (Node no in nodes)
+            {
+                int idx = no.Idx;
+                float size = sizes(idx);
+                if (size >= 0)
+                {
+                    no.Size = .5f + 10*Mathf.Sqrt(size);
+                }
+                else
+                {
+                    no.Size = .4f;
+                }
+            }
 
-            nodes[idx].Size = .5f + Mathf.Sqrt(size); // to make area increase linearly with 'size'
         }
+
         // public void ResizeNodeOutline(int idx, float size)
         // {
         //     if (size < 0)

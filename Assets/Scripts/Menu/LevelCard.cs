@@ -15,24 +15,23 @@ namespace EcoBuilder.Menu
 		[SerializeField] Button startEnd;
 		[SerializeField] Text startEndText;
 
-		// TODO: maybe animation?
         public void Show(string title, string description, int numProducers, int numConsumers)
 		{
 			this.title.text = title;
 			this.description.text = description;
 			this.producers.text = numProducers.ToString();
 			this.consumers.text = numConsumers.ToString();
-			gameObject.SetActive(true);
+			GetComponent<Animator>().SetBool("Showing", true);
             startEndText.text = "Go!";
 		}
 		public void Show()
 		{
-			gameObject.SetActive(true);
+			GetComponent<Animator>().SetBool("Showing", true);
             startEndText.text = "Quit?";
 		}
 		public void Hide()
 		{
-			gameObject.SetActive(false);
+			GetComponent<Animator>().SetBool("Showing", false);
 		}
 		public void StartEndGame()
 		{
@@ -40,13 +39,13 @@ namespace EcoBuilder.Menu
 			if (startEndText.text == "Go!")
 			{
 				GameManager.Instance.PlayGame();
-				gameObject.SetActive(false);
 			}
 			else
 			{
+				// TODO: 'are you sure' option
 				GameManager.Instance.ReturnToMenu(0);
-				gameObject.SetActive(false);
 			}
+			GetComponent<Animator>().SetBool("Showing", false);
 		}
 	}
 }

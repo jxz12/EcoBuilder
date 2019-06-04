@@ -38,8 +38,8 @@ namespace EcoBuilder.Model
                                 e_c = .5, // animal efficiency
                                 kg_min = 1e-3,
                                 kg_max = 1e3,
-                                a_ii_min = 1e0,
-                                a_ii_max = 1e4;
+                                a_ii_min = 1e-4,
+                                a_ii_max = 1e2;
         
         [SerializeField] GameObject busyIcon;
                                 

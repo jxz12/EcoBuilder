@@ -2424,7 +2424,7 @@ MonoBehaviour:
   linksParent: {fileID: 260843400}
   rotationMultiplier: 0.9
   zoomMultiplier: 0.005
-  yMinRotation: 0.2
+  yMinRotation: 0
   yRotationDrag: 0.1
   xDefaultRotation: -15
   xRotationTween: 0.2
