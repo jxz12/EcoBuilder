@@ -50,7 +50,6 @@ namespace EcoBuilder.NodeLink
             dragging = true;
             StartCoroutine(WaitForHold(holdThreshold, ped));
         }
-        // TODO: if nothing is selected, then make even a normal click select
         IEnumerator WaitForHold(float seconds, PointerEventData ped)
         {
             float endTime = Time.time + seconds;
@@ -62,13 +61,15 @@ namespace EcoBuilder.NodeLink
                     yield return null;
             }
             potentialHold = false;
-            Node clicked = ClosestNodeToPointer(ped.position);
-            if (clicked != null)
+            
+            // add links if possible on hold
+            Node held = ClosestNodeToPointer(ped.position);
+            if (held != null)
             {
-                if (focus != null && focus != clicked)
+                if (focus != null && focus != held)
                 {
-                    int i=clicked.Idx, j=focus.Idx;
-                    if (i != j && !clicked.IsSinkOnly && !focus.IsSourceOnly)
+                    int i=held.Idx, j=focus.Idx;
+                    if (i != j && !held.IsSinkOnly && !focus.IsSourceOnly)
                     {
                         if (links[i,j] != null)
                         {
@@ -84,7 +85,7 @@ namespace EcoBuilder.NodeLink
                 }
                 // else
                 // {
-                //     FocusNode(clicked.Idx);
+                //     FocusNode(held.Idx);
                 // }
             }
         }
@@ -156,7 +157,9 @@ namespace EcoBuilder.NodeLink
                     zoom = .5f;
                 if (zoom < -.5f)
                     zoom = -.5f;
+
                 nodesParent.localScale *= 1 + zoom;
+                // graphParent.localScale *= 1 + zoom;
             }
         }
         public void OnDrop(PointerEventData ped)

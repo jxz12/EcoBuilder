@@ -8,10 +8,8 @@ namespace EcoBuilder.Model
 {
     class Species
     {
-        public int Idx { get; private set; }
-        public bool IsProducer { get; set; }
-        public double BodySize { get; set; }
-        public double SelfReg { get; set; }
+        public int Idx { get; private set; } public bool IsProducer { get; set; }
+        public double BodySize { get; set; } public double SelfReg { get; set; }
 
         public double Growth { get; set; }
         public double Search { get; set; }
@@ -38,8 +36,8 @@ namespace EcoBuilder.Model
                                 e_c = .5, // animal efficiency
                                 kg_min = 1e-3,
                                 kg_max = 1e3,
-                                a_ii_min = 1e-4,
-                                a_ii_max = 1e2;
+                                a_ii_min = 1e-8,
+                                a_ii_max = 1e-2;
         
         [SerializeField] GameObject busyIcon;
                                 
@@ -115,6 +113,8 @@ namespace EcoBuilder.Model
         public void SetSpeciesGreediness(int idx, float greedNormalised)
         {
             idxToSpecies[idx].SelfReg = -GetOnLogScale(greedNormalised, a_ii_max, a_ii_min);
+            // if (idxToSpecies[idx].IsProducer)
+            //     idxToSpecies[idx].SelfReg /= 100;
             equilibriumSolved = false;
         }
 
