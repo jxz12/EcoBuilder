@@ -107,6 +107,7 @@ namespace EcoBuilder.NodeLink
                 }
                 centroid /= nodes.Count;
                 centroid.y = 0;
+                // TODO: magic numbers here
                 graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
                 graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*200*Vector3.one, layoutTween);
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
