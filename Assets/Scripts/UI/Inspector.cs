@@ -144,7 +144,7 @@ namespace EcoBuilder.UI
         }
         public void InspectSpecies(int idx)
         {
-            if (inspected != null && !inspected.Spawned)
+            if (inspected != null && !inspected.Spawned) // if incubating
             {
                 Destroy(inspected.Object);
                 OnUnincubated.Invoke();
@@ -195,7 +195,7 @@ namespace EcoBuilder.UI
             nextIdx += 1;
 
             GetComponent<Animator>().SetTrigger("Spawn");
-            OnUnincubated.Invoke();
+            // OnUnincubated.Invoke();
 
             if (inspected.IsProducer)
             {

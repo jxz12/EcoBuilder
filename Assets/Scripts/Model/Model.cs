@@ -23,21 +23,21 @@ namespace EcoBuilder.Model
     }
     public class Model : MonoBehaviour
     {   
-        [SerializeField] double beta = .75,   // metabolic scaling
-                                b0 = 1.71e-6, // birth
-                                d0 = 4.15e-8, // death
-                                p_v = .26,    // velocity exponent
-                            //    v0 = .33,     // velocity constant
-                                p_r = .21,    // reaction exponent
-                            //    r0 = 1.62,    // reaction constant
-                                // p_e = .85, // empirical exponent
-                                a0 = 8.32e-4,
-                                e_p = .2, // plant efficiency
-                                e_c = .5, // animal efficiency
-                                kg_min = 1e-3,
-                                kg_max = 1e3,
-                                a_ii_min = 1e-8,
-                                a_ii_max = 1e-2;
+        [SerializeField] double beta = .75,       // metabolic scaling
+                                b0 = 1.71e-6,     // birth
+                                d0 = 4.15e-8,     // death
+                                p_v = .26,        // velocity exponent
+                            //    v0 = .33,       // velocity constant
+                                p_r = .21,        // reaction exponent
+                            //    r0 = 1.62,      // reaction constant
+                            //    p_e = .85,      // empirical exponent
+                                a0 = 8.32e-4,     // search exponent
+                                e_p = .2,         // plant efficiency
+                                e_c = .5,         // animal efficiency
+                                kg_min = 1e-3,    // min body size
+                                kg_max = 1e3,     // max body size
+                                a_ii_min = 1e-8,  // min self-regulation
+                                a_ii_max = 1e-2;  // max self-regulation
         
         [SerializeField] GameObject busyIcon;
                                 

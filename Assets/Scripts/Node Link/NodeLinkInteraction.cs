@@ -86,9 +86,8 @@ namespace EcoBuilder.NodeLink
         {
             if (focus != null)
                 Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
-            // else
-            //     GetComponent<Animator>().SetTrigger("Focus");
 
+            GetComponent<Animator>().SetInteger("Middle Left Focus", 2);
             focus = nodes[idx];
             focus.gameObject.AddComponent<cakeslice.Outline>();
         }
@@ -97,9 +96,9 @@ namespace EcoBuilder.NodeLink
             if (focus != null)
             {
                 Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
-                // GetComponent<Animator>().SetTrigger("Middle");
                 focus = null;
             }
+            GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
         }
         public void FlashNode(int idx)
         {
@@ -172,11 +171,11 @@ namespace EcoBuilder.NodeLink
 
         public void MoveLeft()
         {
-            GetComponent<Animator>().SetTrigger("Left");
+            GetComponent<Animator>().SetInteger("Middle Left Focus", 1);
         }
         public void MoveMiddle()
         {
-            GetComponent<Animator>().SetTrigger("Middle");
+            GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
         }
 		public void Finish()
 		{
