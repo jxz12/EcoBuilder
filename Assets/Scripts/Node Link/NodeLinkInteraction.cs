@@ -146,12 +146,14 @@ namespace EcoBuilder.NodeLink
         {
             Zoom(ped.scrollDelta.y);
         }
+        float zoomedAmount = 1;
         void Zoom(float amount)
         {
             float zoom = amount * zoomMultiplier;
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
+            zoomedAmount *= 1 + zoom;
             graphParent.localScale *= 1 + zoom;
         }
         public void OnDrop(PointerEventData ped)

@@ -150,4 +150,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lr: {fileID: 120194515749493738}
   curveRatio: 0.2
-  curveSegments: 5
+  curveSegments: 10
