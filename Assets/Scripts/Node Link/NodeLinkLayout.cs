@@ -35,7 +35,7 @@ namespace EcoBuilder.NodeLink
                         nodes[i].TargetPos -= mu * r;
                         nodes[j].TargetPos += mu * r;
                     }
-                    else // otherwise try to move the vertices at least a distance of 2 away
+                    else // otherwise try to move the vertices at least a distance of 1 away
                     {
                         if (mag < 1) // only push away
                         {
@@ -93,7 +93,7 @@ namespace EcoBuilder.NodeLink
             yield return shuffled[n-1];
         }
 
-        [SerializeField] float layoutTween=.05f;
+        [SerializeField] float layoutTween=.05f, sizeTween=.05f;
         void TweenNodes()
         {
             Vector3 centroid = Vector3.zero;
@@ -112,15 +112,24 @@ namespace EcoBuilder.NodeLink
             {
                 // center to focus
                 centroid = focus.TargetPos;
+                centroid.y = 0;
             }
             foreach (Node no in nodes)
             {
-                no.TargetPos -= centroid;// * centeringTween;
+                no.TargetPos -= centroid;
                 no.transform.localPosition =
                     Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
+
+                no.transform.localScale =
+                    Vector3.Lerp(no.transform.localScale, no.TargetSize*Vector3.one, sizeTween);
             }
 
+            // place the focus in the middle, at the disk
+            float targetY = focus==null? 0 : focus.TargetPos.y;
+            Vector3 targetV = new Vector3(0, -targetY, 0);
+            nodesParent.localPosition = Vector3.Lerp(nodesParent.localPosition, targetV, layoutTween);
         }
+        // [SerializeField] private float smoothTime = .2f; // TODO: scale this with body size?
 
 
         ////////////////////////////////////
@@ -138,7 +147,7 @@ namespace EcoBuilder.NodeLink
 
             foreach (var ij in links.IndexPairs)
             {
-                int res = ij.Item1, con = ij.Item2;
+                int res=ij.Item1, con=ij.Item2;
                 trophicA[con] += 1f;
             }
 

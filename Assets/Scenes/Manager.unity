@@ -802,7 +802,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: First level! Simply add one producer and one consumer.
+  m_Text: Sandbox
 --- !u!222 &1073957558
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -881,7 +881,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 2
+  m_Text: 10
 --- !u!222 &1097529694
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1192,7 +1192,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 1
+  m_Text: 10
 --- !u!222 &1632510604
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1390,7 +1390,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '1: Introduction'
+  m_Text: Hello
 --- !u!222 &2068129633
 CanvasRenderer:
   m_ObjectHideFlags: 0

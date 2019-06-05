@@ -77,7 +77,8 @@ namespace EcoBuilder.NodeLink
                     OnUnfocused.Invoke();
                 }
             }
-            dragging = false;
+            if (Input.touchCount < 2)
+                dragging = false;
         }
 
         Node focus=null;
@@ -85,6 +86,8 @@ namespace EcoBuilder.NodeLink
         {
             if (focus != null)
                 Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
+            // else
+            //     GetComponent<Animator>().SetTrigger("Focus");
 
             focus = nodes[idx];
             focus.gameObject.AddComponent<cakeslice.Outline>();
@@ -92,9 +95,11 @@ namespace EcoBuilder.NodeLink
         public void Unfocus()
         {
             if (focus != null)
+            {
                 Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
-
-            focus = null;
+                // GetComponent<Animator>().SetTrigger("Middle");
+                focus = null;
+            }
         }
         public void FlashNode(int idx)
         {
@@ -113,7 +118,8 @@ namespace EcoBuilder.NodeLink
         public void OnEndDrag(PointerEventData ped)
         {
             yRotationMomentum = -ped.delta.x * rotationMultiplier;
-            dragging = false;
+            if (Input.touchCount < 2)
+                dragging = false;
         }
         public void OnDrag(PointerEventData ped)
         {
@@ -134,20 +140,20 @@ namespace EcoBuilder.NodeLink
 
                 float dist = (t1.position - t2.position).magnitude;
                 float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                float zoom = dist - prevDist;
-                zoom = Mathf.Min(zoom, .5f);
-                zoom = Mathf.Max(zoom, -.5f);
-
-                nodesParent.localScale *= 1 + zoom;
+                Zoom(dist - prevDist);
             }
         }
         public void OnScroll(PointerEventData ped)
         {
-            float zoom = ped.scrollDelta.y * zoomMultiplier;
+            Zoom(ped.scrollDelta.y);
+        }
+        void Zoom(float amount)
+        {
+            float zoom = amount * zoomMultiplier;
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
-            nodesParent.localScale *= 1 + zoom;
+            graphParent.localScale *= 1 + zoom;
         }
         public void OnDrop(PointerEventData ped)
         {
@@ -168,9 +174,9 @@ namespace EcoBuilder.NodeLink
         {
             GetComponent<Animator>().SetTrigger("Left");
         }
-        public void MoveRight()
+        public void MoveMiddle()
         {
-            GetComponent<Animator>().SetTrigger("Right");
+            GetComponent<Animator>().SetTrigger("Middle");
         }
 		public void Finish()
 		{

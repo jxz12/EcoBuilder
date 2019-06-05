@@ -97,7 +97,8 @@ namespace EcoBuilder.Model
             internInteractions[externToIntern[res]].Remove(externToIntern[con]);
         }
 
-        Matrix<double> A, community;
+        // TODO: test if these faster when sparse
+        Matrix<double> A, community, flux;
         Vector<double> x, b;
         public void InitMatrices(int n)
         {
@@ -107,6 +108,8 @@ namespace EcoBuilder.Model
                 A = Matrix<double>.Build.Dense(n, n);
                 x = Vector<double>.Build.Dense(n);
                 b = Vector<double>.Build.Dense(n);
+
+                flux = Matrix<double>.Build.Dense(n,n);
 
                 // community is Jacobian evaluated at x
                 community = Matrix<double>.Build.Dense(n, n);
@@ -128,6 +131,7 @@ namespace EcoBuilder.Model
 
             A.Clear();
             b.Clear();
+            flux.Clear();
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -141,6 +145,7 @@ namespace EcoBuilder.Model
 
                     A[i,j] -= a;
                     A[j,i] += e * a;
+                    flux[i,j] = e * a;
                 }
             }
         }
@@ -165,6 +170,12 @@ namespace EcoBuilder.Model
             int idx = externToIntern[species];
             return x[idx];
         }
+        public double GetSolvedFlux(T resource, T consumer)
+        {
+            int res = externToIntern[resource];
+            int con = externToIntern[consumer];
+            return flux[res,con];
+        }
         bool Feasible()
         {
             for (int i=0; i<x.Count; i++)
@@ -175,22 +186,22 @@ namespace EcoBuilder.Model
             return true;
         }
 
-        public double GetTotalFlux()
-        {
-            double flux = 0;
-            foreach (T res in externInteractions.Keys)
-            {
-                int i = externToIntern[res];
-                double abundance = x[i];
-                foreach (T con in externInteractions[res])
-                {
-                    double a = a_ij(res, con);
-                    double e = e_ij(res, con);
-                    flux += a * e * abundance;
-                }
-            }
-            return flux;
-        }
+        // public double GetTotalFlux()
+        // {
+        //     double flux = 0;
+        //     foreach (T res in externInteractions.Keys)
+        //     {
+        //         int i = externToIntern[res];
+        //         double abundance = x[i];
+        //         foreach (T con in externInteractions[res])
+        //         {
+        //             double a = a_ij(res, con);
+        //             double e = e_ij(res, con);
+        //             flux += a * e * abundance;
+        //         }
+        //     }
+        //     return flux;
+        // }
 
 
 

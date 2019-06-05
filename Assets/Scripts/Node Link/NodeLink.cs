@@ -83,7 +83,8 @@ namespace EcoBuilder.NodeLink
 
             Node newNode = Instantiate(nodePrefab, nodesParent);
 
-            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, -2f));
+            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-.5f, -1.5f));
+            // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
 
@@ -92,32 +93,7 @@ namespace EcoBuilder.NodeLink
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
         }
-        public void ResizeNodes(Func<int, float> sizes)
-        {
-            // float max=0, min=float.MaxValue;
-            foreach (Node no in nodes)
-            {
-                int idx = no.Idx;
-                float size = sizes(idx);
-                if (size >= 0)
-                {
-                    no.Size = .6f + Mathf.Sqrt(size);
-                }
-                else
-                {
-                    no.Size = .5f;
-                }
-            }
 
-        }
-
-        // public void ResizeNodeOutline(int idx, float size)
-        // {
-        //     if (size < 0)
-        //         throw new Exception("size cannot be negative");
-
-        //     nodes[idx].OutlineSize = .5f + Mathf.Sqrt(size);
-        // }
 
         public void RemoveNode(int idx)
         {
@@ -177,6 +153,60 @@ namespace EcoBuilder.NodeLink
         public void SetNodeAsSinkOnly(int idx, bool isSink) // apex predator
         {
             nodes[idx].IsSinkOnly = isSink;
+        }
+        public void ResizeNodes(Func<int, float> sizes)
+        {
+            float max=0, min=float.MaxValue;
+            foreach (Node no in nodes)
+            {
+                float size = sizes(no.Idx);
+                if (size > 0)
+                {
+                    max = Mathf.Max(max, size);
+                    min = Mathf.Min(min, size);
+                }
+            }
+
+            float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
+            float logMax = Mathf.Log10(max * 1.5f); // put in middle
+            foreach (Node no in nodes)
+            {
+                float size = sizes(no.Idx);
+                if (size > 0)
+                {
+                    float logSize = Mathf.Log10(size);
+                    no.TargetSize = .4f + .4f*((logSize-logMin) / (logMax-logMin));
+                }
+                else
+                {
+                    no.TargetSize = .3f;
+                }
+            }
+        }
+        public void RespeedLinks(Func<int, int, float> speeds)
+        {
+            float max=0, min=float.MaxValue;
+            foreach (Link li in links)
+            {
+                int res=li.Source.Idx, con=li.Target.Idx;
+                float speed = speeds(res, con);
+                if (speed < 0)
+                    throw new Exception("negative flux");
+
+                max = Mathf.Max(max, speed);
+                min = Mathf.Min(min, speed);
+            }
+
+            float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
+            float logMax = Mathf.Log10(max * 1.5f); // put in middle
+            foreach (Link li in links)
+            {
+                int res=li.Source.Idx, con=li.Target.Idx;
+                float speed = speeds(res, con);
+
+                float logSpeed = Mathf.Log10(speed);
+                li.TileSpeed = .005f + .01f*((logSpeed-logMin) / (logMax-logMin));
+            }
         }
         // public IEnumerable<Tuple<int, int>> GetLinks()
         // {

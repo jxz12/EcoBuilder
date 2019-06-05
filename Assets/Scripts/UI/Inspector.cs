@@ -56,7 +56,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
-        [SerializeField] RectTransform incubatorParent;
+        [SerializeField] RectTransform incubatedParent;
 
         Dictionary<int, Species> spawnedSpecies = new Dictionary<int, Species>();
         int nextIdx = 0;
@@ -105,7 +105,7 @@ namespace EcoBuilder.UI
         {
             Species s = new Species(nextIdx, isProducer, sizeSlider.value, greedSlider.value);
             s.Object = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            s.Object.transform.SetParent(incubatorParent, false);
+            s.Object.transform.SetParent(incubatedParent, false);
             nameText.text = s.Object.name;
 
             inspected = s;
@@ -119,7 +119,7 @@ namespace EcoBuilder.UI
             Destroy(inspected.Object);
             inspected = new Species(inspected.Idx, inspected.IsProducer, sizeSlider.value, greedSlider.value);
             inspected.Object = factory.GenerateSpecies(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-            inspected.Object.transform.SetParent(incubatorParent, false);
+            inspected.Object.transform.SetParent(incubatedParent, false);
             nameText.text = inspected.Object.name;
         }
         void SetInspectedSize(float bodySize)
@@ -233,21 +233,26 @@ namespace EcoBuilder.UI
         }
 
         public bool Dragging { get; private set; }
+        Vector2 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
             if (inspected != null && !inspected.Spawned)
             {
-                inspected.Object.transform.SetParent(null, true);
+                // inspected.Object.transform.SetParent(null, true);
                 Dragging = true;
+                originalPos = incubatedParent.position;
             }
         }
         public void OnDrag(PointerEventData ped)
         {
             if (Dragging)
             {
-                Vector3 camPos = Camera.main.ScreenToWorldPoint(ped.position);
-                camPos.z = 0;
-                inspected.Object.transform.position = camPos;
+                Vector3 mousePos = ped.position;
+                mousePos.z = 4;
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
+
+                // incubatedParent.position = ped.position;
+                incubatedParent.position = worldPos;
             }
         }
         public void OnEndDrag(PointerEventData ped)
@@ -255,14 +260,7 @@ namespace EcoBuilder.UI
             if (Dragging)
             {
                 Dragging = false;
-                // incubatorParent.position = Vector3.zero;
-                if (!inspected.Spawned)
-                {
-                    inspected.Object.transform.SetParent(incubatorParent);
-                    inspected.Object.transform.localPosition = Vector3.zero;
-                    inspected.Object.transform.localScale = Vector3.one;
-                    inspected.Object.transform.localRotation = Quaternion.identity;
-                }
+                incubatedParent.position = originalPos;
             }
         }
 		public void Finish()

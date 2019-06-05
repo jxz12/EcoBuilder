@@ -17,7 +17,7 @@ namespace EcoBuilder
         void Start()
         {
             inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
-            inspector.OnUnincubated +=        ()=> nodelink.MoveRight();
+            inspector.OnUnincubated +=        ()=> nodelink.MoveMiddle();
             inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
             inspector.OnUnspawned +=         (i)=> model.RemoveSpecies(i);
@@ -40,7 +40,8 @@ namespace EcoBuilder
 
             // TODO: add May's (or Tang's) complexity criteria here, directly
             model.OnCalculated +=             ()=> status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
-            model.OnCalculated +=             ()=> nodelink.ResizeNodes(i=>model.GetAbundance(i));
+            model.OnCalculated +=             ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
+            model.OnCalculated +=             ()=> nodelink.RespeedLinks((i,j)=> model.GetFlux(i,j));
             model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
             model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 

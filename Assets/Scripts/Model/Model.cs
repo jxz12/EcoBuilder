@@ -165,15 +165,15 @@ namespace EcoBuilder.Model
         public bool Nonreactive { get; private set; } = false;
 
         // TODO: both of these
-        public float Complexity { get; private set; } = 0;
-        public float Flux { get; private set; } = 0;
+        // public float Complexity { get; private set; } = 0;
+        // public float Flux { get; private set; } = 0;
 
         async void Equilibrium()
         {
             calculating = true;
             Feasible = await Task.Run(() => simulation.SolveFeasibility());
 
-            Flux = (float)simulation.GetTotalFlux();
+            // Flux = (float)simulation.GetTotalFlux();
 
             if (Feasible)
             {
@@ -214,7 +214,11 @@ namespace EcoBuilder.Model
 
         public float GetAbundance(int idx)
         {
-            return (float)idxToSpecies[idx].Abundance;
+            return (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
+        }
+        public float GetFlux(int res, int con)
+        {
+            return (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
         }
     }
 }

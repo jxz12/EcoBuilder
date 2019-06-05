@@ -61,9 +61,12 @@ namespace EcoBuilder.UI
 			star3.SetBool("Filled", false);
 		}
 
+		// TODO: make this into prefab instead?
+		[SerializeField] Text errorText;
 		public void ShowErrorMessage(string message)
 		{
-			print(message);
+			errorText.text = message;
+			GetComponent<Animator>().SetTrigger("Show Error");
 		}
 		public void Finish()
 		{

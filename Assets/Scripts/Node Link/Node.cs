@@ -12,12 +12,10 @@ namespace EcoBuilder.NodeLink
             set { mr.material.SetColor("_Color", value); }
         }
         public Vector3 TargetPos { get; set; }
-        // private Vector3 velocity = Vector3.zero;
-        // [SerializeField] private float smoothTime = .2f; // TODO: scale this with body size?
-        public float Size {
-            get { return transform.localScale.x; }
-            set { transform.localScale = new Vector3(value, value, value); }
-        }
+        public float TargetSize { get; set; }
+        //     get { return transform.localScale.x; }
+        //     set { transform.localScale = new Vector3(value, value, value); }
+        // }
         public bool IsSourceOnly {
             get; set;
         }
@@ -32,7 +30,7 @@ namespace EcoBuilder.NodeLink
             anim = GetComponent<Animator>();
         }
 
-        Transform shape, outline;
+        Transform shape;
         // MeshFilter nodeMesh;
         public void Init(int idx, Vector3 pos, GameObject shapeObject)
         {
@@ -50,7 +48,7 @@ namespace EcoBuilder.NodeLink
             if (mr == null)
                 throw new System.Exception("shape has no meshrenderer!");
 
-            Mesh shapeMesh = shapeObject.GetComponent<MeshFilter>().mesh;
+            Mesh shapeMesh = shapeObject.GetComponent<MeshFilter>().mesh; // TODO: change this messiness
             GetComponent<MeshFilter>().mesh = shapeMesh;
         }
         public void Reshape(GameObject shapeObject)
@@ -58,19 +56,13 @@ namespace EcoBuilder.NodeLink
             Destroy(shape.gameObject);
             shape = shapeObject.transform;
             shape.SetParent(transform, false);
-            Size = 1;
+            // TargetSize = 1;
 
             mr = shapeObject.GetComponent<MeshRenderer>();
             if (mr == null)
                 throw new System.Exception("shape has no meshrenderer!");
-            
-            outline = shape; // TODO: change here too, as above
         }
-        // public void TweenToTarget()
-        // {
-        //     transform.localPosition = Vector3.SmoothDamp(transform.localPosition, TargetPos, ref velocity, smoothTime);
-        //     // transform.localPosition = TargetPos;
-        // }
+
         public void Flash()
         {
             anim.SetTrigger("Flash");
@@ -79,9 +71,5 @@ namespace EcoBuilder.NodeLink
         {
             anim.SetTrigger("Idle");
         }
-        // public void HeavyFlash()
-        // {
-        //     anim.SetTrigger("Heavy Flash");
-        // }
     }
 }

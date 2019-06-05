@@ -13,6 +13,7 @@ namespace EcoBuilder.NodeLink
             get { return lr.widthMultiplier; }
             set { lr.widthMultiplier = value; }
         }
+        public float TileSpeed { get; set; } = .1f;
 
         public void Init(Node source, Node target, bool curved=false)
         {
@@ -34,6 +35,11 @@ namespace EcoBuilder.NodeLink
 
                 var from = Source.transform.position;
                 var to = Target.transform.position;
+
+                var extra = (to - from) * .1f;
+                from += extra;
+                to -= extra;
+
                 var mid = (from+to) / 2;
                 mid += Vector3.Cross(to-from, Vector3.back) * curveRatio;
 
@@ -53,10 +59,11 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            // lr.startColor = Target.Col;
-            // lr.endColor = Source.Col;
-            lr.material.color = Target.Col;
-            // lr.material.color = Source.Col;
+            lr.startColor = Target.Col;
+            lr.endColor = Source.Col;
+            // lr.material.color = Target.Col;
+
+            lr.material.mainTextureOffset -= new Vector2(TileSpeed, 0);
         }
     }
 }
