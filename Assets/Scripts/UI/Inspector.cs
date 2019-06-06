@@ -227,8 +227,12 @@ namespace EcoBuilder.UI
             if (spawnedSpecies.Count > 0)
             {
                 nextIdx -= 1;
-                OnUnspawned.Invoke(nextIdx);
+                if (inspected == spawnedSpecies[nextIdx])
+                {
+                    GetComponent<Animator>().SetTrigger("Uninspect");
+                }
                 spawnedSpecies.Remove(nextIdx);
+                OnUnspawned.Invoke(nextIdx);
             }
         }
 

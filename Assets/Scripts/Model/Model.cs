@@ -69,11 +69,12 @@ namespace EcoBuilder.Model
             {
                 equilibriumSolved = false;
             }
-            else
-            {
-                Feasible = Stable = Nonreactive = false;
-                OnCalculated.Invoke();
-            }
+            // else
+            // {
+            //     // TODO: fix this because OnCalculated() makes nodelink try to get abundances
+            //     Feasible = Stable = Nonreactive = false;
+            //     OnCalculated.Invoke();
+            // }
         }
         static double GetOnLogScale(float normalised, double minVal, double maxVal)
         {

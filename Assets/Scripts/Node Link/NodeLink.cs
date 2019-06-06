@@ -17,6 +17,9 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
+        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.05f;
+        [SerializeField] float logRangeMultiplier=1.5f;
+
         public event Action OnLaplacianUnsolvable;
         public event Action OnLaplacianSolvable;
 
@@ -28,37 +31,9 @@ namespace EcoBuilder.NodeLink
 
             if (nodes.Count > 0)
             {
-                ///////////////////////////////
-                // First do height calculations
-                HashSet<int> basal = BuildTrophicEquations();
-                var heights = HeightBFS(basal);
-
-                if (heights.Count == nodes.Count) // if every node can be reached from basal
-                {
-                    if (laplacianDetNeg == true)
-                    {
-                        laplacianDetNeg = false;
-                        OnLaplacianSolvable.Invoke();
-                    }
-                    TrophicGaussSeidel();
-                    foreach (Node no in nodes)
-                    {
-                        float targetY = .5f*heights[no.Idx]+.2f*(trophicLevels[no.Idx]-1);
-                        no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
-                    }
-                }
-                else
-                {
-                    if (laplacianDetNeg == false)
-                    {
-                        laplacianDetNeg = true;
-                        OnLaplacianUnsolvable.Invoke();
-                    }
-                }
-
                 //////////////////////
-                // then do stress SGD
-                int dq = toBFS.Dequeue(); // only do one vertex per frame
+                // do stress SGD
+                int dq = toBFS.Dequeue(); // only do one vertex at a time
                 var d_j = ShortestPathsBFS(dq);
 
                 LayoutSGD(dq, d_j);
@@ -70,6 +45,40 @@ namespace EcoBuilder.NodeLink
 
             if (!dragging)
                 Rotate();
+        }
+        private void Update()
+        {
+            if (nodes.Count == 0)
+                return;
+
+            ///////////////////////////////
+            // do height calculations
+            HashSet<int> basal = BuildTrophicEquations();
+            var heights = HeightBFS(basal);
+
+            if (heights.Count == nodes.Count) // if every node can be reached from basal
+            {
+                if (laplacianDetNeg == true)
+                {
+                    laplacianDetNeg = false;
+                    OnLaplacianSolvable.Invoke();
+                }
+                TrophicGaussSeidel();
+                foreach (Node no in nodes)
+                {
+                    // float targetY = .5f*heights[no.Idx]+.2f*(trophicLevels[no.Idx]-1);
+                    float targetY = .5f*(trophicLevels[no.Idx]-1);
+                    no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
+                }
+            }
+            else
+            {
+                if (laplacianDetNeg == false)
+                {
+                    laplacianDetNeg = true;
+                    OnLaplacianUnsolvable.Invoke();
+                }
+            }
         }
 
         SparseVector<Node> nodes = new SparseVector<Node>();
@@ -169,13 +178,14 @@ namespace EcoBuilder.NodeLink
 
             float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
             float logMax = Mathf.Log10(max * 1.5f); // put in middle
+            float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
                 float size = sizes(no.Idx);
                 if (size > 0)
                 {
                     float logSize = Mathf.Log10(size);
-                    no.TargetSize = .4f + .4f*((logSize-logMin) / (logMax-logMin));
+                    no.TargetSize = minNodeSize + sizeRange*((logSize-logMin) / (logMax-logMin));
                 }
                 else
                 {
@@ -183,29 +193,30 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        public void RespeedLinks(Func<int, int, float> speeds)
+        public void ReflowLinks(Func<int, int, float> flows)
         {
             float max=0, min=float.MaxValue;
             foreach (Link li in links)
             {
                 int res=li.Source.Idx, con=li.Target.Idx;
-                float speed = speeds(res, con);
-                if (speed < 0)
+                float flow = flows(res, con);
+                if (flow < 0)
                     throw new Exception("negative flux");
 
-                max = Mathf.Max(max, speed);
-                min = Mathf.Min(min, speed);
+                max = Mathf.Max(max, flow);
+                min = Mathf.Min(min, flow);
             }
 
             float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
             float logMax = Mathf.Log10(max * 1.5f); // put in middle
+            float flowRange = maxLinkFlow - minLinkFlow;
             foreach (Link li in links)
             {
                 int res=li.Source.Idx, con=li.Target.Idx;
-                float speed = speeds(res, con);
+                float flow = flows(res, con);
 
-                float logSpeed = Mathf.Log10(speed);
-                li.TileSpeed = .005f + .01f*((logSpeed-logMin) / (logMax-logMin));
+                float logSpeed = Mathf.Log10(flow);
+                li.TileSpeed = minLinkFlow + flowRange*((logSpeed-logMin) / (logMax-logMin));
             }
         }
         // public IEnumerable<Tuple<int, int>> GetLinks()

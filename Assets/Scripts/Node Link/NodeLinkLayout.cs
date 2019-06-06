@@ -109,7 +109,7 @@ namespace EcoBuilder.NodeLink
                 centroid.y = 0;
                 // TODO: magic numbers here
                 graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
-                graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*200*Vector3.one, layoutTween);
+                graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*150*Vector3.one, layoutTween);
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
             }
             else
@@ -118,24 +118,22 @@ namespace EcoBuilder.NodeLink
                 centroid = focus.TargetPos;
                 // TODO: magic numbers here
                 graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.up*100, layoutTween);
-                graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*300*Vector3.one, layoutTween);
+                graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*250*Vector3.one, layoutTween);
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
 
                 centroid.y = 0;
             }
             foreach (Node no in nodes)
             {
-                no.TargetPos -= centroid;
+                no.TargetPos = 
+                    Vector3.Lerp(no.TargetPos, no.TargetPos-centroid, 1);
+
                 no.transform.localPosition =
-                    Vector3.Slerp(no.transform.localPosition, no.TargetPos, layoutTween);
+                    Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
 
                 no.transform.localScale =
-                    Vector3.Slerp(no.transform.localScale, no.TargetSize*Vector3.one, sizeTween);
+                    Vector3.Lerp(no.transform.localScale, no.TargetSize*Vector3.one, sizeTween);
             }
-
-            // // place the focus in the middle, at the disk
-            // float targetY = focus==null? 0 : focus.transform.localPosition.y;
-            // Vector3 targetV = new Vector3(0, -targetY, 0);
         }
 
 

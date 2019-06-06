@@ -40,14 +40,16 @@ namespace EcoBuilder
         }
         void Start()
         {
-            LoadProgress();
+            Screen.SetResolution(576, 1024, false);
+            Screen.fullScreen = true;
+            // LoadProgress();
+            Progress = new List<int>() {0};
 
             if (SceneManager.sceneCount == 1)
                 LoadScene("Menu");
         }
         void OnApplicationQuit()
         {
-            // Progress = new List<int>() {0};
             SaveProgress();
         }
         
