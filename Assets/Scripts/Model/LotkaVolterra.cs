@@ -156,7 +156,7 @@ namespace EcoBuilder.Model
         public bool SolveFeasibility()
         {
             BuildEquilibriumMatrix();
-            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(A));
+            UnityEngine.Debug.Log("A:\n" + MathNetMatStr(A));
             // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(b));
 
             // find fixed equilibrium point of system

@@ -43,7 +43,7 @@ namespace EcoBuilder.NodeLink
                     TrophicGaussSeidel();
                     foreach (Node no in nodes)
                     {
-                        float targetY = .7f*heights[no.Idx]+.2f*(trophicLevels[no.Idx]-1);
+                        float targetY = .5f*heights[no.Idx]+.2f*(trophicLevels[no.Idx]-1);
                         no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
                     }
                 }
