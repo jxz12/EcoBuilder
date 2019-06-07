@@ -8,8 +8,8 @@ namespace EcoBuilder.NodeLink
         public int Idx { get; private set; }
 
         public Color Col {
-            get { return mr.material.GetColor("_Color"); }
-            set { mr.material.SetColor("_Color", value); }
+            get { return mr.material.color; }
+            set { mr.material.color = value; }
         }
         public Vector3 TargetPos { get; set; }
         public float TargetSize { get; set; }
@@ -31,7 +31,6 @@ namespace EcoBuilder.NodeLink
         }
 
         Transform shape;
-        // MeshFilter nodeMesh;
         public void Init(int idx, Vector3 pos, GameObject shapeObject)
         {
             Idx = idx;

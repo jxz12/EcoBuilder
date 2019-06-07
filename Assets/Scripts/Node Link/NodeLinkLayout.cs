@@ -107,21 +107,19 @@ namespace EcoBuilder.NodeLink
                 }
                 centroid /= nodes.Count;
                 centroid.y = 0;
-                // TODO: magic numbers here
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
-                graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*150*Vector3.one, layoutTween);
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
+
+
+                // // TODO: magic numbers here
+                // graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
+                // graphParent.localScale = Vector3.Slerp(graphParent.localScale, 150*Vector3.one, layoutTween);
             }
             else
             {
                 // center to focus
                 centroid = focus.TargetPos;
-                // TODO: magic numbers here
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.up*100, layoutTween);
-                graphParent.localScale = Vector3.Slerp(graphParent.localScale, zoomedAmount*250*Vector3.one, layoutTween);
-                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
-
                 centroid.y = 0;
+                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
             }
             foreach (Node no in nodes)
             {

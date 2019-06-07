@@ -26,7 +26,7 @@ namespace EcoBuilder.NodeLink
         bool laplacianDetNeg = false;
         private void FixedUpdate()
         {
-            if (potentialHold)
+            if (!doLayout)
                 return;
 
             if (nodes.Count > 0)
@@ -38,13 +38,10 @@ namespace EcoBuilder.NodeLink
 
                 LayoutSGD(dq, d_j);
                 toBFS.Enqueue(dq);
-
-                // center
-                TweenNodes();
             }
 
-            if (!dragging)
-                Rotate();
+            TweenNodes();
+            Rotate();
         }
         private void Update()
         {
