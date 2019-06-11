@@ -41,7 +41,7 @@ namespace EcoBuilder.NodeLink
             }
 
             TweenNodes();
-            Rotate();
+            RotateMomentum();
         }
         private void Update()
         {
@@ -156,9 +156,9 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].IsSourceOnly = isSource;
         }
-        public void SetNodeAsSinkOnly(int idx, bool isSink) // apex predator
+        public void SetNodeAsTargetOnly(int idx, bool isTarget) // apex predator
         {
-            nodes[idx].IsSinkOnly = isSink;
+            nodes[idx].IsTargetOnly = isTarget;
         }
         public void ResizeNodes(Func<int, float> sizes)
         {

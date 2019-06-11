@@ -106,7 +106,7 @@ namespace EcoBuilder.Model
 
                                                 // velocity    mass-specific
             double velocity = Math.Pow(s.BodySize, (p_v+2*p_r) - 1);
-            s.Search = velocity * a0;
+            s.Search = velocity * 1;//a0;
 
             equilibriumSolved = false;
         }

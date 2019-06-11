@@ -19,7 +19,7 @@ namespace EcoBuilder.NodeLink
         public bool IsSourceOnly {
             get; set;
         }
-        public bool IsSinkOnly {
+        public bool IsTargetOnly {
             get; set;
         }
 
@@ -62,6 +62,14 @@ namespace EcoBuilder.NodeLink
                 throw new System.Exception("shape has no meshrenderer!");
         }
 
+        public void Outline()
+        {
+            gameObject.AddComponent<cakeslice.Outline>();
+        }
+        public void Unoutline()
+        {
+            Destroy(GetComponent<cakeslice.Outline>());
+        }
         public void Flash()
         {
             anim.SetTrigger("Flash");

@@ -20,21 +20,25 @@ namespace EcoBuilder.NodeLink
         Node focus=null;
         public void FocusNode(int idx)
         {
-            if (focus != null)
-                Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
-
-            GetComponent<Animator>().SetInteger("Middle Left Focus", 2);
-            focus = nodes[idx];
-            focus.gameObject.AddComponent<cakeslice.Outline>();
+            if (focus != nodes[idx])
+            {
+                // if (focus != null)
+                // {
+                //     focus.Unoutline();
+                // }
+                focus = nodes[idx];
+                // focus.Outline();
+                GetComponent<Animator>().SetInteger("Middle Left Focus", 2);
+            }
         }
         public void Unfocus()
         {
             if (focus != null)
             {
-                Destroy(focus.gameObject.GetComponent<cakeslice.Outline>());
+                // focus.Unoutline();
                 focus = null;
+                GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
             }
-            GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
         }
         public void MoveLeft()
         {
@@ -72,8 +76,19 @@ namespace EcoBuilder.NodeLink
             Vector3 toPan = (Vector3)amount * panMultiplier;
             graphParent.localPosition += toPan;
         }
+        void Rotate(Vector2 amount)
+        {
+            float ySpin = -amount.x * rotationMultiplier;
+            nodesParent.Rotate(Vector3.up, ySpin);
+
+            yRotationMomentum = ySpin;
+            yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
+
+            float xSpin = amount.y * rotationMultiplier;
+            graphParent.Rotate(Vector3.right, xSpin);
+        }
         float yRotationMomentum = 0;
-        private void Rotate()
+        private void RotateMomentum()
         {
             yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
             nodesParent.Rotate(Vector3.up, yRotationMomentum);
@@ -110,7 +125,7 @@ namespace EcoBuilder.NodeLink
             Node held = ped.rawPointerPress.GetComponent<Node>();
             if (held != null)
             {
-                print("TODO: delete held");
+                print("TODO: super focus mode");
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -136,8 +151,10 @@ namespace EcoBuilder.NodeLink
                 doLayout = true;
         }
 
+        // TODO:
         // Node dummyNode;
         // Link dummyLink;
+        Node potentialSource, potentialTarget;
         public void OnBeginDrag(PointerEventData ped)
         {
             potentialHold = false;
@@ -147,7 +164,8 @@ namespace EcoBuilder.NodeLink
                 if (draggedNode != null)
                 {
                     // dummyNode = Instantiate(nodePrefab)
-                    print("TODO: instantiate a temporary link here to show the user that they are making one");
+                    potentialSource = draggedNode;
+                    draggedNode.Outline();
                 }
             }
         }
@@ -156,27 +174,41 @@ namespace EcoBuilder.NodeLink
             // if single touch or left-click
             if (ped.pointerId==-1 || (ped.pointerId>=0 && Input.touchCount < 2))
             {
-                Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                if (draggedNode != null)
+                if (potentialSource != null)
                 {
                     GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
-                    Node hoveredNode = hoveredObject==null? null : hoveredObject.GetComponent<Node>();
-                    if (hoveredNode != null)
+                    Node snappedNode = hoveredObject==null? null : hoveredObject.GetComponent<Node>();
+                    if (snappedNode == null)
                     {
-                        print("TODO: snap to hovered node");
+                        snappedNode = ClosestSnappedNode(ped.position);
+                    }
+                    if (snappedNode == null)
+                    {
+                        if (potentialTarget != null)
+                        {
+                            potentialTarget.Unoutline();
+                            potentialTarget = null;
+                        }
+                    }
+                    else
+                    {
+                        if (potentialTarget == null)
+                        {
+                            potentialTarget = snappedNode;
+                            potentialTarget.Outline();
+                        }
+                        else if (potentialTarget != snappedNode)
+                        {
+                            potentialTarget.Unoutline();
+                            potentialTarget = snappedNode;
+                            potentialTarget.Outline();
+                        }
                     }
                 }
                 else
                 {
-                    // spin the whole graph
-                    float ySpin = -ped.delta.x * rotationMultiplier;
-                    nodesParent.Rotate(Vector3.up, ySpin);
-
-                    yRotationMomentum = ySpin;
-                    yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
-
-                    float xSpin = ped.delta.y * rotationMultiplier;
-                    graphParent.Rotate(Vector3.right, xSpin);
+                    // Rotate the whole graph accordingly
+                    Rotate(ped.delta);
                 }
             }
             // if double touch or middle-click
@@ -197,6 +229,17 @@ namespace EcoBuilder.NodeLink
         }
         public void OnEndDrag(PointerEventData ped)
         {
+            if (potentialSource != null)
+            {
+                potentialSource.Unoutline();
+                potentialSource = null;
+            }
+            if (potentialTarget != null)
+            {
+                potentialTarget.Unoutline();
+                potentialTarget = null;
+            }
+
             print("TODO: deal with clicking more than one mouse button at a time");
             if (Input.touchCount < 2)
                 doLayout = true;
@@ -204,7 +247,7 @@ namespace EcoBuilder.NodeLink
         public void OnScroll(PointerEventData ped)
         {
             Zoom(ped.scrollDelta.y);
-            print("TODO: use scrollDelta.x here for rotation too");
+            Rotate(new Vector3(ped.scrollDelta.x, 0));
         }
         // OnDrop gets called before OnEndDrag
         public void OnDrop(PointerEventData ped)
@@ -217,27 +260,21 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                    GameObject droppedOnObject = ped.pointerCurrentRaycast.gameObject;
-                    Node droppedOnNode = droppedOnObject==null? null : droppedOnObject.GetComponent<Node>();
-                    if (droppedOnNode != null)
+                    if (potentialSource != null && potentialTarget != null)
                     {
-                        if (draggedNode != null && droppedOnNode != null)
+                        // add a new link
+                        int i=potentialSource.Idx, j=potentialTarget.Idx;
+                        if (i != j && !potentialSource.IsTargetOnly && !potentialTarget.IsSourceOnly)
                         {
-                            // add a new link
-                            int i=draggedNode.Idx, j=droppedOnNode.Idx;
-                            if (i != j && !draggedNode.IsSinkOnly && !droppedOnNode.IsSourceOnly)
+                            if (links[i,j] != null)
                             {
-                                if (links[i,j] != null)
-                                {
-                                    RemoveLink(i, j);
-                                    OnLinkRemoved.Invoke(i,j);
-                                }
-                                else
-                                {
-                                    AddLink(i, j);
-                                    OnLinkAdded.Invoke(i, j);
-                                }
+                                RemoveLink(i, j);
+                                OnLinkRemoved.Invoke(i,j);
+                            }
+                            else
+                            {
+                                AddLink(i, j);
+                                OnLinkAdded.Invoke(i, j);
                             }
                         }
                     }
@@ -252,7 +289,7 @@ namespace EcoBuilder.NodeLink
         // this returns any node within the snap radius
         // if more than one are in the radius, then return the closest to the camera.
         [SerializeField] float snapRadius=30;
-        private Node ClosestNodeToSnap(Vector2 pointerPos)
+        private Node ClosestSnappedNode(Vector2 pointerPos)
         {
             Node closest = null;
             float closestDist = float.MaxValue;
