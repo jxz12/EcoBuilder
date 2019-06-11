@@ -24,14 +24,13 @@ namespace EcoBuilder.Model
     public class Model : MonoBehaviour
     {   
         [SerializeField] double beta = .75,       // metabolic scaling
-                                b0 = 1.71e-6,     // birth
-                                d0 = 4.15e-8,     // death
+                                b0 = 1.71e-6,     // birth constant
+                                d0 = 4.15e-8,     // death constant
                                 p_v = .26,        // velocity exponent
-                            //    v0 = .33,       // velocity constant
+                                v0 = .33,         // velocity constant
                                 p_r = .21,        // reaction exponent
-                            //    r0 = 1.62,      // reaction constant
-                            //    p_e = .85,      // empirical exponent
-                                a0 = 8.32e-4,     // search exponent
+                                r0 = 1.62,        // reaction constant
+                            //    p_e = .85,        // empirical exponent
                                 e_p = .2,         // plant efficiency
                                 e_c = .5,         // animal efficiency
                                 kg_min = 1e-3,    // min body size

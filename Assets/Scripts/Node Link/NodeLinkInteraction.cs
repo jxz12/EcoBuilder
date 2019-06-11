@@ -244,5 +244,37 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+
+        //////////////////////////////
+        // helpers
+
+
+        // this returns any node within the snap radius
+        // if more than one are in the radius, then return the closest to the camera.
+        [SerializeField] float snapRadius=30;
+        private Node ClosestNodeToSnap(Vector2 pointerPos)
+        {
+            Node closest = null;
+            float closestDist = float.MaxValue;
+            float radius = snapRadius * snapRadius;
+            foreach (Node node in nodes)
+            {
+                Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
+
+                // if the click is within the clickable radius
+                if ((pointerPos-screenPos).sqrMagnitude < radius)
+                {
+                    // choose the node closer to the screen
+                    float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
+                    if (dist < closestDist)
+                    {
+                        closest = node;
+                        closestDist = dist;
+                    }
+                }
+            }
+            return closest;
+        }
+
 	}
 }

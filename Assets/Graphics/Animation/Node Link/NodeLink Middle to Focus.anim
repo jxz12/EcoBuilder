@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Nodelink Middle to Focus
+  m_Name: NodeLink Middle to Focus
   serializedVersion: 6
   m_Legacy: 0
   m_Compressed: 0
