@@ -6,16 +6,16 @@ namespace EcoBuilder.NodeLink
     {
         [SerializeField] LineRenderer lr;
 
-        public Node Source { get; private set; }
-        public Node Target { get; private set; }
+        public Node Source { get; set; }
+        public Node Target { get; set; }
 
         public float Width {
             get { return lr.widthMultiplier; }
             set { lr.widthMultiplier = value; }
         }
-        public float TileSpeed { get; set; } = .1f;
+        public float TileSpeed { get; set; } = .01f;
 
-        public void Init(Node source, Node target, bool curved=false)
+        public void Init(Node source, Node target, bool curved)
         {
             Source = source;
             Target = target;
@@ -25,7 +25,7 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] float curveRatio = .2f;
         [SerializeField] int curveSegments = 5;
-        bool Curved { get; set; }
+        bool Curved { get; set; } = true;
 
         private void Update()
         {

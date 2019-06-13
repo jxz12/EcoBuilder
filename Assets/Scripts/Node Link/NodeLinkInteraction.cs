@@ -105,9 +105,12 @@ namespace EcoBuilder.NodeLink
         bool doLayout = true;
         public void OnPointerDown(PointerEventData ped)
         {
-            potentialHold = true;
-            doLayout = false;
-            StartCoroutine(WaitForHold(holdThreshold, ped));
+            if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+            {
+                doLayout = false;
+                potentialHold = true;
+                StartCoroutine(WaitForHold(holdThreshold, ped));
+            }
         }
         IEnumerator WaitForHold(float seconds, PointerEventData ped)
         {
@@ -145,15 +148,17 @@ namespace EcoBuilder.NodeLink
                     Unfocus();
                     OnUnfocused.Invoke();
                 }
+
+                // release rotation
+                if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+                {
+                    doLayout = true;
+                }
             }
-            print("TODO: deal with clicking more than one mouse button at a time");
-            if (Input.touchCount < 2)
-                doLayout = true;
         }
 
-        // TODO:
-        // Node dummyNode;
-        // Link dummyLink;
+        Node dummyTarget;
+        Link dummyLink;
         Node potentialSource, potentialTarget;
         public void OnBeginDrag(PointerEventData ped)
         {
@@ -161,45 +166,53 @@ namespace EcoBuilder.NodeLink
             if (ped.pointerId==0 || ped.pointerId==-1) // only drag on left-click or one touch
             {
                 Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                if (draggedNode != null)
+                if (draggedNode != null && !draggedNode.IsTargetOnly)
                 {
-                    // dummyNode = Instantiate(nodePrefab)
                     potentialSource = draggedNode;
                     draggedNode.Outline();
+
+                    dummyTarget = Instantiate(nodePrefab, nodesParent);
+                    dummyTarget.transform.localScale = Vector3.zero;
+                    dummyLink = Instantiate(linkPrefab, linksParent);
+                    dummyLink.Source = draggedNode;
+                    dummyLink.Target = dummyTarget;
                 }
             }
         }
         public void OnDrag(PointerEventData ped)
         {
             // if single touch or left-click
-            if (ped.pointerId==-1 || (ped.pointerId>=0 && Input.touchCount < 2))
+            if (ped.pointerId==-1 || (ped.pointerId>=0 && Input.touchCount<2))
             {
                 if (potentialSource != null)
                 {
                     GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
                     Node snappedNode = hoveredObject==null? null : hoveredObject.GetComponent<Node>();
                     if (snappedNode == null)
-                    {
                         snappedNode = ClosestSnappedNode(ped.position);
-                    }
-                    if (snappedNode == null)
+
+                    // if nothing to snap to
+                    if (snappedNode == null || snappedNode==potentialSource || snappedNode.IsSourceOnly)
                     {
                         if (potentialTarget != null)
                         {
                             potentialTarget.Unoutline();
                             potentialTarget = null;
+                            dummyLink.Target = dummyTarget;
                         }
+                        Vector3 screenPoint = ped.position;
+                        screenPoint.z = potentialSource.transform.position.z - Camera.main.transform.position.z;
+                        dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
                     }
                     else
                     {
-                        if (potentialTarget == null)
+                        // if not already snapped to
+                        if (snappedNode != potentialTarget)
                         {
-                            potentialTarget = snappedNode;
-                            potentialTarget.Outline();
-                        }
-                        else if (potentialTarget != snappedNode)
-                        {
-                            potentialTarget.Unoutline();
+                            if (potentialTarget != null)
+                                potentialTarget.Unoutline();
+
+                            dummyLink.Target = snappedNode;
                             potentialTarget = snappedNode;
                             potentialTarget.Outline();
                         }
@@ -229,20 +242,26 @@ namespace EcoBuilder.NodeLink
         }
         public void OnEndDrag(PointerEventData ped)
         {
-            if (potentialSource != null)
-            {
-                potentialSource.Unoutline();
-                potentialSource = null;
-            }
             if (potentialTarget != null)
             {
                 potentialTarget.Unoutline();
                 potentialTarget = null;
             }
+            if (potentialSource != null)
+            {
+                potentialSource.Unoutline();
+                potentialSource = null;
+                Destroy(dummyLink.gameObject);
+                Destroy(dummyTarget.gameObject);
+            }
 
-            print("TODO: deal with clicking more than one mouse button at a time");
-            if (Input.touchCount < 2)
+            // release rotation
+            if (
+                // (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0)))
+                (ped.pointerId==-1 || ped.pointerId==0))
+            {
                 doLayout = true;
+            }
         }
         public void OnScroll(PointerEventData ped)
         {
@@ -288,7 +307,7 @@ namespace EcoBuilder.NodeLink
 
         // this returns any node within the snap radius
         // if more than one are in the radius, then return the closest to the camera.
-        [SerializeField] float snapRadius=30;
+        [SerializeField] float snapRadius=40;
         private Node ClosestSnappedNode(Vector2 pointerPos)
         {
             Node closest = null;

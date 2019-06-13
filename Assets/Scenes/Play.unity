@@ -153,8 +153,9 @@ MonoBehaviour:
   b0: 0.00000171
   d0: 0.0000000415
   p_v: 0.26
+  v0: 0.33
   p_r: 0.21
-  a0: 0.000832
+  r0: 1.62
   e_p: 0.2
   e_c: 0.5
   kg_min: 0.001
@@ -320,6 +321,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 44464108}
   m_CullTransparentMesh: 0
+--- !u!84 &93554469
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 297
+  m_Height: 527
+  m_AntiAliasing: 1
+  m_DepthFormat: 1
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &136644390
 GameObject:
   m_ObjectHideFlags: 0
@@ -2572,8 +2607,8 @@ MonoBehaviour:
   sourceCamera: {fileID: 1047668687}
   outlineCamera: {fileID: 1539204445}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1448260998}
-  extraRenderTexture: {fileID: 1242067831}
+  renderTexture: {fileID: 1277123806}
+  extraRenderTexture: {fileID: 93554469}
 --- !u!1 &1052978197
 GameObject:
   m_ObjectHideFlags: 0
@@ -2789,23 +2824,24 @@ MonoBehaviour:
   graphParent: {fileID: 534420150}
   nodesParent: {fileID: 823585299}
   linksParent: {fileID: 260843400}
+  layoutTween: 0.05
+  sizeTween: 0.05
   minNodeSize: 0.5
   maxNodeSize: 1
   minLinkFlow: 0.005
   maxLinkFlow: 0.02
   logRangeMultiplier: 1.5
   rotationMultiplier: 0.9
-  zoomMultiplier: 0.005
+  zoomMultiplier: 0.05
   panMultiplier: 1.2
   yMinRotation: 0.02
   yRotationDrag: 0.1
   xDefaultRotation: -10
   xRotationTween: 0.1
   holdThreshold: 0.3
+  snapRadius: 40
   SGDStep: 0.2
   separationStep: 1
-  layoutTween: 0.05
-  sizeTween: 0.05
 --- !u!95 &1082250984
 Animator:
   serializedVersion: 3
@@ -3266,7 +3302,7 @@ RectTransform:
   m_AnchoredPosition: {x: -0.000015258789, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!84 &1242067831
+--- !u!84 &1277123806
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3279,8 +3315,8 @@ RenderTexture:
   m_ForcedFallbackFormat: 4
   m_DownscaleFallback: 0
   serializedVersion: 3
-  m_Width: 338
-  m_Height: 600
+  m_Width: 297
+  m_Height: 527
   m_AntiAliasing: 1
   m_DepthFormat: 1
   m_ColorFormat: 8
@@ -3859,40 +3895,6 @@ MonoBehaviour:
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
---- !u!84 &1448260998
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 338
-  m_Height: 600
-  m_AntiAliasing: 1
-  m_DepthFormat: 1
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &1525128318
 GameObject:
   m_ObjectHideFlags: 0
@@ -4166,7 +4168,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1448260998}
+  m_TargetTexture: {fileID: 1277123806}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0

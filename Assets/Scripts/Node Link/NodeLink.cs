@@ -17,9 +17,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.05f;
-        [SerializeField] float logRangeMultiplier=1.5f;
-
+        // TODO: move these into model rather than here
         public event Action OnLaplacianUnsolvable;
         public event Action OnLaplacianSolvable;
 
@@ -77,6 +75,49 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+
+        [SerializeField] float layoutTween=.05f, sizeTween=.05f;
+        void TweenNodes()
+        {
+            Vector3 centroid = Vector3.zero;
+            if (focus == null)
+            {
+                // get average of all positions, and center
+                foreach (Node no in nodes)
+                {
+                    Vector3 pos = no.TargetPos;
+                    centroid += pos;
+                }
+                centroid /= nodes.Count;
+                centroid.y = 0;
+                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
+
+                // // TODO: magic numbers here
+                // graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
+                // graphParent.localScale = Vector3.Slerp(graphParent.localScale, 150*Vector3.one, layoutTween);
+            }
+            else
+            {
+                // center to focus
+                centroid = focus.TargetPos;
+                centroid.y = 0;
+                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
+            }
+            foreach (Node no in nodes)
+            {
+                no.TargetPos = 
+                    Vector3.Lerp(no.TargetPos, no.TargetPos-centroid, 1);
+
+                no.transform.localPosition =
+                    Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
+
+                no.transform.localScale =
+                    Vector3.Lerp(no.transform.localScale, no.TargetSize*Vector3.one, sizeTween);
+            }
+        }
+
+
+
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
@@ -160,6 +201,9 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].IsTargetOnly = isTarget;
         }
+
+        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.05f;
+        [SerializeField] float logRangeMultiplier=1.5f;
         public void ResizeNodes(Func<int, float> sizes)
         {
             float max=0, min=float.MaxValue;
