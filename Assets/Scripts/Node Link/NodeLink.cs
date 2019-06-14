@@ -10,6 +10,7 @@ namespace EcoBuilder.NodeLink
         public event Action OnDroppedOn;
         public event Action OnUnfocused;
         public event Action<int> OnNodeFocused;
+        public event Action<int> OnNodeRemoved; // TODO: should not be here
         public event Action<int, int> OnLinkAdded;
         public event Action<int, int> OnLinkRemoved;
 
@@ -17,7 +18,6 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        // TODO: move these into model rather than here
         public event Action OnLaplacianUnsolvable;
         public event Action OnLaplacianSolvable;
 
@@ -230,7 +230,7 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    no.TargetSize = .3f;
+                    no.TargetSize = minNodeSize;
                 }
             }
         }
@@ -241,11 +241,11 @@ namespace EcoBuilder.NodeLink
             {
                 int res=li.Source.Idx, con=li.Target.Idx;
                 float flow = flows(res, con);
-                if (flow < 0)
-                    throw new Exception("negative flux");
-
-                max = Mathf.Max(max, flow);
-                min = Mathf.Min(min, flow);
+                if (flow > 0)
+                {
+                    max = Mathf.Max(max, flow);
+                    min = Mathf.Min(min, flow);
+                }
             }
 
             float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
@@ -256,8 +256,15 @@ namespace EcoBuilder.NodeLink
                 int res=li.Source.Idx, con=li.Target.Idx;
                 float flow = flows(res, con);
 
-                float logSpeed = Mathf.Log10(flow);
-                li.TileSpeed = minLinkFlow + flowRange*((logSpeed-logMin) / (logMax-logMin));
+                if (flow > 0)
+                {
+                    float logSpeed = Mathf.Log10(flow);
+                    li.TileSpeed = minLinkFlow + flowRange*((logSpeed-logMin) / (logMax-logMin));
+                }
+                else
+                {
+                    li.TileSpeed = 0;
+                }
             }
         }
         // public IEnumerable<Tuple<int, int>> GetLinks()

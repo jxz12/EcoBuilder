@@ -35,6 +35,8 @@ namespace EcoBuilder.NodeLink
             shape.localRotation = Quaternion.identity;
             shape.localScale = Vector3.one * .8f; // TODO: magic number
 
+            GetComponent<SphereCollider>().enabled = true;
+
             mr = shapeObject.GetComponent<MeshRenderer>();
             if (mr == null)
                 throw new System.Exception("shape has no meshrenderer!");

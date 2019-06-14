@@ -124,11 +124,12 @@ namespace EcoBuilder.NodeLink
             }
             potentialHold = false;
             
-            // add links if possible on hold
             Node held = ped.rawPointerPress.GetComponent<Node>();
             if (held != null)
             {
                 print("TODO: super focus mode");
+                OnNodeRemoved.Invoke(held.Idx);
+                RemoveNode(held.Idx);
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -148,12 +149,12 @@ namespace EcoBuilder.NodeLink
                     Unfocus();
                     OnUnfocused.Invoke();
                 }
+            }
 
-                // release rotation
-                if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
-                {
-                    doLayout = true;
-                }
+            // release rotation
+            if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+            {
+                doLayout = true;
             }
         }
 
@@ -162,6 +163,9 @@ namespace EcoBuilder.NodeLink
         Node potentialSource, potentialTarget;
         public void OnBeginDrag(PointerEventData ped)
         {
+            if (potentialHold == false) // already held
+                return;
+
             potentialHold = false;
             if (ped.pointerId==0 || ped.pointerId==-1) // only drag on left-click or one touch
             {

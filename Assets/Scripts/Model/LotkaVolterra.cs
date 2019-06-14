@@ -46,7 +46,7 @@ namespace EcoBuilder.Model
             internToExtern.Add(species);
             internInteractions.Add(new HashSet<int>());
 
-            InitMatrices(n+1);
+            ResizeMatrices(n+1);
         }
         public void RemoveSpecies(T species)
         {
@@ -55,13 +55,15 @@ namespace EcoBuilder.Model
 
             int n = internToExtern.Count;
 
-            externToIntern.Remove(species);
             externInteractions.Remove(species);
             foreach (var hash in externInteractions.Values)
                 hash.Remove(species);
 
             // O(n) but that's okay, as it shifts indices as required
             internToExtern.Remove(species);
+            externToIntern.Clear();
+            for (int i=0; i<n-1; i++)
+                externToIntern[internToExtern[i]] = i;
 
             // iterate through all possible interactions
             // to fix adjacency indices according to the above shift
@@ -78,7 +80,7 @@ namespace EcoBuilder.Model
                 }
             }
 
-            InitMatrices(n-1);
+            ResizeMatrices(n-1);
         }
         public void AddInteraction(T res, T con)
         {
@@ -98,112 +100,53 @@ namespace EcoBuilder.Model
         }
 
         // TODO: test if these faster when sparse
-        Matrix<double> A, community, flux;
-        Vector<double> x, b;
-        public void InitMatrices(int n)
+        Matrix<double> interaction;
+        Vector<double> negGrowth, abundance;
+        Matrix<double> community, hermitian;
+        public void ResizeMatrices(int n)
         {
             if (n > 0)
             {
                 // A is interaction matrix, x is equilibrium abundance, b is -r
-                A = Matrix<double>.Build.Dense(n, n);
-                x = Vector<double>.Build.Dense(n);
-                b = Vector<double>.Build.Dense(n);
-
-                flux = Matrix<double>.Build.Dense(n,n);
+                interaction = Matrix<double>.Build.Dense(n, n);
+                abundance = Vector<double>.Build.Dense(n);
+                negGrowth = Vector<double>.Build.Dense(n);
 
                 // community is Jacobian evaluated at x
                 community = Matrix<double>.Build.Dense(n, n);
+                hermitian = Matrix<double>.Build.Dense(n, n);
             }
             else
             {
-                A = community = null;
-                x = b = null;
+                interaction = community = hermitian = null;
+                abundance = negGrowth = null;
             }
         }
-
-        // public event Action<T, double> OnAbundanceSet;
-        // public event Action<T, T, double> OnFluxSet;
 
         void BuildEquilibriumMatrix()
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
 
-            A.Clear();
-            b.Clear();
-            flux.Clear();
+            interaction.Clear();
+            negGrowth.Clear();
+
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
-                b[i] = -r_i(res);
-                A[i,i] = a_ii(res);
+                negGrowth[i] = -r_i(res);
+                interaction[i,i] = a_ii(res);
                 foreach (int j in internInteractions[i])
                 {
                     T con = internToExtern[j];
                     double a = a_ij(res, con);
                     double e = e_ij(res, con);
 
-                    A[i,j] -= a;
-                    A[j,i] += e * a;
-                    flux[i,j] = e * a;
+                    interaction[i,j] -= a;
+                    interaction[j,i] += e * a;
                 }
             }
         }
-
-
-        ///////////
-        // O(n^3)
-        public bool SolveFeasibility()
-        {
-            BuildEquilibriumMatrix();
-            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(A));
-            // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(b));
-
-            // find fixed equilibrium point of system
-            A.Solve(b, x);
-            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(x));
-
-            return Feasible();
-        }
-        public double GetSolvedAbundance(T species)
-        {
-            int idx = externToIntern[species];
-            return x[idx];
-        }
-        public double GetSolvedFlux(T resource, T consumer)
-        {
-            int res = externToIntern[resource];
-            int con = externToIntern[consumer];
-            return flux[res,con];
-        }
-        bool Feasible()
-        {
-            for (int i=0; i<x.Count; i++)
-            {
-                if (x[i] <= 0)
-                    return false;
-            }
-            return true;
-        }
-
-        // public double GetTotalFlux()
-        // {
-        //     double flux = 0;
-        //     foreach (T res in externInteractions.Keys)
-        //     {
-        //         int i = externToIntern[res];
-        //         double abundance = x[i];
-        //         foreach (T con in externInteractions[res])
-        //         {
-        //             double a = a_ij(res, con);
-        //             double e = e_ij(res, con);
-        //             flux += a * e * abundance;
-        //         }
-        //     }
-        //     return flux;
-        // }
-
-
 
         // Depends on A and b being correct
         void BuildCommunityMatrix()
@@ -228,11 +171,11 @@ namespace EcoBuilder.Model
                 // }
                 
                 // Cramer's rule to simplify the above commented
-                community[i,i] = A[i,i] * x[i];
+                community[i,i] = interaction[i,i] * abundance[i];
                 for (int j=0; j<i; j++)
-                    community[i,j] = A[i,j] * x[i];
+                    community[i,j] = interaction[i,j] * abundance[i];
                 for (int j=i+1; j<n; j++)
-                    community[i,j] = A[i,j] * x[i];
+                    community[i,j] = interaction[i,j] * abundance[i];
             }
         }
 
@@ -241,28 +184,61 @@ namespace EcoBuilder.Model
 		{
 			int n = internToExtern.Count;
 
+            hermitian.Clear();
 			for (int i=0; i<n; i++)
 			{
 				for (int j=0; j<i; j++)
 				{
-					community[i,j] = community[j,i] = (community[i,j]+community[j,i]) / 2;
+					hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
 				}
 			}
 		}
+
+
+
+
+        ///////////
+        // O(n^3)
+        public bool SolveFeasibility()
+        {
+            BuildEquilibriumMatrix();
+            // find fixed equilibrium point of system
+            interaction.Solve(negGrowth, abundance);
+
+            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(A));
+            // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(b));
+            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(x));
+
+            for (int idx=0; idx<abundance.Count; idx++)
+            {
+                if (abundance[idx] <= 0)
+                    return false;
+            }
+            return true;
+        }
+        public double GetSolvedAbundance(T species)
+        {
+            int idx = externToIntern[species];
+            return abundance[idx];
+        }
 
         ////////////////////
         // Both also O(n^3)
         public bool SolveStability()
         {
-            // calculate community matrix with Jacobian
             BuildCommunityMatrix();
-
             // get largest real part of any eigenvalue of this community matrix
             // implies the local asymptotic stability
             var eigenValues = community.Evd().EigenValues;
 
             double Lambda = eigenValues.Real().Maximum();
             return Lambda <= 0;
+        }
+        public double GetSolvedFlux(T res, T con)
+        {
+            int i = externToIntern[res];
+            int j = externToIntern[con];
+            return community[i, j];
         }
 
         public bool SolveReactivity()
@@ -271,7 +247,7 @@ namespace EcoBuilder.Model
 			BuildHermitianMatrix();
 
 			// get largest real part of any eigenvalue
-			var eigenValues = community.Evd().EigenValues;
+			var eigenValues = hermitian.Evd().EigenValues;
 
 			double Lambda = eigenValues.Real().Maximum();
 			return Lambda <= 0;

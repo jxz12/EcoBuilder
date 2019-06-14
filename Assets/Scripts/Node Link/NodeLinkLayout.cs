@@ -31,7 +31,7 @@ namespace EcoBuilder.NodeLink
                         float mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
 
                         Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
-                        r.y = 0; // use to keep y position
+                        // r.y = 0; // use to keep y position
                         nodes[i].TargetPos -= mu * r;
                         nodes[j].TargetPos += mu * r;
                     }
@@ -42,7 +42,7 @@ namespace EcoBuilder.NodeLink
                             float mu = Mathf.Min(separationStep, 1);
 
                             Vector3 r = ((mag-1)/2) * (X_ij/mag);
-                            r.y = 0; // use to keep y position
+                            // r.y = 0; // use to keep y position
                             nodes[i].TargetPos -= mu * r;
                             nodes[j].TargetPos += mu * r;
                         }

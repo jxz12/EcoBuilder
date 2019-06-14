@@ -6,54 +6,116 @@ using System.Threading.Tasks;
 
 namespace EcoBuilder.Model
 {
-    class Species
-    {
-        public int Idx { get; private set; } public bool IsProducer { get; set; }
-        public double BodySize { get; set; } public double SelfReg { get; set; }
-
-        public double Growth { get; set; }
-        public double Search { get; set; }
-
-        public double Abundance { get; set; } = 1; // initialise as non-extinct
-
-        public Species(int idx)
-        {
-            Idx = idx;
-        }
-    }
     public class Model : MonoBehaviour
     {   
-        [SerializeField] double beta = .75,       // metabolic scaling
-                                b0 = 1.71e-6,     // birth constant
-                                d0 = 4.15e-8,     // death constant
-                                p_v = .26,        // velocity exponent
-                                v0 = .33,         // velocity constant
-                                p_r = .21,        // reaction exponent
-                                r0 = 1.62,        // reaction constant
-                            //    p_e = .85,        // empirical exponent
-                                e_p = .2,         // plant efficiency
-                                e_c = .5,         // animal efficiency
-                                kg_min = 1e-3,    // min body size
-                                kg_max = 1e3,     // max body size
-                                a_ii_min = 1e-8,  // min self-regulation
-                                a_ii_max = 1e-2;  // max self-regulation
+        ///////////////////////////////////////////////////////////
+        // MODEL DESCRIPION:
+        //  we use a single invisible node as nutrients
+        //  'foraging' for nutrients follows a grazing strategy (is this okay?)
+        //  foraging for plants also follows a grazing strategy
+        //  foraging for animals follows active foraging
+        ///////////////////////////////////////////////////////////
+
+        [SerializeField] double p_v = 0.26,        // velocity exponent
+                                v0 =  0.33,        // velocity constant
+                                p_d = 0.21,        // reaction distance exponent
+                                d0 =  1.62,        // reaction distance constant
+
+                                e_n = 1.0,         // nutrient efficiency
+                                e_p = 0.2,         // plant efficiency
+                                e_c = 0.5,         // animal efficiency
+
+                                kg_min =   1e-3,   // min body size
+                                kg_max =   1e3,    // max body size
+                                a_ii_min = 1e-8,   // min self-regulation
+                                a_ii_max = 1e-2,   // max self-regulation
+                                
+                                z0 =   4.15e-8,    // death constant
+                                r0  =  8.31e-4,    // nutrient absorption constant
+                                // beta = 0.75,       // metabolic scaling exponent
+                                // r_n =  10,         // nutrient growth rate
+                                // K_n =   1          // nutrient carrying capacity
+                                ;
+
+        class Species
+        {
+            public int Idx { get; private set; }
+            public double BodySize { get; set; }
+            public bool Active { get; set; }
+
+            public double Metabolism { get; set; }
+            public double SelfRegulation { get; set; }
+            public double Efficiency { get; set; }
+
+            public double Abundance { get; set; } = 1; // initialise as non-extinct
+
+            public Species(int idx)
+            {
+                Idx = idx;
+            }
+        }
+        double ActiveCapture(double m_r, double m_c)
+        {
+            double k_rc = m_r/m_c;
+            return 2*v0*d0 * Math.Pow(m_c, p_v+2*p_d) *
+                             Math.Sqrt(1+Math.Pow(k_rc, 2*p_v)) *
+                             Math.Pow(k_rc, p_d);
+        }
+        double Grazing(double m_r, double m_c)
+        {
+            double k_rc = m_r/m_c;
+            return 2*v0*d0 * Math.Pow(m_c, p_v+2*p_d) *
+                             Math.Pow(k_rc, p_d);
+        }
+        double SitAndWait(double m_r, double m_c)
+        {
+            double k_rc = m_r/m_c;
+            return 2*v0*d0 * Math.Pow(m_c, p_v+2*p_d) *
+                             Math.Pow(k_rc, p_v+p_d);
+        }
+        double NutrientAbsorption(double m_c)
+        {
+            // TODO: just make the nutrient the mean of body size and selfreg
+        }
+        double SpeciesInteraction(Species resource, Species consumer)
+        {
+            if (resource.Active && consumer.Active)
+                return ActiveCapture(resource.BodySize, consumer.BodySize);
+            else if (!resource.Active && consumer.Active)
+                return Grazing(resource.BodySize, consumer.BodySize);
+            else if  (resource.Active && !consumer.Active)
+                return SitAndWait(resource.BodySize, consumer.BodySize);
+            else
+                return 0;
+        }
         
-        [SerializeField] GameObject busyIcon;
                                 
         LotkaVolterra<Species> simulation;
+        Species nutrient;
         void Awake()
         {
             simulation = new LotkaVolterra<Species>(
-                s=> s.Growth,
-                s=> s.SelfReg,
-                (r,c)=> c.Search,
-                (r,c)=> r.IsProducer? e_p : e_c
+                  (s)=> s.Metabolism,
+                  (s)=> s.SelfRegulation,
+                (r,c)=> r==nutrient? Grazing(),
+                (r,c)=> r.Efficiency
             );
+
+            nutrient = new Species(int.MinValue);
+            nutrient.Metabolism = r_n;
+            nutrient.SelfRegulation = r_n/K_n;
+            nutrient.Efficiency = e_n;
+            // bodysize and production does not matter for nutrient
+
+            simulation.AddSpecies(nutrient);
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
 
         public void AddSpecies(int idx)
         {
+            if (idx == int.MinValue)
+                throw new Exception("idx reserved for nutrient");
+
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
             idxToSpecies.Add(idx, newSpecies);
@@ -61,13 +123,13 @@ namespace EcoBuilder.Model
         }
         public void RemoveSpecies(int idx)
         {
+            if (idx == int.MinValue)
+                throw new Exception("idx reserved for nutrient");
+
             Species toRemove = idxToSpecies[idx];
             simulation.RemoveSpecies(toRemove);
             idxToSpecies.Remove(idx);
-            if (idxToSpecies.Count > 0)
-            {
-                equilibriumSolved = false;
-            }
+            equilibriumSolved = false;
             // else
             // {
             //     // TODO: fix this because OnCalculated() makes nodelink try to get abundances
@@ -145,10 +207,11 @@ namespace EcoBuilder.Model
 
 
 
+        [SerializeField] GameObject busyIcon;
         bool equilibriumSolved = true, calculating = false;
         void LateUpdate()
         {
-            if (!equilibriumSolved && !calculating)
+            if (!equilibriumSolved && !calculating && idxToSpecies.Count>0)
             {
                 equilibriumSolved = true;
                 Equilibrium();
@@ -172,25 +235,8 @@ namespace EcoBuilder.Model
         {
             calculating = true;
             Feasible = await Task.Run(() => simulation.SolveFeasibility());
-
-            // Flux = (float)simulation.GetTotalFlux();
-
-            if (Feasible)
-            {
-                Stable = await Task.Run(() => simulation.SolveStability());
-                if (Stable)
-                {
-                    Nonreactive = await Task.Run(() => simulation.SolveReactivity());
-                }
-                else
-                {
-                    Nonreactive = false;
-                }
-            }
-            else
-            {
-                Stable = Nonreactive = false;
-            }
+            Stable = await Task.Run(() => simulation.SolveStability());
+            Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)

@@ -20,8 +20,6 @@ namespace EcoBuilder
             inspector.OnUnincubated +=        ()=> nodelink.MoveMiddle();
             inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnUnspawned +=         (i)=> model.RemoveSpecies(i);
-            inspector.OnUnspawned +=         (i)=> nodelink.RemoveNode(i);
             inspector.OnGameFinished +=       ()=> FinishGame();
             inspector.OnMainMenu +=           ()=> BackToMenu();
 
@@ -32,32 +30,30 @@ namespace EcoBuilder
 
             nodelink.OnNodeFocused +=        (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=           ()=> inspector.Uninspect();
+
+            // TODO: move into inspector, with strong-focus
+            nodelink.OnNodeRemoved +=        (i)=> inspector.UnspawnSpecies(i);
+            nodelink.OnNodeRemoved +=        (i)=> model.RemoveSpecies(i);
+
             nodelink.OnLinkAdded +=        (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=      (i,j)=> model.RemoveInteraction(i,j);
-            nodelink.OnDroppedOn +=           ()=> TryAddNewSpecies();
+            nodelink.OnDroppedOn +=           ()=> inspector.TrySpawnNew();
             nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
             nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
 
             // TODO: add May's (or Tang's) complexity criteria here, directly
             model.OnCalculated +=             ()=> status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
-            // model.OnCalculated +=             ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
-            // model.OnCalculated +=             ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
+            model.OnCalculated +=             ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
+            model.OnCalculated +=             ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
             model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
             model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 
             status.OnMenu +=                  ()=> GameManager.Instance.ShowLevelCard();
-            status.OnUndo +=                  ()=> inspector.UnspawnLast();
+            // status.OnUndo +=                  ()=> inspector.UnspawnLast();
 
             inspector.ConstrainTypes(GameManager.Instance.NumProducers, GameManager.Instance.NumConsumers);
         }
 
-        void TryAddNewSpecies()
-        {
-            if (inspector.Dragging)
-            {
-                inspector.Spawn();
-            }
-        }
         void FinishGame()
         {
             bool passed = true;

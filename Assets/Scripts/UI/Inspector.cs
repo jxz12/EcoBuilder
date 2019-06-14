@@ -6,36 +6,12 @@ using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
 {
-    public class Species
-    {
-        public int Idx { get; private set; }
-        public int RandomSeed { get; private set; } 
-
-        public bool IsProducer { get; set; }
-        public float BodySize { get; set; }
-        public float Greediness { get; set; }
-
-        public GameObject Object { get; set; }
-        public bool Spawned { get; set; }
-
-        public Species(int idx, bool isProducer, float size, float greed)
-        {
-            Idx = idx;
-            IsProducer = isProducer;
-            BodySize = size;
-            Greediness = greed;
-            RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
-            Spawned = false;
-        }
-    }
-
     // handles keeping track of species gameobjects and stats
     public class Inspector : MonoBehaviour,
         IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
         public event Action<int, GameObject> OnSpawned;
-        public event Action<int> OnUnspawned;
         public event Action<int, bool> OnProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
@@ -57,6 +33,29 @@ namespace EcoBuilder.UI
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
         [SerializeField] RectTransform incubatedParent;
+
+        public class Species
+        {
+            public int Idx { get; private set; }
+            public int RandomSeed { get; private set; } 
+
+            public bool IsProducer { get; set; }
+            public float BodySize { get; set; }
+            public float Greediness { get; set; }
+
+            public GameObject Object { get; set; }
+            public bool Spawned { get; set; }
+
+            public Species(int idx, bool isProducer, float size, float greed)
+            {
+                Idx = idx;
+                IsProducer = isProducer;
+                BodySize = size;
+                Greediness = greed;
+                RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
+                Spawned = false;
+            }
+        }
 
         Dictionary<int, Species> spawnedSpecies = new Dictionary<int, Species>();
         int nextIdx = 0;
@@ -177,15 +176,18 @@ namespace EcoBuilder.UI
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
         }
-        public void Spawn()
+        public void TrySpawnNew()
         {
+            if (!dragging)
+                return;
+
             if (inspected == null)
                 throw new Exception("nothing inspected");
             if (inspected.Spawned)
-                throw new Exception("already spawned");
+                throw new Exception("inspected already spawned");
             
             OnSpawned.Invoke(inspected.Idx, inspected.Object); // must be invoked first
-            
+
             OnProducerSet.Invoke(inspected.Idx, inspected.IsProducer);
             OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
             OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
@@ -222,34 +224,32 @@ namespace EcoBuilder.UI
         [SerializeField] Image goImage;
         [SerializeField] Sprite finishFlag;
 
-        public void UnspawnLast()
+        public void UnspawnSpecies(int idx)
         {
             if (spawnedSpecies.Count > 0)
             {
-                nextIdx -= 1;
-                if (inspected == spawnedSpecies[nextIdx])
+                if (inspected == spawnedSpecies[idx])
                 {
                     GetComponent<Animator>().SetTrigger("Uninspect");
                 }
                 spawnedSpecies.Remove(nextIdx);
-                OnUnspawned.Invoke(nextIdx);
             }
         }
 
-        public bool Dragging { get; private set; }
+        bool dragging;
         Vector2 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
             if (inspected != null && !inspected.Spawned)
             {
                 // inspected.Object.transform.SetParent(null, true);
-                Dragging = true;
+                dragging = true;
                 originalPos = incubatedParent.position;
             }
         }
         public void OnDrag(PointerEventData ped)
         {
-            if (Dragging)
+            if (dragging)
             {
                 Vector3 mousePos = ped.position;
                 mousePos.z = 4;
@@ -261,9 +261,9 @@ namespace EcoBuilder.UI
         }
         public void OnEndDrag(PointerEventData ped)
         {
-            if (Dragging)
+            if (dragging)
             {
-                Dragging = false;
+                dragging = false;
                 incubatedParent.position = originalPos;
             }
         }
