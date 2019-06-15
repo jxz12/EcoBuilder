@@ -1,10 +1,41 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
+        ////////////////////////////////
+        // checks if graph is disjoint
+
+        public bool CheckDisjoint()
+        {
+            int source = nodes.Indices.First();
+            var q = new Queue<int>();
+            var visited = new HashSet<int>();
+
+            q.Enqueue(source);
+            visited.Add(source);
+            while (q.Count > 0)
+            {
+                int current = q.Dequeue();
+                foreach (int next in adjacency[current])
+                {
+                    if (!visited.Contains(next))
+                    {
+                        q.Enqueue(next);
+                        visited.Add(next);
+                    }
+                }
+            }
+            if (visited.Count == nodes.Count)
+                return true;
+            else 
+                return false;
+        }
+
+
         ////////////////////////
         // for basal/apex
 

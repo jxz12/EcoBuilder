@@ -10,38 +10,32 @@ namespace EcoBuilder.Model
     {   
         ///////////////////////////////////////////////////////////
         // MODEL DESCRIPION:
-        //  we use a single invisible node as nutrients
-        //  'foraging' for nutrients follows a grazing strategy (is this okay?)
-        //  foraging for plants also follows a grazing strategy
+        //  foraging for plants follows a grazing strategy
         //  foraging for animals follows active foraging
+        //  Pawar et al. (2012)
         ///////////////////////////////////////////////////////////
 
-        [SerializeField] double p_v = 0.26,        // velocity exponent
-                                v0 =  0.33,        // velocity constant
-                                p_d = 0.21,        // reaction distance exponent
-                                d0 =  1.62,        // reaction distance constant
+        [SerializeField] double r0 =   1.71e-6,     // production 
+                                z0 =   4.15e-8,     // loss constant
+                                a0 =   8.31e-4,     // search rate 
+                                beta = 0.75,        // metabolism expopnent
+                                p_v =  0.26,        // velocity exponent
+                                p_d =  0.21,        // reaction distance exponent
 
-                                e_n = 1.0,         // nutrient efficiency
                                 e_p = 0.2,         // plant efficiency
                                 e_c = 0.5,         // animal efficiency
 
                                 kg_min =   1e-3,   // min body size
                                 kg_max =   1e3,    // max body size
                                 a_ii_min = 1e-8,   // min self-regulation
-                                a_ii_max = 1e-2,   // max self-regulation
-                                
-                                z0 =   4.15e-8,    // death constant
-                                r0  =  8.31e-4,    // nutrient absorption constant
-                                // beta = 0.75,       // metabolic scaling exponent
-                                // r_n =  10,         // nutrient growth rate
-                                // K_n =   1          // nutrient carrying capacity
+                                a_ii_max = 1e-2    // max self-regulation
                                 ;
 
         class Species
         {
             public int Idx { get; private set; }
             public double BodySize { get; set; }
-            public bool Active { get; set; }
+            public bool IsProducer { get; set; }
 
             public double Metabolism { get; set; }
             public double SelfRegulation { get; set; }
@@ -54,60 +48,57 @@ namespace EcoBuilder.Model
                 Idx = idx;
             }
         }
+
+        ///////////////////////////////////////////////////////////////////
+        // search rate derivations
+        
+        // NOTE: THESE ARE NOT MASS-SPECIFIC, THEY ARE INDIVIDUAL-SPECIFIC
         double ActiveCapture(double m_r, double m_c)
         {
             double k_rc = m_r/m_c;
-            return 2*v0*d0 * Math.Pow(m_c, p_v+2*p_d) *
-                             Math.Sqrt(1+Math.Pow(k_rc, 2*p_v)) *
-                             Math.Pow(k_rc, p_d);
+            return a0 * Math.Pow(m_c, p_v+2*p_d) *
+                        Math.Sqrt(1+Math.Pow(k_rc, 2*p_v)) *
+                        Math.Pow(k_rc, p_d);
         }
         double Grazing(double m_r, double m_c)
         {
             double k_rc = m_r/m_c;
-            return 2*v0*d0 * Math.Pow(m_c, p_v+2*p_d) *
-                             Math.Pow(k_rc, p_d);
+            return a0 * Math.Pow(m_c, p_v+2*p_d) *
+                        Math.Pow(k_rc, p_d);
         }
         double SitAndWait(double m_r, double m_c)
         {
             double k_rc = m_r/m_c;
-            return 2*v0*d0 * Math.Pow(m_c, p_v+2*p_d) *
-                             Math.Pow(k_rc, p_v+p_d);
+            return a0 * Math.Pow(m_c, p_v+2*p_d) *
+                        Math.Pow(k_rc, p_v+p_d);
         }
-        double NutrientAbsorption(double m_c)
+        // MAKES THINGS MASS-SPECIFIC
+        double CalculateForaging(Species resource, Species consumer)
         {
-            // TODO: just make the nutrient the mean of body size and selfreg
-        }
-        double SpeciesInteraction(Species resource, Species consumer)
-        {
-            if (resource.Active && consumer.Active)
-                return ActiveCapture(resource.BodySize, consumer.BodySize);
-            else if (!resource.Active && consumer.Active)
-                return Grazing(resource.BodySize, consumer.BodySize);
-            else if  (resource.Active && !consumer.Active)
-                return SitAndWait(resource.BodySize, consumer.BodySize);
+            if (!resource.IsProducer && !consumer.IsProducer)
+            {
+                return ActiveCapture(resource.BodySize, consumer.BodySize) / consumer.BodySize;
+            }
+            else if (resource.IsProducer && !consumer.IsProducer)
+            {
+                return Grazing(resource.BodySize, consumer.BodySize) / consumer.BodySize;
+            }
             else
-                return 0;
+            {
+                throw new Exception("impossible foraging");
+            }
         }
         
                                 
         LotkaVolterra<Species> simulation;
-        Species nutrient;
         void Awake()
         {
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
                   (s)=> s.SelfRegulation,
-                (r,c)=> r==nutrient? Grazing(),
-                (r,c)=> r.Efficiency
+                (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
+                (r,c)=> r.Efficiency            // only depends on resource type
             );
-
-            nutrient = new Species(int.MinValue);
-            nutrient.Metabolism = r_n;
-            nutrient.SelfRegulation = r_n/K_n;
-            nutrient.Efficiency = e_n;
-            // bodysize and production does not matter for nutrient
-
-            simulation.AddSpecies(nutrient);
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
 
@@ -153,8 +144,9 @@ namespace EcoBuilder.Model
             Species s = idxToSpecies[idx];
             s.IsProducer = isProducer;
 
-            double metabolism = Math.Pow(s.BodySize, beta-1);
-            s.Growth = s.IsProducer? metabolism * b0 : -metabolism * d0;
+            double sizeScaling = Math.Pow(s.BodySize, beta-1);
+            s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
+            s.Efficiency = s.IsProducer? e_p : e_c;
 
             equilibriumSolved = false;
         }
@@ -163,20 +155,15 @@ namespace EcoBuilder.Model
             Species s = idxToSpecies[idx];
             s.BodySize = GetOnLogScale(sizeNormalised, kg_min, kg_max);
 
-            double metabolism = Math.Pow(s.BodySize, beta-1);
-            s.Growth = s.IsProducer? metabolism * b0 : -metabolism * d0;
-
-                                                // velocity    mass-specific
-            double velocity = Math.Pow(s.BodySize, (p_v+2*p_r) - 1);
-            s.Search = velocity * 1;//a0;
+            double sizeScaling = Math.Pow(s.BodySize, beta-1);
+            s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
 
             equilibriumSolved = false;
         }
         public void SetSpeciesGreediness(int idx, float greedNormalised)
         {
-            idxToSpecies[idx].SelfReg = -GetOnLogScale(greedNormalised, a_ii_max, a_ii_min);
-            // if (idxToSpecies[idx].IsProducer)
-            //     idxToSpecies[idx].SelfReg /= 100;
+            idxToSpecies[idx].SelfRegulation = -GetOnLogScale(greedNormalised, a_ii_max, a_ii_min);
+
             equilibriumSolved = false;
         }
 
