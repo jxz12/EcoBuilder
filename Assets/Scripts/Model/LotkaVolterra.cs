@@ -238,7 +238,7 @@ namespace EcoBuilder.Model
         {
             int i = externToIntern[res];
             int j = externToIntern[con];
-            return community[i, j];
+            return community[j, i];
         }
 
         public bool SolveReactivity()

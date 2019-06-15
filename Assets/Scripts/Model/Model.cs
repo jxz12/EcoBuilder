@@ -15,21 +15,22 @@ namespace EcoBuilder.Model
         //  Pawar et al. (2012)
         ///////////////////////////////////////////////////////////
 
-        [SerializeField] double r0 =   1.71e-6,     // production 
-                                z0 =   4.15e-8,     // loss constant
-                                a0 =   8.31e-4,     // search rate 
-                                beta = 0.75,        // metabolism expopnent
-                                p_v =  0.26,        // velocity exponent
-                                p_d =  0.21,        // reaction distance exponent
+        [SerializeField]
+        double r0 =   1.71e-6,     // production 
+               z0 =   4.15e-8,     // loss constant
+               a0 =   8.31e-4,     // search rate 
+               beta = 0.75,        // metabolism expopnent
+               p_v =  0.26,        // velocity exponent
+               p_d =  0.21,        // reaction distance exponent
 
-                                e_p = 0.2,         // plant efficiency
-                                e_c = 0.5,         // animal efficiency
+               e_p = 0.2,         // plant efficiency
+               e_c = 0.5,         // animal efficiency
 
-                                kg_min =   1e-3,   // min body size
-                                kg_max =   1e3,    // max body size
-                                a_ii_min = 1e-8,   // min self-regulation
-                                a_ii_max = 1e-2    // max self-regulation
-                                ;
+               kg_min =   1e-3,   // min body size
+               kg_max =   1e3,    // max body size
+               a_ii_min = 1e-8,   // min self-regulation
+               a_ii_max = 1e-2    // max self-regulation
+               ;
 
         class Species
         {
@@ -104,9 +105,6 @@ namespace EcoBuilder.Model
 
         public void AddSpecies(int idx)
         {
-            if (idx == int.MinValue)
-                throw new Exception("idx reserved for nutrient");
-
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
             idxToSpecies.Add(idx, newSpecies);
@@ -114,19 +112,17 @@ namespace EcoBuilder.Model
         }
         public void RemoveSpecies(int idx)
         {
-            if (idx == int.MinValue)
-                throw new Exception("idx reserved for nutrient");
-
             Species toRemove = idxToSpecies[idx];
             simulation.RemoveSpecies(toRemove);
             idxToSpecies.Remove(idx);
             equilibriumSolved = false;
-            // else
-            // {
-            //     // TODO: fix this because OnCalculated() makes nodelink try to get abundances
-            //     Feasible = Stable = Nonreactive = false;
-            //     OnCalculated.Invoke();
-            // }
+
+            if (idxToSpecies.Count == 0)
+            {
+                Feasible = Stable = Nonreactive = false;
+                // TODO: fix this because OnCalculated() makes nodelink try to get abundances
+                // OnCalculated.Invoke();
+            }
         }
         static double GetOnLogScale(float normalised, double minVal, double maxVal)
         {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 namespace EcoBuilder
 {
@@ -31,7 +27,7 @@ namespace EcoBuilder
             nodelink.OnNodeFocused +=        (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=           ()=> inspector.Uninspect();
 
-            // TODO: move into inspector, with strong-focus
+            // TODO: move into inspector, with activation on strong-focus
             nodelink.OnNodeRemoved +=        (i)=> inspector.UnspawnSpecies(i);
             nodelink.OnNodeRemoved +=        (i)=> model.RemoveSpecies(i);
 

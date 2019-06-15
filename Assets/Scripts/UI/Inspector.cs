@@ -65,12 +65,14 @@ namespace EcoBuilder.UI
         {
             goButton.onClick.AddListener(()=> Go());
             producerButton.onClick.AddListener(()=> IncubateNew(true));
+            producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
+            consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
             menuButton.onClick.AddListener(()=> OnMainMenu.Invoke());
 
-            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize(x));
-            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
+            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize());
+            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed());
         }
 
         int numProducers=0, maxProducers=int.MaxValue, numConsumers=0, maxConsumers=int.MaxValue;
@@ -102,7 +104,7 @@ namespace EcoBuilder.UI
         }
         void IncubateNew(bool isProducer)
         {
-            Species s = new Species(nextIdx, isProducer, sizeSlider.value, greedSlider.value);
+            Species s = new Species(nextIdx, isProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);
             s.Object = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
             s.Object.transform.SetParent(incubatedParent, false);
             nameText.text = s.Object.name;
@@ -121,22 +123,22 @@ namespace EcoBuilder.UI
             inspected.Object.transform.SetParent(incubatedParent, false);
             nameText.text = inspected.Object.name;
         }
-        void SetInspectedSize(float bodySize)
+        void SetInspectedSize()
         {
             if (inspected == null)
                 throw new Exception("nothing inspected");
 
-            inspected.BodySize = bodySize;
+            inspected.BodySize = sizeSlider.normalizedValue;
             factory.RegenerateSpecies(inspected.Object, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             if (inspected.Spawned)
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
         }
-        void SetInspectedGreed(float greed)
+        void SetInspectedGreed()
         {
             if (inspected == null)
                 throw new Exception("nothing inspected");
 
-            inspected.Greediness = greed;
+            inspected.Greediness = greedSlider.normalizedValue;
             factory.RegenerateSpecies(inspected.Object, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             if (inspected.Spawned)
                 OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
@@ -154,12 +156,12 @@ namespace EcoBuilder.UI
             nameText.text = inspected.Object.name;
 
             // this is ugly as heck, but sliders are stupid
-            sizeSlider.onValueChanged.RemoveListener(x=> SetInspectedSize(x));
-            sizeSlider.value = inspected.BodySize;
-            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize(x));
-            greedSlider.onValueChanged.RemoveListener(x=> SetInspectedGreed(x));
-            greedSlider.value = inspected.Greediness;
-            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed(x));
+            sizeSlider.onValueChanged.RemoveListener(x=> SetInspectedSize());
+            sizeSlider.normalizedValue = inspected.BodySize;
+            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize());
+            greedSlider.onValueChanged.RemoveListener(x=> SetInspectedGreed());
+            greedSlider.normalizedValue = inspected.Greediness;
+            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed());
 
             GetComponent<Animator>().SetTrigger("Inspect");
         }

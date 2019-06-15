@@ -127,7 +127,7 @@ namespace EcoBuilder.NodeLink
             Node held = ped.rawPointerPress.GetComponent<Node>();
             if (held != null)
             {
-                print("TODO: super focus mode");
+                print("TODO: super focus mode (and on right click)");
                 OnNodeRemoved.Invoke(held.Idx);
                 RemoveNode(held.Idx);
             }
