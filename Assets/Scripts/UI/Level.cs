@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.Collections.Generic;
 
 // for load/save progress
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
@@ -12,51 +13,40 @@ namespace EcoBuilder.UI
 {
     public class Level : MonoBehaviour
     {
-        /*
-        graph constraints:
-            min/max connectance
-            min/max chain length
-            min/max cycle length
-
-        model constraints:
-            min/max flux
-            size/greediness (e.g. only big species)
-        */
-        ////////////////////////////
-        // data on the level itself
-
         [Serializable]
         public class LevelDetails
         {
-            public int Number { get; set; }
-            public string Title { get; set; }
-            public string Description { get; set; }
+            public int Idx;
+            public string Title;
+            public string Description;
 
             // constraints
-            public int NumProducers { get; set; }
-            public int NumConsumers { get; set; }
-            public int MinEdges { get; set; }
-            public int MaxEdges { get; set; }
-            public int MinChain { get; set; }
-            public int MaxChain { get; set; }
-            public int MinLoop { get; set; }
-            public int MaxLoop { get; set; }
+            public int NumProducers;
+            public int NumConsumers;
+            public int MinEdges;
+            public int MaxEdges;
+            public int MinChain;
+            public int MaxChain;
+            public int MinLoop;
+            public int MaxLoop;
 
             // vertices
-            public List<int> SpeciesIdxs { get; set; }
-            public List<int> RandomSeeds { get; set; }
-            public List<float> Sizes { get; set; }
-            public List<float> Greeds { get; set; }
+            public List<int> SpeciesIdxs;
+            public List<int> RandomSeeds;
+            public List<float> Sizes;
+            public List<float> Greeds;
             // edges
-            public List<int> Resources { get; set; }
-            public List<int> Consumers { get; set; }
+            public List<int> Resources;
+            public List<int> Consumers;
 
             // progress
-            public int NumStars { get; set; }
+            public int NumStars;
         }
-
-        //////////////////////
-        // for Unity UI
+        [SerializeField] LevelDetails details;
+        public LevelDetails Details {
+            get { return details; }
+            private set { details = value; }
+        }
 
         // thumbnail
         [SerializeField] Button thumbnail;
@@ -72,37 +62,49 @@ namespace EcoBuilder.UI
 		[SerializeField] Button goButton;
 		[SerializeField] Text goText;
 
-        string savefilePath;
-        public LevelDetails Details { get; private set; }
-
-        public void LoadFromFile(string path)
+        void FillUI()
         {
-            savefilePath = path;
-
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(path, FileMode.Open);
-            // TODO: catch some exception here
-            Details = (LevelDetails)bf.Deserialize(file);
-            file.Close();
-
-            numberText.text = Details.Number.ToString();
+            numberText.text = Details.Idx.ToString();
 			title.text = Details.Title;
 			description.text = Details.Description;
 			producers.text = Details.NumProducers.ToString();
 			consumers.text = Details.NumConsumers.ToString();
 
-			GetComponent<Animator>().SetBool("Showing", true);
             goText.text = "Go!";
         }
 
-        public void SaveToFile(int numStars)
+        [SerializeField] string savefilePath; // serialized just for me to see
+        public void LoadFromScene(string incompleteSavePath, string fileExtension)
         {
-            if (numStars < 0 || numStars > 3)
-                throw new Exception("cannot pass with less than 0 or more than 3 stars");
+            // saves Idx as file name
+            savefilePath = incompleteSavePath + "/" + Details.Idx + fileExtension;
+            FillUI();
+        }
 
-            if (numStars > Details.NumStars)
-                Details.NumStars = numStars;
+        public bool LoadFromFile(string loadPath)
+        {
+            savefilePath = loadPath;
 
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Open(loadPath, FileMode.Open);
+            // TODO: catch some exception here if it doesn't deserialize a LevelDetails
+            try
+            {
+                Details = (LevelDetails)bf.Deserialize(file);
+                name = Details.Idx.ToString();
+                file.Close();
+                FillUI();
+                return true;
+            }
+            catch (SerializationException se)
+            {
+                print(se.Message);
+                return false;
+            }
+        }
+
+        public void SaveToFile()
+        {
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Create(savefilePath);
             bf.Serialize(file, Details);
@@ -146,16 +148,16 @@ namespace EcoBuilder.UI
         public void Lock()
         {
             thumbnail.interactable = false;
-            lockImage.gameObject.SetActive(true);
-            numberText.gameObject.SetActive(false);
-            starsImage.gameObject.SetActive(false);
+            lockImage.enabled = true;
+            numberText.enabled = false;
+            starsImage.enabled = false;
         }
         public void Unlock()
         {
             thumbnail.interactable = true;
-            lockImage.gameObject.SetActive(false);
-            numberText.gameObject.SetActive(true);
-            starsImage.gameObject.SetActive(true);
+            lockImage.enabled = false;
+            numberText.enabled = true;
+            starsImage.enabled = true;
         }
         public void SetStarsSprite(Sprite s)
         {

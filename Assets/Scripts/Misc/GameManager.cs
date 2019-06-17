@@ -94,7 +94,12 @@ namespace EcoBuilder
         }
         public void SaveLevel(int numStars)
         {
-            ChosenLevel.SaveToFile(numStars);
+            if (numStars < 0 || numStars > 3)
+                throw new Exception("cannot pass with less than 0 or more than 3 stars");
+
+            if (numStars > ChosenLevel.Details.NumStars)
+                ChosenLevel.Details.NumStars = numStars;
+            ChosenLevel.SaveToFile();
         }
         public void SaveFoodWebToCsv(
             List<int> speciesIdxs, List<int> randomSeeds,
@@ -102,7 +107,7 @@ namespace EcoBuilder
             List<int> resources, List<int> consumers,
             Dictionary<string, double> parameterisation)
         {
-            // TODO: saves a .csv to record the foodweb
+            // TODO: save a .csv to record the foodweb
         }
         public void ReturnToMenu()
         {
