@@ -6,11 +6,12 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
-        ////////////////////////////////
-        // checks if graph is disjoint
+        ///////////////////////////////////////////////////////
+        // for disjoint, chain length, invalidness
 
         public bool CheckDisjoint()
         {
+            // pick a random vertex
             int source = nodes.Indices.First();
             var q = new Queue<int>();
             var visited = new HashSet<int>();
@@ -29,38 +30,12 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
-            if (visited.Count == nodes.Count)
+            if (visited.Count != nodes.Count)
                 return true;
             else 
                 return false;
         }
 
-
-        ////////////////////////
-        // for basal/apex
-
-        public HashSet<int> GetBasal()
-        {
-            var basal = new HashSet<int>();
-            foreach (Node no in nodes)
-                if (links.GetColumnDataCount(no.Idx) == 0) // slow, but WHATEVER
-                    basal.Add(no.Idx);
-            
-            return basal;
-        }
-        public HashSet<int> GetApex()
-        {
-            var apex = new HashSet<int>();
-            foreach (Node no in nodes)
-                if (links.GetRowDataCount(no.Idx) == 0)
-                    apex.Add(no.Idx);
-            
-            return apex;
-        }
-
-
-        //////////////////////////
-        // for chain length
 
         private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
         {
@@ -86,16 +61,33 @@ namespace EcoBuilder.NodeLink
             return visited;
         }
 
-        public int MaxChainLength()
-        {
-            HashSet<int> basal = GetBasal();
-            var heights = HeightBFS(basal);
-            int maxChain = 0;
-            foreach (int height in heights.Values)
-                maxChain = Math.Max(maxChain, height);
 
-            return maxChain;
+        ////////////////////////
+        // for basal/apex
+
+        public HashSet<int> GetBasalCount()
+        {
+            var basal = new HashSet<int>();
+            foreach (Node no in nodes)
+                if (links.GetColumnDataCount(no.Idx) == 0) // slow, but WHATEVER
+                    basal.Add(no.Idx);
+            
+            return basal;
         }
+        public HashSet<int> GetApexCount()
+        {
+            var apex = new HashSet<int>();
+            foreach (Node no in nodes)
+                if (links.GetRowDataCount(no.Idx) == 0)
+                    apex.Add(no.Idx);
+            
+            return apex;
+        }
+
+
+        //////////////////////////
+        // for chain length
+
 
         ///////////////////////////////////
         // for loops

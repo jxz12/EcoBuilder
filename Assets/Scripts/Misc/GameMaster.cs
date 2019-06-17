@@ -16,8 +16,11 @@ namespace EcoBuilder
             inspector.OnUnincubated +=        ()=> nodelink.MoveMiddle();
             inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnGameFinished +=       ()=> FinishGame();
-            inspector.OnMainMenu +=           ()=> BackToMenu();
+
+            // TODO: replace this with updating status every time something is calculated
+            // inspector.OnGameFinished +=       ()=> FinishGame();
+            // inspector.OnMainMenu +=           ()=> BackToMenu();
+            // inspector.OnReplay +=             ()=> Replay();
 
             inspector.OnProducerSet +=     (i,b)=> model.SetSpeciesIsProducer(i,b);
             inspector.OnProducerSet +=     (i,b)=> nodelink.SetNodeAsSourceOnly(i,b);
@@ -34,8 +37,6 @@ namespace EcoBuilder
             nodelink.OnLinkAdded +=        (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=      (i,j)=> model.RemoveInteraction(i,j);
             nodelink.OnDroppedOn +=           ()=> inspector.TrySpawnNew();
-            nodelink.OnLaplacianUnsolvable += ()=> print("unsolvable");
-            nodelink.OnLaplacianSolvable +=   ()=> print("solvable");
 
             // TODO: add May's (or Tang's) complexity criteria here, directly
             model.OnCalculated +=             ()=> status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
@@ -44,48 +45,49 @@ namespace EcoBuilder
             model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
             model.OnRescued +=               (i)=> nodelink.IdleNode(i);
 
-            status.OnMenu +=                  ()=> GameManager.Instance.ShowLevelCard();
             // status.OnUndo +=                  ()=> inspector.UnspawnLast();
 
-            inspector.ConstrainTypes(GameManager.Instance.NumProducers, GameManager.Instance.NumConsumers);
+            var level = GameManager.Instance.ChosenLevel;
+            inspector.ConstrainTypes(level.Details.NumProducers, level.Details.NumConsumers);
+
         }
 
         void FinishGame()
         {
-            bool passed = true;
-            if (!model.Feasible)
-            {
-                passed = false;
-                status.ShowErrorMessage("Not every species can coexist");
-            }
-            if (nodelink.LongestLoop() < GameManager.Instance.MinLoop)
-            {
-                passed = false;
-                status.ShowErrorMessage("No loop longer than " + GameManager.Instance.MinLoop + " exists");
-            }
-            if (nodelink.MaxChainLength() < GameManager.Instance.MinChain)
-            {
-                passed = false;
-                status.ShowErrorMessage("No chain taller than " + GameManager.Instance.MinChain + " exists");
-            }
-            if (passed)
-            {
-                status.Finish();
-                nodelink.Finish();
-                inspector.Finish();
-            }
-        }
-        void BackToMenu()
-        {
-            int score = 0;
-            if (model.Feasible)
-                score += 1;
-            if (model.Stable)
-                score += 1;
-            if (model.Nonreactive)
-                score += 1;
+            // TODO: replace
+            // bool passed = true;
+            // if (!model.Feasible)
+            // {
+            //     passed = false;
+            //     status.ShowErrorMessage("Not every species can coexist");
+            // }
+            // if (nodelink.LongestLoop() < GameManager.Instance.MinLoop)
+            // {
+            //     passed = false;
+            //     status.ShowErrorMessage("No loop longer than " + GameManager.Instance.MinLoop + " exists");
+            // }
+            // if (nodelink.MaxChainLength() < GameManager.Instance.MinChain)
+            // {
+            //     passed = false;
+            //     status.ShowErrorMessage("No chain taller than " + GameManager.Instance.MinChain + " exists");
+            // }
+            // if (passed)
+            // {
+            //     status.Finish();
+            //     nodelink.Finish();
+            //     inspector.Finish();
+            // }
 
-            GameManager.Instance.ReturnToMenu(score);
+            // TODO: replace
+            // int score = 0;
+            // if (model.Feasible)
+            //     score += 1;
+            // if (model.Stable)
+            //     score += 1;
+            // if (model.Nonreactive)
+            //     score += 1;
+
+            // GameManager.Instance.ReturnToMenu(score);
         }
     }
 }

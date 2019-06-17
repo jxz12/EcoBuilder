@@ -6,10 +6,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-// for load/save progress
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-
 namespace EcoBuilder
 {
     public class GameManager : MonoBehaviour
@@ -42,15 +38,8 @@ namespace EcoBuilder
         {
             Screen.SetResolution(576, 1024, false);
             Screen.fullScreen = true;
-            // LoadProgress();
-            Progress = new List<int>() {0};
-
             if (SceneManager.sceneCount == 1)
                 LoadScene("Menu");
-        }
-        void OnApplicationQuit()
-        {
-            SaveProgress();
         }
         
 
@@ -61,6 +50,7 @@ namespace EcoBuilder
             SceneManager.UnloadSceneAsync(sceneName);
         }
 
+        // TODO: loading bars with these
         //[SerializeField] UnityEvent startLoadEvent, endLoadEvent;
         //[Serializable] public class FloatEvent : UnityEvent<float>{}
         //[SerializeField] FloatEvent progressEvent;
@@ -95,95 +85,27 @@ namespace EcoBuilder
             timeDeltas.Enqueue(newDelta);
         }
 
-
-        // -1 is locked, 0,1,2,3 unlocked plus number of stars
-        public List<int> Progress { get; private set; }
-        void SaveProgress()
+        public UI.Level ChosenLevel { get; private set; }
+        public void PlayGame(UI.Level level)
         {
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Create(Application.persistentDataPath + "/levels.gd");
-            bf.Serialize(file, Progress);
-            file.Close();
-        }
-        void LoadProgress()
-        {
-            if (File.Exists(Application.persistentDataPath + "/levels.gd"))
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                FileStream file = File.Open(Application.persistentDataPath + "/levels.gd", FileMode.Open);
-                Progress = (List<int>)bf.Deserialize(file);
-                file.Close();
-            }
-            else
-            {
-                Progress = new List<int>();
-                Progress.Add(0); // if no save file, only unlock first level, no stars
-            }
-        }
-        public void InitNumLevels(int numLevels)
-        {
-            if (Progress.Count > numLevels)
-                throw new Exception("Too many levels in save file to load");
-
-            if (Progress.Count < numLevels)
-            {
-                for (int i=Progress.Count; i<numLevels; i++) // init locked levels if the save file is wrong
-                    Progress.Add(-1);
-            }
-        }
-
-        /*
-        graph constraints:
-            min/max chain length
-            must contain a cycle of length n
-            omnivory (coherence)
-            min/max number of basals or apex predators
-
-        model constraints:
-            min/max flux
-            size/greediness (e.g. only big species)
-        */
-        [SerializeField] Menu.LevelCard levelCard;
-        public int LevelNumber { get; private set; } = 0;
-        public int NumProducers { get; private set; } = 10;
-        public int NumConsumers { get; private set; } = 10;
-        public int MinLoop { get; private set; } = -1;
-        public int MinChain { get; private set; } = -1;
-        public void ShowLevelCard(int number, string title, string description,
-            int numProducers, int numConsumers,
-            int minLoop=-1, int minChain=-1)
-        {
-            LevelNumber = number;
-            NumProducers = numProducers;
-            NumConsumers = numConsumers;
-            MinLoop = minLoop;
-            MinChain = minChain;
-            levelCard.Show(title, description, numProducers, numConsumers);
-        }
-        public void ShowLevelCard()
-        {
-            levelCard.Show();
-        }
-        public void HideLevelCard()
-        {
-            levelCard.Hide();
-        }
-        public void PlayGame()
-        {
+            ChosenLevel = level;
             GameManager.Instance.UnloadScene("Menu");
             GameManager.Instance.LoadScene("Play");
         }
-        public void ReturnToMenu(int numStars)
+        public void SaveLevel(int numStars)
         {
-            if (numStars < 0 || numStars > 3)
-                throw new Exception("cannot pass with less than 0 or more than 3 stars");
-
-            Progress[LevelNumber] = Math.Max(Progress[LevelNumber], numStars);
-
-            // unlock new level if possible
-            if (numStars >= 1 && Progress.Count > LevelNumber+1 && Progress[LevelNumber+1] == -1)
-                Progress[LevelNumber+1] = 0;
-
+            ChosenLevel.SaveToFile(numStars);
+        }
+        public void SaveFoodWebToCsv(
+            List<int> speciesIdxs, List<int> randomSeeds,
+            List<float> sizes, List<float> greeds,
+            List<int> resources, List<int> consumers,
+            Dictionary<string, double> parameterisation)
+        {
+            // TODO: saves a .csv to record the foodweb
+        }
+        public void ReturnToMenu()
+        {
             GameManager.Instance.UnloadScene("Play");
             GameManager.Instance.LoadScene("Menu");
         }

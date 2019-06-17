@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class JonnySpecies : MonoBehaviour
 {
+    public int seed;
     [SerializeField] MeshFilter body, eyes, nose, mouth;
     public void SetBodyMesh(Mesh mesh)
     {

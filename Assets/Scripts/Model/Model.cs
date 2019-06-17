@@ -28,8 +28,8 @@ namespace EcoBuilder.Model
 
                kg_min =   1e-3,   // min body size
                kg_max =   1e3,    // max body size
-               a_ii_min = 1e-8,   // min self-regulation
-               a_ii_max = 1e-2    // max self-regulation
+               a_ii_min = 1e-5,   // min self-regulation
+               a_ii_max = 1       // max self-regulation
                ;
 
         class Species

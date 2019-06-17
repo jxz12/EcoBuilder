@@ -118,7 +118,7 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             Destroy(inspected.Object);
-            inspected = new Species(inspected.Idx, inspected.IsProducer, sizeSlider.value, greedSlider.value);
+            inspected = new Species(inspected.Idx, inspected.IsProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);
             inspected.Object = factory.GenerateSpecies(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             inspected.Object.transform.SetParent(incubatedParent, false);
             nameText.text = inspected.Object.name;

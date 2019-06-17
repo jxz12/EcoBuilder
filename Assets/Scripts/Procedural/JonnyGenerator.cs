@@ -22,6 +22,7 @@ namespace EcoBuilder
             if (greed < 0 || greed > 1)
                 throw new Exception("greed not in bounds");
 
+            js.seed = randomSeed;
             UnityEngine.Random.InitState(randomSeed);
             if (isProducer)
             {

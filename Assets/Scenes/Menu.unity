@@ -129,7 +129,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 44976837}
-  - component: {fileID: 44976839}
   - component: {fileID: 44976838}
   m_Layer: 0
   m_Name: Levels
@@ -186,41 +185,6 @@ MonoBehaviour:
   m_Spacing: {x: 10, y: 10}
   m_Constraint: 0
   m_ConstraintCount: 2
---- !u!114 &44976839
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 44976836}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d71ae806b319954498212a3185e9cce7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  levels:
-  - {fileID: 638158644}
-  - {fileID: 1594007522}
-  - {fileID: 1897763903}
-  - {fileID: 97610247}
-  - {fileID: 452989214}
-  starImages:
-  - {fileID: 21300000, guid: a4a5ee8f85028754cae13ef78bf29dea, type: 3}
-  - {fileID: 21300000, guid: 63333a1d91b24b446b2e5a6de36e2e34, type: 3}
-  - {fileID: 21300000, guid: 1b67470a1603cf6459615dd515308384, type: 3}
-  - {fileID: 21300000, guid: 1eeecee48daf7af44a88c1b04d230642, type: 3}
---- !u!114 &97610247 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-    type: 3}
-  m_PrefabInstance: {fileID: 955530721}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 508576e334c084d819bff098d411f8a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &195544322
 GameObject:
   m_ObjectHideFlags: 0
@@ -296,7 +260,6 @@ GameObject:
   - component: {fileID: 346114292}
   - component: {fileID: 346114297}
   - component: {fileID: 346114296}
-  - component: {fileID: 346114295}
   - component: {fileID: 346114294}
   - component: {fileID: 346114293}
   m_Layer: 0
@@ -388,7 +351,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 346114295}
+      - m_Target: {fileID: 0}
         m_MethodName: LoadGame
         m_Mode: 1
         m_Arguments:
@@ -401,18 +364,6 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
---- !u!114 &346114295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 346114291}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 777a7c508609794468330989572f4c97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &346114296
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -456,18 +407,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 917964473}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &452989214 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-    type: 3}
-  m_PrefabInstance: {fileID: 917964473}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 508576e334c084d819bff098d411f8a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &453800338
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,15 +703,15 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 886556237}
-        m_MethodName: SetTrigger
-        m_Mode: 5
+      - m_Target: {fileID: 886556238}
+        m_MethodName: GoToMain
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Main
+          m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
@@ -800,7 +739,6 @@ GameObject:
   - component: {fileID: 800698365}
   - component: {fileID: 800698370}
   - component: {fileID: 800698369}
-  - component: {fileID: 800698368}
   - component: {fileID: 800698367}
   - component: {fileID: 800698366}
   m_Layer: 0
@@ -892,9 +830,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 886556237}
-        m_MethodName: SetTrigger
-        m_Mode: 5
+      - m_Target: {fileID: 886556238}
+        m_MethodName: GoToOptions
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -905,18 +843,6 @@ MonoBehaviour:
         m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
---- !u!114 &800698368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 800698364}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 777a7c508609794468330989572f4c97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &800698369
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -964,8 +890,9 @@ GameObject:
   m_Component:
   - component: {fileID: 886556236}
   - component: {fileID: 886556237}
+  - component: {fileID: 886556238}
   m_Layer: 0
-  m_Name: Buttons
+  m_Name: Menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1012,6 +939,26 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &886556238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886556235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9186729583b21f34e8fe7dbdb7e63de7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  starImages:
+  - {fileID: 21300000, guid: a4a5ee8f85028754cae13ef78bf29dea, type: 3}
+  - {fileID: 21300000, guid: 63333a1d91b24b446b2e5a6de36e2e34, type: 3}
+  - {fileID: 21300000, guid: 1b67470a1603cf6459615dd515308384, type: 3}
+  - {fileID: 21300000, guid: 1eeecee48daf7af44a88c1b04d230642, type: 3}
+  levelGrid: {fileID: 44976838}
+  levelPrefab: {fileID: 3298662015735737884, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+    type: 3}
 --- !u!1001 &917964473
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1729,18 +1676,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1392826782}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1594007522 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-    type: 3}
-  m_PrefabInstance: {fileID: 1392826782}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 508576e334c084d819bff098d411f8a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &1612391927 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3298662015735737885, guid: 2897088b9804946c7a2c8f09c72d4ffb,
@@ -1852,7 +1787,7 @@ GameObject:
   - component: {fileID: 1876726432}
   - component: {fileID: 1876726431}
   m_Layer: 0
-  m_Name: Master
+  m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2014,18 +1949,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1882168186}
   m_CullTransparentMesh: 0
---- !u!114 &1897763903 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-    type: 3}
-  m_PrefabInstance: {fileID: 2025255149}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 508576e334c084d819bff098d411f8a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &2025255149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2081,6 +2004,16 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: maxChain
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: minEdges
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: maxEdges
       value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 3298662015735737885, guid: 2897088b9804946c7a2c8f09c72d4ffb,
@@ -2238,11 +2171,10 @@ GameObject:
   - component: {fileID: 2094718330}
   - component: {fileID: 2094718333}
   - component: {fileID: 2094718332}
-  - component: {fileID: 2094718334}
   - component: {fileID: 2094718331}
   - component: {fileID: 2094718335}
   m_Layer: 0
-  m_Name: Levels
+  m_Name: Challenges
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2311,9 +2243,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 886556237}
-        m_MethodName: SetTrigger
-        m_Mode: 5
+      - m_Target: {fileID: 886556238}
+        m_MethodName: GoToLevels
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2361,18 +2293,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2094718329}
   m_CullTransparentMesh: 0
---- !u!114 &2094718334
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2094718329}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 777a7c508609794468330989572f4c97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!95 &2094718335
 Animator:
   serializedVersion: 3

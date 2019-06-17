@@ -18,10 +18,11 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        public event Action OnLaplacianUnsolvable;
-        public event Action OnLaplacianSolvable;
+        // TODO: replace these with all constraints including loops and stuff
+        // public event Action OnLaplacianUnsolvable;
+        // public event Action OnLaplacianSolvable;
+        // bool laplacianDetNeg = false;
 
-        bool laplacianDetNeg = false;
         private void FixedUpdate()
         {
             if (!doLayout)
@@ -43,36 +44,38 @@ namespace EcoBuilder.NodeLink
         }
         private void Update()
         {
-            if (nodes.Count == 0)
+            if (nodes.Count < 1)
                 return;
 
             ///////////////////////////////
-            // do height calculations
+            // do constraint calculations
+            // check if not disjoint
+
+            // // TODO: make all the below information clear
+            // bool disjoint = CheckDisjoint();
+            // if (disjoint)
+            //     return;
+
             HashSet<int> basal = BuildTrophicEquations();
             var heights = HeightBFS(basal);
+            if (heights.Count!=nodes.Count)
+                return;
 
-            if (heights.Count == nodes.Count) // if every node can be reached from basal
+            // TODO: maybe highlight tallest species or longest loop on selection
+            int maxHeight = 0;
+            foreach (int height in heights.Values)
+                maxHeight = Math.Max(height, maxHeight);
+
+            TrophicGaussSeidel();
+            float maxTrophic = 1;
+            foreach (float trophic in trophicLevels)
+                maxTrophic = Math.Max(trophic, maxTrophic);
+
+            float trophicScaling = maxTrophic>1? maxHeight / (maxTrophic-1) : 1;
+            foreach (Node no in nodes)
             {
-                if (laplacianDetNeg == true)
-                {
-                    laplacianDetNeg = false;
-                    OnLaplacianSolvable.Invoke();
-                }
-                TrophicGaussSeidel();
-                foreach (Node no in nodes)
-                {
-                    // float targetY = .5f*heights[no.Idx]+.2f*(trophicLevels[no.Idx]-1);
-                    float targetY = .5f*(trophicLevels[no.Idx]-1);
-                    no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
-                }
-            }
-            else
-            {
-                if (laplacianDetNeg == false)
-                {
-                    laplacianDetNeg = true;
-                    OnLaplacianUnsolvable.Invoke();
-                }
+                float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
+                no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
             }
         }
 
@@ -217,8 +220,8 @@ namespace EcoBuilder.NodeLink
                 }
             }
 
-            float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
-            float logMax = Mathf.Log10(max * 1.5f); // put in middle
+            float logMin = Mathf.Log10(min / 2f); // avoid min==max
+            float logMax = Mathf.Log10(max * 2f); // put in middle
             float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
@@ -248,8 +251,8 @@ namespace EcoBuilder.NodeLink
                 }
             }
 
-            float logMin = Mathf.Log10(min / 1.5f); // avoid min==max
-            float logMax = Mathf.Log10(max * 1.5f); // put in middle
+            float logMin = Mathf.Log10(min / 2f); // avoid min==max
+            float logMax = Mathf.Log10(max * 2f); // put in middle
             float flowRange = maxLinkFlow - minLinkFlow;
             foreach (Link li in links)
             {

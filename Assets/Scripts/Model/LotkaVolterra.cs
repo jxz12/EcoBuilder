@@ -100,7 +100,7 @@ namespace EcoBuilder.Model
         }
 
         // TODO: test if these faster when sparse
-        Matrix<double> interaction;
+        Matrix<double> interaction, flux;
         Vector<double> negGrowth, abundance;
         Matrix<double> community, hermitian;
         public void ResizeMatrices(int n)
@@ -109,6 +109,7 @@ namespace EcoBuilder.Model
             {
                 // A is interaction matrix, x is equilibrium abundance, b is -r
                 interaction = Matrix<double>.Build.Dense(n, n);
+                flux = Matrix<double>.Build.Sparse(n,n); // sparse as no operations required
                 abundance = Vector<double>.Build.Dense(n);
                 negGrowth = Vector<double>.Build.Dense(n);
 
@@ -118,7 +119,7 @@ namespace EcoBuilder.Model
             }
             else
             {
-                interaction = community = hermitian = null;
+                interaction = flux = community = hermitian = null;
                 abundance = negGrowth = null;
             }
         }
@@ -144,6 +145,8 @@ namespace EcoBuilder.Model
 
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
+
+                    flux[i,j] = e * a;
                 }
             }
         }
@@ -205,9 +208,9 @@ namespace EcoBuilder.Model
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
-            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(A));
-            // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(b));
-            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(x));
+            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
+            // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
+            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
             for (int idx=0; idx<abundance.Count; idx++)
             {
@@ -221,24 +224,29 @@ namespace EcoBuilder.Model
             int idx = externToIntern[species];
             return abundance[idx];
         }
+        public double GetSolvedFlux(T res, T con)
+        {
+            int i = externToIntern[res];
+            int j = externToIntern[con];
+            return flux[i,j] * abundance[i];
+        }
 
         ////////////////////
         // Both also O(n^3)
         public bool SolveStability()
         {
             BuildCommunityMatrix();
+
+            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
+            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
+            // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
+
             // get largest real part of any eigenvalue of this community matrix
             // implies the local asymptotic stability
             var eigenValues = community.Evd().EigenValues;
 
             double Lambda = eigenValues.Real().Maximum();
             return Lambda <= 0;
-        }
-        public double GetSolvedFlux(T res, T con)
-        {
-            int i = externToIntern[res];
-            int j = externToIntern[con];
-            return community[j, i];
         }
 
         public bool SolveReactivity()

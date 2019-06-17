@@ -6,16 +6,14 @@ namespace EcoBuilder.UI
 {
 	public class StatusBar : MonoBehaviour
 	{
-		[SerializeField] Button undo, menu;
+		[SerializeField] Button undo;
 		[SerializeField] Animator star1, star2, star3;
 
 		public event Action OnUndo;
-		public event Action OnMenu;
 
 		void Start()
 		{
 			undo.onClick.AddListener(()=> OnUndo());
-			menu.onClick.AddListener(()=> OnMenu());
 		}
 
 		public void FillStars(bool feasible, bool stable, bool nonreactive)
