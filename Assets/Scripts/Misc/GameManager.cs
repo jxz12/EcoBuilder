@@ -85,8 +85,15 @@ namespace EcoBuilder
             timeDeltas.Enqueue(newDelta);
         }
 
+
+        [SerializeField] RectTransform overlayParent;
+        public RectTransform Overlay { get { return overlayParent; } }
+
+        [SerializeField] UI.Level LevelPrefabDevOnly; // purely for development
+        public UI.Level DefaultLevel { get { return Instantiate(LevelPrefabDevOnly); } }
+
         public UI.Level ChosenLevel { get; private set; }
-        public void PlayGame(UI.Level level)
+        public void PlayLevel(UI.Level level)
         {
             ChosenLevel = level;
             GameManager.Instance.UnloadScene("Menu");

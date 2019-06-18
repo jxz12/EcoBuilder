@@ -15,8 +15,6 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
-        public event Action OnGameFinished;
-        public event Action OnMainMenu;
 
         public event Action OnIncubated;
         public event Action OnUnincubated;
@@ -28,11 +26,12 @@ namespace EcoBuilder.UI
         [SerializeField] Text consumerCount;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
-        [SerializeField] Button menuButton;
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
         [SerializeField] RectTransform incubatedParent;
+
+        [SerializeField] JonnyGenerator factory;
 
         public class Species
         {
@@ -63,13 +62,12 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            goButton.onClick.AddListener(()=> Go());
+            goButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Go"));
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
-            menuButton.onClick.AddListener(()=> OnMainMenu.Invoke());
 
             sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize());
             greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed());
@@ -88,20 +86,6 @@ namespace EcoBuilder.UI
         }
 
 
-        [SerializeField] JonnyGenerator factory;
-        
-        void Go()
-        {
-            if (numProducers==maxProducers && numConsumers==maxConsumers)
-            {
-                OnGameFinished.Invoke();
-                // GetComponent<Animator>().SetTrigger("Finish");
-            }
-            else
-            {
-                GetComponent<Animator>().SetTrigger("Go");
-            }
-        }
         void IncubateNew(bool isProducer)
         {
             Species s = new Species(nextIdx, isProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);

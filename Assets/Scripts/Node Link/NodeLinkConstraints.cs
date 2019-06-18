@@ -1,15 +1,54 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+
+// for heavy calculations
+using System.Threading.Tasks;
 
 namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
+        public event Action OnConstraints;
+
+        // TODO: option to highlight tallest species or longest loop on selection
+        public bool Disjoint { get; private set; } = false;
+        public int NumEdges { get; private set; } = 0;
+        public bool LaplacianDetZero { get; private set; } = false;
+        public float MaxTrophic { get; private set; } = 0;
+        public int MaxChain { get; private set; } = 0;
+        public int MaxLoop { get; private set; } = 0;
+        async void ConstraintsAsync()
+        {
+            ///////////////////////////////
+            // do constraint calculations
+            // check if not disjoint
+
+            calculating = true;
+
+            Disjoint = CheckDisjoint();
+            NumEdges = links.Count();
+
+            HashSet<int> basal = BuildTrophicEquations();
+            var heights = HeightBFS(basal);
+            LaplacianDetZero = (heights.Count != nodes.Count);
+            // MaxTrophic done in Update()
+
+            MaxChain = 0;
+            foreach (int height in heights.Values)
+                MaxChain = Math.Max(height, MaxChain);
+
+            MaxLoop = await Task.Run(()=> LongestLoop());
+
+            calculating = false;
+            OnConstraints.Invoke();
+        }
+
         ///////////////////////////////////////////////////////
         // for disjoint, chain length, invalidness
 
-        public bool CheckDisjoint()
+        bool CheckDisjoint()
         {
             // pick a random vertex
             int source = nodes.Indices.First();
@@ -65,34 +104,31 @@ namespace EcoBuilder.NodeLink
         ////////////////////////
         // for basal/apex
 
-        public HashSet<int> GetBasalCount()
+        HashSet<int> GetSources()
         {
-            var basal = new HashSet<int>();
+            var sources = new HashSet<int>();
             foreach (Node no in nodes)
                 if (links.GetColumnDataCount(no.Idx) == 0) // slow, but WHATEVER
-                    basal.Add(no.Idx);
+                    sources.Add(no.Idx);
             
-            return basal;
+            return sources;
         }
-        public HashSet<int> GetApexCount()
+        HashSet<int> GetSinks()
         {
-            var apex = new HashSet<int>();
+            var sinks = new HashSet<int>();
             foreach (Node no in nodes)
                 if (links.GetRowDataCount(no.Idx) == 0)
-                    apex.Add(no.Idx);
+                    sinks.Add(no.Idx);
             
-            return apex;
+            return sinks;
         }
-
-
-        //////////////////////////
-        // for chain length
 
 
         ///////////////////////////////////
         // for loops
 
-        public int LongestLoop()
+        // very slow, so run async if possible
+        int LongestLoop()
         {
             var outgoingCopy = new Dictionary<int, HashSet<int>>();
             var incomingCopy = new Dictionary<int, HashSet<int>>();
@@ -239,7 +275,7 @@ namespace EcoBuilder.NodeLink
         /////////////////////////
         // for trophic coherence
 
-        public float CalculateOmnivory()
+        float CalculateOmnivory()
         {
             int L = 0;
             float sum_x_sqr = 0;

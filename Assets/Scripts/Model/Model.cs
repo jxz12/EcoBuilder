@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+// for heavy calculations
 using System.Threading.Tasks;
 
 namespace EcoBuilder.Model
@@ -189,20 +189,10 @@ namespace EcoBuilder.Model
 
 
 
+        /////////////////////////////////////
+        // actual calculations here
 
-        [SerializeField] GameObject busyIcon;
-        bool equilibriumSolved = true, calculating = false;
-        void LateUpdate()
-        {
-            if (!equilibriumSolved && !calculating && idxToSpecies.Count>0)
-            {
-                equilibriumSolved = true;
-                Equilibrium();
-            }
-            busyIcon.SetActive(calculating);
-        }
-
-        public event Action OnCalculated;
+        public event Action OnEquilibrium;
         public event Action<int> OnEndangered;
         public event Action<int> OnRescued;
 
@@ -210,11 +200,11 @@ namespace EcoBuilder.Model
         public bool Stable { get; private set; } = false;
         public bool Nonreactive { get; private set; } = false;
 
-        // TODO: both of these
+        // TODO: May's (or Tang's) complexity criteria here
         // public float Complexity { get; private set; } = 0;
         // public float Flux { get; private set; } = 0;
 
-        async void Equilibrium()
+        async void EquilibriumAsync()
         {
             calculating = true;
             Feasible = await Task.Run(() => simulation.SolveFeasibility());
@@ -238,7 +228,19 @@ namespace EcoBuilder.Model
             }
 
             calculating = false;
-            OnCalculated.Invoke();
+            OnEquilibrium.Invoke();
+        }
+
+        [SerializeField] GameObject busyIcon;
+        bool equilibriumSolved = true, calculating = false;
+        void LateUpdate()
+        {
+            if (!equilibriumSolved && !calculating && idxToSpecies.Count>0)
+            {
+                equilibriumSolved = true;
+                EquilibriumAsync();
+            }
+            busyIcon.SetActive(calculating);
         }
 
         public float GetAbundance(int idx)

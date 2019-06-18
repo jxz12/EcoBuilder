@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace EcoBuilder.UI
 {
@@ -28,16 +30,30 @@ namespace EcoBuilder.UI
         {
             levels = new List<Level>();
             LoadFileLevels();
-            // LoadSceneLevels(); // uncomment for building levels
+            // SaveSceneLevels(); // uncomment for building levels
+
+            // let the grid do the layout first
+            StartCoroutine(EnableGridOneFrame());
+        }
+        IEnumerator EnableGridOneFrame()
+        {
+            levelGrid.enabled = true;
+            yield return null;
+            levelGrid.enabled = false;
         }
 
 
-        // -1 is locked, 0,1,2,3 unlocked plus number of stars
+        // destroys scene levels
         void LoadFileLevels()
         {
+            foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
+            {
+                Destroy(level.gameObject);
+            }
+
             foreach (string file in Directory.GetFiles(Application.persistentDataPath))
             {
-                Level newLevel = Instantiate(levelPrefab, levelGrid.transform);
+                Level newLevel = Instantiate(levelPrefab);
                 bool successful = newLevel.LoadFromFile(file);
                 if (successful)
                 {
@@ -45,26 +61,31 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    Destroy(newLevel);
+                    Destroy(newLevel.gameObject);
                 }
+            }
+            levels = new List<Level>(levels.OrderBy(x=>x.Details.Idx));
+            foreach (Level level in levels)
+            {
+                level.transform.SetParent(levelGrid.transform, false);
             }
             UnlockLevels();
         }
-        void LoadSceneLevels()
+        void SaveSceneLevels()
         {
             // first load scene levels
             foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
             {
-                level.LoadFromScene(Application.persistentDataPath, ".gd");
+                level.SaveFromScene(Application.persistentDataPath, ".gd");
                 level.SaveToFile();
                 levels.Add(level);
             }
+            levels = new List<Level>(levels.OrderBy(x=>x.Details.Idx));
             UnlockLevels();
         }
 
         void UnlockLevels()
         {
-            bool anyUnlocked = false;
             for (int i=0; i<levels.Count; i++)
             {
                 if (levels[i].Details.NumStars == -1)
@@ -73,27 +94,19 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    anyUnlocked = true;
                     levels[i].Unlock();
                     levels[i].SetStarsSprite(starImages[levels[i].Details.NumStars]);
                 }
             }
-            if (!anyUnlocked)
+            // unlock new level if possible
+            // TODO: probably move this into gamemanager
+            for (int i=0; i<levels.Count-1; i++)
             {
-                print(name);
-                if (levels.Count > 0)
-                    levels[0].Unlock();
-            }
-            else
-            {
-                // unlock new level if possible
-                for (int i=0; i<levels.Count-1; i++)
+                if (levels[i].Details.NumStars > 0 && levels[i+1].Details.NumStars == -1)
                 {
-                    if (levels[i].Details.NumStars > 0 && levels[i+1].Details.NumStars == -1)
-                    {
-                        levels[i+1].Unlock();
-                        break;
-                    }
+                    levels[i+1].Details.NumStars = 0;
+                    levels[i+1].Unlock();
+                    break;
                 }
             }
         }

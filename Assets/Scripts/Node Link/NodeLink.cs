@@ -18,20 +18,13 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        // TODO: replace these with all constraints including loops and stuff
-        // public event Action OnLaplacianUnsolvable;
-        // public event Action OnLaplacianSolvable;
-        // bool laplacianDetNeg = false;
-
         private void FixedUpdate()
         {
-            if (!doLayout)
-                return;
-
             if (nodes.Count > 0)
             {
                 //////////////////////
                 // do stress SGD
+
                 int dq = toBFS.Dequeue(); // only do one vertex at a time
                 var d_j = ShortestPathsBFS(dq);
 
@@ -39,88 +32,48 @@ namespace EcoBuilder.NodeLink
                 toBFS.Enqueue(dq);
             }
 
-            TweenNodes();
-            RotateMomentum();
+            if (doLayout)
+            {
+                TweenNodes();
+                RotateMomentum();
+            }
         }
         private void Update()
         {
-            if (nodes.Count < 1)
-                return;
-
-            ///////////////////////////////
-            // do constraint calculations
-            // check if not disjoint
-
-            // // TODO: make all the below information clear
-            // bool disjoint = CheckDisjoint();
-            // if (disjoint)
-            //     return;
-
-            HashSet<int> basal = BuildTrophicEquations();
-            var heights = HeightBFS(basal);
-            if (heights.Count!=nodes.Count)
-                return;
-
-            // TODO: maybe highlight tallest species or longest loop on selection
-            int maxHeight = 0;
-            foreach (int height in heights.Values)
-                maxHeight = Math.Max(height, maxHeight);
-
-            TrophicGaussSeidel();
-            float maxTrophic = 1;
-            foreach (float trophic in trophicLevels)
-                maxTrophic = Math.Max(trophic, maxTrophic);
-
-            float trophicScaling = maxTrophic>1? maxHeight / (maxTrophic-1) : 1;
-            foreach (Node no in nodes)
+            if (nodes.Count > 0 && !LaplacianDetZero)
             {
-                float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
-            }
-        }
+                ////////////////////////////////////
+                // iterate trophic level equations and set y-axis
 
-        [SerializeField] float layoutTween=.05f, sizeTween=.05f;
-        void TweenNodes()
-        {
-            Vector3 centroid = Vector3.zero;
-            if (focus == null)
-            {
-                // get average of all positions, and center
+                TrophicGaussSeidel();
+                MaxTrophic = 1;
+                foreach (float trophic in trophicLevels)
+                    MaxTrophic = Math.Max(trophic, MaxTrophic);
+
+                float trophicScaling = MaxTrophic>1? MaxChain / (MaxTrophic-1) : 1;
                 foreach (Node no in nodes)
                 {
-                    Vector3 pos = no.TargetPos;
-                    centroid += pos;
+                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
+                    no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
                 }
-                centroid /= nodes.Count;
-                centroid.y = 0;
-                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
-
-                // // TODO: magic numbers here
-                // graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
-                // graphParent.localScale = Vector3.Slerp(graphParent.localScale, 150*Vector3.one, layoutTween);
             }
-            else
+        }
+        // [SerializeField] GameObject busyIcon;
+        bool constraintsSolved = true, calculating = false;
+        private void LateUpdate()
+        {
+            if (!constraintsSolved && !calculating && nodes.Count>0)
             {
-                // center to focus
-                centroid = focus.TargetPos;
-                centroid.y = 0;
-                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
+                constraintsSolved = true;
+                ConstraintsAsync();
             }
-            foreach (Node no in nodes)
-            {
-                no.TargetPos = 
-                    Vector3.Lerp(no.TargetPos, no.TargetPos-centroid, 1);
-
-                no.transform.localPosition =
-                    Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
-
-                no.transform.localScale =
-                    Vector3.Lerp(no.transform.localScale, no.TargetSize*Vector3.one, sizeTween);
-            }
+            // busyIcon.SetActive(calculating);
         }
 
 
 
+        ///////////////////////////////////
+        // structure changing functions
 
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
@@ -142,6 +95,8 @@ namespace EcoBuilder.NodeLink
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
+
+            constraintsSolved = false;
         }
 
 
@@ -175,6 +130,8 @@ namespace EcoBuilder.NodeLink
             // prevent memory leak in trophic level data structures
             trophicA.RemoveAt(idx);
             trophicLevels.RemoveAt(idx);
+
+            constraintsSolved = false;
         }
 
         private void AddLink(int i, int j)
@@ -185,6 +142,8 @@ namespace EcoBuilder.NodeLink
 
             adjacency[i].Add(j);
             adjacency[j].Add(i);
+
+            constraintsSolved = false;
         }
         private void RemoveLink(int i, int j)
         {
@@ -195,6 +154,8 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
             }
+
+            constraintsSolved = false;
         }
         public void SetNodeAsSourceOnly(int idx, bool isSource) // basal
         {

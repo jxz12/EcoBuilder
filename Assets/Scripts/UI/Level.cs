@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 // for load/save progress
@@ -39,7 +40,7 @@ namespace EcoBuilder.UI
             public List<int> Resources;
             public List<int> Consumers;
 
-            // progress
+            // -1 is locked, 0,1,2,3 unlocked plus number of stars
             public int NumStars;
         }
         [SerializeField] LevelDetails details;
@@ -48,15 +49,19 @@ namespace EcoBuilder.UI
             private set { details = value; }
         }
 
+        [SerializeField] Button showCard;
+
         // thumbnail
-        [SerializeField] Button thumbnail;
+        [SerializeField] GameObject thumbnail;
         [SerializeField] Text numberText;
         [SerializeField] Image starsImage;
         [SerializeField] Image lockImage;
 
         // card
+        [SerializeField] GameObject card;
 		[SerializeField] Text title;
 		[SerializeField] Text description;
+        [SerializeField] ScrollRect descriptionArea;
 		[SerializeField] Text producers;
 		[SerializeField] Text consumers;
 		[SerializeField] Button goButton;
@@ -74,7 +79,7 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] string savefilePath; // serialized just for me to see
-        public void LoadFromScene(string incompleteSavePath, string fileExtension)
+        public void SaveFromScene(string incompleteSavePath, string fileExtension)
         {
             // saves Idx as file name
             savefilePath = incompleteSavePath + "/" + Details.Idx + fileExtension;
@@ -98,7 +103,7 @@ namespace EcoBuilder.UI
             }
             catch (SerializationException se)
             {
-                print(se.Message);
+                print("handled exception: " + se.Message);
                 return false;
             }
         }
@@ -111,19 +116,51 @@ namespace EcoBuilder.UI
             file.Close();
         }
 
+
+        // TODO: tween these things
+        Transform thumbnailedParent;
+        Vector2 thumbnailedPosition;
 		public void ShowCard()
 		{
-			GetComponent<Animator>().SetBool("Showing", true);
-		}
+            thumbnail.SetActive(false);
+            card.SetActive(true);
+            showCard.interactable = false;
 
+            thumbnailedPosition = GetComponent<RectTransform>().anchoredPosition;
+            thumbnailedParent = GetComponent<RectTransform>().parent;
+
+            transform.SetParent(GameManager.Instance.Overlay.transform, false);
+            GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            // TODO: magic numbers
+            GetComponent<RectTransform>().sizeDelta = new Vector2(400,750);
+
+            descriptionArea.verticalNormalizedPosition = 1;
+		}
+		public void HideCard()
+		{
+            card.SetActive(false);
+            thumbnail.SetActive(true);
+            showCard.interactable = true;
+
+            transform.SetParent(thumbnailedParent, false);
+            GetComponent<RectTransform>().anchoredPosition = thumbnailedPosition;
+            // TODO: magic numbers
+            GetComponent<RectTransform>().sizeDelta = new Vector2(100,100);
+		}
 
 		public void StartEndGame()
 		{
 			// TODO: probably store a variable instead of this crap
 			if (goText.text == "Go!")
 			{
-				GameManager.Instance.PlayGame(this);
+                card.SetActive(false);
+                thumbnail.SetActive(true);
+                showCard.interactable = true;
+
+                // TODO: magic numbers
+                GetComponent<RectTransform>().sizeDelta = new Vector2(100,100);
                 goText.text = "Quit?";
+				GameManager.Instance.PlayLevel(this);
 			}
 			else
 			{
@@ -131,30 +168,19 @@ namespace EcoBuilder.UI
 				GameManager.Instance.ReturnToMenu();
                 goText.text = "Go!";
 			}
-			GetComponent<Animator>().SetBool("Showing", false);
-		}
-		public void Hide()
-		{
-			GetComponent<Animator>().SetBool("Showing", false);
 		}
 
-        void Start()
-        {
-            thumbnail.onClick.AddListener(()=> ShowCard());
-        }
-
-        // TODO: make this an animation to show the user where to play next?
         // TODO: make gamemanager clever enough to be able to go to next level
         public void Lock()
         {
-            thumbnail.interactable = false;
+            showCard.interactable = false;
             lockImage.enabled = true;
             numberText.enabled = false;
             starsImage.enabled = false;
         }
         public void Unlock()
         {
-            thumbnail.interactable = true;
+            showCard.interactable = true;
             lockImage.enabled = false;
             numberText.enabled = true;
             starsImage.enabled = true;
