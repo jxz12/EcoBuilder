@@ -47,7 +47,7 @@ namespace EcoBuilder
             nodelink.OnNodeRemoved +=        (i)=> inspector.UnspawnSpecies(i);
             nodelink.OnNodeRemoved +=        (i)=> model.RemoveSpecies(i);
 
-            status.OnLevelEnd +=             (x)=> EndLevel(x);
+            status.OnLevelFinish +=           ()=> FinishLevel();
             status.OnLevelReplay +=           ()=> print("TODO:");
             status.OnLevelNext +=             ()=> print("TODO:");
             status.OnBackToMenu +=            ()=> print("TODO:");
@@ -58,8 +58,6 @@ namespace EcoBuilder
             // set up level
 
             var level = GameManager.Instance.DefaultLevel; // only use for dev
-            // var level = GameManager.Instance.ChosenLevel;
-            inspector.ConstrainTypes(level.Details.numProducers, level.Details.numConsumers);
 
             status.SlotInLevel(level);
             status.ConstrainNumEdges(level.Details.minEdges);
@@ -84,11 +82,16 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
+
+            inspector.ConstrainTypes(level.Details.numProducers, level.Details.numConsumers);
+            
+            // TODO: this is a little hacky?
+            nodelink.Unfocus();
         }
 
-        void EndLevel(int numStars)
+        void FinishLevel()
         {
-            GameManager.Instance.SavePlayedLevel(numStars);
+            // GameManager.Instance.SavePlayedLevel(numStars);
             print("TODO: make animations do things and confetti");
         }
     }

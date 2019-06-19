@@ -91,7 +91,7 @@ namespace EcoBuilder.NodeLink
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
 
-            // FocusNode(idx);
+            FocusNode(idx);
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
@@ -100,7 +100,7 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        public void RemoveNode(int idx)
+        void RemoveNode(int idx)
         {
             if (focus != null && focus.Idx == idx)
                 Unfocus();
@@ -132,6 +132,8 @@ namespace EcoBuilder.NodeLink
             trophicLevels.RemoveAt(idx);
 
             constraintsSolved = false;
+
+            OnNodeRemoved.Invoke(idx);
         }
 
         public void AddLink(int i, int j)

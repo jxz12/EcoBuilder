@@ -189,8 +189,8 @@ namespace EcoBuilder.UI
             
             maxProducers = producers;
             maxConsumers = consumers;
-            producerCount.text = maxProducers.ToString();
-            consumerCount.text = maxConsumers.ToString();
+            producerCount.text = (maxProducers-numProducers).ToString();
+            consumerCount.text = (maxConsumers-numConsumers).ToString();
         }
 
         // for loading from level
@@ -262,7 +262,6 @@ namespace EcoBuilder.UI
                 incubated = null;
                 // OnUnincubated.Invoke();
             }
-
             inspected = spawnedSpecies[idx];
 
             nameText.text = inspected.GObject.name;

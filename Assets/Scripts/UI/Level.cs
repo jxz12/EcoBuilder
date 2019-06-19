@@ -81,7 +81,6 @@ namespace EcoBuilder.UI
 
             // TODO: check that constraints are possible too
 
-
             numberText.text = Details.idx.ToString();
 			title.text = Details.title;
 			description.text = Details.description;

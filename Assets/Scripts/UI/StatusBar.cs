@@ -12,7 +12,7 @@ namespace EcoBuilder.UI
 		[SerializeField] Transform levelParent;
 		[SerializeField] GameObject finishButton;
 
-		public event Action<int> OnLevelEnd; // int is num stars
+		public event Action OnLevelFinish; // int is num stars
 		public event Action OnLevelReplay;
 		public event Action OnLevelNext;
 		public event Action OnBackToMenu;

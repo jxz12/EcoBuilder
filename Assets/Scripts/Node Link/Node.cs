@@ -58,9 +58,13 @@ namespace EcoBuilder.NodeLink
                 throw new System.Exception("shape has no meshrenderer!");
         }
 
-        public void Outline()
+        public void Outline(int colourIdx=0)
         {
-            gameObject.AddComponent<cakeslice.Outline>();
+            // if (colourIdx < 0 || colourIdx > 3)
+            //     throw new System.Exception("bad outline colour");
+
+            var outline = gameObject.AddComponent<cakeslice.Outline>();
+            outline.color = colourIdx;
         }
         public void Unoutline()
         {

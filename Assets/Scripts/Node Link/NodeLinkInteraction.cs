@@ -130,7 +130,6 @@ namespace EcoBuilder.NodeLink
                 print("TODO: super focus mode (and on right click)");
                 if (held.Removable)
                 {
-                    OnNodeRemoved.Invoke(held.Idx);
                     RemoveNode(held.Idx);
                 }
             }
@@ -200,22 +199,48 @@ namespace EcoBuilder.NodeLink
                     if (snappedNode == null)
                         snappedNode = ClosestSnappedNode(ped.position);
 
-                    // if something can be snapped to
-                    if (snappedNode!=null && snappedNode.CanBeTarget && snappedNode!=potentialSource)
+                    bool snapped = false;
+                    if (snappedNode!=null && snappedNode!=potentialSource)
                     {
-                        CHECK IF LINK IS POSSIBLE AND STUFF
-                        // if not already snapped to
-                        if (snappedNode != potentialTarget)
+                        int i = potentialSource.Idx;
+                        int j = snappedNode.Idx;
+                        if (links[i,j] == null)
                         {
-                            if (potentialTarget != null)
-                                potentialTarget.Unoutline();
+                            if (snappedNode.CanBeTarget)
+                            {
+                                if (potentialTarget != null)
+                                    potentialTarget.Unoutline();
 
-                            dummyLink.Target = snappedNode;
-                            potentialTarget = snappedNode;
-                            potentialTarget.Outline();
+                                dummyLink.Target = snappedNode;
+                                potentialTarget = snappedNode;
+                                potentialTarget.Outline(1);
+
+                                snapped = true;
+                            }
+                        }
+                        else
+                        {
+                            if (links[i,j].Removable)
+                            {
+                                if (potentialTarget != null)
+                                    potentialTarget.Unoutline();
+
+                                dummyLink.Target = potentialSource; // hide dummyLink
+                                print("TODO: highlight potential cut better");
+                                potentialTarget = snappedNode;
+                                potentialTarget.Outline(2);
+
+                                snapped = true;
+                            }
+                            else
+                            {
+                                print("TODO: make it clear that this cannot be removed");
+                            }
                         }
                     }
-                    else
+
+
+                    if (!snapped)
                     {
                         if (potentialTarget != null)
                         {
@@ -287,31 +312,25 @@ namespace EcoBuilder.NodeLink
                 {
                     OnDroppedOn.Invoke();
                 }
-                else
+                else if (potentialSource != null && potentialTarget != null)
                 {
-                    if (potentialSource != null && potentialTarget != null)
+                    // add/remove a new link
+                    int i=potentialSource.Idx, j=potentialTarget.Idx;
+                    if (links[i,j] != null)
                     {
-                        // add a new link
-                        int i=potentialSource.Idx, j=potentialTarget.Idx;
-                        if (i != j)
-                        {
-                            if (links[i,j] != null)
-                            {
-                                RemoveLink(i, j);
-                            }
-                            else
-                            {
-                                AddLink(i, j);
-                            }
-                        }
+                        RemoveLink(i, j);
+                    }
+                    else
+                    {
+                        AddLink(i, j);
                     }
                 }
             }
         }
 
+
         //////////////////////////////
         // helpers
-
 
         // this returns any node within the snap radius
         // if more than one are in the radius, then return the closest to the camera.
