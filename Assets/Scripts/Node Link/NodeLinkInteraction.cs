@@ -40,14 +40,14 @@ namespace EcoBuilder.NodeLink
                 GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
             }
         }
-        public void MoveLeft()
-        {
-            GetComponent<Animator>().SetInteger("Middle Left Focus", 1);
-        }
-        public void MoveMiddle()
-        {
-            GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
-        }
+        // public void MoveLeft()
+        // {
+        //     GetComponent<Animator>().SetInteger("Middle Left Focus", 1);
+        // }
+        // public void MoveMiddle()
+        // {
+        //     GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
+        // }
 		public void Finish()
 		{
 			GetComponent<Animator>().SetTrigger("Finish");
@@ -128,8 +128,11 @@ namespace EcoBuilder.NodeLink
             if (held != null)
             {
                 print("TODO: super focus mode (and on right click)");
-                OnNodeRemoved.Invoke(held.Idx);
-                RemoveNode(held.Idx);
+                if (held.Removable)
+                {
+                    OnNodeRemoved.Invoke(held.Idx);
+                    RemoveNode(held.Idx);
+                }
             }
         }
         public void OnPointerUp(PointerEventData ped)
@@ -170,7 +173,7 @@ namespace EcoBuilder.NodeLink
             if (ped.pointerId==0 || ped.pointerId==-1) // only drag on left-click or one touch
             {
                 Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                if (draggedNode != null && !draggedNode.IsTargetOnly)
+                if (draggedNode != null && draggedNode.CanBeSource)
                 {
                     potentialSource = draggedNode;
                     draggedNode.Outline();
@@ -191,25 +194,16 @@ namespace EcoBuilder.NodeLink
                 if (potentialSource != null)
                 {
                     GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
-                    Node snappedNode = hoveredObject==null? null : hoveredObject.GetComponent<Node>();
+                    Node snappedNode = null;
+                    if (hoveredObject != null)
+                        snappedNode = hoveredObject.GetComponent<Node>();
                     if (snappedNode == null)
                         snappedNode = ClosestSnappedNode(ped.position);
 
-                    // if nothing to snap to
-                    if (snappedNode == null || snappedNode==potentialSource || snappedNode.IsSourceOnly)
+                    // if something can be snapped to
+                    if (snappedNode!=null && snappedNode.CanBeTarget && snappedNode!=potentialSource)
                     {
-                        if (potentialTarget != null)
-                        {
-                            potentialTarget.Unoutline();
-                            potentialTarget = null;
-                            dummyLink.Target = dummyTarget;
-                        }
-                        Vector3 screenPoint = ped.position;
-                        screenPoint.z = potentialSource.transform.position.z - Camera.main.transform.position.z;
-                        dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
-                    }
-                    else
-                    {
+                        CHECK IF LINK IS POSSIBLE AND STUFF
                         // if not already snapped to
                         if (snappedNode != potentialTarget)
                         {
@@ -220,6 +214,18 @@ namespace EcoBuilder.NodeLink
                             potentialTarget = snappedNode;
                             potentialTarget.Outline();
                         }
+                    }
+                    else
+                    {
+                        if (potentialTarget != null)
+                        {
+                            potentialTarget.Unoutline();
+                            potentialTarget = null;
+                            dummyLink.Target = dummyTarget;
+                        }
+                        Vector3 screenPoint = ped.position;
+                        screenPoint.z = potentialSource.transform.position.z - Camera.main.transform.position.z;
+                        dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
                     }
                 }
                 else
@@ -287,17 +293,15 @@ namespace EcoBuilder.NodeLink
                     {
                         // add a new link
                         int i=potentialSource.Idx, j=potentialTarget.Idx;
-                        if (i != j && !potentialSource.IsTargetOnly && !potentialTarget.IsSourceOnly)
+                        if (i != j)
                         {
                             if (links[i,j] != null)
                             {
                                 RemoveLink(i, j);
-                                OnLinkRemoved.Invoke(i,j);
                             }
                             else
                             {
                                 AddLink(i, j);
-                                OnLinkAdded.Invoke(i, j);
                             }
                         }
                     }

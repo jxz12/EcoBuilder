@@ -17,31 +17,33 @@ namespace EcoBuilder.UI
         [Serializable]
         public class LevelDetails
         {
-            public int Idx;
-            public string Title;
-            public string Description;
+            public int idx;
+            public string title;
+            public string description;
 
             // constraints
-            public int NumProducers;
-            public int NumConsumers;
-            public int MinEdges;
-            public int MaxEdges;
-            public int MinChain;
-            public int MaxChain;
-            public int MinLoop;
-            public int MaxLoop;
+            public int numProducers;
+            public int numConsumers;
+            public int minEdges;
+            public int maxEdges;
+            public int minChain;
+            public int maxChain;
+            public int minLoop;
+            public int maxLoop;
 
             // vertices
-            public List<int> SpeciesIdxs;
-            public List<int> RandomSeeds;
-            public List<float> Sizes;
-            public List<float> Greeds;
+            public int numSpecies;
+            public List<bool> plants;
+            public List<float> sizes;
+            public List<float> greeds;
+            public List<int> randomSeeds;
             // edges
-            public List<int> Resources;
-            public List<int> Consumers;
+            public int numInteractions;
+            public List<int> resources;
+            public List<int> consumers;
 
             // -1 is locked, 0,1,2,3 unlocked plus number of stars
-            public int NumStars;
+            public int numStars;
         }
         [SerializeField] LevelDetails details;
         public LevelDetails Details {
@@ -67,13 +69,24 @@ namespace EcoBuilder.UI
 		[SerializeField] Button goButton;
 		[SerializeField] Text goText;
 
-        void FillUI()
+        void Start()
         {
-            numberText.text = Details.Idx.ToString();
-			title.text = Details.Title;
-			description.text = Details.Description;
-			producers.text = Details.NumProducers.ToString();
-			consumers.text = Details.NumConsumers.ToString();
+            int n = Details.numSpecies;
+            if (n != Details.randomSeeds.Count || n != Details.sizes.Count || n != Details.greeds.Count)
+                throw new Exception("num species and sizes or greeds do not match");
+
+            int m = Details.numInteractions;
+            if (m != Details.consumers.Count)
+                throw new Exception("num edge sources and targets do not match");
+
+            // TODO: check that constraints are possible too
+
+
+            numberText.text = Details.idx.ToString();
+			title.text = Details.title;
+			description.text = Details.description;
+			producers.text = Details.numProducers.ToString();
+			consumers.text = Details.numConsumers.ToString();
 
             goText.text = "Go!";
         }
@@ -82,8 +95,9 @@ namespace EcoBuilder.UI
         public void SaveFromScene(string incompleteSavePath, string fileExtension)
         {
             // saves Idx as file name
-            savefilePath = incompleteSavePath + "/" + Details.Idx + fileExtension;
-            FillUI();
+            savefilePath = incompleteSavePath + "/" + Details.idx + fileExtension;
+            SaveToFile();
+            // FillUI();
         }
 
         public bool LoadFromFile(string loadPath)
@@ -92,13 +106,13 @@ namespace EcoBuilder.UI
 
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(loadPath, FileMode.Open);
-            // TODO: catch some exception here if it doesn't deserialize a LevelDetails
             try
             {
                 Details = (LevelDetails)bf.Deserialize(file);
-                name = Details.Idx.ToString();
+                name = Details.idx.ToString();
                 file.Close();
-                FillUI();
+
+                // FillUI();
                 return true;
             }
             catch (SerializationException se)

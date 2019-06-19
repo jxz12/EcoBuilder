@@ -92,21 +92,22 @@ namespace EcoBuilder
         [SerializeField] UI.Level LevelPrefabDevOnly; // purely for development
         public UI.Level DefaultLevel { get { return Instantiate(LevelPrefabDevOnly); } }
 
-        public UI.Level ChosenLevel { get; private set; }
+        public UI.Level PlayedLevel { get; private set; }
         public void PlayLevel(UI.Level level)
         {
-            ChosenLevel = level;
+            PlayedLevel = level;
             GameManager.Instance.UnloadScene("Menu");
             GameManager.Instance.LoadScene("Play");
         }
-        public void SaveLevel(int numStars)
+        public void SavePlayedLevel(int numStars)
         {
             if (numStars < 0 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            if (numStars > ChosenLevel.Details.NumStars)
-                ChosenLevel.Details.NumStars = numStars;
-            ChosenLevel.SaveToFile();
+            if (numStars > PlayedLevel.Details.numStars)
+                PlayedLevel.Details.numStars = numStars;
+
+            PlayedLevel.SaveToFile();
         }
         public void SaveFoodWebToCsv(
             List<int> speciesIdxs, List<int> randomSeeds,

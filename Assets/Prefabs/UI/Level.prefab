@@ -1005,24 +1005,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   details:
-    Idx: 0
-    Title: Default
-    Description: How did you get here?
-    NumProducers: 10
-    NumConsumers: 10
-    MinEdges: 5
-    MaxEdges: -1
-    MinChain: 3
-    MaxChain: -1
-    MinLoop: 2
-    MaxLoop: -1
-    SpeciesIdxs: 
-    RandomSeeds: 
-    Sizes: []
-    Greeds: []
-    Resources: 
-    Consumers: 
-    NumStars: 0
+    idx: 0
+    title: Dev
+    description: How did you get here?
+    numProducers: 10
+    numConsumers: 10
+    minEdges: 5
+    maxEdges: -1
+    minChain: 3
+    maxChain: -1
+    minLoop: 2
+    maxLoop: -1
+    numSpecies: 2
+    plants: 0100
+    sizes:
+    - 0.5
+    - 0.5
+    greeds:
+    - 0.5
+    - 0.5
+    randomSeeds: 0000000001000000
+    numInteractions: 1
+    resources: 00000000
+    consumers: 01000000
+    numStars: 0
   showCard: {fileID: 9052016227622326694}
   thumbnail: {fileID: 3298662016124299586}
   numberText: {fileID: 3298662015470128372}

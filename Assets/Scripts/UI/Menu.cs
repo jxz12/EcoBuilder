@@ -64,7 +64,7 @@ namespace EcoBuilder.UI
                     Destroy(newLevel.gameObject);
                 }
             }
-            levels = new List<Level>(levels.OrderBy(x=>x.Details.Idx));
+            levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
             foreach (Level level in levels)
             {
                 level.transform.SetParent(levelGrid.transform, false);
@@ -77,10 +77,9 @@ namespace EcoBuilder.UI
             foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
             {
                 level.SaveFromScene(Application.persistentDataPath, ".gd");
-                level.SaveToFile();
                 levels.Add(level);
             }
-            levels = new List<Level>(levels.OrderBy(x=>x.Details.Idx));
+            levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
             UnlockLevels();
         }
 
@@ -88,23 +87,23 @@ namespace EcoBuilder.UI
         {
             for (int i=0; i<levels.Count; i++)
             {
-                if (levels[i].Details.NumStars == -1)
+                if (levels[i].Details.numStars == -1)
                 {
                     levels[i].Lock();
                 }
                 else
                 {
                     levels[i].Unlock();
-                    levels[i].SetStarsSprite(starImages[levels[i].Details.NumStars]);
+                    levels[i].SetStarsSprite(starImages[levels[i].Details.numStars]);
                 }
             }
             // unlock new level if possible
             // TODO: probably move this into gamemanager
             for (int i=0; i<levels.Count-1; i++)
             {
-                if (levels[i].Details.NumStars > 0 && levels[i+1].Details.NumStars == -1)
+                if (levels[i].Details.numStars > 0 && levels[i+1].Details.numStars == -1)
                 {
-                    levels[i+1].Details.NumStars = 0;
+                    levels[i+1].Details.numStars = 0;
                     levels[i+1].Unlock();
                     break;
                 }

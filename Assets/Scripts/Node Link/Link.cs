@@ -13,7 +13,8 @@ namespace EcoBuilder.NodeLink
             get { return lr.widthMultiplier; }
             set { lr.widthMultiplier = value; }
         }
-        public float TileSpeed { get; set; } = .01f;
+        public float TileSpeed { get; set; }// = .01f;
+        public bool Removable { get; set; } = true;
 
         public void Init(Node source, Node target, bool curved)
         {

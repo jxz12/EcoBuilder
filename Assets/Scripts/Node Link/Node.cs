@@ -7,13 +7,14 @@ namespace EcoBuilder.NodeLink
     {
         public int Idx { get; private set; }
         public Color Col {
-            get { return mr!=null? mr.material.color : Color.white; }
+            get { return mr!=null? mr.material.color : Color.black; }
             set { if (mr!=null) mr.material.color = value; }
         }
         public Vector3 TargetPos { get; set; }
-        public float TargetSize { get; set; } = .5f;
-        public bool IsSourceOnly { get; set; }
-        public bool IsTargetOnly { get; set; }
+        public float TargetSize { get; set; }// = .5f;
+        public bool CanBeSource { get; set; } = true;
+        public bool CanBeTarget { get; set; } = true;
+        public bool Removable { get; set; } = true;
 
         Animator anim;
         MeshRenderer mr;

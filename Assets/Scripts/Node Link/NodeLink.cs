@@ -86,12 +86,12 @@ namespace EcoBuilder.NodeLink
 
             Node newNode = Instantiate(nodePrefab, nodesParent);
 
-            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-.5f, -1.5f));
+            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
             // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
 
-            FocusNode(idx);
+            // FocusNode(idx);
 
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
@@ -134,7 +134,7 @@ namespace EcoBuilder.NodeLink
             constraintsSolved = false;
         }
 
-        private void AddLink(int i, int j)
+        public void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j], true);
@@ -144,8 +144,9 @@ namespace EcoBuilder.NodeLink
             adjacency[j].Add(i);
 
             constraintsSolved = false;
+            OnLinkAdded.Invoke(i, j);
         }
-        private void RemoveLink(int i, int j)
+        public void RemoveLink(int i, int j)
         {
             Destroy(links[i, j].gameObject);
             links.RemoveAt(i, j);
@@ -156,15 +157,26 @@ namespace EcoBuilder.NodeLink
             }
 
             constraintsSolved = false;
+            OnLinkRemoved.Invoke(i,j);
         }
-        public void SetNodeAsSourceOnly(int idx, bool isSource) // basal
+
+        public void SetIfNodeCanBeSource(int idx, bool canBeSource) // basal
         {
-            nodes[idx].IsSourceOnly = isSource;
+            nodes[idx].CanBeSource = canBeSource;
         }
-        public void SetNodeAsTargetOnly(int idx, bool isTarget) // apex predator
+        public void SetIfNodeCanBeTarget(int idx, bool canBeTarget) // apex predator
         {
-            nodes[idx].IsTargetOnly = isTarget;
+            nodes[idx].CanBeTarget = canBeTarget;
         }
+        public void SetIfNodeRemovable(int idx, bool removable)
+        {
+            nodes[idx].Removable = removable;
+        }
+        public void SetIfLinkRemovable(int i, int j, bool removable)
+        {
+            links[i,j].Removable = removable;
+        }
+
 
         [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.05f;
         [SerializeField] float logRangeMultiplier=1.5f;

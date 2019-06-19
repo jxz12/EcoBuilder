@@ -12,12 +12,12 @@ namespace EcoBuilder.UI
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
         public event Action<int, GameObject> OnSpawned;
-        public event Action<int, bool> OnProducerSet;
+        public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
 
-        public event Action OnIncubated;
-        public event Action OnUnincubated;
+        // public event Action OnIncubated;
+        // public event Action OnUnincubated;
 
         [SerializeField] Button goButton;
         [SerializeField] Button producerButton;
@@ -42,8 +42,7 @@ namespace EcoBuilder.UI
             public float BodySize { get; set; }
             public float Greediness { get; set; }
 
-            public GameObject Object { get; set; }
-            public bool Spawned { get; set; }
+            public GameObject GObject { get; set; }
 
             public Species(int idx, bool isProducer, float size, float greed)
             {
@@ -52,13 +51,24 @@ namespace EcoBuilder.UI
                 BodySize = size;
                 Greediness = greed;
                 RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
-                Spawned = false;
+            }
+            // to set seed from file
+            public Species(int idx, bool isProducer, float size, float greed, int seed)
+                : this(idx, isProducer, size, greed)
+            {
+                RandomSeed = seed;
+            }
+
+            // for refreshing a species
+            public void RerollSeed()
+            {
+                RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
             }
         }
 
         Dictionary<int, Species> spawnedSpecies = new Dictionary<int, Species>();
         int nextIdx = 0;
-        Species inspected = null;
+        Species incubated = null, inspected = null;
 
         void Start()
         {
@@ -69,123 +79,34 @@ namespace EcoBuilder.UI
             consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
 
-            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize());
-            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed());
+            sizeSlider.onValueChanged.AddListener(x=> SetSize());
+            greedSlider.onValueChanged.AddListener(x=> SetGreed());
         }
-
-        int numProducers=0, maxProducers=int.MaxValue, numConsumers=0, maxConsumers=int.MaxValue;
-        public void ConstrainTypes(int producers, int consumers)
-        {
-            if (numProducers < 0 || numConsumers < 0)
-                throw new Exception("Cannot have negative numbers of species");
-            
-            maxProducers = producers;
-            maxConsumers = consumers;
-            producerCount.text = maxProducers.ToString();
-            consumerCount.text = maxConsumers.ToString();
-        }
-
 
         void IncubateNew(bool isProducer)
         {
-            Species s = new Species(nextIdx, isProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);
-            s.Object = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            s.Object.transform.SetParent(incubatedParent, false);
-            nameText.text = s.Object.name;
-
-            inspected = s;
-            OnIncubated.Invoke();
-        }
-        void RefreshIncubated()
-        {
-            if (inspected == null || inspected.Spawned)
-                throw new Exception("nothing incubated");
-
-            Destroy(inspected.Object);
-            inspected = new Species(inspected.Idx, inspected.IsProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);
-            inspected.Object = factory.GenerateSpecies(inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-            inspected.Object.transform.SetParent(incubatedParent, false);
-            nameText.text = inspected.Object.name;
-        }
-        void SetInspectedSize()
-        {
-            if (inspected == null)
-                throw new Exception("nothing inspected");
-
-            inspected.BodySize = sizeSlider.normalizedValue;
-            factory.RegenerateSpecies(inspected.Object, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-            if (inspected.Spawned)
-                OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
-        }
-        void SetInspectedGreed()
-        {
-            if (inspected == null)
-                throw new Exception("nothing inspected");
-
-            inspected.Greediness = greedSlider.normalizedValue;
-            factory.RegenerateSpecies(inspected.Object, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-            if (inspected.Spawned)
-                OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
-        }
-        public void InspectSpecies(int idx)
-        {
-            if (inspected != null && !inspected.Spawned) // if incubating
-            {
-                Destroy(inspected.Object);
-                OnUnincubated.Invoke();
-            }
-
-            inspected = spawnedSpecies[idx];
-
-            nameText.text = inspected.Object.name;
-
-            // this is ugly as heck, but sliders are stupid
-            sizeSlider.onValueChanged.RemoveListener(x=> SetInspectedSize());
-            sizeSlider.normalizedValue = inspected.BodySize;
-            sizeSlider.onValueChanged.AddListener(x=> SetInspectedSize());
-            greedSlider.onValueChanged.RemoveListener(x=> SetInspectedGreed());
-            greedSlider.normalizedValue = inspected.Greediness;
-            greedSlider.onValueChanged.AddListener(x=> SetInspectedGreed());
-
-            GetComponent<Animator>().SetTrigger("Inspect");
-        }
-        public void Uninspect()
-        {
             if (inspected != null)
             {
-                if (!inspected.Spawned)
-                {
-                    Destroy(inspected.Object);
-                    OnUnincubated.Invoke();
-                }
-                inspected = null; // lol memory leak but not really
-                GetComponent<Animator>().SetTrigger("Uninspect");
+                inspected = null;
             }
+            Species s = new Species(nextIdx, isProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);
+            s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
+            s.GObject.transform.SetParent(incubatedParent, false);
+            nameText.text = s.GObject.name;
+
+            incubated = s;
+            // OnIncubated.Invoke();
         }
-        public void TrySpawnNew()
+        void Spawn(Species toSpawn)
         {
-            if (!dragging)
-                return;
+            spawnedSpecies[toSpawn.Idx] = toSpawn;
+            OnSpawned.Invoke(toSpawn.Idx, toSpawn.GObject); // must be invoked first
 
-            if (inspected == null)
-                throw new Exception("nothing inspected");
-            if (inspected.Spawned)
-                throw new Exception("inspected already spawned");
-            
-            OnSpawned.Invoke(inspected.Idx, inspected.Object); // must be invoked first
+            OnIsProducerSet.Invoke(toSpawn.Idx, toSpawn.IsProducer);
+            OnSizeSet.Invoke(toSpawn.Idx, toSpawn.BodySize);
+            OnGreedSet.Invoke(toSpawn.Idx, toSpawn.Greediness);
 
-            OnProducerSet.Invoke(inspected.Idx, inspected.IsProducer);
-            OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
-            OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
-
-            inspected.Spawned = true;
-            spawnedSpecies[inspected.Idx] = inspected;
-            nextIdx += 1;
-
-            GetComponent<Animator>().SetTrigger("Spawn");
-            // OnUnincubated.Invoke();
-
-            if (inspected.IsProducer)
+            if (toSpawn.IsProducer)
             {
                 numProducers += 1;
                 producerCount.text = (maxProducers-numProducers).ToString();
@@ -199,36 +120,193 @@ namespace EcoBuilder.UI
                 if (numConsumers >= maxConsumers)
                     consumerButton.interactable = false;
             }
-            // TODO: do this better with animation
             if (numProducers==maxProducers && numConsumers==maxConsumers)
             {
-                goImage.color = Color.white;
-                goImage.sprite = finishFlag;
-                // GetComponent<Animator>().SetTrigger("IdleFinish");
+                goButton.interactable = false;
+            }
+            nextIdx += 1;
+        }
+
+        void RefreshIncubated()
+        {
+            if (incubated == null)
+                throw new Exception("nothing incubated");
+
+            incubated.RerollSeed();
+            factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+            nameText.text = incubated.GObject.name;
+        }
+        void SetSize()
+        {
+            if (incubated != null)
+            {
+                incubated.BodySize = sizeSlider.normalizedValue;
+                factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+            }
+            else if (inspected != null)
+            {
+                inspected.BodySize = sizeSlider.normalizedValue;
+                factory.RegenerateSpecies(inspected.GObject, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+                OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
             }
         }
-        [SerializeField] Image goImage;
-        [SerializeField] Sprite finishFlag;
+        void SetGreed()
+        {
+            if (incubated != null)
+            {
+                incubated.Greediness = greedSlider.normalizedValue;
+                factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+            }
+            else if (inspected != null)
+            {
+                inspected.Greediness = greedSlider.normalizedValue;
+                factory.RegenerateSpecies(inspected.GObject, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+                OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
+            }
+        }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /////////////////////
+        // external stuff
+
+        int numProducers=0, maxProducers=int.MaxValue, numConsumers=0, maxConsumers=int.MaxValue;
+        public void ConstrainTypes(int producers, int consumers)
+        {
+            if (numProducers < 0 || numConsumers < 0)
+                throw new Exception("Cannot have negative numbers of species");
+            
+            maxProducers = producers;
+            maxConsumers = consumers;
+            producerCount.text = maxProducers.ToString();
+            consumerCount.text = maxConsumers.ToString();
+        }
+
+        // for loading from level
+        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed)
+        {
+            if (inspected != null)
+                throw new Exception("somehow inspecting??");
+            if (size < 0 || size > 1)
+                throw new Exception("size not in bounds");
+            if (greed < 0 || greed > 1)
+                throw new Exception("greed not in bounds");
+
+            var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
+            toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
+            
+            Spawn(toSpawn);
+            return toSpawn.Idx;
+        }
+        public void TrySpawnIncubated()
+        {
+            // only allow when dragging the incubator
+            if (!dragging)
+                return;
+            if (incubated == null)
+                throw new Exception("nothing incubated");
+            
+            Spawn(incubated);
+
+            GetComponent<Animator>().SetTrigger("Spawn");
+            inspected = incubated;
+            incubated = null;
+            // OnUnincubated.Invoke();
+        }
         public void UnspawnSpecies(int idx)
         {
-            if (spawnedSpecies.Count > 0)
+            if (!spawnedSpecies.ContainsKey(idx))
+                throw new Exception("idx not spawned");
+
+            if (inspected == spawnedSpecies[idx])
             {
-                if (inspected == spawnedSpecies[idx])
-                {
-                    GetComponent<Animator>().SetTrigger("Uninspect");
-                }
-                spawnedSpecies.Remove(nextIdx);
+                GetComponent<Animator>().SetTrigger("Uninspect");
+                inspected = null;
+            }
+
+            if (spawnedSpecies[idx].IsProducer)
+            {
+                if (numProducers == maxProducers)
+                    producerButton.interactable = true;
+
+                numProducers -= 1;
+            }
+            else
+            {
+                if (numConsumers == maxConsumers)
+                    consumerButton.interactable = true;
+
+                numConsumers -= 1;
+            }
+            goButton.interactable = true;
+
+            spawnedSpecies.Remove(idx);
+        }
+
+        public void InspectSpecies(int idx)
+        {
+            if (incubated != null)
+            {
+                Destroy(incubated.GObject);
+                incubated = null;
+                // OnUnincubated.Invoke();
+            }
+
+            inspected = spawnedSpecies[idx];
+
+            nameText.text = inspected.GObject.name;
+
+            // this is ugly as heck, but sliders are stupid
+            sizeSlider.onValueChanged.RemoveListener(x=> SetSize());
+            sizeSlider.normalizedValue = inspected.BodySize;
+            sizeSlider.onValueChanged.AddListener(x=> SetSize());
+            greedSlider.onValueChanged.RemoveListener(x=> SetGreed());
+            greedSlider.normalizedValue = inspected.Greediness;
+            greedSlider.onValueChanged.AddListener(x=> SetGreed());
+
+            GetComponent<Animator>().SetTrigger("Inspect");
+        }
+        public void Uninspect()
+        {
+            if (inspected != null)
+            {
+                inspected = null;
+                GetComponent<Animator>().SetTrigger("Uninspect");
+            }
+            else if (incubated != null)
+            {
+                Destroy(incubated.GObject);
+                incubated = null; // lol memory leak but not really
+                GetComponent<Animator>().SetTrigger("Uninspect");
+                // OnUnincubated.Invoke();
             }
         }
+
+
+
+
+
+
+        //////////////////////
+        // dragging incubated
 
         bool dragging;
         Vector2 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (inspected != null && !inspected.Spawned)
+            if (incubated != null)
             {
-                // inspected.Object.transform.SetParent(null, true);
                 dragging = true;
                 originalPos = incubatedParent.position;
             }
