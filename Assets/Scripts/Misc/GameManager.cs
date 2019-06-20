@@ -96,24 +96,32 @@ namespace EcoBuilder
         public void PlayLevel(UI.Level level)
         {
             PlayedLevel = level;
-            GameManager.Instance.UnloadScene("Menu");
-            GameManager.Instance.LoadScene("Play");
+            UnloadScene("Menu");
+            LoadScene("Play");
+        }
+        public void ReplayLevel()
+        {
+            UnloadScene("Play");
+            LoadScene("Play");
         }
         public void SavePlayedLevel(int numStars)
         {
             if (numStars < 0 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            if (PlayedLevel == null)
+            if (PlayedLevel != null)
+            {
+                PlayedLevel.ShowNavigation();
+
+                if (numStars > PlayedLevel.Details.numStars)
+                    PlayedLevel.Details.numStars = numStars;
+
+                PlayedLevel.SaveToFile();
+            }
+            else
             {
                 print("HOW DID YOU GET HERE");
-                return;
             }
-
-            if (numStars > PlayedLevel.Details.numStars)
-                PlayedLevel.Details.numStars = numStars;
-
-            PlayedLevel.SaveToFile();
         }
         public void SaveFoodWebToCsv(
             List<int> speciesIdxs, List<int> randomSeeds,

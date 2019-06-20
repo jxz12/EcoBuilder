@@ -61,8 +61,9 @@ namespace EcoBuilder
             ///////////////////
             // set up level
 
-            // var level = GameManager.Instance.DefaultLevel; // only use for dev
-            var level = GameManager.Instance.PlayedLevel; // only use for dev
+            var level = GameManager.Instance.PlayedLevel;
+            if (level == null)
+                level = GameManager.Instance.DefaultLevel; // only for dev
 
             status.SlotInLevel(level);
             status.ConstrainTypes(level.Details.numProducers, level.Details.numConsumers);

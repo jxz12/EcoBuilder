@@ -5,24 +5,20 @@ namespace EcoBuilder.UI
 {
 	public class Constraint : MonoBehaviour
 	{
-		[SerializeField] Text numberDisplay;
+		[SerializeField] Text number;
+		[SerializeField] Image icon;
 		int constraintLimit, currentValue;
 		public void Constrain(int limit)
 		{
 			constraintLimit = limit;
-			numberDisplay.text = limit.ToString();
+			number.text = limit.ToString();
 		}
 		public void Display(int value)
 		{
 			currentValue = value;
-			numberDisplay.text = value.ToString();
+			number.text = value.ToString();
 			IsSatisfied = (currentValue >= constraintLimit);
 		}
 		public bool IsSatisfied { get; private set; }
-		public bool CheckSatisfied()
-		{
-			return true;
-		}
-
 	}
 }

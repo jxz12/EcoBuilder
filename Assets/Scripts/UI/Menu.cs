@@ -51,10 +51,10 @@ namespace EcoBuilder.UI
                 Destroy(level.gameObject);
             }
 
-            foreach (string file in Directory.GetFiles(Application.persistentDataPath))
+            foreach (string filepath in Directory.GetFiles(Application.persistentDataPath))
             {
                 Level newLevel = Instantiate(levelPrefab);
-                bool successful = newLevel.LoadFromFile(file);
+                bool successful = newLevel.LoadFromFile(filepath);
                 if (successful)
                 {
                     levels.Add(newLevel);
@@ -80,7 +80,7 @@ namespace EcoBuilder.UI
                 levels.Add(level);
             }
             levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
-            UnlockLevels();
+            // UnlockLevels();
         }
 
         void UnlockLevels()
@@ -98,15 +98,16 @@ namespace EcoBuilder.UI
                 }
             }
             // unlock new level if possible
-            // TODO: probably move this into gamemanager
+            bool unlocked = false;
             for (int i=0; i<levels.Count-1; i++)
             {
-                if (levels[i].Details.numStars > 0 && levels[i+1].Details.numStars == -1)
+                if (!unlocked && levels[i].Details.numStars > 0 && levels[i+1].Details.numStars == -1)
                 {
                     levels[i+1].Details.numStars = 0;
                     levels[i+1].Unlock();
-                    break;
+                    unlocked = true;
                 }
+                levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
             }
         }
     }

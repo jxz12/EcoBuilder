@@ -286,10 +286,11 @@ namespace EcoBuilder.UI
         }
         public void Uninspect()
         {
+            GetComponent<Animator>().SetTrigger("Uninspect");
             if (inspected != null)
             {
                 inspected = null;
-                GetComponent<Animator>().SetTrigger("Uninspect");
+                // GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else if (incubated != null)
             {

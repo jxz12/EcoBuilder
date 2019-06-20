@@ -72,6 +72,10 @@ namespace EcoBuilder.UI
 		[SerializeField] Button goButton;
 		[SerializeField] Text goText;
 
+        // navigation
+        [SerializeField] GameObject navigation;
+        [SerializeField] RectTransform nextLevelParent;
+
         void Start()
         {
             int n = Details.numSpecies;
@@ -90,7 +94,6 @@ namespace EcoBuilder.UI
 			producers.text = Details.numProducers.ToString();
 			consumers.text = Details.numConsumers.ToString();
 
-            goText.text = "Go!";
         }
 
         public void SaveFromScene(string incompleteSavePath, string fileExtension)
@@ -112,6 +115,7 @@ namespace EcoBuilder.UI
                 name = Details.idx.ToString();
                 file.Close();
 
+                goText.text = "Go!";
                 return true;
             }
             catch (SerializationException se)
@@ -135,9 +139,19 @@ namespace EcoBuilder.UI
                 print(dnfe);
             }
         }
+        IEnumerator LerpToSize(int numFrames, Vector2 goal)
+        {
+            var rect = GetComponent<RectTransform>();
+            Vector2 begin = rect.sizeDelta;
+            for (int i=0; i<numFrames; i++)
+            {
+                rect.sizeDelta = Vector3.Lerp(begin, goal, (float)i/numFrames);
+                yield return null;
+            }
+            rect.sizeDelta = goal;
+            descriptionArea.verticalNormalizedPosition = 1;
+        }
 
-
-        // TODO: tween these things
         Transform thumbnailedParent;
         Vector2 thumbnailedPosition;
 		public void ShowCard()
@@ -152,11 +166,9 @@ namespace EcoBuilder.UI
             transform.SetParent(GameManager.Instance.Overlay.transform, false);
             GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             // TODO: magic numbers
-            GetComponent<RectTransform>().sizeDelta = new Vector2(400,750);
-
-            descriptionArea.verticalNormalizedPosition = 1;
+            StartCoroutine(LerpToSize(30, new Vector2(400,750)));
 		}
-		public void HideCard()
+		public void ShowThumbnail()
 		{
             card.SetActive(false);
             thumbnail.SetActive(true);
@@ -165,8 +177,29 @@ namespace EcoBuilder.UI
             transform.SetParent(thumbnailedParent, false);
             GetComponent<RectTransform>().anchoredPosition = thumbnailedPosition;
             // TODO: magic numbers
-            GetComponent<RectTransform>().sizeDelta = new Vector2(100,100);
+            StartCoroutine(LerpToSize(30, new Vector2(100,100)));
 		}
+        public void ShowNavigation()
+        {
+            thumbnail.SetActive(false);
+            navigation.SetActive(true);
+            showCard.interactable = false;
+
+            transform.SetParent(GameManager.Instance.Overlay.transform, false);
+            // TODO: magic numbers
+            GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -300);
+            StartCoroutine(LerpToSize(30, new Vector2(350,100)));
+        }
+        public void BackToMenu()
+        {
+            // TODO: 'are you sure' option
+            Destroy(gameObject);
+            GameManager.Instance.ReturnToMenu();
+        }
+        public void Replay()
+        {
+            GameManager.Instance.ReplayLevel();
+        }
 
 		public void StartEndGame()
 		{
@@ -181,12 +214,21 @@ namespace EcoBuilder.UI
                 GetComponent<RectTransform>().sizeDelta = new Vector2(100,100);
                 goText.text = "Quit?";
 				GameManager.Instance.PlayLevel(this);
+
+                Level newLevel = Instantiate(this);
+                bool successful = newLevel.LoadFromFile(Details.nextLevelPath);
+                if (successful)
+                {
+                    newLevel.transform.SetParent(nextLevelParent, false);
+                }
+                else
+                {
+                    print("TODO: credits?");
+                }
 			}
 			else
 			{
-				// TODO: 'are you sure' option
-                Destroy(gameObject);
-				GameManager.Instance.ReturnToMenu();
+                BackToMenu();
 			}
 		}
 
