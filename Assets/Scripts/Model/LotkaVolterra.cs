@@ -212,6 +212,15 @@ namespace EcoBuilder.Model
             // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
             // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
+            // solve flux values
+            for (int i=0; i<internInteractions.Count; i++)
+            {
+                foreach (int j in internInteractions[i])
+                {
+                    flux[i,j] *= abundance[i];
+                }
+            }
+
             for (int idx=0; idx<abundance.Count; idx++)
             {
                 if (abundance[idx] <= 0)
@@ -228,7 +237,19 @@ namespace EcoBuilder.Model
         {
             int i = externToIntern[res];
             int j = externToIntern[con];
-            return flux[i,j] * abundance[i];
+            return flux[i,j];
+        }
+        public double GetTotalFlux()
+        {
+            double total = 0;
+            for (int i=0; i<internInteractions.Count; i++)
+            {
+                foreach (int j in internInteractions[i])
+                {
+                    total += flux[i,j];
+                }
+            }
+            return total;
         }
 
         ////////////////////

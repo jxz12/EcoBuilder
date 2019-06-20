@@ -104,6 +104,12 @@ namespace EcoBuilder
             if (numStars < 0 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
+            if (PlayedLevel == null)
+            {
+                print("HOW DID YOU GET HERE");
+                return;
+            }
+
             if (numStars > PlayedLevel.Details.numStars)
                 PlayedLevel.Details.numStars = numStars;
 
@@ -115,7 +121,7 @@ namespace EcoBuilder
             List<int> resources, List<int> consumers,
             Dictionary<string, double> parameterisation)
         {
-            // TODO: save a .csv to record the foodweb
+            print("TODO: save a .csv to record the foodweb");
         }
         public void ReturnToMenu()
         {

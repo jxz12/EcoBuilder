@@ -7,7 +7,7 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float layoutTween=.05f, sizeTween=.05f;
+        [SerializeField] float layoutTween=.05f, sizeTween=.05f, zFlatTween=.01f;
         void TweenNodes()
         {
             Vector3 centroid = Vector3.zero;
@@ -16,34 +16,38 @@ namespace EcoBuilder.NodeLink
                 // get average of all positions, and center
                 foreach (Node no in nodes)
                 {
-                    Vector3 pos = no.TargetPos;
+                    Vector3 pos = no.GoalPos;
                     centroid += pos;
                 }
                 centroid /= nodes.Count;
                 centroid.y = 0;
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
 
-                // // TODO: do this and fix magic numbers here
-                // graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
-                // graphParent.localScale = Vector3.Slerp(graphParent.localScale, 150*Vector3.one, layoutTween);
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
             }
             else
             {
                 // center to focus
-                centroid = focus.TargetPos;
-                centroid.y = 0;
+                centroid = focus.GoalPos;
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
+                centroid.y = 0;
+
+                // TODO: magic numbers here, have a max height or something
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.up*200, layoutTween);
             }
             foreach (Node no in nodes)
             {
-                no.TargetPos = 
-                    Vector3.Lerp(no.TargetPos, no.TargetPos-centroid, 1);
+                no.GoalPos = 
+                    Vector3.Lerp(no.GoalPos, no.GoalPos-centroid, 1);
+
+                no.GoalPos = new Vector3(no.GoalPos.x, no.GoalPos.y,
+                    Mathf.Lerp(no.GoalPos.z, 0, zFlatTween));
 
                 no.transform.localPosition =
-                    Vector3.Lerp(no.transform.localPosition, no.TargetPos, layoutTween);
+                    Vector3.Lerp(no.transform.localPosition, no.GoalPos, layoutTween);
 
                 no.transform.localScale =
-                    Vector3.Lerp(no.transform.localScale, no.TargetSize*Vector3.one, sizeTween);
+                    Vector3.Lerp(no.transform.localScale, no.GoalSize*Vector3.one, sizeTween);
             }
         }
 
@@ -62,7 +66,7 @@ namespace EcoBuilder.NodeLink
             {
                 if (i != j)
                 {
-                    Vector3 X_ij = nodes[i].TargetPos - nodes[j].TargetPos;
+                    Vector3 X_ij = nodes[i].GoalPos - nodes[j].GoalPos;
                     float mag = X_ij.magnitude;
 
                     if (d_j.ContainsKey(j)) // if there is a path between the two
@@ -72,8 +76,8 @@ namespace EcoBuilder.NodeLink
 
                         Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
-                        nodes[i].TargetPos -= mu * r;
-                        nodes[j].TargetPos += mu * r;
+                        nodes[i].GoalPos -= mu * r;
+                        nodes[j].GoalPos += mu * r;
                     }
                     else // otherwise try to move the vertices at least a distance of 1 away
                     {
@@ -83,12 +87,12 @@ namespace EcoBuilder.NodeLink
 
                             Vector3 r = ((mag-1)/2) * (X_ij/mag);
                             r.y = 0; // use to keep y position
-                            nodes[i].TargetPos -= mu * r;
-                            nodes[j].TargetPos += mu * r;
+                            nodes[i].GoalPos -= mu * r;
+                            nodes[j].GoalPos += mu * r;
                         }
                     }
                 }
-                // nodes[i].TargetPos += jitterStep * UnityEngine.Random.insideUnitSphere;
+                // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
             }
         }
 

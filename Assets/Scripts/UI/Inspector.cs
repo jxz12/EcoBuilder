@@ -15,17 +15,17 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
+        public event Action OnFinished;
 
         // public event Action OnIncubated;
         // public event Action OnUnincubated;
 
-        [SerializeField] Button goButton;
+        [SerializeField] Button startButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
-        [SerializeField] Text producerCount;
-        [SerializeField] Text consumerCount;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
+        [SerializeField] Button finishButton;
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
@@ -42,7 +42,9 @@ namespace EcoBuilder.UI
             public float BodySize { get; set; }
             public float Greediness { get; set; }
 
-            public GameObject GObject { get; set; }
+            // TODO: separate this into greed and size?
+            public bool Editable { get; set; } = true;
+            public GameObject GObject { get; set; } = null;
 
             public Species(int idx, bool isProducer, float size, float greed)
             {
@@ -72,12 +74,13 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            goButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Go"));
+            startButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Start"));
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
+            finishButton.onClick.AddListener(()=> OnFinished.Invoke());
 
             sizeSlider.onValueChanged.AddListener(x=> SetSize());
             greedSlider.onValueChanged.AddListener(x=> SetGreed());
@@ -94,6 +97,9 @@ namespace EcoBuilder.UI
             s.GObject.transform.SetParent(incubatedParent, false);
             nameText.text = s.GObject.name;
 
+            sizeSlider.interactable = true;
+            greedSlider.interactable = true;
+
             incubated = s;
             // OnIncubated.Invoke();
         }
@@ -105,25 +111,6 @@ namespace EcoBuilder.UI
             OnIsProducerSet.Invoke(toSpawn.Idx, toSpawn.IsProducer);
             OnSizeSet.Invoke(toSpawn.Idx, toSpawn.BodySize);
             OnGreedSet.Invoke(toSpawn.Idx, toSpawn.Greediness);
-
-            if (toSpawn.IsProducer)
-            {
-                numProducers += 1;
-                producerCount.text = (maxProducers-numProducers).ToString();
-                if (numProducers >= maxProducers)
-                    producerButton.interactable = false;
-            }
-            else
-            {
-                numConsumers += 1;
-                consumerCount.text = (maxConsumers-numConsumers).ToString();
-                if (numConsumers >= maxConsumers)
-                    consumerButton.interactable = false;
-            }
-            if (numProducers==maxProducers && numConsumers==maxConsumers)
-            {
-                goButton.interactable = false;
-            }
             nextIdx += 1;
         }
 
@@ -161,7 +148,7 @@ namespace EcoBuilder.UI
             {
                 inspected.Greediness = greedSlider.normalizedValue;
                 factory.RegenerateSpecies(inspected.GObject, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-                OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
+                OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
             }
         }
 
@@ -181,18 +168,6 @@ namespace EcoBuilder.UI
         /////////////////////
         // external stuff
 
-        int numProducers=0, maxProducers=int.MaxValue, numConsumers=0, maxConsumers=int.MaxValue;
-        public void ConstrainTypes(int producers, int consumers)
-        {
-            if (numProducers < 0 || numConsumers < 0)
-                throw new Exception("Cannot have negative numbers of species");
-            
-            maxProducers = producers;
-            maxConsumers = consumers;
-            producerCount.text = (maxProducers-numProducers).ToString();
-            consumerCount.text = (maxConsumers-numConsumers).ToString();
-        }
-
         // for loading from level
         public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed)
         {
@@ -204,6 +179,7 @@ namespace EcoBuilder.UI
                 throw new Exception("greed not in bounds");
 
             var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
+            toSpawn.Editable = false;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
             Spawn(toSpawn);
@@ -229,29 +205,50 @@ namespace EcoBuilder.UI
             if (!spawnedSpecies.ContainsKey(idx))
                 throw new Exception("idx not spawned");
 
+            GetComponent<Animator>().SetBool("All Spawned",  false);
             if (inspected == spawnedSpecies[idx])
             {
                 GetComponent<Animator>().SetTrigger("Uninspect");
                 inspected = null;
             }
 
-            if (spawnedSpecies[idx].IsProducer)
+            spawnedSpecies.Remove(idx);
+        }
+        public void SetProducersAvailable(bool available)
+        {
+            if (available)
             {
-                if (numProducers == maxProducers)
-                    producerButton.interactable = true;
-
-                numProducers -= 1;
+                producerButton.interactable = true;
+                startButton.interactable = true;
             }
             else
             {
-                if (numConsumers == maxConsumers)
-                    consumerButton.interactable = true;
-
-                numConsumers -= 1;
+                producerButton.interactable = false;
+                if (consumerButton.interactable == false)
+                {
+                    GetComponent<Animator>().SetBool("All Spawned",  true);
+                }
             }
-            goButton.interactable = true;
-
-            spawnedSpecies.Remove(idx);
+        }
+        public void SetConsumersAvailable(bool available)
+        {
+            if (available)
+            {
+                consumerButton.interactable = true;
+                startButton.interactable = true;
+            }
+            else
+            {
+                consumerButton.interactable = false;
+                if (producerButton.interactable == false)
+                {
+                    GetComponent<Animator>().SetBool("All Spawned",  true);
+                }
+            }
+        }
+        public void SetConstraintsMet(bool met)
+        {
+            GetComponent<Animator>().SetBool("Constraints Met", met);
         }
 
         public void InspectSpecies(int idx)
@@ -274,6 +271,17 @@ namespace EcoBuilder.UI
             greedSlider.normalizedValue = inspected.Greediness;
             greedSlider.onValueChanged.AddListener(x=> SetGreed());
 
+            if (inspected.Editable)
+            {
+                sizeSlider.interactable = true;
+                greedSlider.interactable = true;
+            }
+            else
+            {
+                sizeSlider.interactable = false;
+                greedSlider.interactable = false;
+            }
+
             GetComponent<Animator>().SetTrigger("Inspect");
         }
         public void Uninspect()
@@ -290,6 +298,11 @@ namespace EcoBuilder.UI
                 GetComponent<Animator>().SetTrigger("Uninspect");
                 // OnUnincubated.Invoke();
             }
+        }
+        public void Hide()
+        {
+            print("TODO: hide");
+            // GetComponent<Animator>().SetTrigger("Hide");
         }
 
 
@@ -330,9 +343,5 @@ namespace EcoBuilder.UI
                 incubatedParent.position = originalPos;
             }
         }
-		public void Finish()
-		{
-			GetComponent<Animator>().SetTrigger("Finish");
-		}
     }
 }

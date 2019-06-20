@@ -43,7 +43,10 @@ namespace EcoBuilder.UI
             public List<int> consumers;
 
             // -1 is locked, 0,1,2,3 unlocked plus number of stars
+            public float targetFlux;
             public int numStars;
+            public string savefilePath;
+            public string nextLevelPath;
         }
         [SerializeField] LevelDetails details;
         public LevelDetails Details {
@@ -90,18 +93,16 @@ namespace EcoBuilder.UI
             goText.text = "Go!";
         }
 
-        [SerializeField] string savefilePath; // serialized just for me to see
         public void SaveFromScene(string incompleteSavePath, string fileExtension)
         {
             // saves Idx as file name
-            savefilePath = incompleteSavePath + "/" + Details.idx + fileExtension;
+            Details.savefilePath = incompleteSavePath + "/" + Details.idx + fileExtension;
             SaveToFile();
-            // FillUI();
         }
 
         public bool LoadFromFile(string loadPath)
         {
-            savefilePath = loadPath;
+            Details.savefilePath = loadPath;
 
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(loadPath, FileMode.Open);
@@ -111,7 +112,6 @@ namespace EcoBuilder.UI
                 name = Details.idx.ToString();
                 file.Close();
 
-                // FillUI();
                 return true;
             }
             catch (SerializationException se)
@@ -124,9 +124,16 @@ namespace EcoBuilder.UI
         public void SaveToFile()
         {
             BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Create(savefilePath);
-            bf.Serialize(file, Details);
-            file.Close();
+            try
+            {
+                FileStream file = File.Create(Details.savefilePath);
+                bf.Serialize(file, Details);
+                file.Close();
+            }
+            catch (DirectoryNotFoundException dnfe)
+            {
+                print(dnfe);
+            }
         }
 
 
@@ -178,8 +185,8 @@ namespace EcoBuilder.UI
 			else
 			{
 				// TODO: 'are you sure' option
+                Destroy(gameObject);
 				GameManager.Instance.ReturnToMenu();
-                goText.text = "Go!";
 			}
 		}
 

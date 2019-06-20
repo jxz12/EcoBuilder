@@ -253,8 +253,8 @@ RectTransform:
   m_Father: {fileID: 5142458166280901835}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.38006926}
-  m_AnchorMax: {x: 1, y: 0.61993074}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -489,7 +489,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0.9, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: 1011}
+  m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1907157808438662216
 CanvasRenderer:
@@ -990,7 +990,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 400, y: 800}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &4551156237783506342
 MonoBehaviour:
@@ -1008,13 +1008,13 @@ MonoBehaviour:
     idx: 0
     title: Dev
     description: How did you get here?
-    numProducers: 10
-    numConsumers: 10
-    minEdges: 5
+    numProducers: 1
+    numConsumers: 2
+    minEdges: 1
     maxEdges: -1
-    minChain: 3
+    minChain: 2
     maxChain: -1
-    minLoop: 2
+    minLoop: -1
     maxLoop: -1
     numSpecies: 2
     plants: 0100
@@ -1028,7 +1028,10 @@ MonoBehaviour:
     numInteractions: 1
     resources: 00000000
     consumers: 01000000
+    targetFlux: 0
     numStars: 0
+    savefilePath: 
+    nextLevelPath: 
   showCard: {fileID: 9052016227622326694}
   thumbnail: {fileID: 3298662016124299586}
   numberText: {fileID: 3298662015470128372}
@@ -1042,7 +1045,6 @@ MonoBehaviour:
   consumers: {fileID: 5237376923166944384}
   goButton: {fileID: 8107334388927562355}
   goText: {fileID: 2972502848134668835}
-  savefilePath: 
 --- !u!222 &5385012899396507751
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1151,7 +1153,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3298662016124299587
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1374,7 +1376,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &6542962971601848806
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1658,7 +1660,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3354432201899250630}
   m_Direction: 2
   m_Value: 0.5
-  m_Size: 0.23986152
+  m_Size: 0.25717112
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

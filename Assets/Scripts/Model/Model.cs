@@ -156,7 +156,7 @@ namespace EcoBuilder.Model
 
             equilibriumSolved = false;
         }
-        public void SetSpeciesGreediness(int idx, float greedNormalised)
+        public void SetSpeciesSelfRegulation(int idx, float greedNormalised)
         {
             idxToSpecies[idx].SelfRegulation = -GetOnLogScale(greedNormalised, a_ii_max, a_ii_min);
 
@@ -200,14 +200,16 @@ namespace EcoBuilder.Model
         public bool Stable { get; private set; } = false;
         public bool Nonreactive { get; private set; } = false;
 
+        public float TotalFlux { get; private set; } = 0;
         // TODO: May's (or Tang's) complexity criteria here
         // public float Complexity { get; private set; } = 0;
-        // public float Flux { get; private set; } = 0;
 
         async void EquilibriumAsync()
         {
             calculating = true;
             Feasible = await Task.Run(() => simulation.SolveFeasibility());
+            TotalFlux = (float)simulation.GetTotalFlux();
+
             Stable = await Task.Run(() => simulation.SolveStability());
             Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 

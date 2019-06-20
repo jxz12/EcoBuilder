@@ -28,7 +28,7 @@ namespace EcoBuilder.NodeLink
                 // }
                 focus = nodes[idx];
                 // focus.Outline();
-                GetComponent<Animator>().SetInteger("Middle Left Focus", 2);
+                // GetComponent<Animator>().SetInteger("Middle Left Focus", 2);
             }
         }
         public void Unfocus()
@@ -37,7 +37,7 @@ namespace EcoBuilder.NodeLink
             {
                 // focus.Unoutline();
                 focus = null;
-                GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
+                // GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
             }
         }
         // public void MoveLeft()
@@ -48,9 +48,10 @@ namespace EcoBuilder.NodeLink
         // {
         //     GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
         // }
-		public void Finish()
+		public void Freeze()
 		{
-			GetComponent<Animator>().SetTrigger("Finish");
+            print("TODO: freeze nodelink but still allow spinning");
+			// GetComponent<Animator>().SetTrigger("Finish");
 		}
 
 
@@ -69,12 +70,12 @@ namespace EcoBuilder.NodeLink
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
-            graphParent.localScale *= 1 + zoom;
+            GetComponent<RectTransform>().localScale *= 1 + zoom;
         }
         void Pan(Vector2 amount)
         {
-            Vector3 toPan = (Vector3)amount * panMultiplier;
-            graphParent.localPosition += toPan;
+            Vector2 toPan = amount * panMultiplier;
+            GetComponent<RectTransform>().anchoredPosition += toPan;
         }
         void Rotate(Vector2 amount)
         {
@@ -246,11 +247,11 @@ namespace EcoBuilder.NodeLink
                         {
                             potentialTarget.Unoutline();
                             potentialTarget = null;
-                            dummyLink.Target = dummyTarget;
                         }
                         Vector3 screenPoint = ped.position;
                         screenPoint.z = potentialSource.transform.position.z - Camera.main.transform.position.z;
                         dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
+                        dummyLink.Target = dummyTarget;
                     }
                 }
                 else

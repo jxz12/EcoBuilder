@@ -50,11 +50,13 @@ namespace EcoBuilder.NodeLink
                 foreach (float trophic in trophicLevels)
                     MaxTrophic = Math.Max(trophic, MaxTrophic);
 
-                float trophicScaling = MaxTrophic>1? MaxChain / (MaxTrophic-1) : 1;
+                float height = Mathf.Min(MaxChain, 2.5f);
+                float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
                 foreach (Node no in nodes)
                 {
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                    no.TargetPos -= new Vector3(0, no.TargetPos.y-targetY, 0);
+                    // targetY = Mathf.Sqrt(targetY);
+                    no.GoalPos -= new Vector3(0, no.GoalPos.y-targetY, 0);
                 }
             }
         }
@@ -86,7 +88,7 @@ namespace EcoBuilder.NodeLink
 
             Node newNode = Instantiate(nodePrefab, nodesParent);
 
-            var startPos = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
+            var startPos = new Vector3(UnityEngine.Random.Range(.5f, .9f), 0, -.2f);
             // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
@@ -204,11 +206,11 @@ namespace EcoBuilder.NodeLink
                 if (size > 0)
                 {
                     float logSize = Mathf.Log10(size);
-                    no.TargetSize = minNodeSize + sizeRange*((logSize-logMin) / (logMax-logMin));
+                    no.GoalSize = minNodeSize + sizeRange*((logSize-logMin) / (logMax-logMin));
                 }
                 else
                 {
-                    no.TargetSize = minNodeSize;
+                    no.GoalSize = minNodeSize;
                 }
             }
         }

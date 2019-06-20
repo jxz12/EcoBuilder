@@ -18,48 +18,54 @@ namespace EcoBuilder
 
             // inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
             // inspector.OnUnincubated +=        ()=> nodelink.MoveMiddle();
-            inspector.OnSpawned +=         (i,g)=> model.AddSpecies(i);
-            inspector.OnSpawned +=         (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnIsProducerSet +=   (i,b)=> model.SetSpeciesIsProducer(i,b);
-            inspector.OnIsProducerSet +=   (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
-            inspector.OnSizeSet +=         (i,x)=> model.SetSpeciesBodySize(i,x);
-            inspector.OnGreedSet +=        (i,x)=> model.SetSpeciesGreediness(i,x);
+            inspector.OnSpawned +=        (i,g)=> model.AddSpecies(i);
+            inspector.OnSpawned +=        (i,g)=> nodelink.AddNode(i,g);
+            inspector.OnIsProducerSet +=  (i,b)=> model.SetSpeciesIsProducer(i,b);
+            inspector.OnIsProducerSet +=  (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
+            inspector.OnIsProducerSet +=  (i,b)=> status.AddType(i,b);
+            inspector.OnSizeSet +=        (i,x)=> model.SetSpeciesBodySize(i,x);
+            inspector.OnGreedSet +=       (i,x)=> model.SetSpeciesSelfRegulation(i,x);
+            inspector.OnFinished +=          ()=> FinishLevel();
 
-            nodelink.OnNodeFocused +=        (i)=> inspector.InspectSpecies(i);
-            nodelink.OnUnfocused +=           ()=> inspector.Uninspect();
-            nodelink.OnLinkAdded +=        (i,j)=> model.AddInteraction(i,j);
-            nodelink.OnLinkRemoved +=      (i,j)=> model.RemoveInteraction(i,j);
-            nodelink.OnDroppedOn +=           ()=> inspector.TrySpawnIncubated();
+
+            nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);
+            nodelink.OnUnfocused +=       ()=> inspector.Uninspect();
+            nodelink.OnLinkAdded +=    (i,j)=> model.AddInteraction(i,j);
+            nodelink.OnLinkRemoved +=  (i,j)=> model.RemoveInteraction(i,j);
+            nodelink.OnDroppedOn +=       ()=> inspector.TrySpawnIncubated();
             ///////////////////////////
-            nodelink.OnConstraints +=         ()=> status.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnConstraints +=         ()=> status.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnConstraints +=         ()=> status.DisplayMaxLoop(nodelink.MaxLoop);
-
-
-            model.OnEndangered +=            (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=               (i)=> nodelink.IdleNode(i);
-            ///////////////////////////
-            // model.OnEquilibrium +=            ()=> status.FillStars(model.Feasible, model.Stable, model.Nonreactive);
-            model.OnEquilibrium +=            ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
-            model.OnEquilibrium +=            ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
+            nodelink.OnConstraints +=     ()=> status.DisplayDisjoint(nodelink.Disjoint);
+            nodelink.OnConstraints +=     ()=> status.DisplayNumEdges(nodelink.NumEdges);
+            nodelink.OnConstraints +=     ()=> status.DisplayMaxChain(nodelink.MaxChain);
+            nodelink.OnConstraints +=     ()=> status.DisplayMaxLoop(nodelink.MaxLoop);
             ///////////////////////////
             print("TODO: move into inspector, with activation on strong-focus");
-            nodelink.OnNodeRemoved +=        (i)=> inspector.UnspawnSpecies(i);
-            nodelink.OnNodeRemoved +=        (i)=> model.RemoveSpecies(i);
+            nodelink.OnNodeRemoved +=     (i)=> inspector.UnspawnSpecies(i);
+            nodelink.OnNodeRemoved +=     (i)=> model.RemoveSpecies(i);
+            nodelink.OnNodeRemoved +=     (i)=> status.RemoveIdx(i);
 
-            status.OnLevelFinish +=           ()=> FinishLevel();
-            status.OnLevelReplay +=           ()=> print("TODO:");
-            status.OnLevelNext +=             ()=> print("TODO:");
-            status.OnBackToMenu +=            ()=> print("TODO:");
+
+            model.OnEndangered +=  (i)=> nodelink.FlashNode(i);
+            model.OnRescued +=     (i)=> nodelink.IdleNode(i);
+            model.OnEquilibrium +=  ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
+            model.OnEquilibrium +=  ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
+            model.OnEquilibrium +=  ()=> status.DisplayFeastability(model.Feasible, model.Stable);
+            model.OnEquilibrium +=  ()=> status.DisplayTotalFlux(model.TotalFlux);
+
+            status.OnProducersAvailable += (b)=> inspector.SetProducersAvailable(b);
+            status.OnConsumersAvailable += (b)=> inspector.SetConsumersAvailable(b);
+            status.OnConstraintsMet +=     (b)=> inspector.SetConstraintsMet(b);
 
 
 
             ///////////////////
             // set up level
 
-            var level = GameManager.Instance.DefaultLevel; // only use for dev
+            // var level = GameManager.Instance.DefaultLevel; // only use for dev
+            var level = GameManager.Instance.PlayedLevel; // only use for dev
 
             status.SlotInLevel(level);
+            status.ConstrainTypes(level.Details.numProducers, level.Details.numConsumers);
             status.ConstrainNumEdges(level.Details.minEdges);
             status.ConstrainMaxChain(level.Details.minChain);
             status.ConstrainMaxLoop(level.Details.minLoop);
@@ -83,16 +89,17 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
 
-            inspector.ConstrainTypes(level.Details.numProducers, level.Details.numConsumers);
             
-            // TODO: this is a little hacky?
+            // TODO: this is a little hacky? It may have to be changed when super focus is added anyway
             nodelink.Unfocus();
         }
 
         void FinishLevel()
         {
-            // GameManager.Instance.SavePlayedLevel(numStars);
-            print("TODO: make animations do things and confetti");
+            inspector.Hide();
+            nodelink.Freeze();
+            status.Confetti();
+            GameManager.Instance.SavePlayedLevel(status.NumStars);
         }
     }
 }
