@@ -29,8 +29,9 @@ namespace EcoBuilder.UI
         void Start()
         {
             levels = new List<Level>();
-            LoadFileLevels();
+
             // SaveSceneLevels(); // uncomment for building levels
+            LoadFileLevels();
 
             // let the grid do the layout first
             StartCoroutine(EnableGridOneFrame());
@@ -57,6 +58,7 @@ namespace EcoBuilder.UI
                 bool successful = newLevel.LoadFromFile(filepath);
                 if (successful)
                 {
+                    newLevel.ProvideLevelPrefab(levelPrefab);
                     levels.Add(newLevel);
                 }
                 else
@@ -78,9 +80,9 @@ namespace EcoBuilder.UI
             foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
             {
                 level.SaveFromScene(Application.persistentDataPath, ".gd");
-                levels.Add(level);
+                // levels.Add(level);
             }
-            levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
+            // levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
         }
     }
 }

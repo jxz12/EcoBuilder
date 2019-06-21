@@ -55,12 +55,7 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] Button thumbnail;
-
-        // [SerializeField] Vector2 thumbnailSize;
-        // [SerializeField] Vector2 cardSize, cardPos;
         [SerializeField] Vector2 navigationPos = new Vector2(0, -400);
-        // [SerializeField] Vector2 navigationSize, navigationPos;
-        // [SerializeField] Vector2 finishSize;
 
         // thumbnail
         [SerializeField] Text numberText;
@@ -106,10 +101,14 @@ namespace EcoBuilder.UI
             }
             else
             {
-                SetStarsSprite(starImages[Details.numStars]);
+                starsImage.sprite = starImages[Details.numStars];
                 Unlock();
             }
-            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+        }
+        Level levelPrefab;
+        public void ProvideLevelPrefab(Level prefab)
+        {
+            levelPrefab = prefab;
         }
 
         public void SaveFromScene(string incompleteSavePath, string fileExtension)
@@ -139,6 +138,11 @@ namespace EcoBuilder.UI
                 print("handled exception: " + se.Message);
                 return false;
             }
+            catch (InvalidCastException ice)
+            {
+                print ("handled exception: " + ice.Message);
+                return false;
+            }
         }
 
         public void SaveToFile()
@@ -159,8 +163,18 @@ namespace EcoBuilder.UI
         public event Action OnFinishFlagPressed;
         public void FinishLevel()
         {
-            OnFinishFlagPressed.Invoke();
+            NextLevel = Instantiate(levelPrefab);
+            bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
+            if (successful)
+            {
+                NextLevel.transform.SetParent(nextLevelParent, false);
+            }
+            else
+            {
+                print("TODO: credits?");
+            }
             ShowNavigation();
+            OnFinishFlagPressed.Invoke();
         }
 
 
@@ -201,10 +215,6 @@ namespace EcoBuilder.UI
         {
             ShowThumbnail();
             GameManager.Instance.PlayLevel(this);
-        }
-        public void SetStarsSprite(Sprite s)
-        {
-            starsImage.sprite = s;
         }
 
         // IEnumerator LerpToSize(int numFrames, Vector2 goal)
@@ -282,18 +292,6 @@ namespace EcoBuilder.UI
                 GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
                 goText.text = "Quit?";
 				GameManager.Instance.PlayLevel(this);
-
-                // TODO: this is a bit ugly
-                NextLevel = Instantiate(this);
-                bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
-                if (successful)
-                {
-                    NextLevel.transform.SetParent(nextLevelParent, false);
-                }
-                else
-                {
-                    print("TODO: credits?");
-                }
 			}
 			else
 			{

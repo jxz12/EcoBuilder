@@ -1542,6 +1542,7 @@ MonoBehaviour:
   producers: {fileID: 4281826992982042486}
   consumers: {fileID: 5237376923166944384}
   goText: {fileID: 2972502848134668835}
+  levelPrefab: {fileID: 4551156237783506342}
   nextLevelParent: {fileID: 8854619268690296483}
 --- !u!222 &5385012899396507751
 CanvasRenderer:

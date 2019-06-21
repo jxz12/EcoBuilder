@@ -167,12 +167,10 @@ namespace EcoBuilder.UI
             }
             if (NumStars == 0 && newNumStars > 0)
             {
-                print("boo");
                 constrainedFrom.ShowFinishFlag();
             }
             else if (NumStars > 0 && newNumStars == 0)
             {
-                print("HI");
                 constrainedFrom.ShowThumbnail();
             }
 			NumStars = newNumStars;
