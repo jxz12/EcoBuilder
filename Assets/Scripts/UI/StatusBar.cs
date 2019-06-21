@@ -15,43 +15,48 @@ namespace EcoBuilder.UI
 
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
-        public event Action<bool> OnConstraintsMet;
 
-        public event Action OnLevelReplay;
-        public event Action OnLevelNext;
-        public event Action OnBackToMenu;
-
-        public void SlotInLevel(Level level)
-        {
-            level.transform.SetParent(levelParent, false);
-            level.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        }
-
-
-
-
-		/////////////////
-		// first star
-
-        bool disjoint;
-
-        public void DisplayDisjoint(bool isDisjoint)
-        {
-			disjoint = isDisjoint;
-        }
+        public event Action OnLevelCompleted;
 
         int maxProducers=int.MaxValue, maxConsumers=int.MaxValue;
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
-        public void ConstrainTypes(int numProducers, int numConsumers)
+
+        Level constrainedFrom;
+        public void ConstrainFromLevel(Level level)
         {
-            if (numProducers < 0 || numConsumers < 0)
+            // take the played level and place it in the scene
+            if (level.Details.numProducers < 0 || level.Details.numConsumers < 0)
                 throw new Exception("Cannot have negative numbers of species");
             
-            maxProducers = numProducers;
-            maxConsumers = numConsumers;
+            maxProducers = level.Details.numProducers;
+            maxConsumers = level.Details.numConsumers;
             producerCount.text = (maxProducers-producers.Count).ToString();
             consumerCount.text = (maxConsumers-consumers.Count).ToString();
+
+            edge.Constrain(level.Details.minEdges);
+            chain.Constrain(level.Details.minChain);
+            loop.Constrain(level.Details.minChain);
+
+            level.transform.SetParent(levelParent, false);
+            level.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+            level.OnFinishFlagPressed += ()=> CompleteLevel();
+            constrainedFrom = level;
+        }
+
+        public void CompleteLevel()
+        {
+            GameManager.Instance.SavePlayedLevel(NumStars);
+            OnLevelCompleted.Invoke();
+        }
+
+
+
+        bool disjoint;
+        public void DisplayDisjoint(bool isDisjoint)
+        {
+			disjoint = isDisjoint;
         }
         public void AddType(int idx, bool isProducer)
         {
@@ -95,34 +100,17 @@ namespace EcoBuilder.UI
                 consumerCount.text = (maxConsumers-consumers.Count).ToString();
             }
         }
-
-		// structural constraints
-        public void ConstrainNumEdges(int numEdges)
-        {
-            edge.Constrain(numEdges);
-        }
-        public void ConstrainMaxChain(int lenChain)
-        {
-            chain.Constrain(lenChain);
-        }
-        public void ConstrainMaxLoop(int lenLoop)
-        {
-            loop.Constrain(lenLoop);
-        }
         public void DisplayNumEdges(int numEdges)
         {
             edge.Display(numEdges);
-            // CheckIfSatisfied();
         }
         public void DisplayMaxChain(int lenChain)
         {
             chain.Display(lenChain);
-            // CheckIfSatisfied();
         }
         public void DisplayMaxLoop(int lenLoop)
         {
             loop.Display(lenLoop);
-            // CheckIfSatisfied();
         }
 
 
@@ -177,20 +165,24 @@ namespace EcoBuilder.UI
 					}
                 }
             }
-			if (NumStars == 0 && newNumStars > 0)
-			{
-				OnConstraintsMet.Invoke(true);
-			}
-			else if (NumStars > 0 && newNumStars == 0)
-			{
-				OnConstraintsMet.Invoke(false);
-			}
+            if (NumStars == 0 && newNumStars > 0)
+            {
+                print("boo");
+                constrainedFrom.ShowFinishFlag();
+            }
+            else if (NumStars > 0 && newNumStars == 0)
+            {
+                print("HI");
+                constrainedFrom.ShowThumbnail();
+            }
 			NumStars = newNumStars;
 		}
         public void Confetti()
         {
-            print("TODO: confetti");
-            // GetComponent<Animator>().SetTrigger("Finish");
+            GetComponent<Animator>().SetTrigger("Confetti");
+            star1.SetTrigger("Confetti");
+            star2.SetTrigger("Confetti");
+            star3.SetTrigger("Confetti");
         }
 
         // // TODO: make this into prefab instead?

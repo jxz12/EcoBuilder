@@ -95,26 +95,31 @@ namespace EcoBuilder
         public UI.Level PlayedLevel { get; private set; }
         public void PlayLevel(UI.Level level)
         {
+            if (PlayedLevel != null && PlayedLevel != level)
+                Destroy(PlayedLevel.gameObject);
+
             PlayedLevel = level;
-            UnloadScene("Menu");
-            LoadScene("Play");
-        }
-        public void ReplayLevel()
-        {
-            UnloadScene("Play");
+            UnloadScene(SceneManager.GetActiveScene().name);
             LoadScene("Play");
         }
         public void SavePlayedLevel(int numStars)
         {
-            if (numStars < 0 || numStars > 3)
+            if (numStars < 1 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
             if (PlayedLevel != null)
             {
-                PlayedLevel.ShowNavigation();
-
                 if (numStars > PlayedLevel.Details.numStars)
                     PlayedLevel.Details.numStars = numStars;
+
+                // unlock next level if not unlocked
+                if (PlayedLevel.NextLevel.Details.numStars == -1)
+                {
+                    print("TODO: animation here!");
+                    PlayedLevel.NextLevel.Details.numStars = 0;
+                    PlayedLevel.NextLevel.SaveToFile();
+                    PlayedLevel.NextLevel.Unlock();
+                }
 
                 PlayedLevel.SaveToFile();
             }

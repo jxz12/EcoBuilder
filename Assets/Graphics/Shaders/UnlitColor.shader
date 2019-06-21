@@ -7,15 +7,17 @@ Shader "Unlit/Color"
 
     SubShader
     {
-        Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
+        // Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
+        Color [_Color]
+        Pass {}
         
-        ZWrite Off
-        Lighting Off
-        Fog { Mode Off }
+        // ZWrite Off
+        // Lighting Off
+        // Fog { Mode Off }
 
-        Pass {
-            Color [_Color]
-            // SetTexture [_MainTex] { combine texture * primary } 
-        }
+        // Pass {
+        //     Color [_Color]
+        //     // SetTexture [_MainTex] { combine texture * primary } 
+        // }
     }
 }

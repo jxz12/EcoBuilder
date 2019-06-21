@@ -20,7 +20,7 @@ namespace EcoBuilder.NodeLink
 
         private void FixedUpdate()
         {
-            if (nodes.Count > 0)
+            if (nodes.Count > 0 && !frozen)
             {
                 //////////////////////
                 // do stress SGD
@@ -50,21 +50,23 @@ namespace EcoBuilder.NodeLink
                 foreach (float trophic in trophicLevels)
                     MaxTrophic = Math.Max(trophic, MaxTrophic);
 
-                float height = Mathf.Min(MaxChain, 2.5f);
+                float height = Mathf.Min(MaxChain, 3f);
                 float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
                 foreach (Node no in nodes)
                 {
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
                     // targetY = Mathf.Sqrt(targetY);
+                    targetY *= .99f; 
                     no.GoalPos -= new Vector3(0, no.GoalPos.y-targetY, 0);
                 }
             }
         }
         // [SerializeField] GameObject busyIcon;
-        bool constraintsSolved = true, calculating = false;
+        bool constraintsSolved = true;
+        public bool Calculating { get; private set; } = false;
         private void LateUpdate()
         {
-            if (!constraintsSolved && !calculating && nodes.Count>0)
+            if (!constraintsSolved && !Calculating && nodes.Count>0)
             {
                 constraintsSolved = true;
                 ConstraintsAsync();

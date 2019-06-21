@@ -54,26 +54,31 @@ namespace EcoBuilder.UI
             private set { details = value; }
         }
 
-        [SerializeField] Button showCard;
+        [SerializeField] Button thumbnail;
+
+        // [SerializeField] Vector2 thumbnailSize;
+        // [SerializeField] Vector2 cardSize, cardPos;
+        [SerializeField] Vector2 navigationPos = new Vector2(0, -400);
+        // [SerializeField] Vector2 navigationSize, navigationPos;
+        // [SerializeField] Vector2 finishSize;
 
         // thumbnail
-        [SerializeField] GameObject thumbnail;
         [SerializeField] Text numberText;
         [SerializeField] Image starsImage;
+        [SerializeField] Sprite[] starImages;
         [SerializeField] Image lockImage;
 
         // card
-        [SerializeField] GameObject card;
 		[SerializeField] Text title;
 		[SerializeField] Text description;
         [SerializeField] ScrollRect descriptionArea;
 		[SerializeField] Text producers;
 		[SerializeField] Text consumers;
-		[SerializeField] Button goButton;
 		[SerializeField] Text goText;
 
+        // finish flag
+
         // navigation
-        [SerializeField] GameObject navigation;
         [SerializeField] RectTransform nextLevelParent;
 
         void Start()
@@ -94,6 +99,17 @@ namespace EcoBuilder.UI
 			producers.text = Details.numProducers.ToString();
 			consumers.text = Details.numConsumers.ToString();
 
+            if (Details.numStars == -1)
+            {
+                // TODO: animation
+                Lock();
+            }
+            else
+            {
+                SetStarsSprite(starImages[Details.numStars]);
+                Unlock();
+            }
+            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
 
         public void SaveFromScene(string incompleteSavePath, string fileExtension)
@@ -139,56 +155,40 @@ namespace EcoBuilder.UI
                 print(dnfe);
             }
         }
-        IEnumerator LerpToSize(int numFrames, Vector2 goal)
+
+        public event Action OnFinishFlagPressed;
+        public void FinishLevel()
         {
-            var rect = GetComponent<RectTransform>();
-            Vector2 begin = rect.sizeDelta;
-            for (int i=0; i<numFrames; i++)
-            {
-                rect.sizeDelta = Vector3.Lerp(begin, goal, (float)i/numFrames);
-                yield return null;
-            }
-            rect.sizeDelta = goal;
-            descriptionArea.verticalNormalizedPosition = 1;
+            OnFinishFlagPressed.Invoke();
+            ShowNavigation();
         }
 
-        Transform thumbnailedParent;
-        Vector2 thumbnailedPosition;
-		public void ShowCard()
-		{
-            thumbnail.SetActive(false);
-            card.SetActive(true);
-            showCard.interactable = false;
 
-            thumbnailedPosition = GetComponent<RectTransform>().anchoredPosition;
-            thumbnailedParent = GetComponent<RectTransform>().parent;
 
-            transform.SetParent(GameManager.Instance.Overlay.transform, false);
-            GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-            // TODO: magic numbers
-            StartCoroutine(LerpToSize(30, new Vector2(400,750)));
-		}
-		public void ShowThumbnail()
-		{
-            card.SetActive(false);
-            thumbnail.SetActive(true);
-            showCard.interactable = true;
 
-            transform.SetParent(thumbnailedParent, false);
-            GetComponent<RectTransform>().anchoredPosition = thumbnailedPosition;
-            // TODO: magic numbers
-            StartCoroutine(LerpToSize(30, new Vector2(100,100)));
-		}
-        public void ShowNavigation()
+
+
+
+
+
+
+        //////////////////////////////
+        // animations and supplements
+
+        public void Lock()
         {
-            thumbnail.SetActive(false);
-            navigation.SetActive(true);
-            showCard.interactable = false;
-
-            transform.SetParent(GameManager.Instance.Overlay.transform, false);
-            // TODO: magic numbers
-            GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -300);
-            StartCoroutine(LerpToSize(30, new Vector2(350,100)));
+            // TODO: animation
+            thumbnail.interactable = false;
+            lockImage.enabled = true;
+            numberText.enabled = false;
+            starsImage.enabled = false;
+        }
+        public void Unlock()
+        {
+            thumbnail.interactable = true;
+            lockImage.enabled = false;
+            numberText.enabled = true;
+            starsImage.enabled = true;
         }
         public void BackToMenu()
         {
@@ -196,30 +196,99 @@ namespace EcoBuilder.UI
             Destroy(gameObject);
             GameManager.Instance.ReturnToMenu();
         }
+
         public void Replay()
         {
-            GameManager.Instance.ReplayLevel();
+            ShowThumbnail();
+            GameManager.Instance.PlayLevel(this);
+        }
+        public void SetStarsSprite(Sprite s)
+        {
+            starsImage.sprite = s;
         }
 
+        // IEnumerator LerpToSize(int numFrames, Vector2 goal)
+        // {
+        //     var rect = GetComponent<RectTransform>();
+        //     Vector2 begin = rect.sizeDelta;
+        //     for (int i=0; i<numFrames; i++)
+        //     {
+        //         rect.sizeDelta = Vector3.Lerp(begin, goal, (float)i/numFrames);
+        //         yield return null;
+        //     }
+        //     rect.sizeDelta = goal;
+        //     descriptionArea.verticalNormalizedPosition = 1;
+        // }
+
+        enum State { Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
+        Transform thumbnailedParent;
+		public void ShowThumbnail()
+		{
+            // thumbnail.SetActive(true);
+            // card.SetActive(false);
+            // navigation.SetActive(false);
+            // showCard.interactable = true;
+            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+
+            transform.SetParent(thumbnailedParent, false);
+            GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+		}
+		public void ShowCard()
+		{
+            // thumbnail.SetActive(false);
+            // card.SetActive(true);
+            // navigation.SetActive(false);
+            // showCard.interactable = false;
+            GetComponent<Animator>().SetInteger("State", (int)State.Card);
+
+            thumbnailedParent = GetComponent<RectTransform>().parent;
+
+            transform.SetParent(GameManager.Instance.Overlay.transform, false);
+            GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+		}
+        public void ShowFinishFlag()
+        {
+            // thumbnail.SetActive(false);
+            // card.SetActive(false);
+            // finishFlag.SetActive(true);
+            // navigation.SetActive(false);
+            // showCard.interactable = false;
+
+            thumbnailedParent = GetComponent<RectTransform>().parent;
+
+            GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+        }
+        // called when game is ended
+        public void ShowNavigation()
+        {
+            // thumbnail.SetActive(false);
+            // card.SetActive(false);
+            // navigation.SetActive(true);
+            // showCard.interactable = false;
+            GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
+
+            transform.SetParent(GameManager.Instance.Overlay.transform, false);
+            GetComponent<RectTransform>().anchoredPosition = navigationPos;
+        }
+
+
+        public Level NextLevel { get; private set; }
 		public void StartEndGame()
 		{
 			// TODO: probably store a variable instead of this crap
 			if (goText.text == "Go!")
 			{
-                card.SetActive(false);
-                thumbnail.SetActive(true);
-                showCard.interactable = true;
-
-                // TODO: magic numbers
-                GetComponent<RectTransform>().sizeDelta = new Vector2(100,100);
+                // don't call ShowThumbnail() because we want it to stay attached to GamManager
+                GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
                 goText.text = "Quit?";
 				GameManager.Instance.PlayLevel(this);
 
-                Level newLevel = Instantiate(this);
-                bool successful = newLevel.LoadFromFile(Details.nextLevelPath);
+                // TODO: this is a bit ugly
+                NextLevel = Instantiate(this);
+                bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
                 if (successful)
                 {
-                    newLevel.transform.SetParent(nextLevelParent, false);
+                    NextLevel.transform.SetParent(nextLevelParent, false);
                 }
                 else
                 {
@@ -231,25 +300,5 @@ namespace EcoBuilder.UI
                 BackToMenu();
 			}
 		}
-
-        // TODO: make gamemanager clever enough to be able to go to next level
-        public void Lock()
-        {
-            showCard.interactable = false;
-            lockImage.enabled = true;
-            numberText.enabled = false;
-            starsImage.enabled = false;
-        }
-        public void Unlock()
-        {
-            showCard.interactable = true;
-            lockImage.enabled = false;
-            numberText.enabled = true;
-            starsImage.enabled = true;
-        }
-        public void SetStarsSprite(Sprite s)
-        {
-            starsImage.sprite = s;
-        }
     }
 }

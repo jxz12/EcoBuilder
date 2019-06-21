@@ -65,11 +65,12 @@ namespace EcoBuilder.UI
                 }
             }
             levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
-            foreach (Level level in levels)
+            for (int i=0; i<levels.Count-1; i++)
             {
-                level.transform.SetParent(levelGrid.transform, false);
+                levels[i].transform.SetParent(levelGrid.transform, false);
+                levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
             }
-            UnlockLevels();
+            levels[levels.Count-1].transform.SetParent(levelGrid.transform, false);
         }
         void SaveSceneLevels()
         {
@@ -80,35 +81,6 @@ namespace EcoBuilder.UI
                 levels.Add(level);
             }
             levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
-            // UnlockLevels();
-        }
-
-        void UnlockLevels()
-        {
-            for (int i=0; i<levels.Count; i++)
-            {
-                if (levels[i].Details.numStars == -1)
-                {
-                    levels[i].Lock();
-                }
-                else
-                {
-                    levels[i].Unlock();
-                    levels[i].SetStarsSprite(starImages[levels[i].Details.numStars]);
-                }
-            }
-            // unlock new level if possible
-            bool unlocked = false;
-            for (int i=0; i<levels.Count-1; i++)
-            {
-                if (!unlocked && levels[i].Details.numStars > 0 && levels[i+1].Details.numStars == -1)
-                {
-                    levels[i+1].Details.numStars = 0;
-                    levels[i+1].Unlock();
-                    unlocked = true;
-                }
-                levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
-            }
         }
     }
 }

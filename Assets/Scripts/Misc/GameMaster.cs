@@ -25,7 +25,6 @@ namespace EcoBuilder
             inspector.OnIsProducerSet +=  (i,b)=> status.AddType(i,b);
             inspector.OnSizeSet +=        (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=       (i,x)=> model.SetSpeciesSelfRegulation(i,x);
-            inspector.OnFinished +=          ()=> FinishLevel();
 
 
             nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);
@@ -54,8 +53,9 @@ namespace EcoBuilder
 
             status.OnProducersAvailable += (b)=> inspector.SetProducersAvailable(b);
             status.OnConsumersAvailable += (b)=> inspector.SetConsumersAvailable(b);
-            status.OnConstraintsMet +=     (b)=> inspector.SetConstraintsMet(b);
-
+            status.OnLevelCompleted +=      ()=> inspector.Hide();
+            status.OnLevelCompleted +=      ()=> nodelink.Freeze();
+            status.OnLevelCompleted +=      ()=> status.Confetti();
 
 
             ///////////////////
@@ -65,11 +65,7 @@ namespace EcoBuilder
             if (level == null)
                 level = GameManager.Instance.DefaultLevel; // only for dev
 
-            status.SlotInLevel(level);
-            status.ConstrainTypes(level.Details.numProducers, level.Details.numConsumers);
-            status.ConstrainNumEdges(level.Details.minEdges);
-            status.ConstrainMaxChain(level.Details.minChain);
-            status.ConstrainMaxLoop(level.Details.minLoop);
+            status.ConstrainFromLevel(level);
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -89,18 +85,9 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
-
             
             // TODO: this is a little hacky? It may have to be changed when super focus is added anyway
             nodelink.Unfocus();
-        }
-
-        void FinishLevel()
-        {
-            inspector.Hide();
-            nodelink.Freeze();
-            status.Confetti();
-            GameManager.Instance.SavePlayedLevel(status.NumStars);
         }
     }
 }

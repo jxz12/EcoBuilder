@@ -43,21 +43,28 @@ namespace EcoBuilder.NodeLink
                 throw new System.Exception("shape has no meshrenderer!");
 
             // TODO: change this messiness
-            Mesh shapeMesh = shapeObject.GetComponent<MeshFilter>().mesh;
-            GetComponent<MeshFilter>().mesh = shapeMesh; // flash?
+            Mesh outlineMesh = shapeObject.GetComponent<MeshFilter>().mesh;
+            outlineMesh = Instantiate(outlineMesh);
+ 
+            // https://wiki.unity3d.com/index.php/ReverseNormals
+            Vector3[] normals = outlineMesh.normals;
+            for (int i=0;i<normals.Length;i++)
+                normals[i] = -normals[i];
+            outlineMesh.normals = normals;
+ 
+            for (int m=0;m<outlineMesh.subMeshCount;m++)
+            {
+                int[] triangles = outlineMesh.GetTriangles(m);
+                for (int i=0;i<triangles.Length;i+=3)
+                {
+                    int temp = triangles[i + 0];
+                    triangles[i + 0] = triangles[i + 1];
+                    triangles[i + 1] = temp;
+                }
+                outlineMesh.SetTriangles(triangles, m);
+            }
+            GetComponent<MeshFilter>().mesh = outlineMesh;
         }
-        public void Reshape(GameObject shapeObject)
-        {
-            Destroy(shape.gameObject);
-            shape = shapeObject.transform;
-            shape.SetParent(transform, false);
-            // TargetSize = 1;
-
-            mr = shapeObject.GetComponent<MeshRenderer>();
-            if (mr == null)
-                throw new System.Exception("shape has no meshrenderer!");
-        }
-
         public void Outline(int colourIdx=0)
         {
             // if (colourIdx < 0 || colourIdx > 3)

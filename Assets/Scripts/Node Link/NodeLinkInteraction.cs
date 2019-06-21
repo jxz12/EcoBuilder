@@ -28,7 +28,6 @@ namespace EcoBuilder.NodeLink
                 // }
                 focus = nodes[idx];
                 // focus.Outline();
-                // GetComponent<Animator>().SetInteger("Middle Left Focus", 2);
             }
         }
         public void Unfocus()
@@ -37,22 +36,15 @@ namespace EcoBuilder.NodeLink
             {
                 // focus.Unoutline();
                 focus = null;
-                // GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
             }
         }
-        // public void MoveLeft()
-        // {
-        //     GetComponent<Animator>().SetInteger("Middle Left Focus", 1);
-        // }
-        // public void MoveMiddle()
-        // {
-        //     GetComponent<Animator>().SetInteger("Middle Left Focus", 0);
-        // }
-		public void Freeze()
-		{
-            print("TODO: freeze nodelink but still allow spinning");
-			// GetComponent<Animator>().SetTrigger("Finish");
-		}
+        bool frozen = false;
+        public void Freeze()
+        {
+            GetComponent<Animator>().SetTrigger("Freeze");
+            Unfocus();
+            frozen = true;
+        }
 
 
         public void FlashNode(int idx)
@@ -109,8 +101,11 @@ namespace EcoBuilder.NodeLink
             if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             {
                 doLayout = false;
-                potentialHold = true;
-                StartCoroutine(WaitForHold(holdThreshold, ped));
+                if (!frozen)
+                {
+                    potentialHold = true;
+                    StartCoroutine(WaitForHold(holdThreshold, ped));
+                }
             }
         }
         IEnumerator WaitForHold(float seconds, PointerEventData ped)
@@ -166,14 +161,14 @@ namespace EcoBuilder.NodeLink
         Node potentialSource, potentialTarget;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (potentialHold == false) // already held
+            if (potentialHold == false) // already held and maybe deleted
                 return;
 
             potentialHold = false;
             if (ped.pointerId==0 || ped.pointerId==-1) // only drag on left-click or one touch
             {
                 Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                if (draggedNode != null && draggedNode.CanBeSource)
+                if (draggedNode != null && draggedNode.CanBeSource && !frozen)
                 {
                     potentialSource = draggedNode;
                     draggedNode.Outline();

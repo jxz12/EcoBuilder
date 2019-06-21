@@ -15,17 +15,12 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
-        public event Action OnFinished;
 
-        // public event Action OnIncubated;
-        // public event Action OnUnincubated;
-
-        [SerializeField] Button startButton;
+        [SerializeField] Button plusButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
-        [SerializeField] Button finishButton;
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
@@ -74,13 +69,12 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            startButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Start"));
+            plusButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Start"));
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
-            finishButton.onClick.AddListener(()=> OnFinished.Invoke());
 
             sizeSlider.onValueChanged.AddListener(x=> SetSize());
             greedSlider.onValueChanged.AddListener(x=> SetGreed());
@@ -205,12 +199,12 @@ namespace EcoBuilder.UI
             if (!spawnedSpecies.ContainsKey(idx))
                 throw new Exception("idx not spawned");
 
-            GetComponent<Animator>().SetBool("All Spawned",  false);
             if (inspected == spawnedSpecies[idx])
             {
                 GetComponent<Animator>().SetTrigger("Uninspect");
                 inspected = null;
             }
+            GetComponent<Animator>().SetBool("All Spawned", false);
 
             spawnedSpecies.Remove(idx);
         }
@@ -219,15 +213,13 @@ namespace EcoBuilder.UI
             if (available)
             {
                 producerButton.interactable = true;
-                startButton.interactable = true;
+                GetComponent<Animator>().SetBool("All Spawned", false);
             }
             else
             {
                 producerButton.interactable = false;
                 if (consumerButton.interactable == false)
-                {
-                    GetComponent<Animator>().SetBool("All Spawned",  true);
-                }
+                    GetComponent<Animator>().SetBool("All Spawned", true);
             }
         }
         public void SetConsumersAvailable(bool available)
@@ -235,20 +227,14 @@ namespace EcoBuilder.UI
             if (available)
             {
                 consumerButton.interactable = true;
-                startButton.interactable = true;
+                GetComponent<Animator>().SetBool("All Spawned", false);
             }
             else
             {
                 consumerButton.interactable = false;
                 if (producerButton.interactable == false)
-                {
-                    GetComponent<Animator>().SetBool("All Spawned",  true);
-                }
+                    GetComponent<Animator>().SetBool("All Spawned", true);
             }
-        }
-        public void SetConstraintsMet(bool met)
-        {
-            GetComponent<Animator>().SetBool("Constraints Met", met);
         }
 
         public void InspectSpecies(int idx)
@@ -290,20 +276,16 @@ namespace EcoBuilder.UI
             if (inspected != null)
             {
                 inspected = null;
-                // GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else if (incubated != null)
             {
                 Destroy(incubated.GObject);
                 incubated = null; // lol memory leak but not really
-                GetComponent<Animator>().SetTrigger("Uninspect");
-                // OnUnincubated.Invoke();
             }
         }
         public void Hide()
         {
-            print("TODO: hide");
-            // GetComponent<Animator>().SetTrigger("Hide");
+            GetComponent<Animator>().SetTrigger("Hide");
         }
 
 
