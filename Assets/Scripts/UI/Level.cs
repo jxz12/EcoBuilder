@@ -232,50 +232,37 @@ namespace EcoBuilder.UI
 
         enum State { Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
         Transform thumbnailedParent;
+        Vector2 thumbnailedPos;
 		public void ShowThumbnail()
 		{
-            // thumbnail.SetActive(true);
-            // card.SetActive(false);
-            // navigation.SetActive(false);
-            // showCard.interactable = true;
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
 
             transform.SetParent(thumbnailedParent, false);
-            GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            GetComponent<RectTransform>().anchoredPosition = thumbnailedPos;
 		}
 		public void ShowCard()
 		{
-            // thumbnail.SetActive(false);
-            // card.SetActive(true);
-            // navigation.SetActive(false);
-            // showCard.interactable = false;
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
 
             thumbnailedParent = GetComponent<RectTransform>().parent;
+            thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
 
             transform.SetParent(GameManager.Instance.Overlay.transform, false);
             GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 		}
         public void ShowFinishFlag()
         {
-            // thumbnail.SetActive(false);
-            // card.SetActive(false);
-            // finishFlag.SetActive(true);
-            // navigation.SetActive(false);
-            // showCard.interactable = false;
-
             thumbnailedParent = GetComponent<RectTransform>().parent;
+            thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
 
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
         }
         // called when game is ended
         public void ShowNavigation()
         {
-            // thumbnail.SetActive(false);
-            // card.SetActive(false);
-            // navigation.SetActive(true);
-            // showCard.interactable = false;
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
+            // TODO: magic numbers
+            GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -800);
 
             transform.SetParent(GameManager.Instance.Overlay.transform, false);
             GetComponent<RectTransform>().anchoredPosition = navigationPos;
