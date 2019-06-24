@@ -36,19 +36,20 @@ namespace EcoBuilder.UI
 
             edge.Constrain(level.Details.minEdges);
             chain.Constrain(level.Details.minChain);
-            loop.Constrain(level.Details.minChain);
+            loop.Constrain(level.Details.minLoop);
 
-            level.transform.SetParent(levelParent, false);
-            level.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-
-            level.OnFinishFlagPressed += ()=> CompleteLevel();
             constrainedFrom = level;
+            constrainedFrom.ShowThumbnail(levelParent, Vector2.zero);
+            constrainedFrom.FinishButton.onClick.AddListener(()=> OnLevelCompleted.Invoke());
         }
-
-        public void CompleteLevel()
+        void OnDestroy()
         {
-            GameManager.Instance.SavePlayedLevel(NumStars);
-            OnLevelCompleted.Invoke();
+            constrainedFrom.FinishButton.onClick.RemoveListener(()=> OnLevelCompleted.Invoke());
+        }
+        Func<bool> CanUpdate;
+        public void AllowUpdateWhen(Func<bool> Allowed)
+        {
+            CanUpdate = Allowed;
         }
 
 
@@ -142,38 +143,46 @@ namespace EcoBuilder.UI
         public int NumStars { get; private set; }
 		void Update()
 		{
-            int newNumStars = 0;
-			star1.SetBool("Filled", false);
-			star2.SetBool("Filled", false);
-			star3.SetBool("Filled", false);
-            if (!disjoint &&
-                producers.Count == maxProducers && consumers.Count == maxConsumers &&
-                edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
+            if (!CanUpdate())
             {
-                newNumStars += 1;
-				star1.SetBool("Filled", true);
-
-                if (feasible && stable)
+                constrainedFrom.FinishButton.interactable = false;
+            }
+            else
+            {
+                constrainedFrom.FinishButton.interactable = true;
+                int newNumStars = 0;
+                star1.SetBool("Filled", false);
+                star2.SetBool("Filled", false);
+                star3.SetBool("Filled", false);
+                if (!disjoint && feasible &&
+                    producers.Count == maxProducers && consumers.Count == maxConsumers &&
+                    edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
                 {
                     newNumStars += 1;
-					star2.SetBool("Filled", true);
+                    star1.SetBool("Filled", true);
 
-                    if (flux > targetFlux)
-					{
-						newNumStars += 1;
-						star3.SetBool("Filled", true);
-					}
+                    if (stable)
+                    {
+                        newNumStars += 1;
+                        star2.SetBool("Filled", true);
+
+                        if (flux > targetFlux)
+                        {
+                            newNumStars += 1;
+                            star3.SetBool("Filled", true);
+                        }
+                    }
                 }
+                if (NumStars == 0 && newNumStars > 0)
+                {
+                    constrainedFrom.ShowFinishFlag();
+                }
+                else if (NumStars > 0 && newNumStars == 0)
+                {
+                    constrainedFrom.ShowThumbnail();
+                }
+                NumStars = newNumStars;
             }
-            if (NumStars == 0 && newNumStars > 0)
-            {
-                constrainedFrom.ShowFinishFlag();
-            }
-            else if (NumStars > 0 && newNumStars == 0)
-            {
-                constrainedFrom.ShowThumbnail();
-            }
-			NumStars = newNumStars;
 		}
         public void Confetti()
         {

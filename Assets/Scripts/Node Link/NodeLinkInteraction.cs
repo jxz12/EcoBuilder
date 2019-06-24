@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
 
@@ -58,16 +59,16 @@ namespace EcoBuilder.NodeLink
 
         void Zoom(float amount)
         {
-            float zoom = amount * zoomMultiplier;
-            zoom = Mathf.Min(zoom, .5f);
-            zoom = Mathf.Max(zoom, -.5f);
+            // float zoom = amount * zoomMultiplier;
+            // zoom = Mathf.Min(zoom, .5f);
+            // zoom = Mathf.Max(zoom, -.5f);
 
-            GetComponent<RectTransform>().localScale *= 1 + zoom;
+            // GetComponent<RectTransform>().localScale *= 1 + zoom;
         }
         void Pan(Vector2 amount)
         {
-            Vector2 toPan = amount * panMultiplier;
-            GetComponent<RectTransform>().anchoredPosition += toPan;
+            // Vector2 toPan = amount * panMultiplier;
+            // GetComponent<RectTransform>().anchoredPosition += toPan;
         }
         void Rotate(Vector2 amount)
         {
@@ -156,7 +157,10 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        Node dummyTarget;
+        [SerializeField] Image tooltip;
+        [SerializeField] Sprite linkSprite, unlinkSprite, nolinkSprite;
+
+        Node dummySource;
         Link dummyLink;
         Node potentialSource, potentialTarget;
         public void OnBeginDrag(PointerEventData ped)
@@ -168,16 +172,18 @@ namespace EcoBuilder.NodeLink
             if (ped.pointerId==0 || ped.pointerId==-1) // only drag on left-click or one touch
             {
                 Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                if (draggedNode != null && draggedNode.CanBeSource && !frozen)
+                if (draggedNode != null && !frozen)
                 {
-                    potentialSource = draggedNode;
-                    draggedNode.Outline();
+                    potentialTarget = draggedNode;
+                    // potentialTarget.Outline();
 
-                    dummyTarget = Instantiate(nodePrefab, nodesParent);
-                    dummyTarget.transform.localScale = Vector3.zero;
+                    dummySource = Instantiate(nodePrefab, nodesParent);
+                    dummySource.transform.localScale = Vector3.zero;
                     dummyLink = Instantiate(linkPrefab, linksParent);
-                    dummyLink.Source = draggedNode;
-                    dummyLink.Target = dummyTarget;
+                    dummyLink.Target = draggedNode;
+                    dummyLink.Source = dummySource;
+
+                    tooltip.enabled = true;
                 }
             }
         }
@@ -186,8 +192,10 @@ namespace EcoBuilder.NodeLink
             // if single touch or left-click
             if (ped.pointerId==-1 || (ped.pointerId>=0 && Input.touchCount<2))
             {
-                if (potentialSource != null)
+                if (potentialTarget != null)
                 {
+                    tooltip.sprite = potentialTarget.CanBeTarget? linkSprite : nolinkSprite;
+
                     GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
                     Node snappedNode = null;
                     if (hoveredObject != null)
@@ -195,58 +203,69 @@ namespace EcoBuilder.NodeLink
                     if (snappedNode == null)
                         snappedNode = ClosestSnappedNode(ped.position);
 
-                    bool snapped = false;
-                    if (snappedNode!=null && snappedNode!=potentialSource)
+                    if (snappedNode!=null && snappedNode!=potentialTarget && potentialTarget.CanBeTarget)
                     {
-                        int i = potentialSource.Idx;
-                        int j = snappedNode.Idx;
+                        int i = snappedNode.Idx;
+                        int j = potentialTarget.Idx;
                         if (links[i,j] == null)
                         {
-                            if (snappedNode.CanBeTarget)
+                            if (snappedNode.CanBeSource)
                             {
-                                if (potentialTarget != null)
-                                    potentialTarget.Unoutline();
+                                // if (potentialSource != null)
+                                //     potentialSource.Unoutline();
 
-                                dummyLink.Target = snappedNode;
-                                potentialTarget = snappedNode;
-                                potentialTarget.Outline(1);
+                                dummyLink.Source = snappedNode;
+                                potentialSource = snappedNode;
+                                // potentialSource.Outline(1);
 
-                                snapped = true;
+                                tooltip.transform.position = Camera.main.WorldToScreenPoint(potentialSource.transform.position);
+                            }
+                            else
+                            {
+                                potentialSource = null;
+
+                                tooltip.sprite = nolinkSprite;
                             }
                         }
                         else
                         {
+                            // if (potentialSource != null)
+                            //     potentialSource.Unoutline();
+
+                            dummyLink.Source = potentialTarget; // hide dummyLink
+                            tooltip.transform.position = Camera.main.WorldToScreenPoint(snappedNode.transform.position);
+
                             if (links[i,j].Removable)
                             {
-                                if (potentialTarget != null)
-                                    potentialTarget.Unoutline();
+                                potentialSource = snappedNode;
+                                // potentialSource.Outline(2);
 
-                                dummyLink.Target = potentialSource; // hide dummyLink
-                                print("TODO: highlight potential cut better");
-                                potentialTarget = snappedNode;
-                                potentialTarget.Outline(2);
-
-                                snapped = true;
+                                tooltip.sprite = unlinkSprite;
                             }
                             else
                             {
-                                print("TODO: make it clear that this cannot be removed");
+                                potentialSource = null;
+
+                                tooltip.sprite = nolinkSprite;
                             }
+
                         }
                     }
-
-
-                    if (!snapped)
+                    else
                     {
-                        if (potentialTarget != null)
+                        if (potentialSource != null)
                         {
-                            potentialTarget.Unoutline();
-                            potentialTarget = null;
+                            // potentialSource.Unoutline();
+                            potentialSource = null;
                         }
                         Vector3 screenPoint = ped.position;
-                        screenPoint.z = potentialSource.transform.position.z - Camera.main.transform.position.z;
-                        dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
-                        dummyLink.Target = dummyTarget;
+                        screenPoint.z = potentialTarget.transform.position.z - Camera.main.transform.position.z;
+
+                        dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
+                        dummyLink.Source = dummySource;
+
+                        tooltip.transform.position = .5f * Camera.main.WorldToScreenPoint(potentialTarget.transform.position);
+                        tooltip.transform.position += .5f * Camera.main.WorldToScreenPoint(dummySource.transform.position);
                     }
                 }
                 else
@@ -273,17 +292,19 @@ namespace EcoBuilder.NodeLink
         }
         public void OnEndDrag(PointerEventData ped)
         {
-            if (potentialTarget != null)
-            {
-                potentialTarget.Unoutline();
-                potentialTarget = null;
-            }
             if (potentialSource != null)
             {
-                potentialSource.Unoutline();
+                // potentialSource.Unoutline();
                 potentialSource = null;
+            }
+            if (potentialTarget != null)
+            {
+                // potentialTarget.Unoutline();
+                potentialTarget = null;
                 Destroy(dummyLink.gameObject);
-                Destroy(dummyTarget.gameObject);
+                Destroy(dummySource.gameObject);
+
+                tooltip.enabled = false;
             }
 
             // release rotation

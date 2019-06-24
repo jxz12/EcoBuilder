@@ -235,6 +235,7 @@ namespace EcoBuilder.Model
 
         [SerializeField] GameObject busyIcon;
         bool equilibriumSolved = true, calculating = false;
+        public bool Ready { get { return equilibriumSolved && !calculating; } }
         void LateUpdate()
         {
             if (!equilibriumSolved && !calculating && idxToSpecies.Count>0)
@@ -252,6 +253,16 @@ namespace EcoBuilder.Model
         public float GetFlux(int res, int con)
         {
             return (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+        }
+
+        public Tuple<List<string>, List<double>> GetParameterisation()
+        {
+            var names = new List<string>()
+                { "r0","z0","a0","beta","p_v","p_d","e_p","e_c","kg_min","kg_max","a_ii_min","a_ii_max"};
+            var vals = new List<double>()
+                { r0,z0,a0,beta,p_v,p_d,e_p,e_c,kg_min,kg_max,a_ii_min,a_ii_max};
+
+            return Tuple.Create(names, vals);
         }
     }
 }

@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Events;
 using UnityEngine.UI;
+using System.Text;
 
 namespace EcoBuilder
 {
@@ -89,16 +89,34 @@ namespace EcoBuilder
         [SerializeField] RectTransform overlayParent;
         public RectTransform Overlay { get { return overlayParent; } }
 
-        [SerializeField] UI.Level LevelPrefabDevOnly; // purely for development
-        public UI.Level DefaultLevel { get { return Instantiate(LevelPrefabDevOnly); } }
+        // TODO: this is pretty ugly
+        [SerializeField] UI.Level LevelPrefab;
+        public UI.Level GetNewLevel()
+        {
+           return Instantiate(LevelPrefab);
+        }
 
         public UI.Level PlayedLevel { get; private set; }
         public void PlayLevel(UI.Level level)
         {
-            if (PlayedLevel != null && PlayedLevel != level)
-                Destroy(PlayedLevel.gameObject);
+            if (PlayedLevel != null)
+            {
+                if (PlayedLevel != level)
+                {
+                    Destroy(PlayedLevel.gameObject);
+                    PlayedLevel = level;
+                }
+                else
+                {
+                    // to make sure it stays alive
+                    PlayedLevel.transform.SetParent(Overlay.transform, true);
+                }
+            }
+            else
+            {
+                PlayedLevel = level;
+            }
 
-            PlayedLevel = level;
             UnloadScene(SceneManager.GetActiveScene().name);
             LoadScene("Play");
         }
@@ -128,16 +146,77 @@ namespace EcoBuilder
                 print("HOW DID YOU GET HERE");
             }
         }
-        public void SaveFoodWebToCsv(
+        public void SaveFoodWebToCSV(
             List<int> speciesIdxs, List<int> randomSeeds,
             List<float> sizes, List<float> greeds,
             List<int> resources, List<int> consumers,
-            Dictionary<string, double> parameterisation)
+            List<string> paramNames, List<double> paramValues)
         {
-            print("TODO: save a .csv to record the foodweb");
+            var sb = new StringBuilder();
+            int n = speciesIdxs.Count;
+            if (n != randomSeeds.Count || n != sizes.Count || n != greeds.Count)
+                throw new Exception("length of traits not equal to length of idxs");
+
+            int m = resources.Count;
+            if (m != consumers.Count)
+                throw new Exception("length of sources not equal to length of targets");
+
+            int p = paramNames.Count;
+            if (p != paramValues.Count)
+                throw new Exception("length of param names not equal to values");
+
+            sb.Append("Index,");
+            for (int i=0; i<n-1; i++)
+            {
+                sb.Append(speciesIdxs[i]).Append(",");
+            }
+            sb.Append(speciesIdxs[n-1]).Append("\nRandom Seed,");
+            for (int i=0; i<n-1; i++)
+            {
+                sb.Append(randomSeeds[i]).Append(",");
+            }
+            sb.Append(randomSeeds[n-1]).Append("\nBody Size,");
+            for (int i=0; i<n-1; i++)
+            {
+                sb.Append(sizes[i]).Append(",");
+            }
+            sb.Append(sizes[n-1]).Append("\nGreediness,");
+            for (int i=0; i<n-1; i++)
+            {
+                sb.Append(greeds[i]).Append(",");
+            }
+            sb.Append(greeds[n-1]).Append("\nResource,");
+            for (int ij=0; ij<m-1; ij++)
+            {
+                sb.Append(resources[ij]).Append(",");
+            }
+            sb.Append(resources[m-1]).Append("\nConsumer,");
+            for (int ij=0; ij<m-1; ij++)
+            {
+                sb.Append(consumers[ij]).Append(",");
+            }
+            sb.Append(consumers[m-1]).Append("\nParameter,");
+
+            for (int i=0; i<p-1; i++)
+            {
+                sb.Append(paramNames[i]).Append(",");
+            }
+            sb.Append(paramNames[p-1]).Append("\nValue,");
+            for (int i=0; i<p-1; i++)
+            {
+                sb.Append(paramValues[i]).Append(",");
+            }
+            sb.Append(paramValues[p-1]);
+
+            print(sb.ToString());
         }
         public void ReturnToMenu()
         {
+            if (PlayedLevel != null)
+            {
+                Destroy(PlayedLevel.gameObject);
+                PlayedLevel = null;
+            }
             GameManager.Instance.UnloadScene("Play");
             GameManager.Instance.LoadScene("Menu");
         }

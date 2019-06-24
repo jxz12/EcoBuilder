@@ -55,7 +55,6 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] Button thumbnail;
-        [SerializeField] Vector2 navigationPos = new Vector2(0, -400);
 
         // thumbnail
         [SerializeField] Text numberText;
@@ -69,9 +68,12 @@ namespace EcoBuilder.UI
         [SerializeField] ScrollRect descriptionArea;
 		[SerializeField] Text producers;
 		[SerializeField] Text consumers;
-		[SerializeField] Text goText;
+        [SerializeField] Button playButton;
+        [SerializeField] Button quitButton;
+        [SerializeField] Button replayButton;
 
-        // finish flag
+        // finish
+        [SerializeField] Button finishFlag;
 
         // navigation
         [SerializeField] RectTransform nextLevelParent;
@@ -105,18 +107,6 @@ namespace EcoBuilder.UI
                 Unlock();
             }
         }
-        Level levelPrefab;
-        public void ProvideLevelPrefab(Level prefab)
-        {
-            levelPrefab = prefab;
-        }
-
-        public void SaveFromScene(string incompleteSavePath, string fileExtension)
-        {
-            // saves Idx as file name
-            Details.savefilePath = incompleteSavePath + "/" + Details.idx + fileExtension;
-            SaveToFile();
-        }
 
         public bool LoadFromFile(string loadPath)
         {
@@ -130,7 +120,11 @@ namespace EcoBuilder.UI
                 name = Details.idx.ToString();
                 file.Close();
 
-                goText.text = "Go!";
+                playButton.gameObject.SetActive(true);
+                quitButton.gameObject.SetActive(false);
+                replayButton.gameObject.SetActive(false);
+
+
                 return true;
             }
             catch (SerializationException se)
@@ -160,23 +154,6 @@ namespace EcoBuilder.UI
             }
         }
 
-        public event Action OnFinishFlagPressed;
-        public void FinishLevel()
-        {
-            NextLevel = Instantiate(levelPrefab);
-            bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
-            if (successful)
-            {
-                NextLevel.transform.SetParent(nextLevelParent, false);
-            }
-            else
-            {
-                print("TODO: credits?");
-            }
-            ShowNavigation();
-            OnFinishFlagPressed.Invoke();
-        }
-
 
 
 
@@ -204,31 +181,61 @@ namespace EcoBuilder.UI
             numberText.enabled = true;
             starsImage.enabled = true;
         }
+        IEnumerator WaitThenEnableQuitReplay()
+        {
+            yield return new WaitForSeconds(.5f);
+            playButton.gameObject.SetActive(false);
+            quitButton.gameObject.SetActive(true);
+            replayButton.gameObject.SetActive(true);
+        }
+        public Level NextLevel { get; private set; }
+		public void StartGame()
+		{
+            GameManager.Instance.PlayLevel(this);
+            StartCoroutine(WaitThenEnableQuitReplay());
+
+            NextLevel = GameManager.Instance.GetNewLevel();
+            bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
+            if (successful)
+            {
+                NextLevel.transform.SetParent(nextLevelParent, false);
+            }
+            else
+            {
+                print("TODO: credits?");
+            }
+		}
         public void BackToMenu()
         {
             // TODO: 'are you sure' option
             Destroy(gameObject);
             GameManager.Instance.ReturnToMenu();
         }
+        public Button FinishButton { get { return finishFlag; } }
+        public void FinishLevel()
+        {
+            ShowNavigation();
+        }
+
 
         public void Replay()
         {
-            ShowThumbnail();
+            // finishFlag.onClick.RemoveAllListeners();
             GameManager.Instance.PlayLevel(this);
         }
 
-        // IEnumerator LerpToSize(int numFrames, Vector2 goal)
-        // {
-        //     var rect = GetComponent<RectTransform>();
-        //     Vector2 begin = rect.sizeDelta;
-        //     for (int i=0; i<numFrames; i++)
-        //     {
-        //         rect.sizeDelta = Vector3.Lerp(begin, goal, (float)i/numFrames);
-        //         yield return null;
-        //     }
-        //     rect.sizeDelta = goal;
-        //     descriptionArea.verticalNormalizedPosition = 1;
-        // }
+        IEnumerator LerpToPos(Vector2 goalPos, float duration)
+        {
+            Vector2 startPos = transform.localPosition;
+            float startTime = Time.time;
+            while (Time.time < startTime + duration)
+            {
+                transform.localPosition = Vector3.Slerp(startPos, goalPos, (Time.time-startTime)/duration);
+                yield return null;
+            }
+            transform.localPosition = goalPos;
+            descriptionArea.verticalNormalizedPosition = 1;
+        }
 
         enum State { Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
         Transform thumbnailedParent;
@@ -237,23 +244,39 @@ namespace EcoBuilder.UI
 		{
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
 
+            Vector2 prevPos = transform.position;
             transform.SetParent(thumbnailedParent, false);
-            GetComponent<RectTransform>().anchoredPosition = thumbnailedPos;
+            transform.position = prevPos;
+
+            StartCoroutine(LerpToPos(thumbnailedPos, .5f));
 		}
+		public void ShowThumbnail(Transform newParent, Vector2 newPos)
+        {
+            thumbnailedParent = newParent;
+            thumbnailedPos = newPos;
+            ShowThumbnail();
+        }
 		public void ShowCard()
 		{
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
 
-            thumbnailedParent = GetComponent<RectTransform>().parent;
-            thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
+            // thumbnailedParent = GetComponent<RectTransform>().parent;
+            // thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
+            thumbnailedParent = transform.parent;
+            thumbnailedPos = transform.localPosition;
 
+            Vector2 prevPos = transform.position;
             transform.SetParent(GameManager.Instance.Overlay.transform, false);
-            GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            transform.position = prevPos;
+
+            StartCoroutine(LerpToPos(Vector2.zero, .5f));
 		}
         public void ShowFinishFlag()
         {
-            thumbnailedParent = GetComponent<RectTransform>().parent;
-            thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
+            // thumbnailedParent = GetComponent<RectTransform>().parent;
+            // thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
+            thumbnailedParent = transform.parent;
+            thumbnailedPos = transform.localPosition;
 
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
         }
@@ -261,29 +284,6 @@ namespace EcoBuilder.UI
         public void ShowNavigation()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
-            // TODO: magic numbers
-            GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -800);
-
-            transform.SetParent(GameManager.Instance.Overlay.transform, false);
-            GetComponent<RectTransform>().anchoredPosition = navigationPos;
         }
-
-
-        public Level NextLevel { get; private set; }
-		public void StartEndGame()
-		{
-			// TODO: probably store a variable instead of this crap
-			if (goText.text == "Go!")
-			{
-                // don't call ShowThumbnail() because we want it to stay attached to GamManager
-                GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
-                goText.text = "Quit?";
-				GameManager.Instance.PlayLevel(this);
-			}
-			else
-			{
-                BackToMenu();
-			}
-		}
     }
 }

@@ -35,7 +35,8 @@ namespace EcoBuilder.NodeLink
             if (doLayout)
             {
                 TweenNodes();
-                RotateMomentum();
+                if (!frozen)
+                    RotateMomentum();
             }
         }
         private void Update()
@@ -62,11 +63,11 @@ namespace EcoBuilder.NodeLink
             }
         }
         // [SerializeField] GameObject busyIcon;
-        bool constraintsSolved = true;
-        public bool Calculating { get; private set; } = false;
+        bool constraintsSolved = true, calculating = false;
+        public bool Ready { get { return constraintsSolved && !calculating; } }
         private void LateUpdate()
         {
-            if (!constraintsSolved && !Calculating && nodes.Count>0)
+            if (!constraintsSolved && !calculating && nodes.Count>0)
             {
                 constraintsSolved = true;
                 ConstraintsAsync();
@@ -249,12 +250,16 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        // public IEnumerable<Tuple<int, int>> GetLinks()
-        // {
-        //     foreach (var ij in links.IndexPairs)
-        //     {
-        //         yield return ij;
-        //     }
-        // }
+        public Tuple<List<int>, List<int>> GetLinkIndices()
+        {
+            var sources = new List<int>();
+            var targets = new List<int>();
+            foreach (var ij in links.IndexPairs)
+            {
+                sources.Add(ij.Item1);
+                targets.Add(ij.Item2);
+            }
+            return Tuple.Create(sources, targets);
+        }
     }
 }

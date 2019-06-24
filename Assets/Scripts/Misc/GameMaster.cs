@@ -53,9 +53,7 @@ namespace EcoBuilder
 
             status.OnProducersAvailable += (b)=> inspector.SetProducersAvailable(b);
             status.OnConsumersAvailable += (b)=> inspector.SetConsumersAvailable(b);
-            status.OnLevelCompleted +=      ()=> inspector.Hide();
-            status.OnLevelCompleted +=      ()=> nodelink.Freeze();
-            status.OnLevelCompleted +=      ()=> status.Confetti();
+            status.OnLevelCompleted     +=  ()=> CompleteLevel();
 
 
             ///////////////////
@@ -63,9 +61,10 @@ namespace EcoBuilder
 
             var level = GameManager.Instance.PlayedLevel;
             if (level == null)
-                level = GameManager.Instance.DefaultLevel; // only for dev
-
+                level = GameManager.Instance.GetNewLevel(); // only for dev
+            
             status.ConstrainFromLevel(level);
+            status.AllowUpdateWhen(()=> model.Ready && nodelink.Ready);
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -88,6 +87,22 @@ namespace EcoBuilder
             
             // TODO: this is a little hacky? It may have to be changed when super focus is added anyway
             nodelink.Unfocus();
+        }
+        void CompleteLevel()
+        {
+            inspector.Hide();
+            nodelink.Freeze();
+            status.Confetti();
+
+            GameManager.Instance.SavePlayedLevel(status.NumStars);
+
+            var traits = inspector.GetSpeciesTraits();
+            var indices = nodelink.GetLinkIndices();
+            var param = model.GetParameterisation();
+
+            GameManager.Instance.SaveFoodWebToCSV(traits.Item1, traits.Item2, traits.Item3, traits.Item4,
+                                                  indices.Item1, indices.Item2,
+                                                  param.Item1, param.Item2);
         }
     }
 }

@@ -58,7 +58,6 @@ namespace EcoBuilder.UI
                 bool successful = newLevel.LoadFromFile(filepath);
                 if (successful)
                 {
-                    newLevel.ProvideLevelPrefab(levelPrefab);
                     levels.Add(newLevel);
                 }
                 else
@@ -70,19 +69,24 @@ namespace EcoBuilder.UI
             for (int i=0; i<levels.Count-1; i++)
             {
                 levels[i].transform.SetParent(levelGrid.transform, false);
-                levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
+                // levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
             }
             levels[levels.Count-1].transform.SetParent(levelGrid.transform, false);
         }
         void SaveSceneLevels()
         {
             // first load scene levels
-            foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
+            levels = new List<Level>(levelGrid.transform.GetComponentsInChildren<Level>().OrderBy(x=>x.Details.idx));
+            for (int i=0; i<levels.Count; i++)
             {
-                level.SaveFromScene(Application.persistentDataPath, ".gd");
-                // levels.Add(level);
+                levels[i].Details.savefilePath = Application.persistentDataPath + "/" + levels[i].Details.idx + ".gd";
             }
-            // levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
+            for (int i=0; i<levels.Count-1; i++)
+            {
+                levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
+                levels[i].SaveToFile();
+            }
+            levels[levels.Count-1].SaveToFile();
         }
     }
 }

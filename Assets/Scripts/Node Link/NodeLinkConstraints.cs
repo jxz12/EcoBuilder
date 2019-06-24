@@ -25,7 +25,7 @@ namespace EcoBuilder.NodeLink
             // do constraint calculations
             // check if not disjoint
 
-            Calculating = true;
+            calculating = true;
 
             Disjoint = CheckDisjoint();
             NumEdges = links.Count();
@@ -41,7 +41,7 @@ namespace EcoBuilder.NodeLink
 
             MaxLoop = await Task.Run(()=> LongestLoop());
 
-            Calculating = false;
+            calculating = false;
             OnConstraints.Invoke();
         }
 

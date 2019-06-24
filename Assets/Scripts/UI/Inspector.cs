@@ -326,5 +326,23 @@ namespace EcoBuilder.UI
                 incubatedParent.position = originalPos;
             }
         }
+
+        // for saving to csv
+        public Tuple<List<int>, List<int>, List<float>, List<float>> GetSpeciesTraits()
+        {
+            var idxs = new List<int>();
+            var seeds = new List<int>();
+            var sizes = new List<float>();
+            var greeds = new List<float>();
+
+            foreach (Species s in spawnedSpecies.Values)
+            {
+                idxs.Add(s.Idx);
+                seeds.Add(s.RandomSeed);
+                sizes.Add(s.BodySize);
+                greeds.Add(s.Greediness);
+            }
+            return Tuple.Create(idxs, seeds, sizes, greeds);
+        }
     }
 }

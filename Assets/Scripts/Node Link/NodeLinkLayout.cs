@@ -7,7 +7,7 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float layoutTween=.05f, sizeTween=.05f, zFlatTween=.01f;
+        [SerializeField] float layoutTween=.05f, sizeTween=.05f;
         void TweenNodes()
         {
             Vector3 centroid = Vector3.zero;
@@ -39,9 +39,6 @@ namespace EcoBuilder.NodeLink
             {
                 no.GoalPos = 
                     Vector3.Lerp(no.GoalPos, no.GoalPos-centroid, 1);
-
-                no.GoalPos = new Vector3(no.GoalPos.x, no.GoalPos.y,
-                    Mathf.Lerp(no.GoalPos.z, 0, zFlatTween));
 
                 no.transform.localPosition =
                     Vector3.Lerp(no.transform.localPosition, no.GoalPos, layoutTween);
