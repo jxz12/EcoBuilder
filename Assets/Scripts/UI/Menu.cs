@@ -30,7 +30,7 @@ namespace EcoBuilder.UI
         {
             levels = new List<Level>();
 
-            // SaveSceneLevels(); // uncomment for building levels
+            SaveSceneLevels(); // uncomment for building levels
             LoadFileLevels();
 
             // let the grid do the layout first

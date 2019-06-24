@@ -113,9 +113,9 @@ namespace EcoBuilder.UI
             Details.savefilePath = loadPath;
 
             BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(loadPath, FileMode.Open);
             try
             {
+                FileStream file = File.Open(loadPath, FileMode.Open);
                 Details = (LevelDetails)bf.Deserialize(file);
                 name = Details.idx.ToString();
                 file.Close();
@@ -126,6 +126,11 @@ namespace EcoBuilder.UI
 
 
                 return true;
+            }
+            catch (ArgumentException ae)
+            {
+                print("handled exception: " + ae.Message);
+                return false;
             }
             catch (SerializationException se)
             {

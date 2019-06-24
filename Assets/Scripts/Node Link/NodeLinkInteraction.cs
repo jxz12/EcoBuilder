@@ -87,9 +87,9 @@ namespace EcoBuilder.NodeLink
             yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
             nodesParent.Rotate(Vector3.up, yRotationMomentum);
 
-            var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-            var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
-            graphParent.transform.localRotation = lerped;
+            // var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+            // var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
+            // graphParent.transform.localRotation = lerped;
         }
 
         /////////////////////////////
@@ -184,6 +184,10 @@ namespace EcoBuilder.NodeLink
                     dummyLink.Source = dummySource;
 
                     tooltip.enabled = true;
+                }
+                else
+                {
+                    doLayout = true;
                 }
             }
         }
