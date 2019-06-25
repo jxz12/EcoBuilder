@@ -34,7 +34,7 @@ namespace EcoBuilder.NodeLink
                 centroid.y = 0;
 
                 // TODO: magic numbers here, have a max height or something
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,0,800), layoutTween);
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,-20,800), layoutTween);
             }
             foreach (Node no in nodes)
             {
