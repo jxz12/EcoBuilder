@@ -116,13 +116,6 @@ namespace EcoBuilder.Model
             simulation.RemoveSpecies(toRemove);
             idxToSpecies.Remove(idx);
             equilibriumSolved = false;
-
-            if (idxToSpecies.Count == 0)
-            {
-                Feasible = Stable = Nonreactive = false;
-                // TODO: fix this because OnCalculated() makes nodelink try to get abundances
-                // OnCalculated.Invoke();
-            }
         }
         static double GetOnLogScale(float normalised, double minVal, double maxVal)
         {
@@ -198,9 +191,10 @@ namespace EcoBuilder.Model
 
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
-        public bool Nonreactive { get; private set; } = false;
+        // public bool Nonreactive { get; private set; } = false;
 
         public float TotalFlux { get; private set; } = 0;
+        public float TotalAbundance { get; private set; } = 0;
         // TODO: May's (or Tang's) complexity criteria here
         // public float Complexity { get; private set; } = 0;
 
@@ -208,10 +202,11 @@ namespace EcoBuilder.Model
         {
             calculating = true;
             Feasible = await Task.Run(() => simulation.SolveFeasibility());
-            TotalFlux = (float)simulation.GetTotalFlux();
+            TotalFlux = (float)simulation.TotalFlux;
+            TotalAbundance = (float)simulation.TotalAbundance;
 
             Stable = await Task.Run(() => simulation.SolveStability());
-            Nonreactive = await Task.Run(() => simulation.SolveReactivity());
+            // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)

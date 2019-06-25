@@ -28,7 +28,7 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
-            GoalPos = pos;
+            transform.localPosition = GoalPos = pos;
 
             shape = shapeObject.transform;
             shape.SetParent(transform, false);

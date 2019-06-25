@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
 
@@ -23,27 +22,25 @@ namespace EcoBuilder.NodeLink
         {
             if (focus != nodes[idx])
             {
-                // if (focus != null)
-                // {
-                //     focus.Unoutline();
-                // }
                 focus = nodes[idx];
-                // focus.Outline();
             }
         }
         public void Unfocus()
         {
             if (focus != null)
             {
-                // focus.Unoutline();
                 focus = null;
+            }
+            else
+            {
+                StartCoroutine(ResetPan(Vector2.zero, .5f));
+                StartCoroutine(ResetZoom(Vector3.one, .5f));
             }
         }
         bool frozen = false;
         public void Freeze()
         {
             GetComponent<Animator>().SetTrigger("Freeze");
-            Unfocus();
             frozen = true;
         }
 
@@ -59,17 +56,45 @@ namespace EcoBuilder.NodeLink
 
         void Zoom(float amount)
         {
-            // float zoom = amount * zoomMultiplier;
-            // zoom = Mathf.Min(zoom, .5f);
-            // zoom = Mathf.Max(zoom, -.5f);
+            float zoom = amount * zoomMultiplier;
+            zoom = Mathf.Min(zoom, .5f);
+            zoom = Mathf.Max(zoom, -.5f);
 
-            // GetComponent<RectTransform>().localScale *= 1 + zoom;
+            GetComponent<RectTransform>().localScale *= 1 + zoom;
         }
         void Pan(Vector2 amount)
         {
-            // Vector2 toPan = amount * panMultiplier;
-            // GetComponent<RectTransform>().anchoredPosition += toPan;
+            Vector2 toPan = amount * panMultiplier;
+            GetComponent<RectTransform>().anchoredPosition += toPan;
         }
+
+        IEnumerator ResetPan(Vector2 goalPan, float duration)
+        {
+            var rt = GetComponent<RectTransform>();
+            Vector2 startPan = rt.anchoredPosition;
+            float startTime = Time.time;
+            while (Time.time < startTime + duration)
+            {
+                rt.anchoredPosition = Vector3.Lerp(startPan, goalPan, (Time.time-startTime)/duration);
+                // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
+                yield return null;
+            }
+            // rt.anchoredPosition = goalPan;
+        }
+        IEnumerator ResetZoom(Vector3 goalZoom, float duration)
+        {
+            var rt = GetComponent<RectTransform>();
+            Vector3 startZoom = rt.localScale;
+            float startTime = Time.time;
+            while (Time.time < startTime + duration)
+            {
+                rt.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
+                // rt.localScale = Vector3.Lerp(rt.localScale, goalZoom, layoutTween);
+                yield return null;
+            }
+            rt.localScale = goalZoom;
+        }
+
         void Rotate(Vector2 amount)
         {
             float ySpin = -amount.x * rotationMultiplier;
@@ -144,7 +169,6 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    print("TODO: zoom to centroid");
                     Unfocus();
                     OnUnfocused.Invoke();
                 }
@@ -157,12 +181,10 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        [SerializeField] Image tooltip;
-        [SerializeField] Sprite linkSprite, unlinkSprite, nolinkSprite;
-
         Node dummySource;
         Link dummyLink;
         Node potentialSource, potentialTarget;
+        [SerializeField] UI.Tooltip tooltip;
         public void OnBeginDrag(PointerEventData ped)
         {
             if (potentialHold == false) // already held and maybe deleted
@@ -183,7 +205,7 @@ namespace EcoBuilder.NodeLink
                     dummyLink.Target = draggedNode;
                     dummyLink.Source = dummySource;
 
-                    tooltip.enabled = true;
+                    tooltip.Enable(true);
                 }
                 else
                 {
@@ -198,7 +220,11 @@ namespace EcoBuilder.NodeLink
             {
                 if (potentialTarget != null)
                 {
-                    tooltip.sprite = potentialTarget.CanBeTarget? linkSprite : nolinkSprite;
+                    if (potentialTarget.CanBeTarget)
+                        tooltip.ShowLink();
+                    else
+                        tooltip.ShowNoLink();
+                    
 
                     GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
                     Node snappedNode = null;
@@ -211,6 +237,8 @@ namespace EcoBuilder.NodeLink
                     {
                         int i = snappedNode.Idx;
                         int j = potentialTarget.Idx;
+
+                        tooltip.SetPos(Camera.main.WorldToScreenPoint(snappedNode.transform.position));
                         if (links[i,j] == null)
                         {
                             if (snappedNode.CanBeSource)
@@ -218,17 +246,18 @@ namespace EcoBuilder.NodeLink
                                 // if (potentialSource != null)
                                 //     potentialSource.Unoutline();
 
-                                dummyLink.Source = snappedNode;
-                                potentialSource = snappedNode;
                                 // potentialSource.Outline(1);
 
-                                tooltip.transform.position = Camera.main.WorldToScreenPoint(potentialSource.transform.position);
+                                dummyLink.Source = snappedNode;
+                                potentialSource = snappedNode;
+
+                                tooltip.ShowAddLink();
                             }
                             else
                             {
                                 potentialSource = null;
 
-                                tooltip.sprite = nolinkSprite;
+                                tooltip.ShowNoLink();
                             }
                         }
                         else
@@ -237,20 +266,20 @@ namespace EcoBuilder.NodeLink
                             //     potentialSource.Unoutline();
 
                             dummyLink.Source = potentialTarget; // hide dummyLink
-                            tooltip.transform.position = Camera.main.WorldToScreenPoint(snappedNode.transform.position);
 
                             if (links[i,j].Removable)
                             {
-                                potentialSource = snappedNode;
                                 // potentialSource.Outline(2);
 
-                                tooltip.sprite = unlinkSprite;
+                                potentialSource = snappedNode;
+
+                                tooltip.ShowUnLink();
                             }
                             else
                             {
                                 potentialSource = null;
 
-                                tooltip.sprite = nolinkSprite;
+                                tooltip.ShowNoLink();
                             }
 
                         }
@@ -268,8 +297,9 @@ namespace EcoBuilder.NodeLink
                         dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
                         dummyLink.Source = dummySource;
 
-                        tooltip.transform.position = .5f * Camera.main.WorldToScreenPoint(potentialTarget.transform.position);
-                        tooltip.transform.position += .5f * Camera.main.WorldToScreenPoint(dummySource.transform.position);
+                        var tipPos = .5f * Camera.main.WorldToScreenPoint(potentialTarget.transform.position);
+                        tipPos += .5f * Camera.main.WorldToScreenPoint(dummySource.transform.position);
+                        tooltip.SetPos(tipPos);
                     }
                 }
                 else
@@ -308,7 +338,7 @@ namespace EcoBuilder.NodeLink
                 Destroy(dummyLink.gameObject);
                 Destroy(dummySource.gameObject);
 
-                tooltip.enabled = false;
+                tooltip.Enable(false);
             }
 
             // release rotation

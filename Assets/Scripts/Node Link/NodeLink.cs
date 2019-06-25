@@ -91,7 +91,7 @@ namespace EcoBuilder.NodeLink
 
             Node newNode = Instantiate(nodePrefab, nodesParent);
 
-            var startPos = new Vector3(UnityEngine.Random.Range(.5f, .9f), 0, -.2f);
+            var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1.5f), 0, -.2f);
             // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;

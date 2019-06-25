@@ -9,9 +9,9 @@ namespace EcoBuilder.UI
     {
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraint edge, chain, loop;
+        [SerializeField] Text abundanceText, fluxText;
+        [SerializeField] Text producerCount, consumerCount;
         [SerializeField] Transform levelParent;
-        [SerializeField] Text producerCount;
-        [SerializeField] Text consumerCount;
 
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
@@ -116,10 +116,8 @@ namespace EcoBuilder.UI
 
 
 
-        /////////////////////////
-        // additional stars
-
 		bool feasible, stable;
+        float targetAbundance, abundance;
         float targetFlux, flux;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
@@ -134,6 +132,16 @@ namespace EcoBuilder.UI
         public void DisplayTotalFlux(float totalFlux)
         {
             flux = totalFlux;
+            fluxText.text = flux.ToString();
+        }
+		public void SetTargetAbundance(float target)
+		{
+			targetAbundance = target;
+		}
+        public void DisplayTotalAbundance(float totalAbundance)
+        {
+            abundance = totalAbundance;
+            abundanceText.text = abundance.ToString();
         }
 
 

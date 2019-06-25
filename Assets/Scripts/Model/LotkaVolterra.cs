@@ -213,21 +213,29 @@ namespace EcoBuilder.Model
             // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
             // solve flux values
+            TotalFlux = 0;
             for (int i=0; i<internInteractions.Count; i++)
             {
                 foreach (int j in internInteractions[i])
                 {
                     flux[i,j] *= abundance[i];
+                    TotalFlux += flux[i,j];
                 }
             }
 
+            TotalAbundance = 0;
+            bool feasible = true;
             for (int idx=0; idx<abundance.Count; idx++)
             {
+                TotalAbundance += abundance[idx];
                 if (abundance[idx] <= 0)
-                    return false;
+                    feasible = false;
             }
-            return true;
+            return feasible;
         }
+        public double TotalAbundance { get; private set; }
+        public double TotalFlux { get; private set; }
+
         public double GetSolvedAbundance(T species)
         {
             int idx = externToIntern[species];
@@ -238,18 +246,6 @@ namespace EcoBuilder.Model
             int i = externToIntern[res];
             int j = externToIntern[con];
             return flux[i,j];
-        }
-        public double GetTotalFlux()
-        {
-            double total = 0;
-            for (int i=0; i<internInteractions.Count; i++)
-            {
-                foreach (int j in internInteractions[i])
-                {
-                    total += flux[i,j];
-                }
-            }
-            return total;
         }
 
         ////////////////////
