@@ -11,13 +11,29 @@ namespace EcoBuilder.UI
 		public void Constrain(int limit)
 		{
 			constraintLimit = limit;
-			number.text = limit.ToString();
+			if (limit < 0)
+			{
+				gameObject.SetActive(false);
+			}
+			else
+			{
+				number.text = "0/" + limit;
+			}
 		}
 		public void Display(int value)
 		{
 			currentValue = value;
-			number.text = value.ToString();
+			number.text = currentValue + "/" + constraintLimit;
 			IsSatisfied = (currentValue >= constraintLimit);
+
+			if (IsSatisfied)
+			{
+				icon.color = Color.green;
+			}
+			else
+			{
+				icon.color = Color.white;
+			}
 		}
 		public bool IsSatisfied { get; private set; }
 	}

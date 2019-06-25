@@ -8,9 +8,8 @@ namespace EcoBuilder.UI
     public class StatusBar : MonoBehaviour
     {
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] Constraint edge, chain, loop;
+        [SerializeField] Constraint leaf, paw, edge, chain, loop;
         [SerializeField] Text abundanceText, fluxText;
-        [SerializeField] Text producerCount, consumerCount;
         [SerializeField] Transform levelParent;
 
         public event Action<bool> OnProducersAvailable;
@@ -29,11 +28,8 @@ namespace EcoBuilder.UI
             if (level.Details.numProducers < 0 || level.Details.numConsumers < 0)
                 throw new Exception("Cannot have negative numbers of species");
             
-            maxProducers = level.Details.numProducers;
-            maxConsumers = level.Details.numConsumers;
-            producerCount.text = (maxProducers-producers.Count).ToString();
-            consumerCount.text = (maxConsumers-consumers.Count).ToString();
-
+            leaf.Constrain(level.Details.numProducers);
+            paw.Constrain(level.Details.numConsumers);
             edge.Constrain(level.Details.minEdges);
             chain.Constrain(level.Details.minChain);
             loop.Constrain(level.Details.minLoop);
@@ -65,21 +61,23 @@ namespace EcoBuilder.UI
             {
                 // TODO: this will have to be changed if we want to let species switch type
                 // consumers.Remove(idx);
+
                 producers.Add(idx);
                 if (producers.Count >= maxProducers)
                     OnProducersAvailable.Invoke(false);
 
-                producerCount.text = (maxProducers-producers.Count).ToString();
+                leaf.Display(producers.Count);
+                // producerCount.text = (maxProducers-producers.Count).ToString();
             }
             else
             {
                 // producers.Remove(idx);
                 consumers.Add(idx);
-                consumerCount.text = (maxConsumers-consumers.Count).ToString();
                 if (consumers.Count >= maxConsumers)
                     OnConsumersAvailable.Invoke(false);
 
-                consumerCount.text = (maxConsumers-producers.Count).ToString();
+                paw.Display(consumers.Count);
+                // consumerCount.text = (maxConsumers-producers.Count).ToString();
             }
         }
         public void RemoveIdx(int idx)
@@ -90,7 +88,8 @@ namespace EcoBuilder.UI
                     OnProducersAvailable.Invoke(true);
 
                 producers.Remove(idx);
-                producerCount.text = (maxProducers-producers.Count).ToString();
+                leaf.Display(producers.Count);
+                // producerCount.text = (maxProducers-producers.Count).ToString();
             }
             else
             {
@@ -98,7 +97,8 @@ namespace EcoBuilder.UI
                     OnConsumersAvailable.Invoke(true);
 
                 consumers.Remove(idx);
-                consumerCount.text = (maxConsumers-consumers.Count).ToString();
+                paw.Display(consumers.Count);
+                // consumerCount.text = (maxConsumers-consumers.Count).ToString();
             }
         }
         public void DisplayNumEdges(int numEdges)
@@ -125,15 +125,6 @@ namespace EcoBuilder.UI
             feasible = isFeasible;
 			stable = isStable;
         }
-		public void SetTargetFlux(float target)
-		{
-			targetFlux = target;
-		}
-        public void DisplayTotalFlux(float totalFlux)
-        {
-            flux = totalFlux;
-            fluxText.text = flux.ToString();
-        }
 		public void SetTargetAbundance(float target)
 		{
 			targetAbundance = target;
@@ -141,7 +132,20 @@ namespace EcoBuilder.UI
         public void DisplayTotalAbundance(float totalAbundance)
         {
             abundance = totalAbundance;
-            abundanceText.text = abundance.ToString();
+            // abundanceText.text = abundance.ToString();
+            abundanceText.text = Mathf.Log10(abundance*1e10f).ToString("0.0");
+            print(abundance);
+        }
+		public void SetTargetFlux(float target)
+		{
+			targetFlux = target;
+		}
+        public void DisplayTotalFlux(float totalFlux)
+        {
+            flux = totalFlux;
+            // fluxText.text = flux.ToString();
+            fluxText.text = Mathf.Log10(flux*1e10f).ToString("0.0");
+            print(flux);
         }
 
 
@@ -163,7 +167,7 @@ namespace EcoBuilder.UI
                 star2.SetBool("Filled", false);
                 star3.SetBool("Filled", false);
                 if (!disjoint && feasible &&
-                    producers.Count == maxProducers && consumers.Count == maxConsumers &&
+                    leaf.IsSatisfied && paw.IsSatisfied &&
                     edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
                 {
                     newNumStars += 1;
