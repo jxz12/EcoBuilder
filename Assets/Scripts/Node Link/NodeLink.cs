@@ -20,7 +20,7 @@ namespace EcoBuilder.NodeLink
 
         private void FixedUpdate()
         {
-            if (nodes.Count > 0 && !frozen)
+            if (nodes.Count > 0)// && !frozen)
             {
                 //////////////////////
                 // do stress SGD
@@ -38,8 +38,7 @@ namespace EcoBuilder.NodeLink
             if (doLayout)
             {
                 TweenNodes();
-                if (!frozen)
-                    RotateMomentum();
+                RotateMomentum();
             }
         }
         private void Update()

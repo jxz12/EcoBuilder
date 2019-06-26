@@ -125,17 +125,31 @@ namespace EcoBuilder.NodeLink
         bool doLayout = true;
         public void OnPointerDown(PointerEventData ped)
         {
-            if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+            // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+            if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 potentialHold = true;
                 doLayout = false;
                 StartCoroutine(WaitForHold(holdThreshold, ped));
 
-                pressedNode = ClosestSnappedNode(ped);
-                if (pressedNode != null && pressedNode.Removable && !frozen)
+                if (!frozen)
                 {
-                    // prepare for deletion
-                    pressedNode.Shake(true);
+                    pressedNode = ClosestSnappedNode(ped);
+                    if (pressedNode != null)
+                    {
+                        tooltip.Enable(true);
+                        tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
+                        if (pressedNode.Removable)
+                        {
+                            // prepare for deletion
+                            pressedNode.Shake(true);
+                            tooltip.ShowTrash();
+                        }
+                        else
+                        {
+                            tooltip.ShowNoTrash();
+                        }
+                    }
                 }
             }
         }
@@ -151,27 +165,39 @@ namespace EcoBuilder.NodeLink
             }
             potentialHold = false;
             
-            if (pressedNode != null && pressedNode.Removable && !frozen)
+            if (!frozen && pressedNode != null && pressedNode.Removable)
             {
                 RemoveNode(pressedNode.Idx);
+                tooltip.Enable(false);
             }
         }
         public void OnPointerUp(PointerEventData ped)
         {
-            if (potentialHold) // if in the time window for a click
+            // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+            if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                potentialHold = false;
-
-                if (pressedNode != null)
+                if (potentialHold) // if in the time window for a click
                 {
-                    pressedNode.Shake(false);
+                    potentialHold = false;
+
+                    if (pressedNode != null)
+                    {
+                        pressedNode.Shake(false);
+                        FocusNode(pressedNode.Idx);
+                        OnNodeFocused.Invoke(pressedNode.Idx);
+                        tooltip.Enable(false);
+                    }
+                    else
+                    {
+                        Unfocus();
+                        OnUnfocused.Invoke();
+                    }
+                }
+                else if (!ped.dragging && pressedNode != null) // not dragging but not deleted either
+                {
                     FocusNode(pressedNode.Idx);
                     OnNodeFocused.Invoke(pressedNode.Idx);
-                }
-                else
-                {
-                    Unfocus();
-                    OnUnfocused.Invoke();
+                    tooltip.Enable(false);
                 }
             }
 
@@ -207,13 +233,18 @@ namespace EcoBuilder.NodeLink
 
                     tooltip.Enable(true);
                 }
+                else
+                {
+                    tooltip.Enable(false);
+                }
             }
             // else
             // {
             //     doLayout = true;
             // }
         }
-        Link outlined;
+        Link outlinedLink;
+        Node outlinedNode;
         public void OnDrag(PointerEventData ped)
         {
             // if single touch or left-click
@@ -226,10 +257,12 @@ namespace EcoBuilder.NodeLink
                     else
                         tooltip.ShowNoLink();
 
-                    if (outlined != null)
+                    if (outlinedLink != null)
                     {
-                        outlined.Unoutline();
-                        outlined = null;
+                        outlinedLink.Unoutline();
+                        outlinedLink = null;
+                        outlinedNode.Unoutline();
+                        outlinedNode = null;
                     }
 
                     Node snappedNode = ClosestSnappedNode(ped);
@@ -245,7 +278,9 @@ namespace EcoBuilder.NodeLink
                             if (snappedNode.CanBeSource)
                             {
                                 dummyLink.Outline(1);
-                                outlined = dummyLink;
+                                outlinedLink = dummyLink;
+                                snappedNode.Outline(1);
+                                outlinedNode = snappedNode;
 
                                 dummyLink.Source = snappedNode;
                                 potentialSource = snappedNode;
@@ -261,18 +296,16 @@ namespace EcoBuilder.NodeLink
                         }
                         else
                         {
-                            // if (potentialSource != null)
-                            //     potentialSource.Unoutline();
-
                             dummyLink.Source = potentialTarget; // hide dummyLink
 
                             if (links[i,j].Removable)
                             {
                                 links[i,j].Outline(2);
-                                outlined = links[i,j];
+                                outlinedLink = links[i,j];
+                                snappedNode.Outline(2);
+                                outlinedNode = snappedNode;
 
                                 potentialSource = snappedNode;
-                                // potentialSource.Outline(2);
 
                                 tooltip.ShowUnLink();
                             }
@@ -289,7 +322,6 @@ namespace EcoBuilder.NodeLink
                     {
                         if (potentialSource != null)
                         {
-                            // potentialSource.Unoutline();
                             potentialSource = null;
                         }
                         Vector3 screenPoint = ped.position;
@@ -329,14 +361,17 @@ namespace EcoBuilder.NodeLink
         }
         public void OnEndDrag(PointerEventData ped)
         {
+            if (outlinedLink != null)
+            {
+                outlinedLink.Unoutline();
+                outlinedNode.Unoutline();
+            }
             if (potentialSource != null)
             {
-                // potentialSource.Unoutline();
                 potentialSource = null;
             }
             if (potentialTarget != null)
             {
-                // potentialTarget.Unoutline();
                 potentialTarget = null;
 
                 Destroy(dummyLink.gameObject);
