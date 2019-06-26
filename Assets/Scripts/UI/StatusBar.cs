@@ -17,7 +17,6 @@ namespace EcoBuilder.UI
 
         public event Action OnLevelCompleted;
 
-        int maxProducers=int.MaxValue, maxConsumers=int.MaxValue;
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
 
@@ -30,6 +29,7 @@ namespace EcoBuilder.UI
             
             leaf.Constrain(level.Details.numProducers);
             paw.Constrain(level.Details.numConsumers);
+
             edge.Constrain(level.Details.minEdges);
             chain.Constrain(level.Details.minChain);
             loop.Constrain(level.Details.minLoop);
@@ -63,7 +63,7 @@ namespace EcoBuilder.UI
                 // consumers.Remove(idx);
 
                 producers.Add(idx);
-                if (producers.Count >= maxProducers)
+                if (producers.Count >= leaf.ConstraintLimit)
                     OnProducersAvailable.Invoke(false);
 
                 leaf.Display(producers.Count);
@@ -73,7 +73,7 @@ namespace EcoBuilder.UI
             {
                 // producers.Remove(idx);
                 consumers.Add(idx);
-                if (consumers.Count >= maxConsumers)
+                if (consumers.Count >= paw.ConstraintLimit)
                     OnConsumersAvailable.Invoke(false);
 
                 paw.Display(consumers.Count);
@@ -84,7 +84,7 @@ namespace EcoBuilder.UI
         {
             if (producers.Contains(idx))
             {
-                if (producers.Count == maxProducers)
+                if (producers.Count == leaf.ConstraintLimit)
                     OnProducersAvailable.Invoke(true);
 
                 producers.Remove(idx);
@@ -93,7 +93,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                if (consumers.Count == maxConsumers)
+                if (consumers.Count == paw.ConstraintLimit)
                     OnConsumersAvailable.Invoke(true);
 
                 consumers.Remove(idx);
@@ -125,26 +125,16 @@ namespace EcoBuilder.UI
             feasible = isFeasible;
 			stable = isStable;
         }
-		public void SetTargetAbundance(float target)
-		{
-			targetAbundance = target;
-		}
         public void DisplayTotalAbundance(float totalAbundance)
         {
             abundance = totalAbundance;
-            // abundanceText.text = abundance.ToString();
-            abundanceText.text = Mathf.Log10(abundance*1e10f).ToString("0.0");
+            abundanceText.text = GameManager.Instance.NormaliseScore(totalAbundance).ToString("000");
             print(abundance);
         }
-		public void SetTargetFlux(float target)
-		{
-			targetFlux = target;
-		}
         public void DisplayTotalFlux(float totalFlux)
         {
             flux = totalFlux;
-            // fluxText.text = flux.ToString();
-            fluxText.text = Mathf.Log10(flux*1e10f).ToString("0.0");
+            fluxText.text = GameManager.Instance.NormaliseScore(totalFlux).ToString("000");
             print(flux);
         }
 
@@ -166,19 +156,19 @@ namespace EcoBuilder.UI
                 star1.SetBool("Filled", false);
                 star2.SetBool("Filled", false);
                 star3.SetBool("Filled", false);
-                if (!disjoint && feasible &&
+                if (!disjoint && feasible && stable &&
                     leaf.IsSatisfied && paw.IsSatisfied &&
                     edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
                 {
                     newNumStars += 1;
                     star1.SetBool("Filled", true);
 
-                    if (stable)
+                    if (flux > constrainedFrom.Details.targetFlux1)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
 
-                        if (flux > targetFlux)
+                        if (flux > constrainedFrom.Details.targetFlux2)
                         {
                             newNumStars += 1;
                             star3.SetBool("Filled", true);

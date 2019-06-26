@@ -30,6 +30,9 @@ namespace EcoBuilder.NodeLink
 
                 LayoutSGD(dq, d_j);
                 toBFS.Enqueue(dq);
+                
+                // foreach (Node no in nodes)
+                //     no.GoalPos = new Vector3(no.GoalPos.x, no.GoalPos.y, no.GoalPos.z*.99f); // use to squish in z
             }
 
             if (doLayout)
@@ -91,7 +94,7 @@ namespace EcoBuilder.NodeLink
 
             Node newNode = Instantiate(nodePrefab, nodesParent);
 
-            var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1.5f), 0, -.2f);
+            var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
             // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
             newNode.Init(idx, startPos, shape);
             nodes[idx] = newNode;
@@ -137,7 +140,6 @@ namespace EcoBuilder.NodeLink
             trophicLevels.RemoveAt(idx);
 
             constraintsSolved = false;
-
             OnNodeRemoved.Invoke(idx);
         }
 
@@ -178,18 +180,18 @@ namespace EcoBuilder.NodeLink
         public void SetIfNodeRemovable(int idx, bool removable)
         {
             nodes[idx].Removable = removable;
-            if (!removable)
-                nodes[idx].Outline();
-            else
-                nodes[idx].Unoutline();
+            // if (!removable)
+            //     nodes[idx].Outline();
+            // else
+            //     nodes[idx].Unoutline();
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            if (!removable)
-                links[i,j].Outline();
-            else
-                links[i,j].Unoutline();
+            // if (!removable)
+            //     links[i,j].Outline();
+            // else
+            //     links[i,j].Unoutline();
         }
 
 

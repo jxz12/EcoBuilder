@@ -37,13 +37,18 @@ namespace EcoBuilder.UI
             public List<float> sizes;
             public List<float> greeds;
             public List<int> randomSeeds;
+            public List<bool> editables;
             // edges
             public int numInteractions;
             public List<int> resources;
             public List<int> consumers;
 
+            // high scores
+            public float targetFlux1;
+            public float targetFlux2;
+            public float highestFlux;
+
             // -1 is locked, 0,1,2,3 unlocked plus number of stars
-            public float targetFlux;
             public int numStars;
             public string savefilePath;
             public string nextLevelPath;

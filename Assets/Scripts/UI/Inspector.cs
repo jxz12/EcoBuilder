@@ -163,7 +163,7 @@ namespace EcoBuilder.UI
         // external stuff
 
         // for loading from level
-        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed)
+        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable)
         {
             if (inspected != null)
                 throw new Exception("somehow inspecting??");
@@ -173,7 +173,7 @@ namespace EcoBuilder.UI
                 throw new Exception("greed not in bounds");
 
             var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
-            toSpawn.Editable = false;
+            toSpawn.Editable = editable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
             Spawn(toSpawn);

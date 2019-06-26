@@ -139,6 +139,7 @@ namespace EcoBuilder
                     PlayedLevel.NextLevel.Unlock();
                 }
 
+
                 PlayedLevel.SaveToFile();
             }
             else
@@ -219,6 +220,15 @@ namespace EcoBuilder
             }
             GameManager.Instance.UnloadScene("Play");
             GameManager.Instance.LoadScene("Menu");
+        }
+
+        public float NormaliseScore(float input)
+        {
+            if (input <= 0)
+                return 0;
+
+            float normalised = Mathf.Log10(input * 1e10f) * 25;
+            return Mathf.Max(normalised, 1f);
         }
 
 

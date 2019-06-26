@@ -77,17 +77,14 @@ namespace EcoBuilder.NodeLink
                         nodes[i].GoalPos -= mu * r;
                         nodes[j].GoalPos += mu * r;
                     }
-                    else // otherwise try to move the vertices at least a distance of 1 away
+                    else if (mag < 1) // otherwise push away if too close
                     {
-                        if (mag < 1) // only push away
-                        {
-                            float mu = Mathf.Min(separationStep, 1);
+                        float mu = Mathf.Min(separationStep, 1);
 
-                            Vector3 r = ((mag-1)/2) * (X_ij/mag);
-                            r.y = 0; // use to keep y position
-                            nodes[i].GoalPos -= mu * r;
-                            nodes[j].GoalPos += mu * r;
-                        }
+                        Vector3 r = ((mag-1)/2) * (X_ij/mag);
+                        r.y = 0; // use to keep y position
+                        nodes[i].GoalPos -= mu * r;
+                        nodes[j].GoalPos += mu * r;
                     }
                 }
                 // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;

@@ -228,7 +228,6 @@ namespace EcoBuilder.Model
             OnEquilibrium.Invoke();
         }
 
-        [SerializeField] GameObject busyIcon;
         bool equilibriumSolved = true, calculating = false;
         public bool Ready { get { return equilibriumSolved && !calculating; } }
         void LateUpdate()
@@ -238,7 +237,6 @@ namespace EcoBuilder.Model
                 equilibriumSolved = true;
                 EquilibriumAsync();
             }
-            busyIcon.SetActive(calculating);
         }
 
         public float GetAbundance(int idx)

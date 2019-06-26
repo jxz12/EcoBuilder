@@ -7,10 +7,11 @@ namespace EcoBuilder.UI
 	{
 		[SerializeField] Text number;
 		[SerializeField] Image icon;
-		int constraintLimit, currentValue;
+		public int ConstraintLimit { get; private set; }
+		public int CurrentValue { get; private set; }
 		public void Constrain(int limit)
 		{
-			constraintLimit = limit;
+			ConstraintLimit = limit;
 			if (limit < 0)
 			{
 				gameObject.SetActive(false);
@@ -22,9 +23,9 @@ namespace EcoBuilder.UI
 		}
 		public void Display(int value)
 		{
-			currentValue = value;
-			number.text = currentValue + "/" + constraintLimit;
-			IsSatisfied = (currentValue >= constraintLimit);
+			CurrentValue = value;
+			number.text = CurrentValue + "/" + ConstraintLimit;
+			IsSatisfied = (CurrentValue >= ConstraintLimit);
 
 			if (IsSatisfied)
 			{

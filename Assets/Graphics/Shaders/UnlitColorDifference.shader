@@ -8,7 +8,7 @@ Shader "Unlit/ColorDifference"
 
     SubShader
     {
-        Tags {"Queue"="Transparent" "RenderType"="Difference"}
+        Tags {"Queue"="Transparent" "RenderType"="Fade"}
         
         // ZWrite Off
         // Lighting Off

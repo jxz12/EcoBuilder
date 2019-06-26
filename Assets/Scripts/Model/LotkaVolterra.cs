@@ -182,20 +182,20 @@ namespace EcoBuilder.Model
             }
         }
 
-        // depends on community being correct, and also destroys it
-		void BuildHermitianMatrix()
-		{
-			int n = internToExtern.Count;
+        // // depends on community being correct, and also destroys it
+		// void BuildHermitianMatrix()
+		// {
+		// 	int n = internToExtern.Count;
 
-            hermitian.Clear();
-			for (int i=0; i<n; i++)
-			{
-				for (int j=0; j<i; j++)
-				{
-					hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
-				}
-			}
-		}
+        //     hermitian.Clear();
+		// 	for (int i=0; i<n; i++)
+		// 	{
+		// 		for (int j=0; j<i; j++)
+		// 		{
+		// 			hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
+		// 		}
+		// 	}
+		// }
 
 
 
@@ -248,11 +248,33 @@ namespace EcoBuilder.Model
             return flux[i,j];
         }
 
+
         ////////////////////
         // Both also O(n^3)
         public bool SolveStability()
         {
             BuildCommunityMatrix();
+
+            // int n = internToExtern.Count;
+            // int m = 0;
+            // double diag = 0;
+            // double offdiag = 0;
+            // for(int i=0; i<n; i++)
+            // {
+            //     for (int j=0; j<i; j++)
+            //     {
+            //         if (i==j)
+            //         {
+            //             diag += community[i,i];
+            //         }
+            //         else if (community[i,j] != 0)
+            //         {
+            //             offdiag += community[i,j];
+            //             m += 1;
+            //         }
+            //     }
+            // }
+
 
             // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
             // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
@@ -265,18 +287,19 @@ namespace EcoBuilder.Model
             double Lambda = eigenValues.Real().Maximum();
             return Lambda <= 0;
         }
+        public double Complexity { get; private set; }
 
-        public bool SolveReactivity()
-		{
-			// calculate M + M^T
-			BuildHermitianMatrix();
+        // public bool SolveReactivity()
+		// {
+		// 	// calculate M + M^T
+		// 	BuildHermitianMatrix();
 
-			// get largest real part of any eigenvalue
-			var eigenValues = hermitian.Evd().EigenValues;
+		// 	// get largest real part of any eigenvalue
+		// 	var eigenValues = hermitian.Evd().EigenValues;
 
-			double Lambda = eigenValues.Real().Maximum();
-			return Lambda <= 0;
-		}
+		// 	double Lambda = eigenValues.Real().Maximum();
+		// 	return Lambda <= 0;
+		// }
 
 
 

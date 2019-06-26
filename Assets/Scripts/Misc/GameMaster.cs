@@ -45,7 +45,7 @@ namespace EcoBuilder
 
 
             model.OnEndangered +=  (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=     (i)=> nodelink.IdleNode(i);
+            model.OnRescued +=     (i)=> nodelink.UnflashNode(i);
             model.OnEquilibrium +=  ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
             model.OnEquilibrium +=  ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
             model.OnEquilibrium +=  ()=> status.DisplayTotalAbundance(model.TotalAbundance);
@@ -72,7 +72,8 @@ namespace EcoBuilder
                 int newIdx = inspector.SpawnNotIncubated(level.Details.plants[i],
                                                          level.Details.sizes[i],
                                                          level.Details.greeds[i],
-                                                         level.Details.randomSeeds[i]);
+                                                         level.Details.randomSeeds[i],
+                                                         level.Details.editables[i]);
                 if (newIdx != i)
                     throw new Exception("inspector not adding indices contiguously");
 

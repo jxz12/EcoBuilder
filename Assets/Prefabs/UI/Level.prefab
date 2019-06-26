@@ -376,8 +376,8 @@ RectTransform:
   m_Father: {fileID: 5142458166280901835}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.3209767}
-  m_AnchorMax: {x: 1, y: 0.6938244}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -964,7 +964,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -5.587384}
-  m_SizeDelta: {x: 0, y: 755}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1907157808438662216
 CanvasRenderer:
@@ -1429,10 +1429,13 @@ MonoBehaviour:
     - 0.5
     - 0.5
     randomSeeds: 0000000001000000
+    editables: 0101
     numInteractions: 1
     resources: 00000000
     consumers: 01000000
-    targetFlux: 0
+    targetFlux1: 0
+    targetFlux2: 0
+    highestFlux: 0
     numStars: 0
     savefilePath: 
     nextLevelPath: 
@@ -2748,8 +2751,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4203834934605314358}
   m_HandleRect: {fileID: 3354432201899250630}
   m_Direction: 2
-  m_Value: 0.5118002
-  m_Size: 0.37284768
+  m_Value: 0.5105522
+  m_Size: 0.34710234
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -2905,9 +2908,9 @@ RectTransform:
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -10.5, y: 0}
-  m_SizeDelta: {x: -51, y: -16}
+  m_AnchorMax: {x: 0.9, y: 1}
+  m_AnchoredPosition: {x: 2.5, y: 0}
+  m_SizeDelta: {x: -25, y: -16}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7030845480409796630
 CanvasRenderer:

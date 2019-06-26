@@ -47,11 +47,11 @@ namespace EcoBuilder.NodeLink
 
         public void FlashNode(int idx)
         {
-            nodes[idx].Flash();
+            nodes[idx].Flash(true);
         }
-        public void IdleNode(int idx)
+        public void UnflashNode(int idx)
         {
-            nodes[idx].Idle();
+            nodes[idx].Flash(false);
         }
 
         void Zoom(float amount)
@@ -121,16 +121,21 @@ namespace EcoBuilder.NodeLink
         // eventsystems
 
         bool potentialHold = false;
+        Node pressedNode;
         bool doLayout = true;
         public void OnPointerDown(PointerEventData ped)
         {
             if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             {
+                potentialHold = true;
                 doLayout = false;
-                if (!frozen)
+                StartCoroutine(WaitForHold(holdThreshold, ped));
+
+                pressedNode = ClosestSnappedNode(ped);
+                if (pressedNode != null && pressedNode.Removable && !frozen)
                 {
-                    potentialHold = true;
-                    StartCoroutine(WaitForHold(holdThreshold, ped));
+                    // prepare for deletion
+                    pressedNode.Shake(true);
                 }
             }
         }
@@ -146,26 +151,22 @@ namespace EcoBuilder.NodeLink
             }
             potentialHold = false;
             
-            Node held = ped.rawPointerPress.GetComponent<Node>();
-            if (held != null)
+            if (pressedNode != null && pressedNode.Removable && !frozen)
             {
-                print("TODO: super focus mode (and on right click)");
-                if (held.Removable)
-                {
-                    RemoveNode(held.Idx);
-                }
+                RemoveNode(pressedNode.Idx);
             }
         }
         public void OnPointerUp(PointerEventData ped)
         {
-            if (potentialHold) // if clickable
+            if (potentialHold) // if in the time window for a click
             {
                 potentialHold = false;
-                Node clicked = ped.rawPointerPress.GetComponent<Node>();
-                if (clicked != null)
+
+                if (pressedNode != null)
                 {
-                    FocusNode(clicked.Idx);
-                    OnNodeFocused.Invoke(clicked.Idx);
+                    pressedNode.Shake(false);
+                    FocusNode(pressedNode.Idx);
+                    OnNodeFocused.Invoke(pressedNode.Idx);
                 }
                 else
                 {
@@ -174,8 +175,8 @@ namespace EcoBuilder.NodeLink
                 }
             }
 
-            // release rotation
-            if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
+            // release rotation, only if everything is released
+            if (ped.pointerId==-1 || Input.touchCount==1)
             {
                 doLayout = true;
             }
@@ -187,32 +188,32 @@ namespace EcoBuilder.NodeLink
         [SerializeField] UI.Tooltip tooltip;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (potentialHold == false) // already held and maybe deleted
-                return;
-
-            potentialHold = false;
-            if (ped.pointerId==0 || ped.pointerId==-1) // only drag on left-click or one touch
+            if (potentialHold) // avoid already held and maybe deleted
             {
-                Node draggedNode = ped.rawPointerPress.GetComponent<Node>();
-                if (draggedNode != null && !frozen)
+                potentialHold = false;
+                
+                if (pressedNode != null)
                 {
-                    potentialTarget = draggedNode;
+                    pressedNode.Shake(false);
+
+                    potentialTarget = pressedNode;
                     // potentialTarget.Outline();
 
                     dummySource = Instantiate(nodePrefab, nodesParent);
                     dummySource.transform.localScale = Vector3.zero;
                     dummyLink = Instantiate(linkPrefab, linksParent);
-                    dummyLink.Target = draggedNode;
+                    dummyLink.Target = pressedNode;
                     dummyLink.Source = dummySource;
 
                     tooltip.Enable(true);
                 }
-                else
-                {
-                    doLayout = true;
-                }
             }
+            // else
+            // {
+            //     doLayout = true;
+            // }
         }
+        Link outlined;
         public void OnDrag(PointerEventData ped)
         {
             // if single touch or left-click
@@ -224,14 +225,14 @@ namespace EcoBuilder.NodeLink
                         tooltip.ShowLink();
                     else
                         tooltip.ShowNoLink();
-                    
 
-                    GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
-                    Node snappedNode = null;
-                    if (hoveredObject != null)
-                        snappedNode = hoveredObject.GetComponent<Node>();
-                    if (snappedNode == null)
-                        snappedNode = ClosestSnappedNode(ped.position);
+                    if (outlined != null)
+                    {
+                        outlined.Unoutline();
+                        outlined = null;
+                    }
+
+                    Node snappedNode = ClosestSnappedNode(ped);
 
                     if (snappedNode!=null && snappedNode!=potentialTarget && potentialTarget.CanBeTarget)
                     {
@@ -243,12 +244,11 @@ namespace EcoBuilder.NodeLink
                         {
                             if (snappedNode.CanBeSource)
                             {
-                                // if (potentialSource != null)
-                                //     potentialSource.Unoutline();
+                                dummyLink.Outline(1);
+                                outlined = dummyLink;
 
                                 dummyLink.Source = snappedNode;
                                 potentialSource = snappedNode;
-                                // potentialSource.Outline();
 
                                 tooltip.ShowAddLink();
                             }
@@ -268,6 +268,9 @@ namespace EcoBuilder.NodeLink
 
                             if (links[i,j].Removable)
                             {
+                                links[i,j].Outline(2);
+                                outlined = links[i,j];
+
                                 potentialSource = snappedNode;
                                 // potentialSource.Outline(2);
 
@@ -335,16 +338,14 @@ namespace EcoBuilder.NodeLink
             {
                 // potentialTarget.Unoutline();
                 potentialTarget = null;
+
                 Destroy(dummyLink.gameObject);
                 Destroy(dummySource.gameObject);
-
                 tooltip.Enable(false);
             }
 
-            // release rotation
-            if (
-                // (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0)))
-                (ped.pointerId==-1 || ped.pointerId==0))
+            // release rotation, only if everything is released
+            if (ped.pointerId==-1 || Input.touchCount==1)
             {
                 doLayout = true;
             }
@@ -386,28 +387,40 @@ namespace EcoBuilder.NodeLink
         // this returns any node within the snap radius
         // if more than one are in the radius, then return the closest to the camera.
         [SerializeField] float snapRadius=40;
-        private Node ClosestSnappedNode(Vector2 pointerPos)
+        private Node ClosestSnappedNode(PointerEventData ped)
         {
-            Node closest = null;
-            float closestDist = float.MaxValue;
-            float radius = snapRadius * snapRadius;
-            foreach (Node node in nodes)
-            {
-                Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
+            GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
+            Node snappedNode = null;
+            if (hoveredObject != null)
+                snappedNode = hoveredObject.GetComponent<Node>();
 
-                // if the click is within the clickable radius
-                if ((pointerPos-screenPos).sqrMagnitude < radius)
+            if (snappedNode != null)
+            {
+                return snappedNode;
+            }
+            else
+            {
+                Node closest = null;
+                float closestDist = float.MaxValue;
+                float radius = snapRadius * snapRadius;
+                foreach (Node node in nodes)
                 {
-                    // choose the node closer to the screen
-                    float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
-                    if (dist < closestDist)
+                    Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
+
+                    // if the click is within the clickable radius
+                    if ((ped.position-screenPos).sqrMagnitude < radius)
                     {
-                        closest = node;
-                        closestDist = dist;
+                        // choose the node closer to the screen
+                        float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
+                        if (dist < closestDist)
+                        {
+                            closest = node;
+                            closestDist = dist;
+                        }
                     }
                 }
+                return closest;
             }
-            return closest;
         }
 
 	}

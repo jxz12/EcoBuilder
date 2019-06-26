@@ -78,13 +78,13 @@ namespace EcoBuilder.NodeLink
             if (GetComponent<cakeslice.Outline>() != null)
                 Destroy(GetComponent<cakeslice.Outline>());
         }
-        public void Flash()
+        public void Flash(bool isFlashing)
         {
-            anim.SetTrigger("Flash");
+            anim.SetBool("Flashing", isFlashing);
         }
-        public void Idle()
+        public void Shake(bool isShaking)
         {
-            anim.SetTrigger("Idle");
+            anim.SetBool("Shaking", isShaking);
         }
     }
 }
