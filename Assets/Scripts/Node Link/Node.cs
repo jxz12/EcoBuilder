@@ -75,7 +75,8 @@ namespace EcoBuilder.NodeLink
         }
         public void Unoutline()
         {
-            Destroy(GetComponent<cakeslice.Outline>());
+            if (GetComponent<cakeslice.Outline>() != null)
+                Destroy(GetComponent<cakeslice.Outline>());
         }
         public void Flash()
         {

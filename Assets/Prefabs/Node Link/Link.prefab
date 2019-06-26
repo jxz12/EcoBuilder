@@ -89,7 +89,7 @@ LineRenderer:
         outWeight: 0.18702288
       - serializedVersion: 3
         time: 1
-        value: 0
+        value: 0.16129181
         inSlope: -0.026227785
         outSlope: -0.026227785
         tangentMode: 0

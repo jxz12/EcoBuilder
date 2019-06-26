@@ -178,10 +178,18 @@ namespace EcoBuilder.NodeLink
         public void SetIfNodeRemovable(int idx, bool removable)
         {
             nodes[idx].Removable = removable;
+            if (!removable)
+                nodes[idx].Outline();
+            else
+                nodes[idx].Unoutline();
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
+            if (!removable)
+                links[i,j].Outline();
+            else
+                links[i,j].Unoutline();
         }
 
 

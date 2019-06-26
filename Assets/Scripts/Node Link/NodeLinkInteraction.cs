@@ -197,7 +197,7 @@ namespace EcoBuilder.NodeLink
                 if (draggedNode != null && !frozen)
                 {
                     potentialTarget = draggedNode;
-                    potentialTarget.Outline();
+                    // potentialTarget.Outline();
 
                     dummySource = Instantiate(nodePrefab, nodesParent);
                     dummySource.transform.localScale = Vector3.zero;
@@ -243,12 +243,12 @@ namespace EcoBuilder.NodeLink
                         {
                             if (snappedNode.CanBeSource)
                             {
-                                if (potentialSource != null)
-                                    potentialSource.Unoutline();
+                                // if (potentialSource != null)
+                                //     potentialSource.Unoutline();
 
                                 dummyLink.Source = snappedNode;
                                 potentialSource = snappedNode;
-                                potentialSource.Outline();
+                                // potentialSource.Outline();
 
                                 tooltip.ShowAddLink();
                             }
@@ -261,15 +261,15 @@ namespace EcoBuilder.NodeLink
                         }
                         else
                         {
-                            if (potentialSource != null)
-                                potentialSource.Unoutline();
+                            // if (potentialSource != null)
+                            //     potentialSource.Unoutline();
 
                             dummyLink.Source = potentialTarget; // hide dummyLink
 
                             if (links[i,j].Removable)
                             {
                                 potentialSource = snappedNode;
-                                potentialSource.Outline(2);
+                                // potentialSource.Outline(2);
 
                                 tooltip.ShowUnLink();
                             }
@@ -286,7 +286,7 @@ namespace EcoBuilder.NodeLink
                     {
                         if (potentialSource != null)
                         {
-                            potentialSource.Unoutline();
+                            // potentialSource.Unoutline();
                             potentialSource = null;
                         }
                         Vector3 screenPoint = ped.position;
@@ -328,12 +328,12 @@ namespace EcoBuilder.NodeLink
         {
             if (potentialSource != null)
             {
-                potentialSource.Unoutline();
+                // potentialSource.Unoutline();
                 potentialSource = null;
             }
             if (potentialTarget != null)
             {
-                potentialTarget.Unoutline();
+                // potentialTarget.Unoutline();
                 potentialTarget = null;
                 Destroy(dummyLink.gameObject);
                 Destroy(dummySource.gameObject);

@@ -24,6 +24,17 @@ namespace EcoBuilder.NodeLink
             Curved = curved;
         }
 
+        public void Outline(int colourIdx=0)
+        {
+            var outline = gameObject.AddComponent<cakeslice.Outline>();
+            outline.color = colourIdx;
+        }
+        public void Unoutline()
+        {
+            if (GetComponent<cakeslice.Outline>() != null)
+                Destroy(GetComponent<cakeslice.Outline>());
+        }
+
         [SerializeField] float curveRatio = .2f;
         [SerializeField] int curveSegments = 5;
         bool Curved { get; set; } = true;
