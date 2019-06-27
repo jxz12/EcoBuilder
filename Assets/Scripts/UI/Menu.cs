@@ -30,7 +30,14 @@ namespace EcoBuilder.UI
         {
             levels = new List<Level>();
 
-            SaveSceneLevels(); // uncomment for building levels
+            // PlayerPrefs.DeleteAll(); // uncomment for building levels
+            if (!PlayerPrefs.HasKey("Has Played"))
+            {
+                print("saved");
+                SaveSceneLevels();
+                PlayerPrefs.SetString("Has Played", "yes");
+                PlayerPrefs.Save();
+            }
             LoadFileLevels();
 
             // let the grid do the layout first

@@ -20,6 +20,8 @@ namespace EcoBuilder.UI
             public int idx;
             public string title;
             public string description;
+            public string introduction;
+            public string congratulation;
 
             // constraints
             public int numProducers;
@@ -73,6 +75,8 @@ namespace EcoBuilder.UI
         [SerializeField] ScrollRect descriptionArea;
 		[SerializeField] Text producers;
 		[SerializeField] Text consumers;
+		[SerializeField] Text target1;
+		[SerializeField] Text target2;
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
@@ -98,8 +102,11 @@ namespace EcoBuilder.UI
             numberText.text = Details.idx.ToString();
 			title.text = Details.title;
 			description.text = Details.description;
+
 			producers.text = Details.numProducers.ToString();
 			consumers.text = Details.numConsumers.ToString();
+			target1.text = GameManager.Instance.NormaliseScore(Details.targetFlux1).ToString("000");
+			target2.text = GameManager.Instance.NormaliseScore(Details.targetFlux2).ToString("000");
 
             if (Details.numStars == -1)
             {
@@ -144,7 +151,12 @@ namespace EcoBuilder.UI
             }
             catch (InvalidCastException ice)
             {
-                print ("handled exception: " + ice.Message);
+                print("handled exception: " + ice.Message);
+                return false;
+            }
+            catch (IOException ioe)
+            {
+                print("handled exception: " + ioe.Message);
                 return false;
             }
         }

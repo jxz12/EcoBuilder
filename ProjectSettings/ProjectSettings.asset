@@ -12,8 +12,8 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
-  productName: coBuilder
+  companyName: Jonny
+  productName: EcoBuilder
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -42,8 +42,8 @@ PlayerSettings:
   m_SplashScreenLogos: []
   m_VirtualRealitySplashScreen: {fileID: 0}
   m_HolographicTrackingLossScreen: {fileID: 0}
-  defaultScreenWidth: 900
-  defaultScreenHeight: 1600
+  defaultScreenWidth: 600
+  defaultScreenHeight: 1000
   defaultScreenWidthWeb: 400
   defaultScreenHeightWeb: 600
   m_StereoRenderingPath: 0

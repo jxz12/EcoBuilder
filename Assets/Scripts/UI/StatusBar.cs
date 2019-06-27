@@ -10,6 +10,7 @@ namespace EcoBuilder.UI
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraint leaf, paw, edge, chain, loop;
         [SerializeField] Text abundanceText, fluxText;
+        [SerializeField] Text helpText;
         [SerializeField] Transform levelParent;
 
         public event Action<bool> OnProducersAvailable;
@@ -33,6 +34,8 @@ namespace EcoBuilder.UI
             edge.Constrain(level.Details.minEdges);
             chain.Constrain(level.Details.minChain);
             loop.Constrain(level.Details.minLoop);
+
+            helpText.text = level.Details.introduction;
 
             constrainedFrom = level;
             constrainedFrom.ShowThumbnail(levelParent, Vector2.zero);
@@ -129,13 +132,13 @@ namespace EcoBuilder.UI
         {
             abundance = totalAbundance;
             abundanceText.text = GameManager.Instance.NormaliseScore(totalAbundance).ToString("000");
-            print(abundance);
+            // print(abundance);
         }
         public void DisplayTotalFlux(float totalFlux)
         {
             flux = totalFlux;
             fluxText.text = GameManager.Instance.NormaliseScore(totalFlux).ToString("000");
-            print(flux);
+            // print(flux);
         }
 
 
@@ -188,18 +191,12 @@ namespace EcoBuilder.UI
 		}
         public void Confetti()
         {
+            helpText.text = constrainedFrom.Details.congratulation;
+
             GetComponent<Animator>().SetTrigger("Confetti");
             star1.SetTrigger("Confetti");
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");
         }
-
-        // // TODO: make this into prefab instead?
-        // [SerializeField] Text errorText;
-        // public void ShowErrorMessage(string message)
-        // {
-        //     errorText.text = message;
-        //     GetComponent<Animator>().SetTrigger("Show Error");
-        // }
     }
 }
