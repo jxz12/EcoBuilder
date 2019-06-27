@@ -46,9 +46,9 @@ namespace EcoBuilder.UI
             public List<int> consumers;
 
             // high scores
-            public float targetFlux1;
-            public float targetFlux2;
-            public float highestFlux;
+            public float targetScore1;
+            public float targetScore2;
+            public float highScore;
 
             // -1 is locked, 0,1,2,3 unlocked plus number of stars
             public int numStars;
@@ -77,6 +77,7 @@ namespace EcoBuilder.UI
 		[SerializeField] Text consumers;
 		[SerializeField] Text target1;
 		[SerializeField] Text target2;
+		[SerializeField] Text highScore;
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
@@ -105,8 +106,14 @@ namespace EcoBuilder.UI
 
 			producers.text = Details.numProducers.ToString();
 			consumers.text = Details.numConsumers.ToString();
-			target1.text = GameManager.Instance.NormaliseScore(Details.targetFlux1).ToString("000");
-			target2.text = GameManager.Instance.NormaliseScore(Details.targetFlux2).ToString("000");
+			target1.text = GameManager.Instance.NormaliseScore(Details.targetScore1).ToString("000");
+			target2.text = GameManager.Instance.NormaliseScore(Details.targetScore2).ToString("000");
+            highScore.text = GameManager.Instance.NormaliseScore(Details.highScore).ToString("000");
+
+            if (Details.highScore >= details.targetScore1)
+                target1.color = Color.grey;
+            if (Details.highScore >= details.targetScore2)
+                target2.color = Color.grey;
 
             if (Details.numStars == -1)
             {

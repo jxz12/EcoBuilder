@@ -30,10 +30,8 @@ namespace EcoBuilder.UI
         {
             levels = new List<Level>();
 
-            // PlayerPrefs.DeleteAll(); // uncomment for building levels
             if (!PlayerPrefs.HasKey("Has Played"))
             {
-                print("saved");
                 SaveSceneLevels();
                 PlayerPrefs.SetString("Has Played", "yes");
                 PlayerPrefs.Save();
@@ -50,6 +48,26 @@ namespace EcoBuilder.UI
             levelGrid.enabled = false;
         }
 
+        public void ResetSaveData()
+        {
+            PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
+            GameManager.Instance.UnloadScene("Menu");
+            GameManager.Instance.LoadScene("Menu");
+        }
+        public void UnlockAllLevels()
+        {
+            foreach (Level l in levels)
+            {
+                if (l.Details.numStars == -1)
+                {
+                    l.Details.numStars = 0;
+                    l.SaveToFile();
+                }
+            }
+            GameManager.Instance.UnloadScene("Menu");
+            GameManager.Instance.LoadScene("Menu");
+        }
+
 
         // destroys scene levels
         void LoadFileLevels()
@@ -59,7 +77,8 @@ namespace EcoBuilder.UI
                 Destroy(level.gameObject);
             }
 
-            foreach (string filepath in Directory.GetFiles(Application.persistentDataPath))
+            foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
+                                                 .Where(s=> s.Length < 3? false : s.Substring(s.Length-3) == ".gd"))
             {
                 Level newLevel = Instantiate(levelPrefab);
                 bool successful = newLevel.LoadFromFile(filepath);

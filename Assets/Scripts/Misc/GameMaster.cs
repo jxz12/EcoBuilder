@@ -96,7 +96,7 @@ namespace EcoBuilder
             nodelink.Freeze();
             status.Confetti();
 
-            GameManager.Instance.SavePlayedLevel(status.NumStars);
+            GameManager.Instance.SavePlayedLevel(status.NumStars, model.TotalFlux);
 
             var traits = inspector.GetSpeciesTraits();
             var indices = nodelink.GetLinkIndices();

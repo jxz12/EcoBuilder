@@ -166,12 +166,12 @@ namespace EcoBuilder.UI
                     newNumStars += 1;
                     star1.SetBool("Filled", true);
 
-                    if (flux > constrainedFrom.Details.targetFlux1)
+                    if (flux > constrainedFrom.Details.targetScore1)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
 
-                        if (flux > constrainedFrom.Details.targetFlux2)
+                        if (flux > constrainedFrom.Details.targetScore2)
                         {
                             newNumStars += 1;
                             star3.SetBool("Filled", true);

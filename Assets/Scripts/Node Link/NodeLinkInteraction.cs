@@ -220,35 +220,27 @@ namespace EcoBuilder.NodeLink
         [SerializeField] UI.Tooltip tooltip;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (potentialHold) // avoid already held and maybe deleted
+            potentialHold = false;
+            if (pressedNode != null)
             {
-                potentialHold = false;
-                
-                if (pressedNode != null)
-                {
-                    pressedNode.Outline();
-                    pressedNode.Shake(false);
+                pressedNode.Outline();
+                pressedNode.Shake(false);
 
-                    dummySource = Instantiate(nodePrefab, nodesParent);
-                    dummySource.transform.localScale = Vector3.zero;
-                    dummyLink = Instantiate(linkPrefab, linksParent);
-                    dummyLink.Target = pressedNode;
-                    dummyLink.Source = dummySource;
+                dummySource = Instantiate(nodePrefab, nodesParent);
+                dummySource.transform.localScale = Vector3.zero;
+                dummyLink = Instantiate(linkPrefab, linksParent);
+                dummyLink.Target = pressedNode;
+                dummyLink.Source = dummySource;
 
-                    tooltip.Enable(true);
-                }
-                else
-                {
-                    tooltip.Enable(false);
-                }
+                tooltip.Enable(true);
             }
-            // else
-            // {
-            //     doLayout = true;
-            // }
+            else
+            {
+                tooltip.Enable(false);
+            }
         }
         Link outlinedLink;
-        Node outlinedNode;
+        Node outlinedSource;
         public void OnDrag(PointerEventData ped)
         {
             // if single touch or left-click
@@ -265,8 +257,11 @@ namespace EcoBuilder.NodeLink
                     {
                         outlinedLink.Unoutline();
                         outlinedLink = null;
-                        outlinedNode.Unoutline();
-                        outlinedNode = null;
+                    }
+                    if (outlinedSource != null)
+                    {
+                        outlinedSource.Unoutline();
+                        outlinedSource = null;
                     }
 
                     Node snappedNode = ClosestSnappedNode(ped);
@@ -284,7 +279,7 @@ namespace EcoBuilder.NodeLink
                                 dummyLink.Outline(1);
                                 outlinedLink = dummyLink;
                                 snappedNode.Outline(1);
-                                outlinedNode = snappedNode;
+                                outlinedSource = snappedNode;
 
                                 dummyLink.Source = snappedNode;
                                 potentialSource = snappedNode;
@@ -307,7 +302,7 @@ namespace EcoBuilder.NodeLink
                                 links[i,j].Outline(2);
                                 outlinedLink = links[i,j];
                                 snappedNode.Outline(2);
-                                outlinedNode = snappedNode;
+                                outlinedSource = snappedNode;
 
                                 potentialSource = snappedNode;
 
@@ -333,6 +328,9 @@ namespace EcoBuilder.NodeLink
 
                         dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
                         dummyLink.Source = dummySource;
+
+                        dummyLink.Outline();
+                        outlinedLink = dummyLink;
 
                         // var tipPos = .5f * Camera.main.WorldToScreenPoint(potentialTarget.transform.position);
                         // tipPos += .5f * Camera.main.WorldToScreenPoint(dummySource.transform.position);
@@ -369,11 +367,11 @@ namespace EcoBuilder.NodeLink
             {
                 pressedNode.Unoutline();
                 pressedNode = null;
+                outlinedLink.Unoutline();
 
                 if (potentialSource != null)
                 {
-                    outlinedLink.Unoutline();
-                    outlinedNode.Unoutline();
+                    outlinedSource.Unoutline();
                     potentialSource = null;
                 }
 

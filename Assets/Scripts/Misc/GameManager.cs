@@ -120,7 +120,7 @@ namespace EcoBuilder
             UnloadScene(SceneManager.GetActiveScene().name);
             LoadScene("Play");
         }
-        public void SavePlayedLevel(int numStars)
+        public void SavePlayedLevel(int numStars, float score)
         {
             if (numStars < 1 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
@@ -129,6 +129,9 @@ namespace EcoBuilder
             {
                 if (numStars > PlayedLevel.Details.numStars)
                     PlayedLevel.Details.numStars = numStars;
+
+                if (score > PlayedLevel.Details.highScore)
+                    PlayedLevel.Details.highScore = score;
 
                 // unlock next level if not unlocked
                 if (PlayedLevel.NextLevel.Details.numStars == -1)
