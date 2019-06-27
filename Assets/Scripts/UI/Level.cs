@@ -165,6 +165,11 @@ namespace EcoBuilder.UI
                 print("handled exception: " + ioe.Message);
                 return false;
             }
+            catch (Exception e)
+            {
+                print("Just work omg: " + e.Message);
+                return false;
+            }
         }
 
         public void SaveToFile()
@@ -178,7 +183,7 @@ namespace EcoBuilder.UI
             }
             catch (DirectoryNotFoundException dnfe)
             {
-                print(dnfe);
+                print("no directory: " + dnfe.Message);
             }
         }
 

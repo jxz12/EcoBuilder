@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -78,7 +79,8 @@ namespace EcoBuilder.UI
             }
 
             foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
-                                                 .Where(s=> s.Length < 3? false : s.Substring(s.Length-3) == ".gd"))
+                                                //  .Where(s=> s.Length < 3? false : s.Substring(s.Length-3) == ".gd"))
+                                                 .Where(s=> s.EndsWith(".gd", StringComparison.OrdinalIgnoreCase)))
             {
                 Level newLevel = Instantiate(levelPrefab);
                 bool successful = newLevel.LoadFromFile(filepath);

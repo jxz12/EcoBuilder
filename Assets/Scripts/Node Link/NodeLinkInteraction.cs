@@ -192,7 +192,7 @@ namespace EcoBuilder.NodeLink
                         tooltip.Enable(false);
                         pressedNode = null;
                     }
-                    else
+                    else if (!frozen)
                     {
                         Unfocus();
                         OnUnfocused.Invoke();
