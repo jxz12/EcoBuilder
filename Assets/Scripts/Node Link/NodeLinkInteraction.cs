@@ -12,7 +12,7 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for user-interaction rotation
 
-        [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.005f, panMultiplier=1.2f;
+        [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.05f, panMultiplier=1.2f;
         [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
         [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
         [SerializeField] float holdThreshold = .2f;
@@ -220,31 +220,34 @@ namespace EcoBuilder.NodeLink
         [SerializeField] UI.Tooltip tooltip;
         public void OnBeginDrag(PointerEventData ped)
         {
-            potentialHold = false;
-            if (pressedNode != null)
+            if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                pressedNode.Outline();
-                pressedNode.Shake(false);
+                potentialHold = false;
+                if (pressedNode != null)
+                {
+                    pressedNode.Outline();
+                    pressedNode.Shake(false);
 
-                dummySource = Instantiate(nodePrefab, nodesParent);
-                dummySource.transform.localScale = Vector3.zero;
-                dummyLink = Instantiate(linkPrefab, linksParent);
-                dummyLink.Target = pressedNode;
-                dummyLink.Source = dummySource;
+                    dummySource = Instantiate(nodePrefab, nodesParent);
+                    dummySource.transform.localScale = Vector3.zero;
+                    dummyLink = Instantiate(linkPrefab, linksParent);
+                    dummyLink.Target = pressedNode;
+                    dummyLink.Source = dummySource;
 
-                tooltip.Enable(true);
-            }
-            else
-            {
-                tooltip.Enable(false);
+                    tooltip.Enable(true);
+                }
+                else
+                {
+                    tooltip.Enable(false);
+                }
             }
         }
         Link outlinedLink;
         Node outlinedSource;
         public void OnDrag(PointerEventData ped)
         {
-            // if single touch or left-click
-            if (ped.pointerId==-1 || (ped.pointerId>=0 && Input.touchCount<2))
+            // if (ped.pointerId==-1 || Input.touchCount==1 && ped.pointerId==0)
+            if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 if (pressedNode != null)
                 {
@@ -337,46 +340,48 @@ namespace EcoBuilder.NodeLink
                         }
                     }
                 }
-                else
-                {
-                    // Rotate the whole graph accordingly
-                    Rotate(ped.delta);
-                }
             }
-            // if double touch or middle-click
-            else if (Input.touchCount == 2)
+            if (Input.touchCount == 1 && pressedNode == null)
+            {
+                // Rotate the whole graph accordingly
+                Rotate(ped.delta);
+            }
+            if (Input.touchCount == 2) // if pinch/pan
             {
                 Touch t1 = Input.touches[0];
                 Touch t2 = Input.touches[1];
 
                 float dist = (t1.position - t2.position).magnitude;
                 float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                Zoom(dist - prevDist);
+                Zoom(.1f * (dist - prevDist));
                 Pan((t1.deltaPosition + t2.deltaPosition) / 2);
             }
-            else if (ped.pointerId == -3)
+            if (ped.pointerId == -3) // or middle click
             {
                 Pan(ped.delta);
             }
         }
         public void OnEndDrag(PointerEventData ped)
         {
-            if (pressedNode != null)
+            if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                pressedNode.Unoutline();
-                pressedNode = null;
-                potentialSource = null;
+                if (pressedNode != null)
+                {
+                    pressedNode.Unoutline();
+                    pressedNode = null;
+                    potentialSource = null;
 
-                if (outlinedLink != null)
-                    outlinedLink.Unoutline();
+                    if (outlinedLink != null)
+                        outlinedLink.Unoutline();
 
-                if (outlinedSource != null)
-                    outlinedSource.Unoutline();
+                    if (outlinedSource != null)
+                        outlinedSource.Unoutline();
 
 
-                Destroy(dummyLink.gameObject);
-                Destroy(dummySource.gameObject);
-                tooltip.Enable(false);
+                    Destroy(dummyLink.gameObject);
+                    Destroy(dummySource.gameObject);
+                    tooltip.Enable(false);
+                }
             }
 
             // release rotation, only if everything is released
