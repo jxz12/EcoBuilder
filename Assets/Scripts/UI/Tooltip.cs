@@ -6,7 +6,8 @@ namespace EcoBuilder.UI
 	public class Tooltip : MonoBehaviour
 	{
         [SerializeField] Image tip;
-        [SerializeField] Sprite linkSprite, addlinkSprite, unlinkSprite, nolinkSprite;
+        [SerializeField] Sprite linkSprite, addlinkSprite, unlinkSprite;
+		[SerializeField] Sprite noLinkSprite, noAddlinkSprite, noUnlinkSprite;
         [SerializeField] Sprite trashSprite, notrashSprite;
 
 		void Update()
@@ -28,22 +29,34 @@ namespace EcoBuilder.UI
 			// tip.color = Color.black;
 			transform.localScale = Vector3.one;
 		}
+		public void ShowNoLink()
+		{
+			tip.sprite = noLinkSprite;
+			// tip.color = Color.black;
+			transform.localScale = Vector3.one;
+		}
 		public void ShowAddLink()
 		{
 			tip.sprite = addlinkSprite;
 			// tip.color = Color.green;
 			transform.localScale = Vector3.one;
 		}
-		public void ShowUnLink()
+		public void ShowNoAddLink()
+		{
+			tip.sprite = noAddlinkSprite;
+			// tip.color = Color.green;
+			transform.localScale = Vector3.one;
+		}
+		public void ShowUnlink()
 		{
 			tip.sprite = unlinkSprite;
 			// tip.color = Color.red;
 			transform.localScale = Vector3.one;
 		}
-		public void ShowNoLink()
+		public void ShowNoUnlink()
 		{
-			tip.sprite = nolinkSprite;
-			// tip.color = Color.black;
+			tip.sprite = noUnlinkSprite;
+			// tip.color = Color.red;
 			transform.localScale = Vector3.one;
 		}
 		public void ShowTrash()

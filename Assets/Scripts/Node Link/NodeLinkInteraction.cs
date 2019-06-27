@@ -248,11 +248,6 @@ namespace EcoBuilder.NodeLink
             {
                 if (pressedNode != null)
                 {
-                    if (pressedNode.CanBeTarget)
-                        tooltip.ShowLink();
-                    else
-                        tooltip.ShowNoLink();
-
                     if (outlinedLink != null)
                     {
                         outlinedLink.Unoutline();
@@ -283,20 +278,18 @@ namespace EcoBuilder.NodeLink
 
                                 dummyLink.Source = snappedNode;
                                 potentialSource = snappedNode;
-
                                 tooltip.ShowAddLink();
                             }
                             else
                             {
+                                dummyLink.Source = pressedNode; // hide dummyLink
                                 potentialSource = null;
-
-                                tooltip.ShowNoLink();
+                                tooltip.ShowNoAddLink();
                             }
                         }
                         else
                         {
                             dummyLink.Source = pressedNode; // hide dummyLink
-
                             if (links[i,j].Removable)
                             {
                                 links[i,j].Outline(2);
@@ -305,14 +298,12 @@ namespace EcoBuilder.NodeLink
                                 outlinedSource = snappedNode;
 
                                 potentialSource = snappedNode;
-
-                                tooltip.ShowUnLink();
+                                tooltip.ShowUnlink();
                             }
                             else
                             {
                                 potentialSource = null;
-
-                                tooltip.ShowNoLink();
+                                tooltip.ShowNoUnlink();
                             }
 
                         }
@@ -320,23 +311,30 @@ namespace EcoBuilder.NodeLink
                     else
                     {
                         if (potentialSource != null)
-                        {
                             potentialSource = null;
-                        }
+
                         Vector3 screenPoint = ped.position;
                         screenPoint.z = pressedNode.transform.position.z - Camera.main.transform.position.z;
-
                         dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
                         dummyLink.Source = dummySource;
-
-                        dummyLink.Outline();
-                        outlinedLink = dummyLink;
 
                         // var tipPos = .5f * Camera.main.WorldToScreenPoint(potentialTarget.transform.position);
                         // tipPos += .5f * Camera.main.WorldToScreenPoint(dummySource.transform.position);
 
                         var tipPos = Camera.main.WorldToScreenPoint(dummySource.transform.position);
                         tooltip.SetPos(tipPos);
+
+                        if (pressedNode.CanBeTarget)
+                        {
+                            dummyLink.Outline();
+                            outlinedLink = dummyLink;
+                            tooltip.ShowLink();
+                        }
+                        else
+                        {
+                            dummyLink.Source = pressedNode; // hide dummyLink
+                            tooltip.ShowNoLink();
+                        }
                     }
                 }
                 else
@@ -367,13 +365,14 @@ namespace EcoBuilder.NodeLink
             {
                 pressedNode.Unoutline();
                 pressedNode = null;
-                outlinedLink.Unoutline();
+                potentialSource = null;
 
-                if (potentialSource != null)
-                {
+                if (outlinedLink != null)
+                    outlinedLink.Unoutline();
+
+                if (outlinedSource != null)
                     outlinedSource.Unoutline();
-                    potentialSource = null;
-                }
+
 
                 Destroy(dummyLink.gameObject);
                 Destroy(dummySource.gameObject);
