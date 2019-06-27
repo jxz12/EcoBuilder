@@ -4,7 +4,7 @@
 QualitySettings:
   m_ObjectHideFlags: 0
   serializedVersion: 5
-  m_CurrentQuality: 6
+  m_CurrentQuality: 1
   m_QualitySettings:
   - serializedVersion: 2
     name: Very Low
@@ -114,6 +114,8 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
+    - iPhone
+    - Android
   - serializedVersion: 2
     name: High
     pixelLightCount: 2
@@ -150,6 +152,8 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
+    - iPhone
+    - Android
   - serializedVersion: 2
     name: Very High
     pixelLightCount: 3
@@ -186,6 +190,8 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
+    - iPhone
+    - Android
   - serializedVersion: 2
     name: Ultra
     pixelLightCount: 4
@@ -222,10 +228,12 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
+    - iPhone
+    - Android
   - serializedVersion: 2
     name: WebGL
-    pixelLightCount: 4
-    shadows: 1
+    pixelLightCount: 0
+    shadows: 0
     shadowResolution: 0
     shadowProjection: 1
     shadowCascades: 4
@@ -235,9 +243,9 @@ QualitySettings:
     shadowCascade4Split: {x: 0.06666667, y: 0.2, z: 0.46666667}
     shadowmaskMode: 0
     skinWeights: 4
-    textureQuality: 1
+    textureQuality: 2
     anisotropicTextures: 0
-    antiAliasing: 4
+    antiAliasing: 2
     softParticles: 0
     softVegetation: 1
     realtimeReflectionProbes: 0
@@ -256,5 +264,12 @@ QualitySettings:
     asyncUploadBufferSize: 4
     asyncUploadPersistentBuffer: 1
     resolutionScalingFixedDPIFactor: 1
-    excludedTargetPlatforms: []
-  m_PerPlatformDefaultQuality: {}
+    excludedTargetPlatforms:
+    - iPhone
+    - Android
+    - Standalone
+  m_PerPlatformDefaultQuality:
+    Android: 1
+    Standalone: 3
+    WebGL: 6
+    iPhone: 1

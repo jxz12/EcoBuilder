@@ -64,7 +64,7 @@ namespace EcoBuilder.NodeLink
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
-            GetComponent<RectTransform>().localScale *= 1 + zoom;
+            transform.localScale *= 1 + zoom;
         }
         void Pan(Vector2 amount)
         {
@@ -341,7 +341,7 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
-            if (Input.touchCount == 1 && pressedNode == null)
+            if (pressedNode == null && (Input.touchCount == 1 || ped.pointerId == -1))
             {
                 // Rotate the whole graph accordingly
                 Rotate(ped.delta);

@@ -37,7 +37,10 @@ namespace EcoBuilder
         void Start()
         {
             Screen.SetResolution(576, 1024, false);
-            Screen.fullScreen = true;
+            #if !UNITY_WEBGL
+                Screen.fullScreen = true;
+            #endif
+
             if (SceneManager.sceneCount == 1)
                 LoadScene("Menu");
         }

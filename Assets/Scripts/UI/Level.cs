@@ -61,9 +61,8 @@ namespace EcoBuilder.UI
             private set { details = value; }
         }
 
-        [SerializeField] Button thumbnail;
-
         // thumbnail
+        [SerializeField] Button thumbnail;
         [SerializeField] Text numberText;
         [SerializeField] Image starsImage;
         [SerializeField] Sprite[] starImages;
@@ -276,10 +275,11 @@ namespace EcoBuilder.UI
             Vector2 prevPos = transform.position;
             transform.SetParent(thumbnailedParent, false);
             transform.position = prevPos;
+            thumbnail.interactable = true;
 
             StartCoroutine(LerpToPos(thumbnailedPos, .5f));
 		}
-		public void ShowThumbnail(Transform newParent, Vector2 newPos)
+		public void ShowThumbnailNewParent(Transform newParent, Vector2 newPos)
         {
             thumbnailedParent = newParent;
             thumbnailedPos = newPos;
@@ -289,10 +289,9 @@ namespace EcoBuilder.UI
 		{
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
 
-            // thumbnailedParent = GetComponent<RectTransform>().parent;
-            // thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
             thumbnailedParent = transform.parent;
             thumbnailedPos = transform.localPosition;
+            thumbnail.interactable = false;
 
             Vector2 prevPos = transform.position;
             transform.SetParent(GameManager.Instance.Overlay.transform, false);
@@ -306,6 +305,7 @@ namespace EcoBuilder.UI
             // thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
             thumbnailedParent = transform.parent;
             thumbnailedPos = transform.localPosition;
+            thumbnail.interactable = false;
 
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
         }

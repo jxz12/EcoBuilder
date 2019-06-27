@@ -38,7 +38,7 @@ namespace EcoBuilder.UI
             helpText.text = level.Details.introduction;
 
             constrainedFrom = level;
-            constrainedFrom.ShowThumbnail(levelParent, Vector2.zero);
+            constrainedFrom.ShowThumbnailNewParent(levelParent, Vector2.zero);
             constrainedFrom.FinishButton.onClick.AddListener(()=> OnLevelCompleted.Invoke());
         }
         void OnDestroy()

@@ -19,29 +19,18 @@ namespace EcoBuilder.NodeLink
         public float MaxTrophic { get; private set; } = 0;
         public int MaxChain { get; private set; } = 0;
         public int MaxLoop { get; private set; } = 0;
-        async void ConstraintsAsync()
+        async void ConstraintsAsync() // TODO: rename this
         {
-            ///////////////////////////////
-            // do constraint calculations
-            // check if not disjoint
-
             calculating = true;
-
-            Disjoint = CheckDisjoint();
-            NumEdges = links.Count();
-
-            HashSet<int> basal = BuildTrophicEquations();
-            var heights = HeightBFS(basal);
-            LaplacianDetZero = (heights.Count != nodes.Count);
-            // MaxTrophic done in Update()
-
-            MaxChain = 0;
-            foreach (int height in heights.Values)
-                MaxChain = Math.Max(height, MaxChain);
 
             MaxLoop = await Task.Run(()=> LongestLoop());
 
             calculating = false;
+            OnConstraints.Invoke();
+        }
+        void ConstraintsSync()
+        {
+            MaxLoop = LongestLoop();
             OnConstraints.Invoke();
         }
 

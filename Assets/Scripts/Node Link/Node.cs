@@ -11,7 +11,7 @@ namespace EcoBuilder.NodeLink
             set { if (mr!=null) mr.material.color = value; }
         }
         public Vector3 GoalPos { get; set; }
-        public float GoalSize { get; set; }// = .5f;
+        public float GoalSize { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
@@ -24,11 +24,12 @@ namespace EcoBuilder.NodeLink
         }
 
         Transform shape;
-        public void Init(int idx, Vector3 pos, GameObject shapeObject)
+        public void Init(int idx, Vector3 pos, float size, GameObject shapeObject)
         {
             Idx = idx;
             name = idx.ToString();
             transform.localPosition = GoalPos = pos;
+            GoalSize = size;
 
             shape = shapeObject.transform;
             shape.SetParent(transform, false);

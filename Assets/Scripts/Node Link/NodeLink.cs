@@ -71,8 +71,28 @@ namespace EcoBuilder.NodeLink
         {
             if (!constraintsSolved && !calculating && nodes.Count>0)
             {
+                ///////////////////////////////
+                // do constraint calculations
+
                 constraintsSolved = true;
-                ConstraintsAsync();
+
+                Disjoint = CheckDisjoint();
+                NumEdges = links.Count();
+
+                HashSet<int> basal = BuildTrophicEquations();
+                var heights = HeightBFS(basal);
+                LaplacianDetZero = (heights.Count != nodes.Count);
+                // MaxTrophic done in Update()
+
+                MaxChain = 0;
+                foreach (int height in heights.Values)
+                    MaxChain = Math.Max(height, MaxChain);
+
+                #if UNITY_WEBGL
+                    ConstraintsSync();
+                #else
+                    ConstraintsAsync();
+                #endif
             }
             // busyIcon.SetActive(calculating);
         }
@@ -96,7 +116,7 @@ namespace EcoBuilder.NodeLink
             var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
             // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
 
-            newNode.Init(idx, startPos, shape);
+            newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2, shape);
             nodes[idx] = newNode;
 
             FocusNode(idx);

@@ -208,6 +208,28 @@ namespace EcoBuilder.Model
             Stable = await Task.Run(() => simulation.SolveStability());
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
+            ShowAbundanceWarnings();
+
+            calculating = false;
+            OnEquilibrium.Invoke();
+        }
+        void EquilibriumSync()
+        {
+            calculating = true;
+            Feasible = simulation.SolveFeasibility();
+            TotalFlux = (float)simulation.TotalFlux;
+            TotalAbundance = (float)simulation.TotalAbundance;
+
+            Stable = simulation.SolveStability();
+            // Nonreactive = simulation.SolveReactivity();
+
+            ShowAbundanceWarnings();
+
+            calculating = false;
+            OnEquilibrium.Invoke();
+        }
+        void ShowAbundanceWarnings()
+        {
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)
             {
@@ -223,9 +245,6 @@ namespace EcoBuilder.Model
                 }
                 s.Abundance = newAbundance;
             }
-
-            calculating = false;
-            OnEquilibrium.Invoke();
         }
 
         bool equilibriumSolved = true, calculating = false;
@@ -235,7 +254,12 @@ namespace EcoBuilder.Model
             if (!equilibriumSolved && !calculating && idxToSpecies.Count>0)
             {
                 equilibriumSolved = true;
-                EquilibriumAsync();
+
+                #if UNITY_WEBGL
+                    EquilibriumSync();
+                #else
+                    EquilibriumAsync();
+                #endif
             }
         }
 

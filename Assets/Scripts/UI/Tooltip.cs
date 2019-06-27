@@ -10,9 +10,9 @@ namespace EcoBuilder.UI
 		[SerializeField] Sprite noLinkSprite, noAddlinkSprite, noUnlinkSprite;
         [SerializeField] Sprite trashSprite, notrashSprite;
 
-		void Update()
+		void FixedUpdate()
 		{
-			transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, .01f);
+			transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, .02f);
 		}
 		public void SetPos(Vector2 screenPos)
 		{
