@@ -9,8 +9,9 @@ namespace EcoBuilder.UI
     {
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraint leaf, paw, edge, chain, loop;
-        [SerializeField] Text abundanceText, fluxText;
-        [SerializeField] Text helpText;
+        [SerializeField] Text fluxText, fluxTargetText; //, abundanceText;
+        [SerializeField] Help help;
+        [SerializeField] Tutorial toriel;
         [SerializeField] Transform levelParent;
 
         public event Action<bool> OnProducersAvailable;
@@ -35,11 +36,15 @@ namespace EcoBuilder.UI
             chain.Constrain(level.Details.minChain);
             loop.Constrain(level.Details.minLoop);
 
-            helpText.text = level.Details.introduction;
+            help.SetText(level.Details.introduction);
 
             constrainedFrom = level;
             constrainedFrom.ShowThumbnailNewParent(levelParent, Vector2.zero);
             constrainedFrom.FinishButton.onClick.AddListener(()=> OnLevelCompleted.Invoke());
+        }
+        public void ActivateTutorial()
+        {
+            toriel.gameObject.SetActive(true);
         }
         void OnDestroy()
         {
@@ -128,12 +133,12 @@ namespace EcoBuilder.UI
             feasible = isFeasible;
 			stable = isStable;
         }
-        public void DisplayTotalAbundance(float totalAbundance)
-        {
-            abundance = totalAbundance;
-            abundanceText.text = GameManager.Instance.NormaliseScore(totalAbundance).ToString("000");
-            // print(abundance);
-        }
+        // public void DisplayTotalAbundance(float totalAbundance)
+        // {
+        //     abundance = totalAbundance;
+        //     abundanceText.text = GameManager.Instance.NormaliseScore(totalAbundance).ToString("000");
+        //     // print(abundance);
+        // }
         public void DisplayTotalFlux(float totalFlux)
         {
             flux = totalFlux;
@@ -159,6 +164,8 @@ namespace EcoBuilder.UI
                 star1.SetBool("Filled", false);
                 star2.SetBool("Filled", false);
                 star3.SetBool("Filled", false);
+                fluxTargetText.text = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore1).ToString("000");
+
                 if (!disjoint && feasible && stable &&
                     leaf.IsSatisfied && paw.IsSatisfied &&
                     edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
@@ -170,6 +177,7 @@ namespace EcoBuilder.UI
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
+                        fluxTargetText.text = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore2).ToString("000");
 
                         if (flux > constrainedFrom.Details.targetScore2)
                         {
@@ -191,7 +199,8 @@ namespace EcoBuilder.UI
 		}
         public void Confetti()
         {
-            helpText.text = constrainedFrom.Details.congratulation;
+            help.SetText(constrainedFrom.Details.congratulation);
+            help.DelayThenShow();
 
             GetComponent<Animator>().SetTrigger("Confetti");
             star1.SetTrigger("Confetti");

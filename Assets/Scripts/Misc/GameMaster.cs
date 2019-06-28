@@ -48,7 +48,7 @@ namespace EcoBuilder
             model.OnRescued +=     (i)=> nodelink.UnflashNode(i);
             model.OnEquilibrium +=  ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
             model.OnEquilibrium +=  ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
-            model.OnEquilibrium +=  ()=> status.DisplayTotalAbundance(model.TotalAbundance);
+            // model.OnEquilibrium +=  ()=> status.DisplayTotalAbundance(model.TotalAbundance);
             model.OnEquilibrium +=  ()=> status.DisplayTotalFlux(model.TotalFlux);
             model.OnEquilibrium +=  ()=> status.DisplayFeastability(model.Feasible, model.Stable);
 
@@ -62,7 +62,10 @@ namespace EcoBuilder
 
             var level = GameManager.Instance.PlayedLevel;
             if (level == null)
-                level = GameManager.Instance.GetNewLevel(); // only for dev
+            {
+                level = GameManager.Instance.GetNewLevel();
+                status.ActivateTutorial();
+            }
             
             status.ConstrainFromLevel(level);
             status.AllowUpdateWhen(()=> model.Ready && nodelink.Ready);

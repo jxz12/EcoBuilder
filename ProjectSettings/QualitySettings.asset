@@ -4,7 +4,7 @@
 QualitySettings:
   m_ObjectHideFlags: 0
   serializedVersion: 5
-  m_CurrentQuality: 1
+  m_CurrentQuality: 3
   m_QualitySettings:
   - serializedVersion: 2
     name: Very Low
@@ -114,8 +114,6 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
-    - iPhone
-    - Android
   - serializedVersion: 2
     name: High
     pixelLightCount: 2
@@ -152,8 +150,6 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
-    - iPhone
-    - Android
   - serializedVersion: 2
     name: Very High
     pixelLightCount: 3
@@ -190,8 +186,6 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
-    - iPhone
-    - Android
   - serializedVersion: 2
     name: Ultra
     pixelLightCount: 4
@@ -228,8 +222,6 @@ QualitySettings:
     resolutionScalingFixedDPIFactor: 1
     excludedTargetPlatforms:
     - WebGL
-    - iPhone
-    - Android
   - serializedVersion: 2
     name: WebGL
     pixelLightCount: 0
@@ -269,7 +261,7 @@ QualitySettings:
     - Android
     - Standalone
   m_PerPlatformDefaultQuality:
-    Android: 1
+    Android: 3
     Standalone: 3
     WebGL: 6
-    iPhone: 1
+    iPhone: 3

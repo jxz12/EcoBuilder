@@ -16,6 +16,9 @@ namespace EcoBuilder.UI
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
 
+        public event Action OnIncubated;
+        public event Action OnUnincubated;
+
         [SerializeField] Button plusButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
@@ -95,7 +98,7 @@ namespace EcoBuilder.UI
             greedSlider.interactable = true;
 
             incubated = s;
-            // OnIncubated.Invoke();
+            OnIncubated.Invoke();
         }
         void Spawn(Species toSpawn)
         {
@@ -192,7 +195,7 @@ namespace EcoBuilder.UI
             GetComponent<Animator>().SetTrigger("Spawn");
             inspected = incubated;
             incubated = null;
-            // OnUnincubated.Invoke();
+            OnUnincubated.Invoke();
         }
         public void UnspawnSpecies(int idx)
         {
@@ -243,7 +246,7 @@ namespace EcoBuilder.UI
             {
                 Destroy(incubated.GObject);
                 incubated = null;
-                // OnUnincubated.Invoke();
+                OnUnincubated.Invoke();
             }
             inspected = spawnedSpecies[idx];
 
