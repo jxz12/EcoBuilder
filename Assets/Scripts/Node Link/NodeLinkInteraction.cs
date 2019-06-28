@@ -345,10 +345,13 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
-            if (pressedNode == null && (Input.touchCount == 1 || ped.pointerId == -1))
+            if (pressedNode == null)
             {
                 // Rotate the whole graph accordingly
-                Rotate(ped.delta);
+                if (ped.pointerId == -1)
+                    Rotate(ped.delta);
+                else if (Input.touchCount == 1)
+                    Rotate(ped.delta * .1f); // TODO: magic number
             }
             if (Input.touchCount == 2) // if pinch/pan
             {
@@ -357,7 +360,7 @@ namespace EcoBuilder.NodeLink
 
                 float dist = (t1.position - t2.position).magnitude;
                 float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                Zoom(.1f * (dist - prevDist));
+                Zoom(.05f * (dist - prevDist)); // TODO: magic number
                 Pan((t1.deltaPosition + t2.deltaPosition) / 2);
             }
             if (ped.pointerId == -3) // or middle click
