@@ -153,6 +153,30 @@ namespace EcoBuilder
                 print("HOW DID YOU GET HERE");
             }
         }
+
+
+
+
+
+
+
+
+
+
+        int age, gender, education;
+        public void SetAge(int age)
+        {
+            this.age = age;
+        }
+        public void SetGender(int gender)
+        {
+            this.gender = gender;
+        }
+        public void SetEducation(int education)
+        {
+            this.education = education;
+        }
+
         public void SaveFoodWebToCSV(
             List<int> speciesIdxs, List<int> randomSeeds,
             List<float> sizes, List<float> greeds,
@@ -171,6 +195,12 @@ namespace EcoBuilder
             int p = paramNames.Count;
             if (p != paramValues.Count)
                 throw new Exception("length of param names not equal to values");
+            
+            string datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            sb.Append(datetime).Append("\n");
+            sb.Append("Age,").Append(age).Append("\n");
+            sb.Append("Gender,").Append(gender).Append("\n");
+            sb.Append("Education,").Append(education).Append("\n");
 
             sb.Append("Index,");
             for (int i=0; i<n-1; i++)
@@ -215,7 +245,16 @@ namespace EcoBuilder
             }
             sb.Append(paramValues[p-1]);
 
-            print(sb.ToString());
+            try
+            {
+                System.IO.File.WriteAllText(Application.persistentDataPath+"/"+datetime+".csv", sb.ToString());
+            }
+            catch (Exception e)
+            {
+                print("I hate my life\n" + e.Message);
+            }
+            
+
         }
         public void ReturnToMenu()
         {
@@ -228,13 +267,14 @@ namespace EcoBuilder
             GameManager.Instance.LoadScene("Menu");
         }
 
-        public float NormaliseScore(float input)
+        public int NormaliseScore(float input)
         {
             if (input <= 0)
                 return 0;
 
             float normalised = Mathf.Log10(input * 1e10f) * 25;
-            return Mathf.Max(normalised, 1f);
+            int score = (int)Math.Truncate(normalised * 100) / 100;
+            return Math.Max(score, 0);
         }
 
 

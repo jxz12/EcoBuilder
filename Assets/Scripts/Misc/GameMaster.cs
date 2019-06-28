@@ -67,7 +67,6 @@ namespace EcoBuilder
             if (level == null)
             {
                 level = GameManager.Instance.GetNewLevel();
-                print(level.Details.nextLevelPath);
                 tutorial.gameObject.SetActive(true);
             }
             

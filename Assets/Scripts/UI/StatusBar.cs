@@ -9,7 +9,6 @@ namespace EcoBuilder.UI
     {
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraint leaf, paw, edge, chain, loop;
-        [SerializeField] Text fluxText, fluxTargetText; //, abundanceText;
         [SerializeField] Help help;
         [SerializeField] Transform levelParent;
 
@@ -151,6 +150,10 @@ namespace EcoBuilder.UI
 		//////////////////////
 		// score calculation
 
+        [SerializeField] Image fluxTargetImage;
+        [SerializeField] Sprite targetSprite1, targetSprite2;
+        [SerializeField] Text fluxText, fluxTargetText; //, abundanceText;
+
         public int NumStars { get; private set; }
 		void Update()
 		{
@@ -165,7 +168,9 @@ namespace EcoBuilder.UI
                 star1.SetBool("Filled", false);
                 star2.SetBool("Filled", false);
                 star3.SetBool("Filled", false);
-                fluxTargetText.text = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore1).ToString("000");
+
+                int target1 = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore1);
+                int target2 = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore2);
 
                 if (!disjoint && feasible && stable &&
                     leaf.IsSatisfied && paw.IsSatisfied &&
@@ -174,18 +179,29 @@ namespace EcoBuilder.UI
                     newNumStars += 1;
                     star1.SetBool("Filled", true);
 
-                    if (flux > constrainedFrom.Details.targetScore1)
+                    int currentScore = GameManager.Instance.NormaliseScore(flux);
+
+                    if (currentScore >= target1)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
-                        fluxTargetText.text = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore2).ToString("000");
 
-                        if (flux > constrainedFrom.Details.targetScore2)
+                        if (currentScore >= target2)
                         {
                             newNumStars += 1;
                             star3.SetBool("Filled", true);
                         }
                     }
+                }
+                if (newNumStars < 2)
+                {
+                    fluxTargetText.text = target1.ToString("000");
+                    fluxTargetImage.sprite = targetSprite1;
+                }
+                else
+                {
+                    fluxTargetText.text = target2.ToString("000");
+                    fluxTargetImage.sprite = targetSprite2;
                 }
                 if (NumStars == 0 && newNumStars > 0)
                 {

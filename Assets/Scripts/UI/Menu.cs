@@ -26,6 +26,10 @@ namespace EcoBuilder.UI
         {
             GetComponent<Animator>().SetInteger("Menu Choice", 2);
         }
+        public void GoToSurvey()
+        {
+            GetComponent<Animator>().SetInteger("Menu Choice", 3);
+        }
         List<Level> levels;
         void Start()
         {
@@ -34,7 +38,7 @@ namespace EcoBuilder.UI
             if (!PlayerPrefs.HasKey("Has Played"))
             {
                 SaveSceneLevels();
-                GetComponent<Animator>().SetTrigger("Survey");
+                GetComponent<Animator>().SetInteger("Menu Choice", 3);
                 PlayerPrefs.SetString("Has Played", "yes");
                 PlayerPrefs.Save();
             }
@@ -122,6 +126,20 @@ namespace EcoBuilder.UI
                 levels[i].SaveToFile();
             }
             levels[levels.Count-1].SaveToFile();
+        }
+
+
+        public void SetPlayerAge(int age)
+        {
+            GameManager.Instance.SetAge(age);
+        }
+        public void SetPlayerGender(int gender)
+        {
+            GameManager.Instance.SetGender(gender);
+        }
+        public void SetPlayerEducation(int education)
+        {
+            GameManager.Instance.SetEducation(education);
         }
     }
 }
