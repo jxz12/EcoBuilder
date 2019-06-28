@@ -360,7 +360,7 @@ namespace EcoBuilder.NodeLink
 
                 float dist = (t1.position - t2.position).magnitude;
                 float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                Zoom(.01f * (dist - prevDist)); // TODO: magic number
+                Zoom(.03f * (dist - prevDist)); // TODO: magic number
                 Pan(.3f * (t1.deltaPosition + t2.deltaPosition) / 2);
             }
             if (ped.pointerId == -3) // or middle click
