@@ -19,7 +19,7 @@ namespace EcoBuilder.UI
 			if (bar != null)
 				bar();
 
-			help.SetText("Welcome to EcoBuilder! In this level you will build your first ecosystem. Try spinning the world around by dragging, or add your first species by pressing the big plus at the bottom of the screen.");
+			help.SetText("Welcome to EcoBuilder! In this level you will build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the big plus at the bottom of the screen.");
 			// help.Show(true);
 
 			transform.localRotation = Quaternion.Euler(0,0,45);
@@ -59,7 +59,7 @@ namespace EcoBuilder.UI
 			inspector.SetConsumersAvailable(true);
 			inspector.SetProducersAvailable(false);
 
-			help.SetText("Your " + speciesName + " has entered the world! Plants grow on their own, and so do not need food. Press somewhere in the background to reset and add an animal.");
+			help.SetText("Your " + speciesName + " is born! Plants grow on their own, and so do not need food. Press somewhere in the background to reset and add an animal.");
 			help.Show(true);
 			// help.SetY(-135);
 			firstSpeciesName = speciesName;
@@ -88,7 +88,7 @@ namespace EcoBuilder.UI
 		}
 		void ExplainFinishFlag()
 		{
-			help.SetText("Well done! The size of each species grows or shrinks according its population. Press the red finish flag to complete the level!");// If all of your species can coexist, then you can finish the level by pressing the big red finish flag in the top-right corner.");
+			help.SetText("Well done! The size of each species indicates its population size, and the flow along the links indicates the speed of eating. Press the red finish flag to complete the level!");// If all of your species can coexist, then you can finish the level by pressing the big red finish flag in the top-right corner.");
 			GetComponent<Animator>().SetBool("Drag", false);
 			StartCoroutine(WaitThenShow());
 

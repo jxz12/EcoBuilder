@@ -30,6 +30,10 @@ namespace EcoBuilder.UI
         {
             GetComponent<Animator>().SetInteger("Menu Choice", 3);
         }
+        public void QuitGame()
+        {
+            Application.Quit();
+        }
         List<Level> levels;
         void Start()
         {
