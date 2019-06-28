@@ -34,6 +34,7 @@ namespace EcoBuilder.UI
             if (!PlayerPrefs.HasKey("Has Played"))
             {
                 SaveSceneLevels();
+                GetComponent<Animator>().SetTrigger("Survey");
                 PlayerPrefs.SetString("Has Played", "yes");
                 PlayerPrefs.Save();
             }
@@ -67,6 +68,12 @@ namespace EcoBuilder.UI
             }
             GameManager.Instance.UnloadScene("Menu");
             GameManager.Instance.LoadScene("Menu");
+        }
+        public void StartTutorial()
+        {
+            levelPrefab.Details.nextLevelPath = levels[0].Details.savefilePath;
+            GameManager.Instance.UnloadScene("Menu");
+            GameManager.Instance.LoadScene("Play");
         }
 
 

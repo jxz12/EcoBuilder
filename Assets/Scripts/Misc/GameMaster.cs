@@ -8,6 +8,7 @@ namespace EcoBuilder
     {
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.StatusBar status;
+        [SerializeField] UI.Tutorial tutorial;
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
 
@@ -16,8 +17,9 @@ namespace EcoBuilder
             ////////////////////////
             // hook up events
 
-            // inspector.OnIncubated +=          ()=> nodelink.MoveLeft();
-            // inspector.OnUnincubated +=        ()=> nodelink.MoveMiddle();
+            inspector.OnIncubated +=         ()=> nodelink.MoveLeft();
+            inspector.OnUnincubated +=       ()=> nodelink.MoveMiddle();
+            inspector.OnPlussed +=           ()=> status.HighlightType();
             inspector.OnSpawned +=        (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=        (i,g)=> nodelink.AddNode(i,g);
             inspector.OnIsProducerSet +=  (i,b)=> model.SetSpeciesIsProducer(i,b);
@@ -29,6 +31,7 @@ namespace EcoBuilder
 
             nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=       ()=> inspector.Uninspect();
+            nodelink.OnUnfocused +=       ()=> status.ShowHelp(false);
             nodelink.OnLinkAdded +=    (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=  (i,j)=> model.RemoveInteraction(i,j);
             nodelink.OnDroppedOn +=       ()=> inspector.TrySpawnIncubated();
@@ -64,7 +67,8 @@ namespace EcoBuilder
             if (level == null)
             {
                 level = GameManager.Instance.GetNewLevel();
-                status.ActivateTutorial();
+                print(level.Details.nextLevelPath);
+                tutorial.gameObject.SetActive(true);
             }
             
             status.ConstrainFromLevel(level);

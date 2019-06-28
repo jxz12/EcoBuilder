@@ -11,7 +11,6 @@ namespace EcoBuilder.UI
         [SerializeField] Constraint leaf, paw, edge, chain, loop;
         [SerializeField] Text fluxText, fluxTargetText; //, abundanceText;
         [SerializeField] Help help;
-        [SerializeField] Tutorial toriel;
         [SerializeField] Transform levelParent;
 
         public event Action<bool> OnProducersAvailable;
@@ -42,10 +41,6 @@ namespace EcoBuilder.UI
             constrainedFrom.ShowThumbnailNewParent(levelParent, Vector2.zero);
             constrainedFrom.FinishButton.onClick.AddListener(()=> OnLevelCompleted.Invoke());
         }
-        public void ActivateTutorial()
-        {
-            toriel.gameObject.SetActive(true);
-        }
         void OnDestroy()
         {
             constrainedFrom.FinishButton.onClick.RemoveListener(()=> OnLevelCompleted.Invoke());
@@ -55,6 +50,12 @@ namespace EcoBuilder.UI
         {
             CanUpdate = Allowed;
         }
+        public void ShowHelp(bool showing)
+        {
+            help.Show(showing);
+        }
+        public void HighlightType()
+        {}
 
 
 

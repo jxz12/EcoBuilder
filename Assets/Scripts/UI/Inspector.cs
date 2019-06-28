@@ -16,6 +16,7 @@ namespace EcoBuilder.UI
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
 
+        public event Action OnPlussed;
         public event Action OnIncubated;
         public event Action OnUnincubated;
 
@@ -73,6 +74,7 @@ namespace EcoBuilder.UI
         void Start()
         {
             plusButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Start"));
+            plusButton.onClick.AddListener(()=> OnPlussed.Invoke());
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
@@ -303,7 +305,7 @@ namespace EcoBuilder.UI
         Vector2 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (incubated != null)
+            if (incubated != null) // TODO: glitch with incubator on refreshButton
             {
                 dragging = true;
                 originalPos = incubatedParent.position;

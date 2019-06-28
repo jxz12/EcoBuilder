@@ -47,6 +47,10 @@ namespace EcoBuilder.NodeLink
             GetComponent<Animator>().SetTrigger("Freeze");
             frozen = true;
         }
+        public void MoveLeft()
+        {}
+        public void MoveMiddle()
+        {}
 
 
         public void FlashNode(int idx)

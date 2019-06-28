@@ -226,17 +226,6 @@ namespace EcoBuilder.UI
 		{
             GameManager.Instance.PlayLevel(this);
             StartCoroutine(WaitThenEnableQuitReplay());
-
-            NextLevel = GameManager.Instance.GetNewLevel();
-            bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
-            if (successful)
-            {
-                NextLevel.transform.SetParent(nextLevelParent, false);
-            }
-            else
-            {
-                print("TODO: credits?");
-            }
 		}
         public void BackToMenu()
         {
@@ -247,6 +236,17 @@ namespace EcoBuilder.UI
         public Button FinishButton { get { return finishFlag; } }
         public void FinishLevel()
         {
+            NextLevel = GameManager.Instance.GetNewLevel();
+            bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
+            if (successful)
+            {
+                NextLevel.transform.SetParent(nextLevelParent, false);
+            }
+            else
+            {
+                print("TODO: credits?");
+            }
+
             ShowNavigation();
         }
 
