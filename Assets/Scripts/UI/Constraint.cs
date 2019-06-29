@@ -36,6 +36,10 @@ namespace EcoBuilder.UI
 				icon.color = Color.white;
 			}
 		}
+		public void DisplayDirect(string value)
+		{
+			number.text = value;
+		}
 		public bool IsSatisfied { get; private set; }
 	}
 }

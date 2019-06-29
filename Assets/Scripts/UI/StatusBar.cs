@@ -8,7 +8,7 @@ namespace EcoBuilder.UI
     public class StatusBar : MonoBehaviour
     {
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] Constraint leaf, paw, edge, chain, loop;
+        [SerializeField] Constraint heart, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
         [SerializeField] Transform levelParent;
 
@@ -132,6 +132,10 @@ namespace EcoBuilder.UI
         {
             feasible = isFeasible;
 			stable = isStable;
+            if (stable)
+                heart.DisplayDirect("O");
+            else
+                heart.DisplayDirect("X");
         }
         // public void DisplayTotalAbundance(float totalAbundance)
         // {
@@ -172,7 +176,7 @@ namespace EcoBuilder.UI
                 int target1 = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore1);
                 int target2 = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore2);
 
-                if (!disjoint && feasible && stable &&
+                if (!disjoint && feasible && //stable &&
                     leaf.IsSatisfied && paw.IsSatisfied &&
                     edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
                 {
@@ -181,7 +185,7 @@ namespace EcoBuilder.UI
 
                     int currentScore = GameManager.Instance.NormaliseScore(flux);
 
-                    if (currentScore >= target1)
+                    if (currentScore >= target1 && stable)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
