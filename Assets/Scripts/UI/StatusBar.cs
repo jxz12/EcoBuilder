@@ -23,9 +23,9 @@ namespace EcoBuilder.UI
         Level constrainedFrom;
         public void ConstrainFromLevel(Level level)
         {
-            // take the played level and place it in the scene
-            if (level.Details.numProducers < 0 || level.Details.numConsumers < 0)
-                throw new Exception("Cannot have negative numbers of species");
+            // // take the played level and place it in the scene
+            // if (level.Details.numProducers < 0 || level.Details.numConsumers < 0)
+            //     throw new Exception("Cannot have negative numbers of species");
             
             leaf.Constrain(level.Details.numProducers);
             paw.Constrain(level.Details.numConsumers);
