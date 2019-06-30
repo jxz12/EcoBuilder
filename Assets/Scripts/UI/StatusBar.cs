@@ -71,7 +71,7 @@ namespace EcoBuilder.UI
                 // consumers.Remove(idx);
 
                 producers.Add(idx);
-                if (producers.Count >= leaf.ConstraintLimit)
+                if (producers.Count >= leaf.ConstraintLimit && leaf.ConstraintLimit > 0) // TODO: better constraint class instead
                     OnProducersAvailable.Invoke(false);
 
                 leaf.Display(producers.Count);
@@ -81,7 +81,7 @@ namespace EcoBuilder.UI
             {
                 // producers.Remove(idx);
                 consumers.Add(idx);
-                if (consumers.Count >= paw.ConstraintLimit)
+                if (consumers.Count >= paw.ConstraintLimit && paw.ConstraintLimit > 0)
                     OnConsumersAvailable.Invoke(false);
 
                 paw.Display(consumers.Count);

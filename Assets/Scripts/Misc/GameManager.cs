@@ -222,18 +222,24 @@ namespace EcoBuilder
             {
                 sb.Append(greeds[i]).Append(",");
             }
-            sb.Append(greeds[n-1]).Append("\nResource,");
-            for (int ij=0; ij<m-1; ij++)
+            sb.Append(greeds[n-1]);
+            
+            if (m > 0)
             {
-                sb.Append(resources[ij]).Append(",");
+                sb.Append("\nResource,");
+                for (int ij=0; ij<m-1; ij++)
+                {
+                    sb.Append(resources[ij]).Append(",");
+                }
+                sb.Append(resources[m-1]).Append("\nConsumer,");
+                for (int ij=0; ij<m-1; ij++)
+                {
+                    sb.Append(consumers[ij]).Append(",");
+                }
+                sb.Append(consumers[m-1]);
             }
-            sb.Append(resources[m-1]).Append("\nConsumer,");
-            for (int ij=0; ij<m-1; ij++)
-            {
-                sb.Append(consumers[ij]).Append(",");
-            }
-            sb.Append(consumers[m-1]).Append("\nParameter,");
 
+            sb.Append("\nParameter,");
             for (int i=0; i<p-1; i++)
             {
                 sb.Append(paramNames[i]).Append(",");
