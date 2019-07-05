@@ -24,6 +24,7 @@ namespace EcoBuilder.NodeLink
             {
                 focus = nodes[idx];
             }
+            // GetComponent<Animator>().SetInteger("Position", 1);
         }
         public void Unfocus()
         {
@@ -31,18 +32,17 @@ namespace EcoBuilder.NodeLink
             {
                 focus = null;
             }
-            else
-            {
-                StartCoroutine(ResetPan(Vector2.zero, .5f));
-                StartCoroutine(ResetZoom(Vector3.one, .5f));
-            }
+            // StartCoroutine(ResetPan(Vector2.zero, 1f));
+            StartCoroutine(ResetZoom(Vector3.one, .5f));
+
+            // GetComponent<Animator>().SetInteger("Position", 0);
         }
         bool frozen = false;
         public void Freeze()
         {
             focus = null;
-            StartCoroutine(ResetPan(Vector2.zero, .5f));
-            StartCoroutine(ResetZoom(Vector3.one, .5f));
+            // StartCoroutine(ResetPan(Vector2.zero, 1f));
+            StartCoroutine(ResetZoom(Vector3.one, 1f));
 
             GetComponent<Animator>().SetTrigger("Freeze");
             frozen = true;
@@ -76,6 +76,7 @@ namespace EcoBuilder.NodeLink
             GetComponent<RectTransform>().anchoredPosition += toPan;
         }
 
+        // TODO: make this smoother
         IEnumerator ResetPan(Vector2 goalPan, float duration)
         {
             var rt = GetComponent<RectTransform>();
@@ -87,7 +88,7 @@ namespace EcoBuilder.NodeLink
                 // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
                 yield return null;
             }
-            // rt.anchoredPosition = goalPan;
+            rt.anchoredPosition = goalPan;
         }
         IEnumerator ResetZoom(Vector3 goalZoom, float duration)
         {
@@ -97,7 +98,7 @@ namespace EcoBuilder.NodeLink
             while (Time.time < startTime + duration)
             {
                 rt.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
-                // rt.localScale = Vector3.Lerp(rt.localScale, goalZoom, layoutTween);
+                // rt.localScale = Vector3.Lerp(rt.localScale, goalZoom, .02f);
                 yield return null;
             }
             rt.localScale = goalZoom;
@@ -199,7 +200,7 @@ namespace EcoBuilder.NodeLink
                     else if (!frozen)
                     {
                         Unfocus();
-                        OnUnfocused.Invoke();
+                        OnEmptyPressed.Invoke();
                     }
                 }
                 else if (!ped.dragging && pressedNode != null) // not dragging but not deleted either
@@ -361,11 +362,11 @@ namespace EcoBuilder.NodeLink
                 float dist = (t1.position - t2.position).magnitude;
                 float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
                 Zoom(.05f * (dist - prevDist)); // TODO: magic number
-                Pan(.5f * (t1.deltaPosition + t2.deltaPosition) / 2);
+                // Pan(.5f * (t1.deltaPosition + t2.deltaPosition) / 2);
             }
             if (ped.pointerId == -3) // or middle click
             {
-                Pan(ped.delta);
+                // Pan(ped.delta);
             }
         }
         public void OnEndDrag(PointerEventData ped)

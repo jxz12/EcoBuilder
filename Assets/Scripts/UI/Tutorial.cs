@@ -23,16 +23,12 @@ namespace EcoBuilder.UI
 			// help.Show(true);
 
 			transform.localRotation = Quaternion.Euler(0,0,45);
-			transform.localPosition = new Vector2(64, -420);
+			transform.localPosition = new Vector2(-20, -420);
 
 			inspector.SetConsumersAvailable(false);
-			Action foo = ()=> { transform.localPosition = new Vector2(-20, -420); };
-			Action fooo = ()=> { transform.localPosition = new Vector2(64, -420); };
-			inspector.OnPlussed += foo;
-			nodelink.OnUnfocused += fooo;
 			inspector.OnIncubated += ExplainInspector;
 
-			bar = ()=> { inspector.OnPlussed -= foo; nodelink.OnUnfocused -= fooo; inspector.OnIncubated -= ExplainInspector; };
+			bar = ()=> { inspector.OnIncubated -= ExplainInspector; };
 		}
 		void ExplainInspector()
 		{
@@ -49,8 +45,8 @@ namespace EcoBuilder.UI
 			Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g.name);
 			Action fooo = ()=> Start();
 			inspector.OnSpawned += foo;
-			nodelink.OnUnfocused += fooo;
-			bar = ()=> { inspector.OnSpawned -= foo; nodelink.OnUnfocused -= fooo; };
+			nodelink.OnEmptyPressed += fooo;
+			bar = ()=> { inspector.OnSpawned -= foo; nodelink.OnEmptyPressed -= fooo; };
 		}
 		string firstSpeciesName;
 		void ExplainSpawn(string speciesName)

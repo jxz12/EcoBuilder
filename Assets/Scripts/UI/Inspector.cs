@@ -16,11 +16,11 @@ namespace EcoBuilder.UI
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
 
-        public event Action OnPlussed;
+        // public event Action OnPlussed;
         public event Action OnIncubated;
         public event Action OnUnincubated;
 
-        [SerializeField] Button plusButton;
+        // [SerializeField] Button plusButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
         [SerializeField] Slider sizeSlider;
@@ -28,6 +28,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
+        [SerializeField] GameObject incubator; // TODO: make this an egg?
         [SerializeField] RectTransform incubatedParent;
 
         [SerializeField] JonnyGenerator factory;
@@ -73,8 +74,6 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            plusButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Start"));
-            plusButton.onClick.AddListener(()=> OnPlussed.Invoke());
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
@@ -184,6 +183,25 @@ namespace EcoBuilder.UI
             Spawn(toSpawn);
             return toSpawn.Idx;
         }
+        public void InitiateSpawn()
+        {
+            if (inspected != null) // if inspecting
+            {
+                inspected = null;
+                GetComponent<Animator>().SetTrigger("Uninspect");
+            }
+            else if (incubated != null) // if incubating
+            {
+                Destroy(incubated.GObject);
+                incubated = null; // lol memory leak but not really
+                GetComponent<Animator>().SetTrigger("Uninspect");
+            }
+            else
+            {
+                GetComponent<Animator>().SetTrigger("Initiate");
+                // GetComponent<Animator>().SetTrigger("Uninspect");
+            }
+        }
         public void TrySpawnIncubated()
         {
             // only allow when dragging the incubator
@@ -244,6 +262,10 @@ namespace EcoBuilder.UI
 
         public void InspectSpecies(int idx)
         {
+            if (inspected == null)
+            {
+                GetComponent<Animator>().SetTrigger("Inspect");
+            }
             if (incubated != null)
             {
                 Destroy(incubated.GObject);
@@ -272,21 +294,6 @@ namespace EcoBuilder.UI
                 sizeSlider.interactable = false;
                 greedSlider.interactable = false;
             }
-
-            GetComponent<Animator>().SetTrigger("Inspect");
-        }
-        public void Uninspect()
-        {
-            GetComponent<Animator>().SetTrigger("Uninspect");
-            if (inspected != null)
-            {
-                inspected = null;
-            }
-            else if (incubated != null)
-            {
-                Destroy(incubated.GObject);
-                incubated = null; // lol memory leak but not really
-            }
         }
         public void Hide()
         {
@@ -305,7 +312,7 @@ namespace EcoBuilder.UI
         Vector2 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (incubated != null) // TODO: glitch with incubator on refreshButton
+            if (incubated != null && ped.rawPointerPress == incubator)
             {
                 dragging = true;
                 originalPos = incubatedParent.position;

@@ -8,7 +8,7 @@ namespace EcoBuilder.NodeLink
     public partial class NodeLink : MonoBehaviour
     {
         public event Action OnDroppedOn;
-        public event Action OnUnfocused;
+        public event Action OnEmptyPressed;
         public event Action<int> OnNodeFocused;
         public event Action<int> OnNodeRemoved; // TODO: should not be here
         public event Action<int, int> OnLinkAdded;

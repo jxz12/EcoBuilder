@@ -19,7 +19,6 @@ namespace EcoBuilder
 
             inspector.OnIncubated +=         ()=> nodelink.MoveLeft();
             inspector.OnUnincubated +=       ()=> nodelink.MoveMiddle();
-            inspector.OnPlussed +=           ()=> status.HighlightType();
             inspector.OnSpawned +=        (i,g)=> model.AddSpecies(i);
             inspector.OnSpawned +=        (i,g)=> nodelink.AddNode(i,g);
             inspector.OnIsProducerSet +=  (i,b)=> model.SetSpeciesIsProducer(i,b);
@@ -30,8 +29,9 @@ namespace EcoBuilder
 
 
             nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);
-            nodelink.OnUnfocused +=       ()=> inspector.Uninspect();
-            nodelink.OnUnfocused +=       ()=> status.ShowHelp(false);
+            // nodelink.OnUnfocused +=       ()=> inspector.Uninspect();
+            // nodelink.OnUnfocused +=       ()=> status.ShowHelp(false);
+            nodelink.OnEmptyPressed +=    ()=> inspector.InitiateSpawn();
             nodelink.OnLinkAdded +=    (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=  (i,j)=> model.RemoveInteraction(i,j);
             nodelink.OnDroppedOn +=       ()=> inspector.TrySpawnIncubated();
@@ -67,7 +67,7 @@ namespace EcoBuilder
             if (level == null)
             {
                 level = GameManager.Instance.GetNewLevel();
-                tutorial.gameObject.SetActive(true);
+                // tutorial.gameObject.SetActive(true);
             }
             
             status.ConstrainFromLevel(level);

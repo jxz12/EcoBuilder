@@ -39,6 +39,14 @@ namespace EcoBuilder.UI
 		public void DisplayDirect(string value)
 		{
 			number.text = value;
+			if (value == "O") // TODO: this is awful;
+			{
+				icon.color = Color.green;
+			}
+			else
+			{
+				icon.color = Color.white;
+			}
 		}
 		public bool IsSatisfied { get; private set; }
 	}

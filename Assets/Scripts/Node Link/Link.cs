@@ -6,8 +6,16 @@ namespace EcoBuilder.NodeLink
     {
         [SerializeField] LineRenderer lr;
 
-        public Node Source { get; set; }
-        public Node Target { get; set; }
+        private Node source;
+        public Node Source {
+            get { return source; }
+            set { source = value; lr.endColor = value.Col; }
+        }
+        private Node target;
+        public Node Target {
+            get { return target; }
+            set { target = value; lr.startColor = value.Col; }
+        }
 
         public float Width {
             get { return lr.widthMultiplier; }
@@ -71,10 +79,9 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            lr.startColor = Target.Col;
-            lr.endColor = Source.Col;
-            // lr.material.color = Target.Col;
-
+        }
+        private void FixedUpdate()
+        {
             lr.material.mainTextureOffset -= new Vector2(TileSpeed, 0);
         }
     }

@@ -53,8 +53,8 @@ namespace EcoBuilder.UI
         {
             help.Show(showing);
         }
-        public void HighlightType()
-        {}
+        // public void HighlightType()
+        // {}
 
 
 
