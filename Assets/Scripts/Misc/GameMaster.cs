@@ -34,7 +34,6 @@ namespace EcoBuilder
             nodelink.OnEmptyPressed +=    ()=> inspector.InitiateSpawn();
             nodelink.OnLinkAdded +=    (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=  (i,j)=> model.RemoveInteraction(i,j);
-            nodelink.OnDroppedOn +=       ()=> inspector.TrySpawnIncubated();
             ///////////////////////////
             nodelink.OnConstraints +=     ()=> status.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=     ()=> status.DisplayNumEdges(nodelink.NumEdges);

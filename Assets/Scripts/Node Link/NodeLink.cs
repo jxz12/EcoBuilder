@@ -7,7 +7,6 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink : MonoBehaviour
     {
-        public event Action OnDroppedOn;
         public event Action OnEmptyPressed;
         public event Action<int> OnNodeFocused;
         public event Action<int> OnNodeRemoved; // TODO: should not be here
@@ -215,7 +214,7 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.05f;
+        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.1f;
         [SerializeField] float logRangeMultiplier=1.5f;
         public void ResizeNodes(Func<int, float> sizes)
         {

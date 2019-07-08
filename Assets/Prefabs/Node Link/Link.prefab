@@ -81,20 +81,20 @@ LineRenderer:
       - serializedVersion: 3
         time: 0
         value: 1
-        inSlope: -1.1489514
-        outSlope: -1.1489514
+        inSlope: -0.21934545
+        outSlope: -0.21934545
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.132626
+        outWeight: 0.15056945
       - serializedVersion: 3
         time: 1
-        value: 0.1666632
-        inSlope: 0.025903603
-        outSlope: 0.025903603
+        value: 0
+        inSlope: 0.091081806
+        outSlope: 0.091081806
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0.13793105
+        inWeight: 0.13881749
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -150,4 +150,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lr: {fileID: 120194515749493738}
   curveRatio: 0.2
-  curveSegments: 10
+  curveSegments: 12

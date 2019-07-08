@@ -56,15 +56,11 @@ namespace EcoBuilder.NodeLink
                 var from = Source.transform.position;
                 var to = Target.transform.position;
 
-                var extra = (to - from) * .1f;
-                from += extra;
-                to -= extra;
-
                 var mid = (from+to) / 2;
                 mid += Vector3.Cross(to-from, Vector3.back) * curveRatio;
 
                 lr.SetPosition(0, from);
-                for (int i=1; i<=curveSegments-1; i++)
+                for (int i=1; i<curveSegments; i++)
                 {
                     float t = (float)i / curveSegments; 
                     float t1 = 1-t;
@@ -82,6 +78,8 @@ namespace EcoBuilder.NodeLink
         }
         private void FixedUpdate()
         {
+            lr.startColor = Target.Col;
+            lr.endColor = Source.Col;
             lr.material.mainTextureOffset -= new Vector2(TileSpeed, 0);
         }
     }

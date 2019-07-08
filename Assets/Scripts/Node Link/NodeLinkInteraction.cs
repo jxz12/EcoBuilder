@@ -92,7 +92,8 @@ namespace EcoBuilder.NodeLink
         }
         IEnumerator ResetZoom(Vector3 goalZoom, float duration)
         {
-            var rt = GetComponent<RectTransform>();
+            // var rt = GetComponent<RectTransform>();
+            var rt = transform;
             Vector3 startZoom = rt.localScale;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
@@ -408,11 +409,12 @@ namespace EcoBuilder.NodeLink
         {
             if (ped.pointerId==0 || ped.pointerId==-1)
             {
-                if (ped.pointerDrag != gameObject) // if the drag comes from another object
-                {
-                    OnDroppedOn.Invoke();
-                }
-                else if (potentialSource != null && pressedNode != null)
+                // if (ped.pointerDrag != gameObject) // if the drag comes from another object
+                // {
+                //     OnDroppedOn.Invoke();
+                // }
+                // else 
+                if (potentialSource != null && pressedNode != null)
                 {
                     // add/remove a new link
                     int i=potentialSource.Idx, j=pressedNode.Idx;

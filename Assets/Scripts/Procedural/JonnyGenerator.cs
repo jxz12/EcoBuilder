@@ -8,6 +8,7 @@ namespace EcoBuilder
     public interface ISpeciesGenerator
     {
         GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed);
+        void RegenerateSpecies(GameObject species, bool isProducer, float size, float greed, int randomSeed);
     }
     public class JonnyGenerator : MonoBehaviour, ISpeciesGenerator
     {

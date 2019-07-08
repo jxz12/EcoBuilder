@@ -7,8 +7,7 @@ using UnityEngine.EventSystems;
 namespace EcoBuilder.UI
 {
     // handles keeping track of species gameobjects and stats
-    public class Inspector : MonoBehaviour,
-        IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class Inspector : MonoBehaviour
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
         public event Action<int, GameObject> OnSpawned;
@@ -28,10 +27,8 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
-        [SerializeField] GameObject incubator; // TODO: make this an egg?
-        [SerializeField] RectTransform incubatedParent;
-
         [SerializeField] JonnyGenerator factory;
+        [SerializeField] Incubator incubator;
 
         public class Species
         {
@@ -46,7 +43,7 @@ namespace EcoBuilder.UI
             public bool Editable { get; set; } = true;
             public GameObject GObject { get; set; } = null;
 
-            public Species(int idx, bool isProducer, float size, float greed)
+            public Species(int idx, bool isProducer, float size=.5f, float greed=.5f)
             {
                 Idx = idx;
                 IsProducer = isProducer;
@@ -82,25 +79,13 @@ namespace EcoBuilder.UI
 
             sizeSlider.onValueChanged.AddListener(x=> SetSize());
             greedSlider.onValueChanged.AddListener(x=> SetGreed());
+
+            incubator.OnSpawned += ()=> SpawnIncubated();
         }
 
-        void IncubateNew(bool isProducer)
-        {
-            if (inspected != null)
-            {
-                inspected = null;
-            }
-            Species s = new Species(nextIdx, isProducer, sizeSlider.normalizedValue, greedSlider.normalizedValue);
-            s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            s.GObject.transform.SetParent(incubatedParent, false);
-            nameText.text = s.GObject.name;
 
-            sizeSlider.interactable = true;
-            greedSlider.interactable = true;
 
-            incubated = s;
-            OnIncubated.Invoke();
-        }
+
         void Spawn(Species toSpawn)
         {
             spawnedSpecies[toSpawn.Idx] = toSpawn;
@@ -112,6 +97,24 @@ namespace EcoBuilder.UI
             nextIdx += 1;
         }
 
+        void IncubateNew(bool isProducer)
+        {
+            if (inspected != null)
+            {
+                inspected = null;
+            }
+            Species s = new Species(nextIdx, isProducer);
+            s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
+            incubator.Incubate(s.GObject);
+            nameText.text = s.GObject.name;
+
+            SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
+            sizeSlider.interactable = true;
+            greedSlider.interactable = true;
+
+            incubated = s;
+            OnIncubated.Invoke();
+        }
         void RefreshIncubated()
         {
             if (incubated == null)
@@ -121,6 +124,18 @@ namespace EcoBuilder.UI
             factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
             nameText.text = incubated.GObject.name;
         }
+        void SpawnIncubated()
+        {
+            if (incubated == null)
+                throw new Exception("nothing incubated");
+
+            Spawn(incubated);
+            GetComponent<Animator>().SetTrigger("Spawn");
+            inspected = incubated;
+            incubated = null;
+            OnUnincubated.Invoke();
+        }
+
         void SetSize()
         {
             if (incubated != null)
@@ -183,6 +198,7 @@ namespace EcoBuilder.UI
             Spawn(toSpawn);
             return toSpawn.Idx;
         }
+        // called when nodelink is pressed
         public void InitiateSpawn()
         {
             if (inspected != null) // if inspecting
@@ -194,6 +210,7 @@ namespace EcoBuilder.UI
             {
                 Destroy(incubated.GObject);
                 incubated = null; // lol memory leak but not really
+                incubator.Unincubate();
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else
@@ -201,21 +218,6 @@ namespace EcoBuilder.UI
                 GetComponent<Animator>().SetTrigger("Initiate");
                 // GetComponent<Animator>().SetTrigger("Uninspect");
             }
-        }
-        public void TrySpawnIncubated()
-        {
-            // only allow when dragging the incubator
-            if (!dragging)
-                return;
-            if (incubated == null)
-                throw new Exception("nothing incubated");
-            
-            Spawn(incubated);
-
-            GetComponent<Animator>().SetTrigger("Spawn");
-            inspected = incubated;
-            incubated = null;
-            OnUnincubated.Invoke();
         }
         public void UnspawnSpecies(int idx)
         {
@@ -272,17 +274,10 @@ namespace EcoBuilder.UI
                 incubated = null;
                 OnUnincubated.Invoke();
             }
+
             inspected = spawnedSpecies[idx];
-
             nameText.text = inspected.GObject.name;
-
-            // this is ugly as heck, but sliders are stupid
-            sizeSlider.onValueChanged.RemoveListener(x=> SetSize());
-            sizeSlider.normalizedValue = inspected.BodySize;
-            sizeSlider.onValueChanged.AddListener(x=> SetSize());
-            greedSlider.onValueChanged.RemoveListener(x=> SetGreed());
-            greedSlider.normalizedValue = inspected.Greediness;
-            greedSlider.onValueChanged.AddListener(x=> SetGreed());
+            SetSlidersWithoutEventCallbacks(inspected.BodySize, inspected.Greediness);
 
             if (inspected.Editable)
             {
@@ -297,47 +292,22 @@ namespace EcoBuilder.UI
         }
         public void Hide()
         {
-            GetComponent<Animator>().SetTrigger("Hide");
+            GetComponent<Animator>().SetTrigger("Uninspect");
         }
 
-
-
-
-
-
-        //////////////////////
-        // dragging incubated
-
-        bool dragging;
-        Vector2 originalPos;
-        public void OnBeginDrag(PointerEventData ped)
+        void SetSlidersWithoutEventCallbacks(float size, float greed)
         {
-            if (incubated != null && ped.rawPointerPress == incubator)
-            {
-                dragging = true;
-                originalPos = incubatedParent.position;
-            }
+            // this is ugly as heck, but sliders are stupid
+            sizeSlider.onValueChanged.RemoveListener(x=> SetSize());
+            sizeSlider.normalizedValue = size;
+            sizeSlider.onValueChanged.AddListener(x=> SetSize());
+            greedSlider.onValueChanged.RemoveListener(x=> SetGreed());
+            greedSlider.normalizedValue = greed;
+            greedSlider.onValueChanged.AddListener(x=> SetGreed());
         }
-        public void OnDrag(PointerEventData ped)
-        {
-            if (dragging)
-            {
-                Vector3 mousePos = ped.position;
-                mousePos.z = 4;
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
 
-                // incubatedParent.position = ped.position;
-                incubatedParent.position = worldPos;
-            }
-        }
-        public void OnEndDrag(PointerEventData ped)
-        {
-            if (dragging)
-            {
-                dragging = false;
-                incubatedParent.position = originalPos;
-            }
-        }
+
+
 
         // for saving to csv
         public Tuple<List<int>, List<int>, List<float>, List<float>> GetSpeciesTraits()

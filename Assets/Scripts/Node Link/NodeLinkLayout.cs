@@ -24,7 +24,7 @@ namespace EcoBuilder.NodeLink
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
 
                 // TODO: magic numbers here, have a max height or something
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,-250,800), layoutTween);
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,0,0), layoutTween);
             }
             else
             {
@@ -34,7 +34,7 @@ namespace EcoBuilder.NodeLink
                 centroid.y = 0;
 
                 // TODO: magic numbers here, have a max height or something
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,-20,800), layoutTween);
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,1,0), layoutTween);
             }
             foreach (Node no in nodes)
             {
@@ -87,8 +87,9 @@ namespace EcoBuilder.NodeLink
                         nodes[j].GoalPos += mu * r;
                     }
                 }
-                // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
             }
+            // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
+            nodes[i].GoalPos = new Vector3(nodes[i].GoalPos.x, nodes[i].GoalPos.y, nodes[i].GoalPos.z*.99f);
         }
 
         private Dictionary<int, int> ShortestPathsBFS(int source)
