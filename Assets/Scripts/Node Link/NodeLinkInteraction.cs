@@ -53,6 +53,33 @@ namespace EcoBuilder.NodeLink
         {}
 
 
+        [SerializeField] MeshRenderer disk;
+        bool doLayout = true;
+        // TODO: make this nicer and smoother, and include drag
+        void PauseLayout(bool paused)
+        {
+            if (doLayout != paused) // if already paused
+                return;
+
+            Color c = disk.material.color;
+            if (paused)
+            {
+                c *= 1.5f;
+                // c.r += .03f;
+                // c.g += .03f;
+                // c.b += .03f;
+            }
+            else
+            {
+                c /= 1.5f;
+                // c.r -= .03f;
+                // c.g -= .03f;
+                // c.b -= .03f;
+            }
+            disk.material.color = c;
+            doLayout = !paused;
+        }
+
         public void FlashNode(int idx)
         {
             nodes[idx].Flash(true);
@@ -92,17 +119,15 @@ namespace EcoBuilder.NodeLink
         }
         IEnumerator ResetZoom(Vector3 goalZoom, float duration)
         {
-            // var rt = GetComponent<RectTransform>();
-            var rt = transform;
-            Vector3 startZoom = rt.localScale;
+            Vector3 startZoom = transform.localScale;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
             {
-                rt.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
+                transform.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
                 // rt.localScale = Vector3.Lerp(rt.localScale, goalZoom, .02f);
                 yield return null;
             }
-            rt.localScale = goalZoom;
+            transform.localScale = goalZoom;
         }
 
         void Rotate(Vector2 amount)
@@ -132,64 +157,61 @@ namespace EcoBuilder.NodeLink
 
         bool potentialHold = false;
         Node pressedNode;
-        bool doLayout = true;
         public void OnPointerDown(PointerEventData ped)
         {
             // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
+                PauseLayout(true);
                 potentialHold = true;
-                doLayout = false;
-                StartCoroutine(WaitForHold(holdThreshold, ped));
 
-                if (!frozen)
+                pressedNode = ClosestSnappedNode(ped);
+                if (pressedNode != null)
                 {
-                    pressedNode = ClosestSnappedNode(ped);
-                    if (pressedNode != null)
+                    tooltip.Enable(true);
+                    tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
+                    if (pressedNode.Removable)
                     {
-                        tooltip.Enable(true);
-                        tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
-                        if (pressedNode.Removable)
-                        {
-                            // prepare for deletion
-                            pressedNode.Shake(true);
-                            tooltip.ShowTrash();
-                        }
-                        else
-                        {
-                            tooltip.ShowNoTrash();
-                        }
+                        StartCoroutine(WaitThenDelete(holdThreshold, ped));
+                        tooltip.ShowTrash();
+                    }
+                    else
+                    {
+                        tooltip.ShowNoTrash();
                     }
                 }
             }
         }
-        IEnumerator WaitForHold(float seconds, PointerEventData ped)
+        IEnumerator WaitThenDelete(float seconds, PointerEventData ped)
         {
+            pressedNode.Shake(true);
             float endTime = Time.time + seconds;
             while (Time.time < endTime)
             {
                 if (potentialHold == false)
+                {
                     yield break;
+                }
                 else
+                {
                     yield return null;
+                }
             }
             potentialHold = false;
-            
-            if (!frozen && pressedNode != null && pressedNode.Removable)
-            {
-                RemoveNode(pressedNode.Idx);
-                tooltip.Enable(false);
-            }
+            RemoveNode(pressedNode.Idx);
+            pressedNode = null;
+            tooltip.Enable(false);
         }
         public void OnPointerUp(PointerEventData ped)
         {
             // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
+                PauseLayout(false);
+
                 if (potentialHold) // if in the time window for a click
                 {
                     potentialHold = false;
-
                     if (pressedNode != null)
                     {
                         pressedNode.Shake(false);
@@ -212,12 +234,6 @@ namespace EcoBuilder.NodeLink
                     pressedNode = null;
                 }
             }
-
-            // release rotation, only if everything is released
-            if (ped.pointerId==-1 || Input.touchCount==1)
-            {
-                doLayout = true;
-            }
         }
 
         Node dummySource;
@@ -226,6 +242,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] UI.Tooltip tooltip;
         public void OnBeginDrag(PointerEventData ped)
         {
+            // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 potentialHold = false;
@@ -244,6 +261,7 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
+                    PauseLayout(false);
                     tooltip.Enable(false);
                 }
             }
@@ -392,12 +410,6 @@ namespace EcoBuilder.NodeLink
                     tooltip.Enable(false);
                 }
             }
-
-            // release rotation, only if everything is released
-            if (ped.pointerId==-1 || Input.touchCount==1)
-            {
-                doLayout = true;
-            }
         }
         public void OnScroll(PointerEventData ped)
         {
@@ -439,6 +451,9 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float snapRadius=40;
         private Node ClosestSnappedNode(PointerEventData ped)
         {
+            if (frozen)
+                return null;
+
             GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
             Node snappedNode = null;
             if (hoveredObject != null)

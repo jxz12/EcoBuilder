@@ -45,7 +45,7 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] float curveRatio = .2f;
         [SerializeField] int curveSegments = 5;
-        bool Curved { get; set; } = true;
+        bool Curved { get; set; } = false;
 
         private void Update()
         {

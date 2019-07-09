@@ -19,7 +19,7 @@ namespace EcoBuilder.NodeLink
 
         private void FixedUpdate()
         {
-            if (nodes.Count > 0)// && !frozen)
+            if (nodes.Count > 0)
             {
                 //////////////////////
                 // do stress SGD
@@ -29,16 +29,12 @@ namespace EcoBuilder.NodeLink
 
                 LayoutSGD(dq, d_j);
                 toBFS.Enqueue(dq);
-                
-                // foreach (Node no in nodes)
-                //     no.GoalPos = new Vector3(no.GoalPos.x, no.GoalPos.y, no.GoalPos.z*.99f); // use to squish in z
             }
 
             if (doLayout)
-            {
                 TweenNodes();
+            if (!Input.anyKey && Input.touchCount==0)
                 RotateMomentum();
-            }
         }
         private void Update()
         {
@@ -58,12 +54,18 @@ namespace EcoBuilder.NodeLink
                 {
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
                     // targetY = Mathf.Sqrt(targetY);
-                    targetY *= .99f; 
-                    no.GoalPos -= new Vector3(0, no.GoalPos.y-targetY, 0);
+                    // targetY *= .99f; 
+                    // if (targetY == 0)
+                    // {
+                    //     no.GoalPos -= new Vector3(0, no.GoalPos.y-targetY, 0);
+                    // }
+                    // else
+                    // {
+                        no.GoalPos -= new Vector3(0, .1f*(no.GoalPos.y-targetY), 0);
+                    // }
                 }
             }
         }
-        // [SerializeField] GameObject busyIcon;
         bool constraintsSolved = true, calculating = false;
         public bool Ready { get { return constraintsSolved && !calculating; } }
         private void LateUpdate()
@@ -93,7 +95,6 @@ namespace EcoBuilder.NodeLink
                     ConstraintsAsync();
                 #endif
             }
-            // busyIcon.SetActive(calculating);
         }
 
 
@@ -165,7 +166,7 @@ namespace EcoBuilder.NodeLink
         public void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
-            newLink.Init(nodes[i], nodes[j], true);
+            newLink.Init(nodes[i], nodes[j], false);
             links[i, j] = newLink;
 
             adjacency[i].Add(j);

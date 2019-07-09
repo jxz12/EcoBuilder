@@ -126,7 +126,7 @@ namespace EcoBuilder.UI
 
 		bool feasible, stable;
         float targetAbundance, abundance;
-        float targetFlux, flux;
+        float targetScore, currentScore;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
@@ -143,20 +143,20 @@ namespace EcoBuilder.UI
         //     abundanceText.text = GameManager.Instance.NormaliseScore(totalAbundance).ToString("000");
         //     // print(abundance);
         // }
-        public void DisplayTotalFlux(float totalFlux)
+        public void DisplayScore(float score)
         {
-            flux = totalFlux;
-            fluxText.text = GameManager.Instance.NormaliseScore(totalFlux).ToString("000");
-            // print(flux);
+            currentScore = score;
+            scoreText.text = GameManager.Instance.NormaliseScore(score).ToString("000");
+            // print(score);
         }
 
 
 		//////////////////////
 		// score calculation
 
-        [SerializeField] Image fluxTargetImage;
+        [SerializeField] Image scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
-        [SerializeField] Text fluxText, fluxTargetText; //, abundanceText;
+        [SerializeField] Text scoreText, scoreTargetText; //, abundanceText;
 
         public int NumStars { get; private set; }
 		void Update()
@@ -183,14 +183,14 @@ namespace EcoBuilder.UI
                     newNumStars += 1;
                     star1.SetBool("Filled", true);
 
-                    int currentScore = GameManager.Instance.NormaliseScore(flux);
+                    int score = GameManager.Instance.NormaliseScore(currentScore);
 
-                    if (currentScore >= target1 && stable)
+                    if (score >= target1 && stable)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
 
-                        if (currentScore >= target2)
+                        if (score >= target2)
                         {
                             newNumStars += 1;
                             star3.SetBool("Filled", true);
@@ -199,13 +199,13 @@ namespace EcoBuilder.UI
                 }
                 if (newNumStars < 2)
                 {
-                    fluxTargetText.text = target1.ToString("000");
-                    fluxTargetImage.sprite = targetSprite1;
+                    scoreTargetText.text = target1.ToString("000");
+                    scoreTargetImage.sprite = targetSprite1;
                 }
                 else
                 {
-                    fluxTargetText.text = target2.ToString("000");
-                    fluxTargetImage.sprite = targetSprite2;
+                    scoreTargetText.text = target2.ToString("000");
+                    scoreTargetImage.sprite = targetSprite2;
                 }
                 if (NumStars == 0 && newNumStars > 0)
                 {

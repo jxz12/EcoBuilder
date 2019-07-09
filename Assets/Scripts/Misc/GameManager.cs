@@ -278,7 +278,11 @@ namespace EcoBuilder
             if (input <= 0)
                 return 0;
 
-            float normalised = Mathf.Log10(input * 1e10f) * 25;
+            // // for flux
+            // float normalised = Mathf.Log10(input * 1e10f) * 25;
+            // int score = (int)Math.Truncate(normalised * 100) / 100;
+
+            float normalised = Mathf.Log10(input * 1e6f) * 25;
             int score = (int)Math.Truncate(normalised * 100) / 100;
             return Math.Max(score, 0);
         }

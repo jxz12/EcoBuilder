@@ -122,7 +122,7 @@ namespace EcoBuilder.Model
             }
         }
 
-        void BuildEquilibriumMatrix()
+        void BuildInteractionMatrix()
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
@@ -130,6 +130,7 @@ namespace EcoBuilder.Model
             interaction.Clear();
             negGrowth.Clear();
 
+            // double max=0, min=double.MaxValue;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -143,10 +144,13 @@ namespace EcoBuilder.Model
 
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
+                    // max = Math.Max(max, a);
+                    // min = Math.Min(min, a);
 
                     flux[i,j] = e * a;
                 }
             }
+            // UnityEngine.Debug.Log(min + " " + max);
         }
 
         // Depends on A and b being correct
@@ -202,7 +206,14 @@ namespace EcoBuilder.Model
         // O(n^3)
         public bool SolveFeasibility()
         {
-            BuildEquilibriumMatrix();
+            int n = internToExtern.Count;
+            if (n == 0)
+            {
+                TotalAbundance = TotalFlux = 0;
+                return false;
+            }
+
+            BuildInteractionMatrix();
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
@@ -223,10 +234,10 @@ namespace EcoBuilder.Model
 
             TotalAbundance = 0;
             bool feasible = true;
-            for (int idx=0; idx<abundance.Count; idx++)
+            for (int i=0; i<n; i++)
             {
-                TotalAbundance += abundance[idx];
-                if (abundance[idx] <= 0)
+                TotalAbundance += abundance[i];
+                if (abundance[i] <= 0)
                     feasible = false;
             }
             return feasible;
@@ -248,44 +259,73 @@ namespace EcoBuilder.Model
 
 
         ////////////////////
-        // Both also O(n^3)
+        // also O(n^3)
         public bool SolveStability()
         {
+            int richness = internToExtern.Count;
+            if (richness == 0)
+            {
+                MayComplexity = 0;
+                return false;
+            }
+
             BuildCommunityMatrix();
-
-            // int n = internToExtern.Count;
-            // int m = 0;
-            // double diag = 0;
-            // double offdiag = 0;
-            // for(int i=0; i<n; i++)
-            // {
-            //     for (int j=0; j<i; j++)
-            //     {
-            //         if (i==j)
-            //         {
-            //             diag += community[i,i];
-            //         }
-            //         else if (community[i,j] != 0)
-            //         {
-            //             offdiag += community[i,j];
-            //             m += 1;
-            //         }
-            //     }
-            // }
-
-
-            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
-            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
             // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
-            // get largest real part of any eigenvalue of this community matrix
-            // implies the local asymptotic stability
             var eigenValues = community.Evd().EigenValues;
 
+            // calculate 'complexity'
+            int connectance = 0;
+            double meanDiag = 0;
+            double meanOffDiag = 0;
+            for (int i=0; i<richness; i++)
+            {
+                meanDiag += community[i,i];
+                for (int j=0; j<richness; j++)
+                {
+                    if (i!=j && community[i,j]!=0)
+                    {
+                        meanOffDiag += community[i,j];
+                        connectance += 1;
+                    }
+                }
+            }
+
+            if (richness > 0)
+            {
+                meanDiag /= richness;
+            }
+
+            double standardDev = 0;
+            if (connectance > 0)
+            {
+                meanOffDiag /= connectance;
+
+                for (int i=0; i<richness; i++)
+                {
+                    for (int j=0; j<richness; j++)
+                    {
+                        if (i!=j && community[i,j]!=0)
+                        {
+                            double deviation = community[i,j] - meanOffDiag;
+                            standardDev += deviation * deviation;
+                        }
+                    }
+                }
+                standardDev = Math.Sqrt(standardDev / connectance);
+            }
+
+            MayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
+            // UnityEngine.Debug.Log(MayComplexity);
+
+            // get largest real part of any eigenvalue of this community matrix
+            // to measure the local asymptotic stability
             double Lambda = eigenValues.Real().Maximum();
             return Lambda <= 0;
         }
-        public double Complexity { get; private set; }
+        public double MayComplexity { get; private set; }
+        // public double TangComplexity { get; private set; }
+
 
         // public bool SolveReactivity()
 		// {

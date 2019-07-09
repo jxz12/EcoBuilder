@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
@@ -11,13 +12,12 @@ namespace EcoBuilder.UI
         // public event Action<bool> OnDroppable;
 
         [SerializeField] RectTransform incubatedParent;
-        [SerializeField] GameObject pickupZone, dropZone;
+        [SerializeField] Image pickupZone, dropZone;
 
-        public bool Incubating { get { return incubated !=null ; }}
         GameObject incubated;
         public void Incubate(GameObject toIncubate)
         {
-            dropZone.SetActive(false);
+            // dropZone.SetActive(false);
             incubated = toIncubate;
             incubated.transform.SetParent(incubatedParent, false);
             GetComponent<Animator>().SetBool("Droppable", false);
@@ -34,10 +34,10 @@ namespace EcoBuilder.UI
         Vector2 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (incubated != null && ped.rawPointerPress == pickupZone)
+            if (incubated != null && ped.rawPointerPress == pickupZone.gameObject)
             {
                 dragging = true;
-                dropZone.SetActive(true);
+                dropZone.raycastTarget = true;
                 originalPos = incubatedParent.localPosition;
             }
         }
@@ -45,7 +45,7 @@ namespace EcoBuilder.UI
         {
             if (dragging)
             {
-                if (ped.pointerCurrentRaycast.gameObject == dropZone)
+                if (ped.pointerCurrentRaycast.gameObject == dropZone.gameObject)
                 {
                     GetComponent<Animator>().SetBool("Droppable", true);
                 }
@@ -54,7 +54,7 @@ namespace EcoBuilder.UI
                     GetComponent<Animator>().SetBool("Droppable", false);
                 }
                 Vector3 mousePos = ped.position;
-                mousePos.z = 4;
+                mousePos.z = -transform.position.z + 1;
                 Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
 
                 incubatedParent.position = worldPos;
@@ -65,12 +65,13 @@ namespace EcoBuilder.UI
             if (dragging)
             {
                 dragging = false;
+                dropZone.raycastTarget = false;
                 incubatedParent.localPosition = originalPos;
             }
         }
         public void OnDrop(PointerEventData ped)
         {
-            if (dragging && ped.pointerCurrentRaycast.gameObject == dropZone)
+            if (dragging && ped.pointerCurrentRaycast.gameObject == dropZone.gameObject)
             {
                 OnSpawned.Invoke();
                 GetComponent<Animator>().SetTrigger("Spawn");

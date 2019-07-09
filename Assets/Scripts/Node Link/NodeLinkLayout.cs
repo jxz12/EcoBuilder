@@ -38,8 +38,9 @@ namespace EcoBuilder.NodeLink
             }
             foreach (Node no in nodes)
             {
-                no.GoalPos = 
-                    Vector3.Lerp(no.GoalPos, no.GoalPos-centroid, 1);
+                // no.GoalPos = 
+                //     Vector3.Lerp(no.GoalPos, no.GoalPos-centroid, 1);
+                no.GoalPos -= centroid;
 
                 no.transform.localPosition =
                     Vector3.Lerp(no.transform.localPosition, no.GoalPos, layoutTween);
@@ -53,7 +54,7 @@ namespace EcoBuilder.NodeLink
         // for stress-based layout
 
         [SerializeField] float SGDStep=.2f;
-        [SerializeField] float separationStep=1;
+        // [SerializeField] float separationStep=1, flattenStep=.01f;
 
         private Queue<int> toBFS = new Queue<int>();
 
@@ -61,6 +62,7 @@ namespace EcoBuilder.NodeLink
         private void LayoutSGD(int i, Dictionary<int, int> d_j)
         {
             foreach (int j in FYShuffle(nodes.Indices))
+            // foreach (int j in FYShuffle(d_j.Keys))
             {
                 if (i != j)
                 {
@@ -79,7 +81,8 @@ namespace EcoBuilder.NodeLink
                     }
                     else if (mag < 1) // otherwise push away if too close
                     {
-                        float mu = Mathf.Min(separationStep, 1);
+                        // float mu = Mathf.Min(separationStep, 1);
+                        float mu = 1;
 
                         Vector3 r = ((mag-1)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
@@ -89,7 +92,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
             // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
-            nodes[i].GoalPos = new Vector3(nodes[i].GoalPos.x, nodes[i].GoalPos.y, nodes[i].GoalPos.z*.99f);
+            nodes[i].GoalPos = new Vector3(nodes[i].GoalPos.x, nodes[i].GoalPos.y, nodes[i].GoalPos.z * .99f);
         }
 
         private Dictionary<int, int> ShortestPathsBFS(int source)

@@ -23,14 +23,15 @@ namespace EcoBuilder.Model
                p_v =  0.26,        // velocity exponent
                p_d =  0.21,        // reaction distance exponent
 
-               e_p = 0.2,         // plant efficiency
-               e_c = 0.5,         // animal efficiency
+               e_p = 0.2,          // plant efficiency
+               e_c = 0.5,          // animal efficiency
 
-               kg_min =   1e-3,   // min body size
-               kg_max =   1e3,    // max body size
-               a_ii_min = 1e-6,   // min self-regulation
-               a_ii_max = 1       // max self-regulation
+               kg_min =   1e-3,    // min body size
+               kg_max =   1e3      // max body size
                ;
+
+        [SerializeField]
+        double a_ii_min, a_ii_max; // these will be calculated at runtime
 
         class Species
         {
@@ -94,6 +95,10 @@ namespace EcoBuilder.Model
         LotkaVolterra<Species> simulation;
         void Awake()
         {
+            // calculate range of all interaction matrix values
+            a_ii_max = ActiveCapture(kg_max, kg_min) / kg_min;
+            a_ii_min = Grazing(kg_min, kg_max) / kg_max;
+
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
                   (s)=> s.SelfRegulation,
@@ -195,8 +200,23 @@ namespace EcoBuilder.Model
 
         public float TotalFlux { get; private set; } = 0;
         public float TotalAbundance { get; private set; } = 0;
-        // TODO: May's (or Tang's) complexity criteria here
-        // public float Complexity { get; private set; } = 0;
+        public float Complexity { get; private set; } = 0;
+
+        bool equilibriumSolved = true, calculating = false;
+        public bool Ready { get { return equilibriumSolved && !calculating; } }
+        void LateUpdate()
+        {
+            if (!equilibriumSolved && !calculating)// && idxToSpecies.Count>0)
+            {
+                equilibriumSolved = true;
+
+                #if UNITY_WEBGL
+                    EquilibriumSync();
+                #else
+                    EquilibriumAsync();
+                #endif
+            }
+        }
 
         async void EquilibriumAsync()
         {
@@ -206,6 +226,8 @@ namespace EcoBuilder.Model
             TotalAbundance = (float)simulation.TotalAbundance;
 
             Stable = await Task.Run(() => simulation.SolveStability());
+            Complexity = (float)simulation.MayComplexity;
+
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             ShowAbundanceWarnings();
@@ -215,17 +237,16 @@ namespace EcoBuilder.Model
         }
         void EquilibriumSync()
         {
-            calculating = true;
             Feasible = simulation.SolveFeasibility();
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
             Stable = simulation.SolveStability();
+            Complexity = (float)simulation.MayComplexity;
             // Nonreactive = simulation.SolveReactivity();
 
             ShowAbundanceWarnings();
 
-            calculating = false;
             OnEquilibrium.Invoke();
         }
         void ShowAbundanceWarnings()
@@ -244,22 +265,6 @@ namespace EcoBuilder.Model
                     OnRescued.Invoke(i);
                 }
                 s.Abundance = newAbundance;
-            }
-        }
-
-        bool equilibriumSolved = true, calculating = false;
-        public bool Ready { get { return equilibriumSolved && !calculating; } }
-        void LateUpdate()
-        {
-            if (!equilibriumSolved && !calculating && idxToSpecies.Count>0)
-            {
-                equilibriumSolved = true;
-
-                #if UNITY_WEBGL
-                    EquilibriumSync();
-                #else
-                    EquilibriumAsync();
-                #endif
             }
         }
 
