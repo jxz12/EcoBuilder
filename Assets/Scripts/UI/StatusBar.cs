@@ -137,16 +137,10 @@ namespace EcoBuilder.UI
             else
                 heart.DisplayDirect("X");
         }
-        // public void DisplayTotalAbundance(float totalAbundance)
-        // {
-        //     abundance = totalAbundance;
-        //     abundanceText.text = GameManager.Instance.NormaliseScore(totalAbundance).ToString("000");
-        //     // print(abundance);
-        // }
         public void DisplayScore(float score)
         {
             currentScore = score;
-            scoreText.text = GameManager.Instance.NormaliseScore(score).ToString("000");
+            scoreText.text = GameManager.Instance.NormaliseScore(score).ToString();//"000");
             // print(score);
         }
 
@@ -199,12 +193,12 @@ namespace EcoBuilder.UI
                 }
                 if (newNumStars < 2)
                 {
-                    scoreTargetText.text = target1.ToString("000");
+                    scoreTargetText.text = target1.ToString();//"000");
                     scoreTargetImage.sprite = targetSprite1;
                 }
                 else
                 {
-                    scoreTargetText.text = target2.ToString("000");
+                    scoreTargetText.text = target2.ToString();//"000");
                     scoreTargetImage.sprite = targetSprite2;
                 }
                 if (NumStars == 0 && newNumStars > 0)

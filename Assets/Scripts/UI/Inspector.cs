@@ -43,7 +43,7 @@ namespace EcoBuilder.UI
             public bool Editable { get; set; } = true;
             public GameObject GObject { get; set; } = null;
 
-            public Species(int idx, bool isProducer, float size=.5f, float greed=.5f)
+            public Species(int idx, bool isProducer, float size, float greed)
             {
                 Idx = idx;
                 IsProducer = isProducer;
@@ -103,7 +103,7 @@ namespace EcoBuilder.UI
             {
                 inspected = null;
             }
-            Species s = new Species(nextIdx, isProducer);
+            Species s = new Species(nextIdx, isProducer, 0, 0);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;

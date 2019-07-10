@@ -53,13 +53,10 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        [SerializeField] float SGDStep=.2f;
-        // [SerializeField] float separationStep=1, flattenStep=.01f;
-
         private Queue<int> toBFS = new Queue<int>();
 
         // SGD
-        private void LayoutSGD(int i, Dictionary<int, int> d_j)
+        private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
         {
             foreach (int j in FYShuffle(nodes.Indices))
             // foreach (int j in FYShuffle(d_j.Keys))
@@ -72,7 +69,7 @@ namespace EcoBuilder.NodeLink
                     if (d_j.ContainsKey(j)) // if there is a path between the two
                     {
                         int d_ij = d_j[j];
-                        float mu = Mathf.Min(SGDStep * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+                        float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
 
                         Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
@@ -92,7 +89,6 @@ namespace EcoBuilder.NodeLink
                 }
             }
             // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
-            nodes[i].GoalPos = new Vector3(nodes[i].GoalPos.x, nodes[i].GoalPos.y, nodes[i].GoalPos.z * .99f);
         }
 
         private Dictionary<int, int> ShortestPathsBFS(int source)

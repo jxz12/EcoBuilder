@@ -17,9 +17,11 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
+        [SerializeField] float etaMax=1f, etaDecay = .99f;
+        [SerializeField] float eta;
         private void FixedUpdate()
         {
-            if (nodes.Count > 0)
+            if (nodes.Count > 0 && eta > 1e-3)
             {
                 //////////////////////
                 // do stress SGD
@@ -27,7 +29,9 @@ namespace EcoBuilder.NodeLink
                 int dq = toBFS.Dequeue(); // only do one vertex at a time
                 var d_j = ShortestPathsBFS(dq);
 
-                LayoutSGD(dq, d_j);
+                eta *= etaDecay;
+                LayoutSGD(dq, d_j, eta);
+                nodes[dq].GoalPos = new Vector3(nodes[dq].GoalPos.x, nodes[dq].GoalPos.y, nodes[dq].GoalPos.z * .99f);
                 toBFS.Enqueue(dq);
             }
 
@@ -76,6 +80,7 @@ namespace EcoBuilder.NodeLink
                 // do constraint calculations
 
                 constraintsSolved = true;
+                eta = etaMax;
 
                 Disjoint = CheckDisjoint();
                 NumEdges = links.Count();
@@ -216,30 +221,15 @@ namespace EcoBuilder.NodeLink
 
 
         [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.1f;
-        [SerializeField] float logRangeMultiplier=1.5f;
         public void ResizeNodes(Func<int, float> sizes)
         {
-            float max=0, min=float.MaxValue;
-            foreach (Node no in nodes)
-            {
-                float size = sizes(no.Idx);
-                if (size > 0)
-                {
-                    max = Mathf.Max(max, size);
-                    min = Mathf.Min(min, size);
-                }
-            }
-
-            float logMin = Mathf.Log10(min / 2f); // avoid min==max
-            float logMax = Mathf.Log10(max * 2f); // put in middle
             float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
                 float size = sizes(no.Idx);
                 if (size > 0)
                 {
-                    float logSize = Mathf.Log10(size);
-                    no.GoalSize = minNodeSize + sizeRange*((logSize-logMin) / (logMax-logMin));
+                    no.GoalSize = minNodeSize + sizeRange*size;
                 }
                 else
                 {
@@ -249,30 +239,14 @@ namespace EcoBuilder.NodeLink
         }
         public void ReflowLinks(Func<int, int, float> flows)
         {
-            float max=0, min=float.MaxValue;
-            foreach (Link li in links)
-            {
-                int res=li.Source.Idx, con=li.Target.Idx;
-                float flow = flows(res, con);
-                if (flow > 0)
-                {
-                    max = Mathf.Max(max, flow);
-                    min = Mathf.Min(min, flow);
-                }
-            }
-
-            float logMin = Mathf.Log10(min / 2f); // avoid min==max
-            float logMax = Mathf.Log10(max * 2f); // put in middle
             float flowRange = maxLinkFlow - minLinkFlow;
             foreach (Link li in links)
             {
                 int res=li.Source.Idx, con=li.Target.Idx;
                 float flow = flows(res, con);
-
                 if (flow > 0)
                 {
-                    float logSpeed = Mathf.Log10(flow);
-                    li.TileSpeed = minLinkFlow + flowRange*((logSpeed-logMin) / (logMax-logMin));
+                    li.TileSpeed = minLinkFlow + flowRange*flow;
                 }
                 else
                 {

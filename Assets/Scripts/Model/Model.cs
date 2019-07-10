@@ -26,11 +26,11 @@ namespace EcoBuilder.Model
                e_p = 0.2,          // plant efficiency
                e_c = 0.5,          // animal efficiency
 
-               kg_min =   1e-3,    // min body size
-               kg_max =   1e3      // max body size
+               kg_min =     1e-3,  // min body size
+               kg_max =     1e3,   // max body size
+               a_ii_scale = 10     // ratio of a_ii to a_ij ranges
                ;
 
-        [SerializeField]
         double a_ii_min, a_ii_max; // these will be calculated at runtime
 
         class Species
@@ -95,13 +95,16 @@ namespace EcoBuilder.Model
         LotkaVolterra<Species> simulation;
         void Awake()
         {
-            // calculate range of all interaction matrix values
-            a_ii_max = ActiveCapture(kg_max, kg_min) / kg_min;
-            a_ii_min = Grazing(kg_min, kg_max) / kg_max;
+            // vary a0 around the average a_ij
+            // double kg_avg = GetOnLogScale(.5, a_ii_min, a_ii_max);
+            // calculate bounds for a_ij and set a_ii in the same range
+            a_ii_max = a_ii_scale * ActiveCapture(kg_max, kg_min) / kg_min;
+            a_ii_min = a_ii_scale * Grazing(kg_min, kg_max) / kg_max;
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
                   (s)=> s.SelfRegulation,
+                //   (s)=> 0,
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
@@ -122,7 +125,7 @@ namespace EcoBuilder.Model
             idxToSpecies.Remove(idx);
             equilibriumSolved = false;
         }
-        static double GetOnLogScale(float normalised, double minVal, double maxVal)
+        static double GetOnLogScale(double normalised, double minVal, double maxVal)
         {
             // float min = Mathf.Log10(minVal);
             // float max = Mathf.Log10(maxVal);
@@ -225,9 +228,10 @@ namespace EcoBuilder.Model
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
+            print("flux: " + TotalFlux);
+
             Stable = await Task.Run(() => simulation.SolveStability());
             Complexity = (float)simulation.MayComplexity;
-
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             ShowAbundanceWarnings();
@@ -268,13 +272,33 @@ namespace EcoBuilder.Model
             }
         }
 
+        float logMinAbundance = Mathf.Log(6e-8f, 2);
+        float logMaxAbundance = Mathf.Log(2f, 2);
         public float GetAbundance(int idx)
         {
-            return (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
+            float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
+            if (abundance <= 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (Mathf.Log(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
+            }
         }
+        float logMinFlux = Mathf.Log(1.2e-11f, 2);
+        float logMaxFlux = Mathf.Log(9.2e-7f, 2);
         public float GetFlux(int res, int con)
         {
-            return (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+            float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+            if (flux <= 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (Mathf.Log(flux)-logMinFlux) / (logMaxFlux-logMinFlux);
+            }
         }
 
         public Tuple<List<string>, List<double>> GetParameterisation()
