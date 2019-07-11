@@ -217,9 +217,9 @@ namespace EcoBuilder.Model
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
-            UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
-            UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
-            UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
+            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
+            // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
+            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
             // solve flux values
             TotalFlux = 0;
@@ -272,7 +272,7 @@ namespace EcoBuilder.Model
             }
 
             BuildCommunityMatrix();
-            UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
+            // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
             // calculate 'complexity'
             int connectance = 0;
@@ -338,7 +338,7 @@ namespace EcoBuilder.Model
                 TangComplexity = 0;
             }
 
-            UnityEngine.Debug.Log(MayComplexity + " " + TangComplexity);
+            // UnityEngine.Debug.Log(MayComplexity + " " + TangComplexity);
 
 
             // get largest real part of any eigenvalue of this community matrix

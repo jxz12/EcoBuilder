@@ -280,9 +280,10 @@ namespace EcoBuilder
 
             // // for flux
             // float normalised = Mathf.Log(input * 1e15f, 2) * 25;
+            float normalised = input * 1e15f;
 
             // // for complexity
-            float normalised = Mathf.Log(input * 1e7f, 2) * 25;
+            // float normalised = Mathf.Log(input * 1e7f, 2) * 25;
 
             int score = (int)Math.Truncate(normalised * 100) / 100;
             return Math.Max(score, 0);

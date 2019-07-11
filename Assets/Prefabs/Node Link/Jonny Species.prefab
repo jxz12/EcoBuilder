@@ -310,6 +310,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6fcd0754b6c08e94eb4c15122d66ceaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  seed: 0
   body: {fileID: 4822296920973503334}
   eyes: {fileID: 1886545499}
   nose: {fileID: 455293267}
@@ -339,7 +340,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c4faf36a600c3b14789cc17cdba9a54b, type: 2}
+  - {fileID: 2100000, guid: 0a91d8d43cd19d244bedf1795cbfaaa8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -62,11 +62,9 @@ namespace EcoBuilder.UI
         }
 
         // thumbnail
-        [SerializeField] Button thumbnail;
         [SerializeField] Text numberText;
         [SerializeField] Image starsImage;
         [SerializeField] Sprite[] starImages;
-        [SerializeField] Image lockImage;
 
         // card
 		[SerializeField] Text title;
@@ -114,16 +112,13 @@ namespace EcoBuilder.UI
             if (Details.highScore >= details.targetScore2)
                 target2.color = Color.grey;
 
-            if (Details.numStars == -1)
-            {
-                // TODO: animation
-                Lock();
-            }
-            else
+            if (Details.numStars != -1)
             {
                 starsImage.sprite = starImages[Details.numStars];
                 Unlock();
             }
+
+            thumbnailedParent = transform.parent.GetComponent<RectTransform>();
         }
 
         public bool LoadFromFile(string loadPath)
@@ -165,11 +160,6 @@ namespace EcoBuilder.UI
                 print("handled exception: " + ioe.Message);
                 return false;
             }
-            catch (Exception e)
-            {
-                print("Just work omg: " + e.Message);
-                return false;
-            }
         }
 
         public void SaveToFile()
@@ -199,20 +189,14 @@ namespace EcoBuilder.UI
         //////////////////////////////
         // animations and supplements
 
-        public void Lock()
-        {
-            // TODO: animation
-            thumbnail.interactable = false;
-            lockImage.enabled = true;
-            numberText.enabled = false;
-            starsImage.enabled = false;
-        }
+        // public void Lock()
+        // {
+            
+        // }
         public void Unlock()
         {
-            thumbnail.interactable = true;
-            lockImage.enabled = false;
-            numberText.enabled = true;
-            starsImage.enabled = true;
+            // TODO: pretty animation
+            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
         IEnumerator WaitThenEnableQuitReplay()
         {
@@ -244,6 +228,7 @@ namespace EcoBuilder.UI
             }
             else
             {
+                Destroy(NextLevel);
                 print("TODO: credits?");
             }
 
@@ -253,38 +238,53 @@ namespace EcoBuilder.UI
 
         public void Replay()
         {
-            // finishFlag.onClick.RemoveAllListeners();
             GameManager.Instance.PlayLevel(this);
         }
 
-        IEnumerator LerpToPos(Vector2 goalPos, float duration)
+        IEnumerator LerpToPos(Vector2 endPos, float duration)
         {
             Vector2 startPos = transform.localPosition;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
             {
-                transform.localPosition = Vector3.Slerp(startPos, goalPos, (Time.time-startTime)/duration);
+                float t = (Time.time-startTime) / duration * 2;
+                // if (t < 1) 
+                // {
+                //     transform.localPosition = startPos + (endPos-startPos)/2f*t*t*t;
+                // }
+                // else
+                // {
+                //     t -= 2;
+                //     transform.localPosition = startPos + (endPos-startPos)/2f*(t*t*t + 2f);
+                // }
+                if (t < 1) 
+                {
+                    transform.localPosition = startPos + (endPos-startPos)/2f*t*t;
+                }
+                else
+                {
+                    t -= 1;
+                    transform.localPosition = startPos - (endPos-startPos)/2f*(t*(t-2)-1);
+                }
                 yield return null;
             }
-            transform.localPosition = goalPos;
+            transform.localPosition = endPos;
             descriptionArea.verticalNormalizedPosition = 1;
         }
 
-        enum State { Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
-        Transform thumbnailedParent;
+        enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
+        RectTransform thumbnailedParent;
         Vector2 thumbnailedPos;
 		public void ShowThumbnail()
 		{
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
 
-            Vector2 prevPos = transform.position;
-            transform.SetParent(thumbnailedParent, false);
-            transform.position = prevPos;
-            thumbnail.interactable = true;
+            transform.SetParent(thumbnailedParent, true);
+            UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
             StartCoroutine(LerpToPos(thumbnailedPos, .5f));
 		}
-		public void ShowThumbnailNewParent(Transform newParent, Vector2 newPos)
+		public void ShowThumbnailNewParent(RectTransform newParent, Vector2 newPos)
         {
             thumbnailedParent = newParent;
             thumbnailedPos = newPos;
@@ -294,24 +294,14 @@ namespace EcoBuilder.UI
 		{
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
 
-            thumbnailedParent = transform.parent;
             thumbnailedPos = transform.localPosition;
-            thumbnail.interactable = false;
-
-            Vector2 prevPos = transform.position;
-            transform.SetParent(GameManager.Instance.Overlay.transform, false);
-            transform.position = prevPos;
+            transform.SetParent(GameManager.Instance.Overlay.transform, true);
+            UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
             StartCoroutine(LerpToPos(Vector2.zero, .5f));
 		}
         public void ShowFinishFlag()
         {
-            // thumbnailedParent = GetComponent<RectTransform>().parent;
-            // thumbnailedPos = GetComponent<RectTransform>().anchoredPosition;
-            thumbnailedParent = transform.parent;
-            thumbnailedPos = transform.localPosition;
-            thumbnail.interactable = false;
-
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
         }
         // called when game is ended

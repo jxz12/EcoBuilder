@@ -1611,22 +1611,25 @@ MonoBehaviour:
     maxChain: -1
     minLoop: -1
     maxLoop: -1
-    numSpecies: 0
-    plants: 
-    sizes: []
-    greeds: []
-    randomSeeds: 
-    editables: 
-    numInteractions: 0
-    resources: 
-    consumers: 
+    numSpecies: 2
+    plants: 0100
+    sizes:
+    - 0.5
+    - 0.5
+    greeds:
+    - 0.5
+    - 0.5
+    randomSeeds: 0100000002000000
+    editables: 0000
+    numInteractions: 1
+    resources: 00000000
+    consumers: 01000000
     targetScore1: 0
     targetScore2: 0
     highScore: 0
     numStars: 0
     savefilePath: 
     nextLevelPath: 
-  thumbnail: {fileID: 3096964205670434962}
   numberText: {fileID: 3298662015470128372}
   starsImage: {fileID: 3298662015200627692}
   starImages:
@@ -1634,7 +1637,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 63333a1d91b24b446b2e5a6de36e2e34, type: 3}
   - {fileID: 21300000, guid: 1b67470a1603cf6459615dd515308384, type: 3}
   - {fileID: 21300000, guid: 1eeecee48daf7af44a88c1b04d230642, type: 3}
-  lockImage: {fileID: 4297244884304339903}
   title: {fileID: 5361465145665883509}
   description: {fileID: 3836349071526624569}
   descriptionArea: {fileID: 4863488105179928926}

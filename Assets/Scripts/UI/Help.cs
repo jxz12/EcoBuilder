@@ -16,24 +16,7 @@ namespace EcoBuilder.UI
 			panelLayout.CalculateLayoutInputVertical();
 			panelLayout.SetLayoutVertical();
 			panelFitter.SetLayoutVertical();
-
-			// StartCoroutine(OneFrameUpdateCanvas());
 		}
-		// IEnumerator OneFrameUpdateCanvas()
-		// {
-		// 	yield return null;
-		// 	Canvas.ForceUpdateCanvases();
-		// 	// panel.CalculateLayoutInputVertical();
-		// 	// panel.SetLayoutVertical();
-		// }
-		public void SetY(float y)
-		{
-			panelLayout.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, y);
-		}
-		// public void SetText(string text, Action)
-		// {
-
-		// }
 		public void Show(bool showing)
 		{
 			GetComponent<Animator>().SetBool("Show", showing);

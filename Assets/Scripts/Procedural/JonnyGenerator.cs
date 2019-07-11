@@ -14,6 +14,7 @@ namespace EcoBuilder
     {
         [SerializeField] JonnySpecies speciesPrefab;
         [SerializeField] Mesh producerMesh, consumerMesh;
+        [SerializeField] Material editableMat, uneditableMat;
         [SerializeField] List<Mesh> eyes, noses, mouths;
 
         void ShapeSpecies(JonnySpecies js, bool isProducer, float size, float greed, int randomSeed)
@@ -37,6 +38,15 @@ namespace EcoBuilder
             }
 
             Color c = GetColor(isProducer, size, greed);
+            // if (randomSeed < 5)
+            // {
+            //     js.GetComponent<MeshRenderer>().material = uneditableMat;
+            //     c.a = .5f;
+            // }
+            // else
+            // {
+            //     js.GetComponent<MeshRenderer>().material = editableMat;
+            // }
             js.GetComponent<MeshRenderer>().material.color = c;
 
             js.SetEyesMesh(eyes[UnityEngine.Random.Range(0, eyes.Count)]);

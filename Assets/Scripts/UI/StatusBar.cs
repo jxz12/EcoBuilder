@@ -10,7 +10,7 @@ namespace EcoBuilder.UI
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraint heart, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
-        [SerializeField] Transform levelParent;
+        [SerializeField] RectTransform levelParent;
 
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;

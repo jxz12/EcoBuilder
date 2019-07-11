@@ -272,9 +272,10 @@ namespace EcoBuilder.Model
             }
         }
 
+        // TODO: change these from hard coded to init in Start()
         float logMinAbundance = Mathf.Log(6e-8f, 2);
         float logMaxAbundance = Mathf.Log(2f, 2);
-        public float GetAbundance(int idx)
+        public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
             if (abundance <= 0)
@@ -286,9 +287,9 @@ namespace EcoBuilder.Model
                 return (Mathf.Log(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
             }
         }
-        float logMinFlux = Mathf.Log(1.2e-11f, 2);
+        float logMinFlux = Mathf.Log(4.7e-17f, 2);
         float logMaxFlux = Mathf.Log(9.2e-7f, 2);
-        public float GetFlux(int res, int con)
+        public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
             if (flux <= 0)

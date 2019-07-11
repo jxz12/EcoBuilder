@@ -48,12 +48,12 @@ namespace EcoBuilder.NodeLink
                 // iterate trophic level equations and set y-axis
 
                 TrophicGaussSeidel();
-                MaxTrophic = 1;
+                float maxTrophic = 1;
                 foreach (float trophic in trophicLevels)
-                    MaxTrophic = Math.Max(trophic, MaxTrophic);
+                    maxTrophic = Mathf.Max(trophic, maxTrophic);
 
                 float height = Mathf.Min(MaxChain, 3f);
-                float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
+                float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
                 foreach (Node no in nodes)
                 {
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
@@ -220,7 +220,7 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f, minLinkFlow=.005f, maxLinkFlow=.1f;
+        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f;
         public void ResizeNodes(Func<int, float> sizes)
         {
             float sizeRange = maxNodeSize - minNodeSize;
@@ -237,6 +237,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        [SerializeField] float minLinkFlow=.005f, maxLinkFlow=.1f;
         public void ReflowLinks(Func<int, int, float> flows)
         {
             float flowRange = maxLinkFlow - minLinkFlow;

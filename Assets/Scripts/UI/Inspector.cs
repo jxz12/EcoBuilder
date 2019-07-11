@@ -292,7 +292,12 @@ namespace EcoBuilder.UI
         }
         public void Hide()
         {
-            GetComponent<Animator>().SetTrigger("Uninspect");
+            // TODO: so ugly, overhaul needed
+            if (!GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                GetComponent<Animator>().SetTrigger("Uninspect");
+
+            if (incubated != null)
+                incubator.Unincubate();
         }
 
         void SetSlidersWithoutEventCallbacks(float size, float greed)

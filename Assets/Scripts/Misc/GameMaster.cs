@@ -48,10 +48,10 @@ namespace EcoBuilder
 
             model.OnEndangered +=  (i)=> nodelink.FlashNode(i);
             model.OnRescued +=     (i)=> nodelink.UnflashNode(i);
-            model.OnEquilibrium +=  ()=> nodelink.ResizeNodes(i=> model.GetAbundance(i));
-            model.OnEquilibrium +=  ()=> nodelink.ReflowLinks((i,j)=> model.GetFlux(i,j));
+            model.OnEquilibrium +=  ()=> nodelink.ResizeNodes(i=> model.GetScaledAbundance(i));
+            model.OnEquilibrium +=  ()=> nodelink.ReflowLinks((i,j)=> model.GetScaledFlux(i,j));
             // model.OnEquilibrium +=  ()=> status.DisplayTotalAbundance(model.TotalAbundance);
-            model.OnEquilibrium +=  ()=> status.DisplayScore(model.Complexity);
+            model.OnEquilibrium +=  ()=> status.DisplayScore(model.TotalFlux);
             model.OnEquilibrium +=  ()=> status.DisplayFeastability(model.Feasible, model.Stable);
 
             status.OnProducersAvailable += (b)=> inspector.SetProducersAvailable(b);

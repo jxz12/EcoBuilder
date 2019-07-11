@@ -8,7 +8,7 @@ namespace EcoBuilder.NodeLink
         public int Idx { get; private set; }
         public Color Col {
             get { return mr!=null? mr.material.color : Color.black; }
-            set { if (mr!=null) mr.material.color = value; }
+            // set { if (mr!=null) mr.material.color = new Color(value.r, value.g, value.b, mr.material.color.a); }
         }
         public Vector3 GoalPos { get; set; }
         public float GoalSize { get; set; }
