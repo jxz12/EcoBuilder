@@ -17,10 +17,10 @@ namespace EcoBuilder.NodeLink
             set { target = value; lr.startColor = value.Col; }
         }
 
-        public float Width {
-            get { return lr.widthMultiplier; }
-            set { lr.widthMultiplier = value; }
-        }
+        // public float Width {
+        //     get { return lr.widthMultiplier; }
+        //     set { lr.widthMultiplier = value; }
+        // }
         public float TileSpeed { get; set; }// = .01f;
         public bool Removable { get; set; } = true;
 
@@ -43,7 +43,8 @@ namespace EcoBuilder.NodeLink
                 Destroy(GetComponent<cakeslice.Outline>());
         }
 
-        [SerializeField] float curveRatio = .2f;
+        [SerializeField] float lineWidth = .2f;
+        [SerializeField] float curveRatio = .5f;
         [SerializeField] int curveSegments = 5;
         bool Curved { get; set; } = false;
 
@@ -75,6 +76,9 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
+            float width = lineWidth * transform.lossyScale.x;
+            lr.widthMultiplier = width;
+            lr.material.mainTextureScale = new Vector2(1/lineWidth, 1);
         }
         private void FixedUpdate()
         {

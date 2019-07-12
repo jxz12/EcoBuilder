@@ -25,6 +25,7 @@ namespace EcoBuilder.UI
         }
         public void Unincubate()
         {
+            Destroy(incubated);
             incubated = null;
             GetComponent<Animator>().SetTrigger("Unincubate");
         }

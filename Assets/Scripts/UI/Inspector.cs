@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
+using UnityEngine.Events;
 
 namespace EcoBuilder.UI
 {
@@ -77,11 +77,14 @@ namespace EcoBuilder.UI
             consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
 
-            sizeSlider.onValueChanged.AddListener(x=> SetSize());
-            greedSlider.onValueChanged.AddListener(x=> SetGreed());
+            SizeSliderCallback = x=> SetSize();
+            GreedSliderCallback = x=> SetGreed();
+            sizeSlider.onValueChanged.AddListener(SizeSliderCallback);
+            greedSlider.onValueChanged.AddListener(GreedSliderCallback);
 
             incubator.OnSpawned += ()=> SpawnIncubated();
         }
+        UnityAction<float> SizeSliderCallback, GreedSliderCallback;
 
 
 
@@ -103,7 +106,7 @@ namespace EcoBuilder.UI
             {
                 inspected = null;
             }
-            Species s = new Species(nextIdx, isProducer, 0, 0);
+            Species s = new Species(nextIdx, isProducer, 0, .5f);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
@@ -165,6 +168,16 @@ namespace EcoBuilder.UI
             }
         }
 
+        void SetSlidersWithoutEventCallbacks(float size, float greed)
+        {
+            // this is ugly as heck, but sliders are stupid
+            sizeSlider.onValueChanged.RemoveListener(SizeSliderCallback);
+            sizeSlider.normalizedValue = size;
+            sizeSlider.onValueChanged.AddListener(SizeSliderCallback);
+            greedSlider.onValueChanged.RemoveListener(GreedSliderCallback);
+            greedSlider.normalizedValue = greed;
+            greedSlider.onValueChanged.AddListener(GreedSliderCallback);
+        }
 
 
 
@@ -208,9 +221,8 @@ namespace EcoBuilder.UI
             }
             else if (incubated != null) // if incubating
             {
-                Destroy(incubated.GObject);
-                incubated = null; // lol memory leak but not really
                 incubator.Unincubate();
+                incubated = null;
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else
@@ -270,7 +282,7 @@ namespace EcoBuilder.UI
             }
             if (incubated != null)
             {
-                Destroy(incubated.GObject);
+                incubator.Unincubate();
                 incubated = null;
                 OnUnincubated.Invoke();
             }
@@ -298,17 +310,6 @@ namespace EcoBuilder.UI
 
             if (incubated != null)
                 incubator.Unincubate();
-        }
-
-        void SetSlidersWithoutEventCallbacks(float size, float greed)
-        {
-            // this is ugly as heck, but sliders are stupid
-            sizeSlider.onValueChanged.RemoveListener(x=> SetSize());
-            sizeSlider.normalizedValue = size;
-            sizeSlider.onValueChanged.AddListener(x=> SetSize());
-            greedSlider.onValueChanged.RemoveListener(x=> SetGreed());
-            greedSlider.normalizedValue = greed;
-            greedSlider.onValueChanged.AddListener(x=> SetGreed());
         }
 
 

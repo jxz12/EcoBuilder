@@ -103,31 +103,35 @@ namespace EcoBuilder.NodeLink
             GetComponent<RectTransform>().anchoredPosition += toPan;
         }
 
-        // TODO: make this smoother
-        IEnumerator ResetPan(Vector2 goalPan, float duration)
-        {
-            var rt = GetComponent<RectTransform>();
-            Vector2 startPan = rt.anchoredPosition;
-            float startTime = Time.time;
-            while (Time.time < startTime + duration)
-            {
-                rt.anchoredPosition = Vector3.Lerp(startPan, goalPan, (Time.time-startTime)/duration);
-                // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
-                yield return null;
-            }
-            rt.anchoredPosition = goalPan;
-        }
-        IEnumerator ResetZoom(Vector3 goalZoom, float duration)
+        // IEnumerator ResetPan(Vector2 goalPan, float duration)
+        // {
+        //     var rt = GetComponent<RectTransform>();
+        //     Vector2 startPan = rt.anchoredPosition;
+        //     float startTime = Time.time;
+        //     while (Time.time < startTime + duration)
+        //     {
+        //         rt.anchoredPosition = Vector3.Lerp(startPan, goalPan, (Time.time-startTime)/duration);
+        //         // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
+        //         yield return null;
+        //     }
+        //     rt.anchoredPosition = goalPan;
+        // }
+        IEnumerator ResetZoom(Vector3 endZoom, float duration)
         {
             Vector3 startZoom = transform.localScale;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
             {
-                transform.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
-                // rt.localScale = Vector3.Lerp(rt.localScale, goalZoom, .02f);
+                // transform.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
+                float t = (Time.time-startTime) / duration * 2;
+                if (t < 1) 
+                    transform.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
+                else
+                    transform.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
+
                 yield return null;
             }
-            transform.localScale = goalZoom;
+            transform.localScale = endZoom;
         }
 
         void Rotate(Vector2 amount)
@@ -248,7 +252,7 @@ namespace EcoBuilder.NodeLink
                 potentialHold = false;
                 if (pressedNode != null)
                 {
-                    pressedNode.Outline();
+                    // pressedNode.Outline();
                     pressedNode.Shake(false);
 
                     dummySource = Instantiate(nodePrefab, nodesParent);
@@ -277,12 +281,12 @@ namespace EcoBuilder.NodeLink
                 {
                     if (outlinedLink != null)
                     {
-                        outlinedLink.Unoutline();
+                        // outlinedLink.Unoutline();
                         outlinedLink = null;
                     }
                     if (outlinedSource != null)
                     {
-                        outlinedSource.Unoutline();
+                        // outlinedSource.Unoutline();
                         outlinedSource = null;
                     }
 
@@ -298,9 +302,9 @@ namespace EcoBuilder.NodeLink
                         {
                             if (snappedNode.CanBeSource)
                             {
-                                dummyLink.Outline(1);
+                                // dummyLink.Outline(1);
                                 outlinedLink = dummyLink;
-                                snappedNode.Outline(1);
+                                // snappedNode.Outline(1);
                                 outlinedSource = snappedNode;
 
                                 dummyLink.Source = snappedNode;
@@ -319,9 +323,9 @@ namespace EcoBuilder.NodeLink
                             dummyLink.Source = pressedNode; // hide dummyLink
                             if (links[i,j].Removable)
                             {
-                                links[i,j].Outline(2);
+                                // links[i,j].Outline(2);
                                 outlinedLink = links[i,j];
-                                snappedNode.Outline(2);
+                                // snappedNode.Outline(2);
                                 outlinedSource = snappedNode;
 
                                 potentialSource = snappedNode;
@@ -353,7 +357,7 @@ namespace EcoBuilder.NodeLink
 
                         if (pressedNode.CanBeTarget)
                         {
-                            dummyLink.Outline();
+                            // dummyLink.Outline();
                             outlinedLink = dummyLink;
                             tooltip.ShowLink();
                         }
@@ -394,15 +398,15 @@ namespace EcoBuilder.NodeLink
             {
                 if (pressedNode != null)
                 {
-                    pressedNode.Unoutline();
+                    // pressedNode.Unoutline();
                     pressedNode = null;
                     potentialSource = null;
 
-                    if (outlinedLink != null)
-                        outlinedLink.Unoutline();
+                    // if (outlinedLink != null)
+                        // outlinedLink.Unoutline();
 
-                    if (outlinedSource != null)
-                        outlinedSource.Unoutline();
+                    // if (outlinedSource != null)
+                        // outlinedSource.Unoutline();
 
 
                     Destroy(dummyLink.gameObject);

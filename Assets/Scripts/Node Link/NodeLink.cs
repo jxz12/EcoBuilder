@@ -171,7 +171,7 @@ namespace EcoBuilder.NodeLink
         public void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
-            newLink.Init(nodes[i], nodes[j], false);
+            newLink.Init(nodes[i], nodes[j], true);
             links[i, j] = newLink;
 
             adjacency[i].Add(j);
@@ -205,18 +205,18 @@ namespace EcoBuilder.NodeLink
         public void SetIfNodeRemovable(int idx, bool removable)
         {
             nodes[idx].Removable = removable;
-            // if (!removable)
-            //     nodes[idx].Outline();
-            // else
-            //     nodes[idx].Unoutline();
+            if (!removable)
+                nodes[idx].Outline();
+            else
+                nodes[idx].Unoutline();
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            // if (!removable)
-            //     links[i,j].Outline();
-            // else
-            //     links[i,j].Unoutline();
+            if (!removable)
+                links[i,j].Outline();
+            else
+                links[i,j].Unoutline();
         }
 
 

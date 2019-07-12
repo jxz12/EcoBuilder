@@ -29,9 +29,8 @@ namespace EcoBuilder
 
 
             nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);
-            // nodelink.OnUnfocused +=       ()=> inspector.Uninspect();
-            // nodelink.OnUnfocused +=       ()=> status.ShowHelp(false);
             nodelink.OnEmptyPressed +=    ()=> inspector.InitiateSpawn();
+            // nodelink.OnEmptyPressed +=    ()=> status.ShowHelp(false);
             nodelink.OnLinkAdded +=    (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=  (i,j)=> model.RemoveInteraction(i,j);
             ///////////////////////////

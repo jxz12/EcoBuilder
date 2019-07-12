@@ -292,6 +292,9 @@ namespace EcoBuilder.UI
         }
 		public void ShowCard()
 		{
+            if (GameManager.Instance.Overlay.transform.childCount > 0)
+                return;
+
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
 
             thumbnailedPos = transform.localPosition;
