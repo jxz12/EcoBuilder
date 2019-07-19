@@ -25,7 +25,7 @@ namespace EcoBuilder
             inspector.OnIsProducerSet +=  (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
             inspector.OnIsProducerSet +=  (i,b)=> status.AddType(i,b);
             inspector.OnSizeSet +=        (i,x)=> model.SetSpeciesBodySize(i,x);
-            inspector.OnGreedSet +=       (i,x)=> model.SetSpeciesSelfRegulation(i,x);
+            inspector.OnGreedSet +=       (i,x)=> model.SetSpeciesInterference(i,x);
 
 
             nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);

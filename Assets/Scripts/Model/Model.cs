@@ -40,7 +40,7 @@ namespace EcoBuilder.Model
             public bool IsProducer { get; set; }
 
             public double Metabolism { get; set; }
-            public double SelfRegulation { get; set; }
+            public double Interference { get; set; }
             public double Efficiency { get; set; }
 
             public double Abundance { get; set; } = 1; // initialise as non-extinct
@@ -95,16 +95,13 @@ namespace EcoBuilder.Model
         LotkaVolterra<Species> simulation;
         void Awake()
         {
-            // vary a0 around the average a_ij
-            // double kg_avg = GetOnLogScale(.5, a_ii_min, a_ii_max);
             // calculate bounds for a_ij and set a_ii in the same range
             a_ii_max = a_ii_scale * ActiveCapture(kg_max, kg_min) / kg_min;
             a_ii_min = a_ii_scale * Grazing(kg_min, kg_max) / kg_max;
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
-                  (s)=> s.SelfRegulation,
-                //   (s)=> 0,
+                  (s)=> s.Interference,
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
@@ -157,9 +154,9 @@ namespace EcoBuilder.Model
 
             equilibriumSolved = false;
         }
-        public void SetSpeciesSelfRegulation(int idx, float greedNormalised)
+        public void SetSpeciesInterference(int idx, float greedNormalised)
         {
-            idxToSpecies[idx].SelfRegulation = -GetOnLogScale(greedNormalised, a_ii_max, a_ii_min);
+            idxToSpecies[idx].Interference = -GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
 
             equilibriumSolved = false;
         }

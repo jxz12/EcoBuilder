@@ -9,7 +9,7 @@ namespace EcoBuilder.NodeLink
     {
         public event Action OnEmptyPressed;
         public event Action<int> OnNodeFocused;
-        public event Action<int> OnNodeRemoved; // TODO: should not be here
+        public event Action<int> OnNodeRemoved;
         public event Action<int, int> OnLinkAdded;
         public event Action<int, int> OnLinkRemoved;
 
@@ -17,58 +17,37 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        [SerializeField] float etaMax=1f, etaDecay = .99f;
-        [SerializeField] float eta;
+        [SerializeField] float etaMax=2f, etaDecay = .2f;
+        // [SerializeField] float eta;
+        float etaIteration = 0;
         private void FixedUpdate()
         {
-            if (nodes.Count > 0 && eta > 1e-3)
+            if (nodes.Count > 0)
             {
                 //////////////////////
                 // do stress SGD
+                if (focus == null)
+                {
+                    int dq = toBFS.Dequeue(); // only do one vertex at a time
+                    var d_j = ShortestPathsBFS(dq);
 
-                int dq = toBFS.Dequeue(); // only do one vertex at a time
-                var d_j = ShortestPathsBFS(dq);
+                    float eta = etaMax / (1f + etaDecay*(float)etaIteration++);
+                    LayoutSGD(dq, d_j, eta);
+                    toBFS.Enqueue(dq);
+                }
 
-                eta *= etaDecay;
-                LayoutSGD(dq, d_j, eta);
-                nodes[dq].GoalPos = new Vector3(nodes[dq].GoalPos.x, nodes[dq].GoalPos.y, nodes[dq].GoalPos.z * .99f);
-                toBFS.Enqueue(dq);
+                ///////////////////////////////
+                // calculate trophic levels
+                if (!LaplacianDetZero)
+                {
+                    TrophicGaussSeidel();
+                }
             }
 
             if (doLayout)
                 TweenNodes();
             if (!Input.anyKey && Input.touchCount==0)
                 RotateMomentum();
-        }
-        private void Update()
-        {
-            if (nodes.Count > 0 && !LaplacianDetZero)
-            {
-                ////////////////////////////////////
-                // iterate trophic level equations and set y-axis
-
-                TrophicGaussSeidel();
-                float maxTrophic = 1;
-                foreach (float trophic in trophicLevels)
-                    maxTrophic = Mathf.Max(trophic, maxTrophic);
-
-                float height = Mathf.Min(MaxChain, 3f);
-                float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
-                foreach (Node no in nodes)
-                {
-                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                    // targetY = Mathf.Sqrt(targetY);
-                    // targetY *= .99f; 
-                    // if (targetY == 0)
-                    // {
-                    //     no.GoalPos -= new Vector3(0, no.GoalPos.y-targetY, 0);
-                    // }
-                    // else
-                    // {
-                        no.GoalPos -= new Vector3(0, .1f*(no.GoalPos.y-targetY), 0);
-                    // }
-                }
-            }
         }
         bool constraintsSolved = true, calculating = false;
         public bool Ready { get { return constraintsSolved && !calculating; } }
@@ -80,7 +59,7 @@ namespace EcoBuilder.NodeLink
                 // do constraint calculations
 
                 constraintsSolved = true;
-                eta = etaMax;
+                etaIteration = 0; // reset SGD
 
                 Disjoint = CheckDisjoint();
                 NumEdges = links.Count();
@@ -202,21 +181,23 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
+        [SerializeField] Material linkRemovable, linkFixed;
+        [SerializeField] Material nodeRemovable, nodeFixed;
         public void SetIfNodeRemovable(int idx, bool removable)
         {
             nodes[idx].Removable = removable;
-            if (!removable)
-                nodes[idx].Outline();
+            if (removable)
+                nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
             else
-                nodes[idx].Unoutline();
+                nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            if (!removable)
-                links[i,j].Outline();
+            if (removable)
+                links[i,j].GetComponent<LineRenderer>().material = linkRemovable;
             else
-                links[i,j].Unoutline();
+                links[i,j].GetComponent<LineRenderer>().material = linkFixed;
         }
 
 
@@ -251,7 +232,7 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    li.TileSpeed = 0;
+                    li.TileSpeed = minLinkFlow;
                 }
             }
         }

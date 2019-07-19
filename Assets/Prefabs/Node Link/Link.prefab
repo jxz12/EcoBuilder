@@ -81,12 +81,12 @@ LineRenderer:
       - serializedVersion: 3
         time: 0
         value: 1
-        inSlope: -2.6622953
-        outSlope: -2.6622953
+        inSlope: -0.22473937
+        outSlope: -0.22473937
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.0872818
+        outWeight: 0.18965517
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 0

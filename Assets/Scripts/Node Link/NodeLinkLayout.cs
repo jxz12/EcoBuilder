@@ -8,6 +8,7 @@ namespace EcoBuilder.NodeLink
     public partial class NodeLink
     { 
         [SerializeField] float layoutTween=.05f, sizeTween=.05f;
+        [SerializeField] float maxHeight=3f;
         void TweenNodes()
         {
             Vector3 centroid = Vector3.zero;
@@ -22,25 +23,32 @@ namespace EcoBuilder.NodeLink
                 centroid /= nodes.Count;
                 centroid.y = 0;
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
-
-                // TODO: magic numbers here, have a max height or something
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,0,0), layoutTween);
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
             }
             else
             {
                 // center to focus
                 centroid = focus.GoalPos;
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
+                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector2.up*maxHeight/2, layoutTween);
                 centroid.y = 0;
-
-                // TODO: magic numbers here, have a max height or something
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, new Vector3(0,1,0), layoutTween);
             }
+
+            float maxTrophic = 1;
+            foreach (float trophic in trophicLevels)
+                maxTrophic = Mathf.Max(trophic, maxTrophic);
+            float height = Mathf.Min(MaxChain, maxHeight);
+            float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
+
             foreach (Node no in nodes)
             {
-                // no.GoalPos = 
-                //     Vector3.Lerp(no.GoalPos, no.GoalPos-centroid, 1);
                 no.GoalPos -= centroid;
+
+                if (focus == null)
+                {
+                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
+                    no.GoalPos -= new Vector3(0, layoutTween*(no.GoalPos.y-targetY), 0);
+                }
 
                 no.transform.localPosition =
                     Vector3.Lerp(no.transform.localPosition, no.GoalPos, layoutTween);

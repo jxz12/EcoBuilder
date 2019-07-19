@@ -68,10 +68,11 @@ namespace EcoBuilder.NodeLink
         }
         public void Outline(int colourIdx=0)
         {
-            // if (colourIdx < 0 || colourIdx > 3)
-            //     throw new System.Exception("bad outline colour");
-
-            var outline = gameObject.AddComponent<cakeslice.Outline>();
+            var outline = GetComponent<cakeslice.Outline>();
+            if (outline == null)
+            {
+                outline = gameObject.AddComponent<cakeslice.Outline>();
+            }
             outline.color = colourIdx;
         }
         public void Unoutline()
@@ -79,9 +80,22 @@ namespace EcoBuilder.NodeLink
             if (GetComponent<cakeslice.Outline>() != null)
                 Destroy(GetComponent<cakeslice.Outline>());
         }
+        bool flashing;
         public void Flash(bool isFlashing)
         {
-            anim.SetBool("Flashing", isFlashing);
+            flashing = isFlashing;
+            // anim.SetBool("Flashing", isFlashing);
+        }
+        void Update()
+        {
+            if ((Time.time*60) % 60 < 30 && flashing)
+            {
+                GetComponent<MeshRenderer>().material.color = new Color(1,.01f,.01f,1);
+            }
+            else
+            {
+                GetComponent<MeshRenderer>().material.color = new Color(.01f,.3f,1,.3f);
+            }
         }
         public void Shake(bool isShaking)
         {

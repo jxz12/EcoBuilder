@@ -9,12 +9,16 @@ namespace EcoBuilder.NodeLink
         private Node source;
         public Node Source {
             get { return source; }
-            set { source = value; lr.endColor = value.Col; }
+            set {
+                source = value;
+            }
         }
         private Node target;
         public Node Target {
             get { return target; }
-            set { target = value; lr.startColor = value.Col; }
+            set {
+                target = value;
+            }
         }
 
         // public float Width {
@@ -34,7 +38,11 @@ namespace EcoBuilder.NodeLink
 
         public void Outline(int colourIdx=0)
         {
-            var outline = gameObject.AddComponent<cakeslice.Outline>();
+            var outline = GetComponent<cakeslice.Outline>();
+            if (outline == null)
+            {
+                outline = gameObject.AddComponent<cakeslice.Outline>();
+            }
             outline.color = colourIdx;
         }
         public void Unoutline()
@@ -46,7 +54,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float lineWidth = .2f;
         [SerializeField] float curveRatio = .5f;
         [SerializeField] int curveSegments = 5;
-        bool Curved { get; set; } = false;
+        bool Curved { get; set; } = true;
 
         private void Update()
         {
@@ -79,11 +87,18 @@ namespace EcoBuilder.NodeLink
             float width = lineWidth * transform.lossyScale.x;
             lr.widthMultiplier = width;
             lr.material.mainTextureScale = new Vector2(1/lineWidth, 1);
+
+            Color c = Target.Col;
+            if (!Removable)
+                c.b = 1;
+            lr.startColor = c;
+            c = Source.Col;
+            if (!Removable)
+                c.b = 1;
+            lr.endColor = c;
         }
         private void FixedUpdate()
         {
-            lr.startColor = Target.Col;
-            lr.endColor = Source.Col;
             lr.material.mainTextureOffset -= new Vector2(TileSpeed, 0);
         }
     }
