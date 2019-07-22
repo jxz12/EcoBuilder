@@ -10,8 +10,9 @@ namespace EcoBuilder.NodeLink
             get { return mr!=null? mr.material.color : Color.black; }
             // set { if (mr!=null) mr.material.color = new Color(value.r, value.g, value.b, mr.material.color.a); }
         }
-        public Vector3 GoalPos { get; set; }
-        public float GoalSize { get; set; }
+        public Vector3 StressPos { get; set; }
+        public Vector3 FocusPos { get; set; }
+        public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
@@ -28,8 +29,8 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
-            transform.localPosition = GoalPos = pos;
-            GoalSize = size;
+            transform.localPosition = StressPos = FocusPos = pos;
+            Size = size;
 
             shape = shapeObject.transform;
             shape.SetParent(transform, false);

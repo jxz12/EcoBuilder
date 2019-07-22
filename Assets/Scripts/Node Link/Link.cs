@@ -50,13 +50,18 @@ namespace EcoBuilder.NodeLink
             if (GetComponent<cakeslice.Outline>() != null)
                 Destroy(GetComponent<cakeslice.Outline>());
         }
+        public void SetTransparency(float alpha)
+        {
+            Color c = new Color(1,1,1, alpha);
+            GetComponent<LineRenderer>().material.color = c;
+        }
 
         [SerializeField] float lineWidth = .2f;
         [SerializeField] float curveRatio = .5f;
         [SerializeField] int curveSegments = 5;
         bool Curved { get; set; } = true;
 
-        private void Update()
+        private void LateUpdate()
         {
             if (Curved)
             {

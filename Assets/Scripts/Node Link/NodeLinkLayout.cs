@@ -1,5 +1,4 @@
-﻿// using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SparseMatrix;
 using UnityEngine;
 
@@ -17,7 +16,7 @@ namespace EcoBuilder.NodeLink
                 // get average of all positions, and center
                 foreach (Node no in nodes)
                 {
-                    Vector3 pos = no.GoalPos;
+                    Vector3 pos = no.StressPos;
                     centroid += pos;
                 }
                 centroid /= nodes.Count;
@@ -28,7 +27,7 @@ namespace EcoBuilder.NodeLink
             else
             {
                 // center to focus
-                centroid = focus.GoalPos;
+                centroid = focus.FocusPos;
                 nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
                 graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector2.up*maxHeight/2, layoutTween);
                 centroid.y = 0;
@@ -42,19 +41,24 @@ namespace EcoBuilder.NodeLink
 
             foreach (Node no in nodes)
             {
-                no.GoalPos -= centroid;
 
                 if (focus == null)
                 {
+                    no.StressPos -= centroid;
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                    no.GoalPos -= new Vector3(0, layoutTween*(no.GoalPos.y-targetY), 0);
+                    no.StressPos -= new Vector3(0, layoutTween*(no.StressPos.y-targetY), 0);
+
+                    no.transform.localPosition =
+                        Vector3.Lerp(no.transform.localPosition, no.StressPos, layoutTween);
                 }
-
-                no.transform.localPosition =
-                    Vector3.Lerp(no.transform.localPosition, no.GoalPos, layoutTween);
-
+                else
+                {
+                    no.FocusPos -= centroid;
+                    no.transform.localPosition =
+                        Vector3.Lerp(no.transform.localPosition, no.FocusPos, layoutTween);
+                }
                 no.transform.localScale =
-                    Vector3.Lerp(no.transform.localScale, no.GoalSize*Vector3.one, sizeTween);
+                    Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
             }
         }
 
@@ -71,7 +75,7 @@ namespace EcoBuilder.NodeLink
             {
                 if (i != j)
                 {
-                    Vector3 X_ij = nodes[i].GoalPos - nodes[j].GoalPos;
+                    Vector3 X_ij = nodes[i].StressPos - nodes[j].StressPos;
                     float mag = X_ij.magnitude;
 
                     if (d_j.ContainsKey(j)) // if there is a path between the two
@@ -81,8 +85,8 @@ namespace EcoBuilder.NodeLink
 
                         Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
-                        nodes[i].GoalPos -= mu * r;
-                        nodes[j].GoalPos += mu * r;
+                        nodes[i].StressPos -= mu * r;
+                        nodes[j].StressPos += mu * r;
                     }
                     else if (mag < 1) // otherwise push away if too close
                     {
@@ -91,8 +95,8 @@ namespace EcoBuilder.NodeLink
 
                         Vector3 r = ((mag-1)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
-                        nodes[i].GoalPos -= mu * r;
-                        nodes[j].GoalPos += mu * r;
+                        nodes[i].StressPos -= mu * r;
+                        nodes[j].StressPos += mu * r;
                     }
                 }
             }
@@ -183,13 +187,6 @@ namespace EcoBuilder.NodeLink
             foreach (int i in nodes.Indices)
             {
                 trophicLevels[i] = (1 - temp[i]);
-            }
-        }
-        public void TrophicGaussSeidel(int iter)
-        {
-            for (int i=0; i<iter; i++)
-            {
-                TrophicGaussSeidel();
             }
         }
 

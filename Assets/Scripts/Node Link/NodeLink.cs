@@ -17,15 +17,15 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        [SerializeField] float etaMax=2f, etaDecay = .2f;
+        [SerializeField] float etaMax=2f, etaDecay = .1f;
         // [SerializeField] float eta;
         float etaIteration = 0;
         private void FixedUpdate()
         {
+            //////////////////////
+            // do stress SGD
             if (nodes.Count > 0)
             {
-                //////////////////////
-                // do stress SGD
                 if (focus == null)
                 {
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
@@ -35,13 +35,16 @@ namespace EcoBuilder.NodeLink
                     LayoutSGD(dq, d_j, eta);
                     toBFS.Enqueue(dq);
                 }
-
-                ///////////////////////////////
-                // calculate trophic levels
-                if (!LaplacianDetZero)
+                else
                 {
-                    TrophicGaussSeidel();
+                    SuperFocus();
                 }
+            }
+            ///////////////////////////////
+            // calculate trophic levels
+            if (!LaplacianDetZero)
+            {
+                TrophicGaussSeidel();
             }
 
             if (doLayout)
@@ -210,11 +213,11 @@ namespace EcoBuilder.NodeLink
                 float size = sizes(no.Idx);
                 if (size > 0)
                 {
-                    no.GoalSize = minNodeSize + sizeRange*size;
+                    no.Size = minNodeSize + sizeRange*size;
                 }
                 else
                 {
-                    no.GoalSize = minNodeSize;
+                    no.Size = minNodeSize;
                 }
             }
         }

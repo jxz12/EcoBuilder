@@ -1615,10 +1615,10 @@ MonoBehaviour:
     plants: 0100
     sizes:
     - 0
-    - 0
+    - 0.5
     greeds:
     - 0.5
-    - 1
+    - 0.5
     randomSeeds: 0100000002000000
     editables: 0000
     numInteractions: 1

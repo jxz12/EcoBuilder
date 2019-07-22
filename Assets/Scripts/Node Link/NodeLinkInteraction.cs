@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcoBuilder.NodeLink
 {
@@ -23,39 +25,74 @@ namespace EcoBuilder.NodeLink
             if (focus != nodes[idx])
             {
                 focus = nodes[idx];
-
-                float angle = 2*Mathf.PI / (nodes.Count-1);
-                float angleAround = 0;
-                foreach (Node no in nodes)
+            }
+        }
+        void SuperFocus()
+        {
+            foreach (Link li in links)
+            {
+                if (li.Source != focus && li.Target != focus)
                 {
-                    if (no == focus)
-                    {
-                        no.GoalPos = Vector3.back + (Vector3.up*maxHeight/2);
-                    }
-                    else
-                    {
-                        no.GoalPos = new Vector3(Mathf.Cos(angleAround), Mathf.Sin(angleAround)) * (maxHeight/2) + (Vector3.up*maxHeight/2);
-                        angleAround += angle;
-                    }
-                    
+                    li.SetTransparency(.1f);
                 }
+                else
+                {
+                    li.SetTransparency(1f);
+                }
+            }
+            // arrange nodes in a circle and stuff
+            var left = new List<Node>();
+            var right = new List<Node>();
+            foreach (Node no in nodes.Where(x=> x.Idx!=focus.Idx))
+            {
+                if (links[focus.Idx,no.Idx]!=null || links[no.Idx,focus.Idx]!=null)
+                {
+                    left.Add(no);
+                }
+                else
+                {
+                    right.Add(no);
+                }
+            }
+
+            focus.FocusPos = Vector3.back + (Vector3.up*maxHeight/2);
+
+            float leftAngleHop = Mathf.PI / (left.Count);
+            float rightAngleHop = Mathf.PI / (right.Count);
+            float angleHop = Mathf.Min(leftAngleHop, rightAngleHop);
+
+            // left
+            float angle = Mathf.PI + ((left.Count-1)/2f * angleHop);
+            foreach (Node no in left.OrderBy(x=>trophicLevels[x.Idx]))
+            {
+                no.FocusPos = new Vector3(Mathf.Cos(angle),
+                                         Mathf.Sin(angle)) * (maxHeight/2)
+                                          + (Vector3.up*maxHeight/2);
+                angle -= angleHop;
+            }
+            // right
+            angle = -(right.Count-1)/2f * angleHop;
+            foreach (Node no in right.OrderBy(x=>trophicLevels[x.Idx]))
+            {
+                no.FocusPos = new Vector3(Mathf.Cos(angle),
+                                         Mathf.Sin(angle)) * (maxHeight/2)
+                                          + (Vector3.up*maxHeight/2);
+                angle += angleHop;
             }
         }
         public void Unfocus()
         {
             if (focus != null)
             {
-                focus = null;
-                
-                foreach (Node no in nodes)
+                foreach (Link li in links)
                 {
-                    no.GoalPos += Random.insideUnitSphere;
+                    li.SetTransparency(1f);
                 }
-                etaIteration = 0;
+
+                focus = null;
             }
             // StartCoroutine(ResetPan(Vector2.zero, 1f));
             StartCoroutine(ResetZoom(Vector3.one, 1f));
-
         }
         bool frozen = false;
         public void Freeze()
@@ -75,7 +112,7 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] MeshRenderer disk;
         bool doLayout = true;
-        // TODO: make this nicer and smoother, and include drag
+        // TODO: make this nicer and smoother
         void PauseLayout(bool paused)
         {
             if (doLayout != paused) // if already paused
@@ -85,16 +122,10 @@ namespace EcoBuilder.NodeLink
             if (paused)
             {
                 c *= 1.5f;
-                // c.r += .03f;
-                // c.g += .03f;
-                // c.b += .03f;
             }
             else
             {
                 c /= 1.5f;
-                // c.r -= .03f;
-                // c.g -= .03f;
-                // c.b -= .03f;
             }
             disk.material.color = c;
             doLayout = !paused;
@@ -168,12 +199,23 @@ namespace EcoBuilder.NodeLink
         float yRotationMomentum = 0;
         private void RotateMomentum()
         {
-            yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
-            nodesParent.Rotate(Vector3.up, yRotationMomentum);
+            if (focus == null)
+            {
+                yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
+                nodesParent.Rotate(Vector3.up, yRotationMomentum);
 
-            var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-            var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
-            graphParent.transform.localRotation = lerped;
+                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
+                graphParent.transform.localRotation = lerped;
+            }
+            else
+            {
+                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, xRotationTween);
+
+                var graphParentGoal = Quaternion.identity;
+                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
+                graphParent.transform.localRotation = lerped;
+            }
         }
 
         /////////////////////////////
@@ -327,7 +369,8 @@ namespace EcoBuilder.NodeLink
                         potentialSource = snappedNode;
                     }
 
-                    if (links[snappedNode.Idx, pressedNode.Idx] == null)
+                    Link snappedLink = links[snappedNode.Idx, pressedNode.Idx];
+                    if (snappedLink == null)
                     {
                         dummyLink.Source = snappedNode;
                         if (potentialLink != dummyLink)
@@ -342,6 +385,11 @@ namespace EcoBuilder.NodeLink
                     }
                     else
                     {
+                        if (potentialLink != snappedLink)
+                        {
+                            potentialLink.Unoutline();
+                            potentialLink = dummyLink;
+                        }
                         dummyLink.Source = pressedNode; // hide dummyLink
                         potentialSource.Outline(2);
                         potentialLink = links[snappedNode.Idx, pressedNode.Idx];

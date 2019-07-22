@@ -19,7 +19,7 @@ namespace EcoBuilder.NodeLink
         // public float MaxTrophic { get; private set; } = 0;
         public int MaxChain { get; private set; } = 0;
         public int MaxLoop { get; private set; } = 0;
-        async void ConstraintsAsync() // TODO: rename this
+        async void ConstraintsAsync()
         {
             calculating = true;
 
