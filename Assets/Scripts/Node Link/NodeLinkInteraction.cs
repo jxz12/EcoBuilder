@@ -15,8 +15,8 @@ namespace EcoBuilder.NodeLink
         // for user-interaction rotation
 
         [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.05f, panMultiplier=1.2f;
-        [SerializeField] float yMinRotation=.4f, yRotationDrag=.1f;
-        [SerializeField] float xDefaultRotation=-15, xRotationTween=.2f;
+        [SerializeField] float yMinRotationMomentum=.4f, yRotationDrag=.1f;
+        [SerializeField] float xDefaultRotation=-15, rotationTween=.2f;
         [SerializeField] float holdThreshold = .2f;
 
         Node focus=null;
@@ -27,6 +27,7 @@ namespace EcoBuilder.NodeLink
                 focus = nodes[idx];
             }
         }
+
         void SuperFocus()
         {
             foreach (Link li in links)
@@ -55,7 +56,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
 
-            focus.FocusPos = Vector3.back + (Vector3.up*maxHeight/2);
+            focus.FocusPos = (Vector3.up*maxHeight/2);
 
             float leftAngleHop = Mathf.PI / (left.Count);
             float rightAngleHop = Mathf.PI / (right.Count);
@@ -63,20 +64,20 @@ namespace EcoBuilder.NodeLink
 
             // left
             float angle = Mathf.PI + ((left.Count-1)/2f * angleHop);
-            foreach (Node no in left.OrderBy(x=>trophicLevels[x.Idx]))
+            // foreach (Node no in left.OrderBy(x=>trophicLevels[x.Idx]))
+            foreach (Node no in left.OrderBy(x=>(links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)
+                                                + (links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)))
             {
-                no.FocusPos = new Vector3(Mathf.Cos(angle),
-                                         Mathf.Sin(angle)) * (maxHeight/2)
-                                          + (Vector3.up*maxHeight/2);
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
+                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
                 angle -= angleHop;
             }
             // right
             angle = -(right.Count-1)/2f * angleHop;
             foreach (Node no in right.OrderBy(x=>trophicLevels[x.Idx]))
             {
-                no.FocusPos = new Vector3(Mathf.Cos(angle),
-                                         Mathf.Sin(angle)) * (maxHeight/2)
-                                          + (Vector3.up*maxHeight/2);
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
+                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
                 angle += angleHop;
             }
         }
@@ -188,34 +189,21 @@ namespace EcoBuilder.NodeLink
         void Rotate(Vector2 amount)
         {
             float ySpin = -amount.x * rotationMultiplier;
-            nodesParent.Rotate(Vector3.up, ySpin);
-
             yRotationMomentum = ySpin;
-            yMinRotation = Mathf.Abs(yMinRotation) * Mathf.Sign(yRotationMomentum);
+            yMinRotationMomentum = Mathf.Abs(yMinRotationMomentum) * Mathf.Sign(ySpin);
 
-            float xSpin = amount.y * rotationMultiplier;
-            graphParent.Rotate(Vector3.right, xSpin);
-        }
-        float yRotationMomentum = 0;
-        private void RotateMomentum()
-        {
             if (focus == null)
             {
-                yRotationMomentum += (yMinRotation - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
-
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
-                graphParent.transform.localRotation = lerped;
+                yRotation += ySpin;
+                nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
             }
             else
             {
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, xRotationTween);
-
-                var graphParentGoal = Quaternion.identity;
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
-                graphParent.transform.localRotation = lerped;
+                nodesParent.transform.Rotate(Vector3.up, ySpin);
             }
+
+            float xSpin = amount.y * rotationMultiplier;
+            graphParent.Rotate(Vector3.right, xSpin);
         }
 
         /////////////////////////////

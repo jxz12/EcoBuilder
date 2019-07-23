@@ -50,7 +50,7 @@ namespace EcoBuilder.NodeLink
             if (doLayout)
                 TweenNodes();
             if (!Input.anyKey && Input.touchCount==0)
-                RotateMomentum();
+                RotateWithMomentum();
         }
         bool constraintsSolved = true, calculating = false;
         public bool Ready { get { return constraintsSolved && !calculating; } }

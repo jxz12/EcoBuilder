@@ -6,13 +6,15 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float layoutTween=.05f, sizeTween=.05f;
+        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
         [SerializeField] float maxHeight=3f;
+
+        Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-            Vector3 centroid = Vector3.zero;
             if (focus == null)
             {
+                Vector3 centroid = Vector3.zero;
                 // get average of all positions, and center
                 foreach (Node no in nodes)
                 {
@@ -20,45 +22,80 @@ namespace EcoBuilder.NodeLink
                     centroid += pos;
                 }
                 centroid /= nodes.Count;
-                centroid.y = 0;
-                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, Vector3.zero, layoutTween);
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector3.zero, layoutTween);
+                // centroid.y = 0;
+                nodesParent.localPosition =
+                    Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
+                                       ref nodesVelocity, layoutSmoothTime);
+                graphParent.localPosition =
+                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
+                                       ref graphVelocity, layoutSmoothTime);
+
+                float maxTrophic = 1;
+                foreach (float trophic in trophicLevels)
+                    maxTrophic = Mathf.Max(trophic, maxTrophic);
+                float height = Mathf.Min(MaxChain, maxHeight);
+                float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
+
+                foreach (Node no in nodes)
+                {
+                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
+                    no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
+
+                    // no.transform.localPosition =
+                    //     Vector3.Lerp(no.transform.localPosition, no.StressPos, layoutTween);
+                    no.transform.localPosition =
+                        Vector3.SmoothDamp(no.transform.localPosition, no.StressPos,
+                                           ref no.Velocity, layoutSmoothTime);
+                    no.transform.localScale =
+                        Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
+                }
+
             }
             else
             {
                 // center to focus
-                centroid = focus.FocusPos;
-                nodesParent.localPosition = Vector3.Slerp(nodesParent.localPosition, -Vector3.up*centroid.y, layoutTween);
-                graphParent.localPosition = Vector3.Slerp(graphParent.localPosition, Vector2.up*maxHeight/2, layoutTween);
-                centroid.y = 0;
+                // centroid = focus.FocusPos;
+                nodesParent.localPosition =
+                    Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*maxHeight/2,
+                                       ref nodesVelocity, layoutSmoothTime);
+                graphParent.localPosition =
+                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
+                                       ref graphVelocity, layoutSmoothTime);
+                // centroid.y = 0;
+
+                foreach (Node no in nodes)
+                {
+                    no.transform.localPosition =
+                        Vector3.SmoothDamp(no.transform.localPosition, no.FocusPos,
+                                           ref no.Velocity, layoutSmoothTime);
+
+                    no.transform.localScale =
+                        Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
+                }
             }
-
-            float maxTrophic = 1;
-            foreach (float trophic in trophicLevels)
-                maxTrophic = Mathf.Max(trophic, maxTrophic);
-            float height = Mathf.Min(MaxChain, maxHeight);
-            float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
-
-            foreach (Node no in nodes)
+        }
+        float yRotation = 0, yRotationMomentum = 0;
+        private void RotateWithMomentum()
+        {
+            if (focus == null)
             {
+                yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
+                nodesParent.Rotate(Vector3.up, yRotationMomentum);
+                yRotation += yRotationMomentum;
 
-                if (focus == null)
-                {
-                    no.StressPos -= centroid;
-                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                    no.StressPos -= new Vector3(0, layoutTween*(no.StressPos.y-targetY), 0);
+                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
 
-                    no.transform.localPosition =
-                        Vector3.Lerp(no.transform.localPosition, no.StressPos, layoutTween);
-                }
-                else
-                {
-                    no.FocusPos -= centroid;
-                    no.transform.localPosition =
-                        Vector3.Lerp(no.transform.localPosition, no.FocusPos, layoutTween);
-                }
-                no.transform.localScale =
-                    Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
+                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
+                graphParent.transform.localRotation = lerped;
+            }
+            else
+            {
+                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, rotationTween);
+
+                var graphParentGoal = Quaternion.identity;
+                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
+                graphParent.transform.localRotation = lerped;
             }
         }
 

@@ -10,6 +10,7 @@ namespace EcoBuilder.NodeLink
             get { return mr!=null? mr.material.color : Color.black; }
             // set { if (mr!=null) mr.material.color = new Color(value.r, value.g, value.b, mr.material.color.a); }
         }
+        public Vector3 Velocity; // for public use with Vector3.SmoothDamp
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
         public float Size { get; set; }
