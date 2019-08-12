@@ -27,7 +27,8 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
-        [SerializeField] JonnyGenerator factory;
+        [SerializeField] JonnyGenerator.JonnyGenerator factory;
+        // [SerializeField] Archie.Seed factory;
         [SerializeField] Incubator incubator;
 
         public class Species
@@ -72,9 +73,7 @@ namespace EcoBuilder.UI
         void Start()
         {
             producerButton.onClick.AddListener(()=> IncubateNew(true));
-            producerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
-            consumerButton.onClick.AddListener(()=> GetComponent<Animator>().SetTrigger("Incubate"));
             refreshButton.onClick.AddListener(()=> RefreshIncubated());
 
             SizeSliderCallback = x=> SetSize();
@@ -106,6 +105,12 @@ namespace EcoBuilder.UI
             {
                 inspected = null;
             }
+            if (incubated != null)
+            {
+                incubator.Unincubate();
+                print("TODO:");
+                incubated = null;
+            }
             Species s = new Species(nextIdx, isProducer, 0, .5f);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
             incubator.Incubate(s.GObject);
@@ -116,6 +121,7 @@ namespace EcoBuilder.UI
             greedSlider.interactable = true;
 
             incubated = s;
+            GetComponent<Animator>().SetTrigger("Incubate");
             OnIncubated.Invoke();
         }
         void RefreshIncubated()
@@ -124,7 +130,7 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             incubated.RerollSeed();
-            factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+            factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
             nameText.text = incubated.GObject.name;
         }
         void SpawnIncubated()
@@ -144,12 +150,12 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubated.BodySize = sizeSlider.normalizedValue;
-                factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
             }
             else if (inspected != null)
             {
                 inspected.BodySize = sizeSlider.normalizedValue;
-                factory.RegenerateSpecies(inspected.GObject, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
             }
         }
@@ -158,12 +164,12 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubated.Greediness = greedSlider.normalizedValue;
-                factory.RegenerateSpecies(incubated.GObject, incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
             }
             else if (inspected != null)
             {
                 inspected.Greediness = greedSlider.normalizedValue;
-                factory.RegenerateSpecies(inspected.GObject, inspected.IsProducer, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
                 OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
             }
         }
@@ -212,24 +218,18 @@ namespace EcoBuilder.UI
             return toSpawn.Idx;
         }
         // called when nodelink is pressed
-        public void InitiateSpawn()
+        public void Uninspect()
         {
             if (inspected != null) // if inspecting
             {
                 inspected = null;
-                GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else if (incubated != null) // if incubating
             {
                 incubator.Unincubate();
                 incubated = null;
-                GetComponent<Animator>().SetTrigger("Uninspect");
             }
-            else
-            {
-                GetComponent<Animator>().SetTrigger("Initiate");
-                // GetComponent<Animator>().SetTrigger("Uninspect");
-            }
+            GetComponent<Animator>().SetTrigger("Uninspect");
         }
         public void UnspawnSpecies(int idx)
         {
