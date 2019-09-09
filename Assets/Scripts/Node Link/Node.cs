@@ -37,7 +37,7 @@ namespace EcoBuilder.NodeLink
             shape.SetParent(transform, false);
             shape.localPosition = Vector3.zero;
             shape.localRotation = Quaternion.identity;
-            shape.localScale = Vector3.one * .8f; // TODO: magic number
+            // shape.localScale = Vector3.one * .8f; // TODO: magic number
 
             GetComponent<SphereCollider>().enabled = true;
 

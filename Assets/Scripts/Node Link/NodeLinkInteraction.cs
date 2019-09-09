@@ -399,8 +399,16 @@ namespace EcoBuilder.NodeLink
                         potentialLink = dummyLink;
                     }
                     potentialLink.Outline(0);
+
+
+                    var tipPos = Camera.main.WorldToScreenPoint(dummySource.transform.position);
+                    tooltip.SetPos(tipPos);
+                    Vector3 screenPoint = ped.position;
+                    screenPoint.z = pressedNode.transform.position.z - Camera.main.transform.position.z;
+                    dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
                     if (snappedNode!=null && snappedNode!=pressedNode)
                     {
+                        dummyLink.Source = pressedNode; // hide dummyLink
                         if (links[snappedNode.Idx, pressedNode.Idx] == null)
                         {
                             tooltip.ShowNoAddLink();
@@ -412,16 +420,9 @@ namespace EcoBuilder.NodeLink
                     }
                     else
                     {
+                        dummyLink.Source = dummySource;
                         tooltip.ShowLink();
                     }
-
-                    Vector3 screenPoint = ped.position;
-                    screenPoint.z = pressedNode.transform.position.z - Camera.main.transform.position.z;
-                    dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
-                    dummyLink.Source = dummySource;
-
-                    var tipPos = Camera.main.WorldToScreenPoint(dummySource.transform.position);
-                    tooltip.SetPos(tipPos);
                 }
             }
             if (pressedNode == null)

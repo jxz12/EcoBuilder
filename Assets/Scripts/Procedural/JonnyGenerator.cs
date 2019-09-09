@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EcoBuilder
+namespace EcoBuilder.JonnyGenerator
 {
     public interface ISpeciesGenerator
     {
-        GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed);
-        void RegenerateSpecies(GameObject species, bool isProducer, float size, float greed, int randomSeed);
+        GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population=-1);
+        void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population=-1);
     }
     public class JonnyGenerator : MonoBehaviour, ISpeciesGenerator
     {
@@ -24,6 +24,7 @@ namespace EcoBuilder
             if (greed < 0 || greed > 1)
                 throw new Exception("greed not in bounds");
 
+            js.isProducer = isProducer;
             js.seed = randomSeed;
             UnityEngine.Random.InitState(randomSeed);
             if (isProducer)
@@ -38,15 +39,6 @@ namespace EcoBuilder
             }
 
             Color c = GetColor(isProducer, size, greed);
-            // if (randomSeed < 5)
-            // {
-            //     js.GetComponent<MeshRenderer>().material = uneditableMat;
-            //     c.a = .5f;
-            // }
-            // else
-            // {
-            //     js.GetComponent<MeshRenderer>().material = editableMat;
-            // }
             js.GetComponent<MeshRenderer>().material.color = c;
 
             js.SetEyesMesh(eyes[UnityEngine.Random.Range(0, eyes.Count)]);
@@ -62,19 +54,19 @@ namespace EcoBuilder
         }
 
 
-        public GameObject GenerateSpecies(bool isProducer, float size, float greed, int randomSeed)
+        public GameObject GenerateSpecies(bool isProducer, float size, float greed, int randomSeed, float population=-1)
         {
             JonnySpecies toSpawn = Instantiate(speciesPrefab);
             ShapeSpecies(toSpawn, isProducer, size, greed, randomSeed);
             return toSpawn.gameObject;
         }
-        public void RegenerateSpecies(GameObject species, bool isProducer, float size, float greed, int randomSeed)
+        public void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population=-1)
         {
             JonnySpecies toRegen = species.GetComponent<JonnySpecies>();
             if (toRegen == null)
                 throw new Exception("not JonnySpecies");
 
-            ShapeSpecies(toRegen, isProducer, size, greed, randomSeed);
+            ShapeSpecies(toRegen, toRegen.isProducer, size, greed, randomSeed);
         }
 
 
