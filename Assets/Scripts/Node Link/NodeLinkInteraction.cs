@@ -26,60 +26,91 @@ namespace EcoBuilder.NodeLink
             {
                 focus = nodes[idx];
             }
-        }
 
-        void SuperFocus()
-        {
-            foreach (Link li in links)
+            var none = new List<Node>();
+            var above = new List<Node>();
+            var below = new List<Node>();
+            var both = new List<Node>();
+
+            foreach (Node no in nodes)
             {
-                if (li.Source != focus && li.Target != focus)
+                if (no.Idx == idx)
                 {
-                    li.SetTransparency(.1f);
+                    continue;
                 }
-                else
+                // uninteracting
+                if (links[idx,no.Idx] == null && links[no.Idx,idx] == null)
                 {
-                    li.SetTransparency(1f);
+                    none.Add(no);
+                }
+                // no is consumer
+                else if (links[idx,no.Idx] != null && links[no.Idx,idx] == null)
+                {
+                    above.Add(no);
+                }
+                // no is resource
+                else if (links[idx,no.Idx] == null && links[no.Idx,idx] != null)
+                {
+                    below.Add(no);
+                }
+                // mutual consumption
+                else if (links[idx,no.Idx] != null && links[no.Idx,idx] != null)
+                {
+                    both.Add(no);
                 }
             }
-            // arrange nodes in a circle and stuff
-            var left = new List<Node>();
-            var right = new List<Node>();
-            foreach (Node no in nodes.Where(x=> x.Idx!=focus.Idx))
-            {
-                if (links[focus.Idx,no.Idx]!=null || links[no.Idx,focus.Idx]!=null)
-                {
-                    left.Add(no);
-                }
-                else
-                {
-                    right.Add(no);
-                }
-            }
 
-            focus.FocusPos = (Vector3.up*maxHeight/2);
 
-            float leftAngleHop = Mathf.PI / (left.Count);
-            float rightAngleHop = Mathf.PI / (right.Count);
-            float angleHop = Mathf.Min(leftAngleHop, rightAngleHop);
+            // foreach (Link li in links)
+            // {
+            //     if (li.Source != focus && li.Target != focus)
+            //     {
+            //         li.SetTransparency(.1f);
+            //     }
+            //     else
+            //     {
+            //         li.SetTransparency(1f);
+            //     }
+            // }
+            // // arrange nodes in a circle and stuff
+            // var left = new List<Node>();
+            // var right = new List<Node>();
+            // foreach (Node no in nodes.Where(x=> x.Idx!=focus.Idx))
+            // {
+            //     if (links[focus.Idx,no.Idx]!=null || links[no.Idx,focus.Idx]!=null)
+            //     {
+            //         left.Add(no);
+            //     }
+            //     else
+            //     {
+            //         right.Add(no);
+            //     }
+            // }
 
-            // left
-            float angle = Mathf.PI + ((left.Count-1)/2f * angleHop);
-            // foreach (Node no in left.OrderBy(x=>trophicLevels[x.Idx]))
-            foreach (Node no in left.OrderBy(x=>(links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)
-                                                + (links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)))
-            {
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
-                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
-                angle -= angleHop;
-            }
-            // right
-            angle = -(right.Count-1)/2f * angleHop;
-            foreach (Node no in right.OrderBy(x=>trophicLevels[x.Idx]))
-            {
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
-                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
-                angle += angleHop;
-            }
+            // focus.FocusPos = (Vector3.up*maxHeight/2);
+
+            // float leftAngleHop = Mathf.PI / (left.Count);
+            // float rightAngleHop = Mathf.PI / (right.Count);
+            // float angleHop = Mathf.Min(leftAngleHop, rightAngleHop);
+
+            // // left
+            // float angle = Mathf.PI + ((left.Count-1)/2f * angleHop);
+            // // foreach (Node no in left.OrderBy(x=>trophicLevels[x.Idx]))
+            // foreach (Node no in left.OrderBy(x=>(links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)
+            //                                     + (links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)))
+            // {
+            //     no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
+            //                    * (maxHeight/2) + (Vector3.up*maxHeight/2);
+            //     angle -= angleHop;
+            // }
+            // // right
+            // angle = -(right.Count-1)/2f * angleHop;
+            // foreach (Node no in right.OrderBy(x=>trophicLevels[x.Idx]))
+            // {
+            //     no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
+            //                    * (maxHeight/2) + (Vector3.up*maxHeight/2);
+            //     angle += angleHop;
+            // }
         }
         public void Unfocus()
         {

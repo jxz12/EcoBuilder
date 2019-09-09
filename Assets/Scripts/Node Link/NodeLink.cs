@@ -35,10 +35,6 @@ namespace EcoBuilder.NodeLink
                     LayoutSGD(dq, d_j, eta);
                     toBFS.Enqueue(dq);
                 }
-                else
-                {
-                    SuperFocus();
-                }
             }
             ///////////////////////////////
             // calculate trophic levels
