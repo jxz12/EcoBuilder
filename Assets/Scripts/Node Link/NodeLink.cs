@@ -68,6 +68,11 @@ namespace EcoBuilder.NodeLink
                 LaplacianDetZero = (heights.Count != nodes.Count);
                 // MaxTrophic done in Update()
 
+                if (focus != null)
+                {
+                    SuperFocus();
+                }
+
                 MaxChain = 0;
                 foreach (int height in heights.Values)
                     MaxChain = Math.Max(height, MaxChain);
@@ -149,7 +154,7 @@ namespace EcoBuilder.NodeLink
         public void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
-            newLink.Init(nodes[i], nodes[j], true);
+            newLink.Init(nodes[i], nodes[j], false);
             links[i, j] = newLink;
 
             adjacency[i].Add(j);
@@ -180,23 +185,21 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        [SerializeField] Material linkRemovable, linkFixed;
-        [SerializeField] Material nodeRemovable, nodeFixed;
         public void SetIfNodeRemovable(int idx, bool removable)
         {
             nodes[idx].Removable = removable;
-            if (removable)
-                nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
-            else
-                nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
+            // if (removable)
+            //     nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
+            // else
+            //     nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            if (removable)
-                links[i,j].GetComponent<LineRenderer>().material = linkRemovable;
-            else
-                links[i,j].GetComponent<LineRenderer>().material = linkFixed;
+            // if (removable)
+            //     links[i,j].GetComponent<LineRenderer>().material = linkRemovable;
+            // else
+            //     links[i,j].GetComponent<LineRenderer>().material = linkFixed;
         }
 
 

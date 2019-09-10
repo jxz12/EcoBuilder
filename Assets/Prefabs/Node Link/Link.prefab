@@ -89,7 +89,7 @@ LineRenderer:
         outWeight: 0.24567337
       - serializedVersion: 3
         time: 1
-        value: 0.18579102
+        value: 1
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -152,3 +152,4 @@ MonoBehaviour:
   lineWidth: 0.16
   curveRatio: -0.25
   curveSegments: 10
+  numBalls: 1

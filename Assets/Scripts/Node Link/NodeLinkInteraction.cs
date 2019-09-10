@@ -26,39 +26,87 @@ namespace EcoBuilder.NodeLink
             {
                 focus = nodes[idx];
             }
-
-            var none = new List<Node>();
-            var above = new List<Node>();
-            var below = new List<Node>();
+            SuperFocus();
+        }
+        public void SuperFocus()
+        {
+            if (focus == null)
+            {
+                throw new System.Exception("not focused on anything");
+            }
+            var unrelated = new List<Node>();
+            var consumers = new List<Node>();
+            var resources = new List<Node>();
             var both = new List<Node>();
 
             foreach (Node no in nodes)
             {
-                if (no.Idx == idx)
+                if (no.Idx == focus.Idx)
                 {
                     continue;
                 }
                 // uninteracting
-                if (links[idx,no.Idx] == null && links[no.Idx,idx] == null)
+                if (links[focus.Idx,no.Idx] == null && links[no.Idx,focus.Idx] == null)
                 {
-                    none.Add(no);
+                    unrelated.Add(no);
                 }
-                // no is consumer
-                else if (links[idx,no.Idx] != null && links[no.Idx,idx] == null)
+                else if (links[focus.Idx,no.Idx] != null && links[no.Idx,focus.Idx] == null)
                 {
-                    above.Add(no);
+                    consumers.Add(no);
                 }
-                // no is resource
-                else if (links[idx,no.Idx] == null && links[no.Idx,idx] != null)
+                else if (links[focus.Idx,no.Idx] == null && links[no.Idx,focus.Idx] != null)
                 {
-                    below.Add(no);
+                    resources.Add(no);
                 }
                 // mutual consumption
-                else if (links[idx,no.Idx] != null && links[no.Idx,idx] != null)
+                else if (links[focus.Idx,no.Idx] != null && links[no.Idx,focus.Idx] != null)
                 {
                     both.Add(no);
                 }
             }
+
+
+            // both resources and consumers on right
+            int right = System.Math.Max(consumers.Count, resources.Count)*2;
+            int left = both.Count;
+
+            // arrange in circle around focus in middle
+            focus.FocusPos = (Vector3.up*maxHeight/2);
+            foreach (Node no in unrelated)
+            {
+                no.FocusPos = no.StressPos + 10*Vector3.forward;
+            }
+
+            if (right+left == 0)
+            {
+                return;
+            }
+            float range = Mathf.PI * ((float)(right) / (right+left));
+            float angle = 0;
+            foreach (Node no in consumers)
+            {
+                angle += 1f / (consumers.Count+1) * range;
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .5f)
+                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
+            }
+            angle = 0;
+            foreach (Node no in resources)
+            {
+                angle -= 1f / (resources.Count+1) * range;
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .5f)
+                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
+            }
+            angle -= 1f / (resources.Count+1) * range;
+            range = 2 * Mathf.PI * ((float)(left) / (right+left));
+            foreach (Node no in both)
+            {
+                angle -= 1f / (both.Count+1) * range;
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .5f)
+                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
+            }
+
+
+
 
 
             // foreach (Link li in links)
