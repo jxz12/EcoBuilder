@@ -17,7 +17,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        [SerializeField] float etaMax=2f, etaDecay = .1f;
+        [SerializeField] float etaMax, etaDecay;
         // [SerializeField] float eta;
         float etaIteration = 0;
         private void FixedUpdate()
@@ -154,8 +154,12 @@ namespace EcoBuilder.NodeLink
         public void AddLink(int i, int j)
         {
             Link newLink = Instantiate(linkPrefab, linksParent);
-            newLink.Init(nodes[i], nodes[j], false);
-            links[i, j] = newLink;
+            newLink.Init(nodes[i], nodes[j]);
+            links[i,j] = newLink;
+            if (links[j,i] != null)
+            {
+                links[i,j].Curved = links[j,i].Curved = true;
+            }
 
             adjacency[i].Add(j);
             adjacency[j].Add(i);
@@ -165,12 +169,16 @@ namespace EcoBuilder.NodeLink
         }
         public void RemoveLink(int i, int j)
         {
-            Destroy(links[i, j].gameObject);
-            links.RemoveAt(i, j);
-            if (links[j, i] == null)
+            Destroy(links[i,j].gameObject);
+            links.RemoveAt(i,j);
+            if (links[j,i] == null)
             {
                 adjacency[i].Remove(j);
                 adjacency[j].Remove(i);
+            }
+            else
+            {
+                links[j,i].Curved = false;
             }
 
             constraintsSolved = false;
@@ -203,7 +211,7 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        [SerializeField] float minNodeSize=.5f, maxNodeSize=1.5f;
+        [SerializeField] float minNodeSize, maxNodeSize;
         public void ResizeNodes(Func<int, float> sizes)
         {
             float sizeRange = maxNodeSize - minNodeSize;
@@ -220,7 +228,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        [SerializeField] float minLinkFlow=.005f, maxLinkFlow=.1f;
+        [SerializeField] float minLinkFlow, maxLinkFlow;
         public void ReflowLinks(Func<int, int, float> flows)
         {
             float flowRange = maxLinkFlow - minLinkFlow;

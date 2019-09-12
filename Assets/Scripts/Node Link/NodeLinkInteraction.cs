@@ -14,10 +14,10 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for user-interaction rotation
 
-        [SerializeField] float rotationMultiplier=.9f, zoomMultiplier=.05f, panMultiplier=1.2f;
-        [SerializeField] float yMinRotationMomentum=.4f, yRotationDrag=.1f;
-        [SerializeField] float xDefaultRotation=-15, rotationTween=.2f;
-        [SerializeField] float holdThreshold = .2f;
+        [SerializeField] float rotationMultiplier, zoomMultiplier, panMultiplier;
+        [SerializeField] float yMinRotationMomentum, yRotationDrag;
+        [SerializeField] float xDefaultRotation, rotationTween;
+        [SerializeField] float holdThreshold;
 
         Node focus=null;
         public void FocusNode(int idx)
@@ -105,10 +105,6 @@ namespace EcoBuilder.NodeLink
                                * (maxHeight/2) + (Vector3.up*maxHeight/2);
             }
 
-
-
-
-
             // foreach (Link li in links)
             // {
             //     if (li.Source != focus && li.Target != focus)
@@ -119,45 +115,6 @@ namespace EcoBuilder.NodeLink
             //     {
             //         li.SetTransparency(1f);
             //     }
-            // }
-            // // arrange nodes in a circle and stuff
-            // var left = new List<Node>();
-            // var right = new List<Node>();
-            // foreach (Node no in nodes.Where(x=> x.Idx!=focus.Idx))
-            // {
-            //     if (links[focus.Idx,no.Idx]!=null || links[no.Idx,focus.Idx]!=null)
-            //     {
-            //         left.Add(no);
-            //     }
-            //     else
-            //     {
-            //         right.Add(no);
-            //     }
-            // }
-
-            // focus.FocusPos = (Vector3.up*maxHeight/2);
-
-            // float leftAngleHop = Mathf.PI / (left.Count);
-            // float rightAngleHop = Mathf.PI / (right.Count);
-            // float angleHop = Mathf.Min(leftAngleHop, rightAngleHop);
-
-            // // left
-            // float angle = Mathf.PI + ((left.Count-1)/2f * angleHop);
-            // // foreach (Node no in left.OrderBy(x=>trophicLevels[x.Idx]))
-            // foreach (Node no in left.OrderBy(x=>(links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)
-            //                                     + (links[focus.Idx,x.Idx]!=null?links[focus.Idx,x.Idx].TileSpeed:0)))
-            // {
-            //     no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
-            //                    * (maxHeight/2) + (Vector3.up*maxHeight/2);
-            //     angle -= angleHop;
-            // }
-            // // right
-            // angle = -(right.Count-1)/2f * angleHop;
-            // foreach (Node no in right.OrderBy(x=>trophicLevels[x.Idx]))
-            // {
-            //     no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 1)
-            //                    * (maxHeight/2) + (Vector3.up*maxHeight/2);
-            //     angle += angleHop;
             // }
         }
         public void Unfocus()
@@ -591,7 +548,7 @@ namespace EcoBuilder.NodeLink
 
         // this returns any node within the snap radius
         // if more than one are in the radius, then return the closest to the camera.
-        [SerializeField] float snapRadius=40;
+        [SerializeField] float snapRadius;
         private Node ClosestSnappedNode(PointerEventData ped)
         {
             if (frozen)

@@ -55,7 +55,8 @@ Shader "Unlit/DottedLineShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                i.uv.x = fmod(i.uv.x, 1.0f + _Spacing);
+                // i.uv.x = fmod(i.uv.x, 1.0f + _Spacing);
+                i.uv.x = frac(abs(i.uv.x/(1.0f+_Spacing)))*abs(1.0f+_Spacing);
                 float r = length(i.uv - float2(1.0f + _Spacing, 1.0f) * 0.5f) * 2.0f;
 
                 fixed4 color = i.color;

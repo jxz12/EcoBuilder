@@ -97,7 +97,6 @@ namespace EcoBuilder.Model
             internInteractions[externToIntern[res]].Remove(externToIntern[con]);
         }
 
-        // TODO: test if these faster when sparse
         Matrix<double> interaction, flux;
         Vector<double> negGrowth, abundance;
         Matrix<double> community, hermitian;

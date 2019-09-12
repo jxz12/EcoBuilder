@@ -1620,7 +1620,7 @@ MonoBehaviour:
     - 0.5
     - 0.5
     randomSeeds: 0100000002000000
-    editables: 0000
+    editables: 0101
     numInteractions: 1
     resources: 00000000
     consumers: 01000000

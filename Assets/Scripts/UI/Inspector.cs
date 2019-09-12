@@ -15,11 +15,9 @@ namespace EcoBuilder.UI
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
 
-        // public event Action OnPlussed;
         public event Action OnIncubated;
         public event Action OnUnincubated;
 
-        // [SerializeField] Button plusButton;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
         [SerializeField] Slider sizeSlider;
@@ -84,8 +82,6 @@ namespace EcoBuilder.UI
             incubator.OnSpawned += ()=> SpawnIncubated();
         }
         UnityAction<float> SizeSliderCallback, GreedSliderCallback;
-
-
 
 
         void Spawn(Species toSpawn)

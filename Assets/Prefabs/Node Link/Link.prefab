@@ -152,4 +152,4 @@ MonoBehaviour:
   lineWidth: 0.16
   curveRatio: -0.25
   curveSegments: 10
-  numBalls: 1
+  numBalls: 1.5

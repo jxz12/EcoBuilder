@@ -280,7 +280,7 @@ namespace EcoBuilder
 
             // // for flux
             // float normalised = Mathf.Log(input * 1e15f, 2) * 25;
-            float normalised = input * 1e15f;
+            float normalised = input * 1e13f;
 
             // // for complexity
             // float normalised = Mathf.Log(input * 1e7f, 2) * 25;

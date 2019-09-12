@@ -26,12 +26,11 @@ namespace EcoBuilder.Model
                e_p = 0.2,          // plant efficiency
                e_c = 0.5,          // animal efficiency
 
-               kg_min =     1e-3,  // min body size
-               kg_max =     1e3,   // max body size
-               a_ii_scale = 10     // ratio of a_ii to a_ij ranges
+               kg_min =   1e-3,     // min body size
+               kg_max =   1e3       // max body size
                ;
 
-        double a_ii_min, a_ii_max; // these will be calculated at runtime
+        double a_ii_min, a_ii_max;  // calculated at runtime
 
         class Species
         {
@@ -43,7 +42,7 @@ namespace EcoBuilder.Model
             public double Interference { get; set; }
             public double Efficiency { get; set; }
 
-            public double Abundance { get; set; } = 1; // initialise as non-extinct
+            public double Abundance { get; set; }
 
             public Species(int idx)
             {
@@ -96,8 +95,8 @@ namespace EcoBuilder.Model
         void Awake()
         {
             // calculate bounds for a_ij and set a_ii in the same range
-            a_ii_max = a_ii_scale * ActiveCapture(kg_max, kg_min) / kg_min;
-            a_ii_min = a_ii_scale * Grazing(kg_min, kg_max) / kg_max;
+            a_ii_max = ActiveCapture(kg_max, kg_min) / kg_min;
+            a_ii_min = Grazing(kg_min, kg_max) / kg_max;
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
@@ -225,7 +224,7 @@ namespace EcoBuilder.Model
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
-            print("flux: " + TotalFlux);
+            // print("flux: " + TotalFlux);
 
             Stable = await Task.Run(() => simulation.SolveStability());
             Complexity = (float)simulation.MayComplexity;
@@ -275,27 +274,29 @@ namespace EcoBuilder.Model
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
+            print(idx+" "+abundance);
             if (abundance <= 0)
             {
                 return 0;
             }
             else
             {
-                return (Mathf.Log(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
+                return (Mathf.Log(abundance, 2)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
             }
         }
-        float logMinFlux = Mathf.Log(4.7e-17f, 2);
-        float logMaxFlux = Mathf.Log(9.2e-7f, 2);
+        float logMinFlux = Mathf.Log(1e-13f, 2);
+        float logMaxFlux = Mathf.Log(8e-7f, 2);
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+            print(res+":"+con+" "+flux);
             if (flux <= 0)
             {
                 return 0;
             }
             else
             {
-                return (Mathf.Log(flux)-logMinFlux) / (logMaxFlux-logMinFlux);
+                return (Mathf.Log(flux, 2)-logMinFlux) / (logMaxFlux-logMinFlux);
             }
         }
 

@@ -4,7 +4,7 @@ using System;
 namespace EcoBuilder
 {
     // this class handles communication between all the top level components
-    public class GameMaster : MonoBehaviour
+    public class EventManager : MonoBehaviour
     {
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.StatusBar status;

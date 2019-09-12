@@ -21,19 +21,11 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        // public float Width {
-        //     get { return lr.widthMultiplier; }
-        //     set { lr.widthMultiplier = value; }
-        // }
-        public float TileSpeed { get; set; }// = .01f;
-        public bool Removable { get; set; } = true;
-
-        public void Init(Node source, Node target, bool curved)
+        public void Init(Node source, Node target)
         {
             Source = source;
             Target = target;
             name = Source.Idx + " " + Target.Idx;
-            Curved = curved;
         }
 
         public void Outline(int colourIdx=0)
@@ -56,10 +48,14 @@ namespace EcoBuilder.NodeLink
             GetComponent<LineRenderer>().material.color = c;
         }
 
-        [SerializeField] float lineWidth = .2f;
-        [SerializeField] float curveRatio = .5f;
-        [SerializeField] int curveSegments = 5;
-        bool Curved { get; set; } = false;
+        [SerializeField] float lineWidth;
+        [SerializeField] float curveRatio;
+        [SerializeField] int curveSegments;
+        [SerializeField] float numBalls;
+
+        public bool Curved { get; set; } = false;
+        public float TileSpeed { get; set; } = 0;
+        public bool Removable { get; set; } = true;
 
         private void LateUpdate()
         {
@@ -91,29 +87,27 @@ namespace EcoBuilder.NodeLink
             }
             float width = lineWidth * transform.lossyScale.x;
             lr.widthMultiplier = width;
-            // lr.material.mainTextureScale = new Vector2(1/lineWidth, 1);
 
-            lr.material.SetFloat("_Spacing", (1-numBalls*lineWidth) / (numBalls*lineWidth));
+            // TODO: include length of line so that balls don't get ellipsed
+            // lr.material.SetFloat("_Spacing", (1-NumBalls*lineWidth) / (NumBalls*lineWidth));
+            lr.material.SetFloat("_Spacing", (1-numBalls*width) / (numBalls*width));
             lr.material.SetFloat("_RepeatCount", numBalls);
 
             Color c = Target.Col;
-            if (!Removable)
-                c.b = 1;
+            // if (!Removable)
+            //     c.b = 1;
             lr.startColor = c;
             c = Source.Col;
-            if (!Removable)
-                c.b = 1;
+            // if (!Removable)
+            //     c.b = 1;
             lr.endColor = c;
         }
 
-        [SerializeField] float numBalls;
         private float tileOffset = 0;
         private void FixedUpdate()
         {
-            // lr.material.mainTextureOffset -= new Vector2(TileSpeed, 0);
-            tileOffset += TileSpeed;
+            tileOffset -= TileSpeed;
             lr.material.SetFloat("_Offset", tileOffset);
-
         }
     }
 }

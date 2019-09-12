@@ -67,9 +67,7 @@ namespace EcoBuilder.UI
         {
             if (isProducer)
             {
-                // TODO: this will have to be changed if we want to let species switch type
-                // consumers.Remove(idx);
-
+                // this will have to be changed if we want to let species switch type
                 producers.Add(idx);
                 if (producers.Count >= leaf.ConstraintLimit && leaf.ConstraintLimit > 0) // TODO: better constraint class instead
                     OnProducersAvailable.Invoke(false);
@@ -79,7 +77,6 @@ namespace EcoBuilder.UI
             }
             else
             {
-                // producers.Remove(idx);
                 consumers.Add(idx);
                 if (consumers.Count >= paw.ConstraintLimit && paw.ConstraintLimit > 0)
                     OnConsumersAvailable.Invoke(false);
