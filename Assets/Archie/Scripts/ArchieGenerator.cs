@@ -8,7 +8,7 @@ using System.Diagnostics; // TIME TESTING
 
 namespace EcoBuilder.Archie{
     using JohnnysInterface;
-    public class Archie : MonoBehaviour, ISpeciesGenerator
+    public class ArchieGenerator : MonoBehaviour, ISpeciesGenerator
     {
         public GameObject producer;
         public GameObject consumer;
