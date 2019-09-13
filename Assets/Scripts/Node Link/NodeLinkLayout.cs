@@ -12,13 +12,12 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-
             if (!superfocused)
             {
                 // get average of all positions, and center
                 Vector3 centroid;
 
-                if (focus == null)
+                if (focusedNode == null)
                 {
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
@@ -27,13 +26,26 @@ namespace EcoBuilder.NodeLink
                         centroid += pos;
                     }
                     centroid /= nodes.Count;
-                    // centroid.y = 0;
-                    // hello
+
+                    nodesParent.localPosition =
+                        Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
+                                        ref nodesVelocity, layoutSmoothTime);
+                    graphParent.localPosition =
+                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
+                                        ref graphVelocity, layoutSmoothTime);
                 }
                 else
                 {
-                    centroid = focus.StressPos;
+                    centroid = focusedNode.StressPos;
+
+                    nodesParent.localPosition =
+                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up * centroid.y,
+                                        ref nodesVelocity, layoutSmoothTime);
+                    graphParent.localPosition =
+                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
+                                        ref graphVelocity, layoutSmoothTime);
                 }
+
 
                 float maxTrophic = 1;
                 foreach (float trophic in trophicLevels)
@@ -41,13 +53,6 @@ namespace EcoBuilder.NodeLink
                 float height = Mathf.Min(MaxChain, maxHeight);
                 float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
 
-
-                nodesParent.localPosition =
-                    Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
-                                       ref nodesVelocity, layoutSmoothTime);
-                graphParent.localPosition =
-                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
-                                       ref graphVelocity, layoutSmoothTime);
                 foreach (Node no in nodes)
                 {
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
@@ -64,11 +69,11 @@ namespace EcoBuilder.NodeLink
             else
             {
                 nodesParent.localPosition =
-                    Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*maxHeight/2,
+                    Vector3.SmoothDamp(nodesParent.localPosition, -focusedNode.FocusPos,
                                        ref nodesVelocity, layoutSmoothTime);
                 graphParent.localPosition =
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
-                                       ref graphVelocity, layoutSmoothTime);
+                                    ref graphVelocity, layoutSmoothTime);
 
                 foreach (Node no in nodes)
                 {

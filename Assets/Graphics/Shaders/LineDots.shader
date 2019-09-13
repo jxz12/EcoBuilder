@@ -7,6 +7,7 @@ Shader "Unlit/DottedLineShader"
         _RepeatCount("Repeat Count", float) = 5
         _Spacing("Spacing", float) = 0.5
         _Offset("Offset", float) = 0
+        _Alpha("Alpha", float) = 1
     }
         SubShader
     {
@@ -27,6 +28,7 @@ Shader "Unlit/DottedLineShader"
             float _RepeatCount;
             float _Spacing;
             float _Offset;
+            float _Alpha;
 
             struct appdata
             {
@@ -61,7 +63,7 @@ Shader "Unlit/DottedLineShader"
 
                 fixed4 color = i.color;
                 // color.a *= saturate((0.99f - r) * 100.0f);
-                color.a = r < 1? 1 : .2f;
+                color.a = r < 1? _Alpha : .2f*_Alpha;
 
                 return color;
             }

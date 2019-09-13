@@ -34,7 +34,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: Uninspect
+    m_ConditionEvent: Unincubate
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3822011185272267875}
@@ -188,6 +188,12 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: Unincubate
+    m_Type: 9
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -300,13 +306,13 @@ AnimatorStateMachine:
     m_Position: {x: 780, y: 370, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102400605421937910}
-    m_Position: {x: 780, y: 190, z: 0}
+    m_Position: {x: 780, y: 200, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 1102602665926169148}
     m_Position: {x: 780, y: 90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3822011185272267875}
-    m_Position: {x: 490, y: 200, z: 0}
+    m_Position: {x: 510, y: 200, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2264321962902444492}
     m_Position: {x: 1030, y: 230, z: 0}

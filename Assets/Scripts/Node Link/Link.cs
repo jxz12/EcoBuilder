@@ -44,8 +44,7 @@ namespace EcoBuilder.NodeLink
         }
         public void SetTransparency(float alpha)
         {
-            Color c = new Color(1,1,1, alpha);
-            GetComponent<LineRenderer>().material.color = c;
+            lr.material.SetFloat("_Alpha", alpha);
         }
 
         [SerializeField] float lineWidth;
