@@ -28,6 +28,7 @@ namespace EcoBuilder.NodeLink
                     }
                     centroid /= nodes.Count;
                     // centroid.y = 0;
+                    // hello
                 }
                 else
                 {
