@@ -12,23 +12,27 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-            if (focus == null)
+
+            if (!superfocused)
             {
-                Vector3 centroid = Vector3.zero;
                 // get average of all positions, and center
-                foreach (Node no in nodes)
+                Vector3 centroid;
+
+                if (focus == null)
                 {
-                    Vector3 pos = no.StressPos;
-                    centroid += pos;
+                    centroid = Vector3.zero;
+                    foreach (Node no in nodes)
+                    {
+                        Vector3 pos = no.StressPos;
+                        centroid += pos;
+                    }
+                    centroid /= nodes.Count;
+                    // centroid.y = 0;
                 }
-                centroid /= nodes.Count;
-                // centroid.y = 0;
-                nodesParent.localPosition =
-                    Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
-                                       ref nodesVelocity, layoutSmoothTime);
-                graphParent.localPosition =
-                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
-                                       ref graphVelocity, layoutSmoothTime);
+                else
+                {
+                    centroid = focus.StressPos;
+                }
 
                 float maxTrophic = 1;
                 foreach (float trophic in trophicLevels)
@@ -36,16 +40,21 @@ namespace EcoBuilder.NodeLink
                 float height = Mathf.Min(MaxChain, maxHeight);
                 float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
 
+
+                nodesParent.localPosition =
+                    Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
+                                       ref nodesVelocity, layoutSmoothTime);
+                graphParent.localPosition =
+                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
+                                       ref graphVelocity, layoutSmoothTime);
                 foreach (Node no in nodes)
                 {
                     float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
                     no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
 
-                    // no.transform.localPosition =
-                    //     Vector3.Lerp(no.transform.localPosition, no.StressPos, layoutTween);
                     no.transform.localPosition =
                         Vector3.SmoothDamp(no.transform.localPosition, no.StressPos,
-                                           ref no.Velocity, layoutSmoothTime);
+                                           ref no.velocity, layoutSmoothTime);
                     no.transform.localScale =
                         Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
                 }
@@ -53,21 +62,18 @@ namespace EcoBuilder.NodeLink
             }
             else
             {
-                // center to focus
-                // centroid = focus.FocusPos;
                 nodesParent.localPosition =
                     Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*maxHeight/2,
                                        ref nodesVelocity, layoutSmoothTime);
                 graphParent.localPosition =
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
                                        ref graphVelocity, layoutSmoothTime);
-                // centroid.y = 0;
 
                 foreach (Node no in nodes)
                 {
                     no.transform.localPosition =
                         Vector3.SmoothDamp(no.transform.localPosition, no.FocusPos,
-                                           ref no.Velocity, layoutSmoothTime);
+                                           ref no.velocity, layoutSmoothTime);
 
                     no.transform.localScale =
                         Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
@@ -77,7 +83,7 @@ namespace EcoBuilder.NodeLink
         float yRotation = 0, yRotationMomentum = 0;
         private void RotateWithMomentum()
         {
-            if (focus == null)
+            if (!superfocused)
             {
                 yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
                 nodesParent.Rotate(Vector3.up, yRotationMomentum);

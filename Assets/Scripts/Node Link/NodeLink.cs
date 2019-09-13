@@ -26,7 +26,7 @@ namespace EcoBuilder.NodeLink
             // do stress SGD
             if (nodes.Count > 0)
             {
-                if (focus == null)
+                if (!superfocused)
                 {
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);
@@ -68,7 +68,7 @@ namespace EcoBuilder.NodeLink
                 LaplacianDetZero = (heights.Count != nodes.Count);
                 // MaxTrophic done in Update()
 
-                if (focus != null)
+                if (superfocused)
                 {
                     SuperFocus();
                 }

@@ -60,7 +60,8 @@ Shader "Unlit/DottedLineShader"
                 float r = length(i.uv - float2(1.0f + _Spacing, 1.0f) * 0.5f) * 2.0f;
 
                 fixed4 color = i.color;
-                color.a *= saturate((0.99f - r) * 100.0f);
+                // color.a *= saturate((0.99f - r) * 100.0f);
+                color.a = r < 1? 1 : .2f;
 
                 return color;
             }
