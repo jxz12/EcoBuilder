@@ -19,64 +19,83 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float xDefaultRotation, rotationTween;
         [SerializeField] float holdThreshold;
 
-        Node focus = null;
+        Node focusedNode = null;
         bool superfocused = false;
         public void FocusNode(int idx)
         {
-            if (focus != nodes[idx] && focus != null)
+            if (focusedNode != nodes[idx] && focusedNode != null)
             {
-                focus.Unoutline();
+                focusedNode.Unoutline();
             }
 
             if (!superfocused)
             {
-                if (focus == nodes[idx])
+                if (focusedNode == nodes[idx])
                 {
                     SuperFocus();
                     superfocused = true;
                 }
                 else
                 {
-                    focus = nodes[idx];
-                    focus.Outline();
+                    focusedNode = nodes[idx];
+                    focusedNode.Outline();
                 }
             }
             else
             {
-                if (focus == nodes[idx])
+                if (focusedNode == nodes[idx])
                 {
                     // do nothing
                 }
                 else
                 {
-                    focus = nodes[idx];
-                    focus.Outline();
+                    focusedNode = nodes[idx];
+                    focusedNode.Outline();
                     SuperFocus();
                     superfocused = true;
                 }
             }
         }
-        public void Unfocus()
+        void Unfocus()
         {
-            if (focus != null)
+            if (focusedNode != null)
             {
                 if (!superfocused)
                 {
-                    focus.Unoutline();
-                    focus = null;
+                    focusedNode.Unoutline();
+                    focusedNode = null;
+                    OnUnfocused.Invoke();
                 }
                 else
                 {
                     superfocused = false;
+                    foreach (Link li in links)
+                    {
+                        li.SetTransparency(1f);
+                    }
                 }
-                // foreach (Link li in links)
-                // {
-                //     li.SetTransparency(1f);
-                // }
+            }
+            else
+            {
+                OnEmptyPressed.Invoke();
             }
             // StartCoroutine(ResetPan(Vector2.zero, 1f));
             StartCoroutine(ResetZoom(Vector3.one, 1f));
         }
+        public void FullUnfocus()
+        {
+            if (focusedNode != null)
+            {
+                focusedNode.Unoutline();
+                focusedNode = null;
+                superfocused = false;
+                foreach (Link li in links)
+                {
+                    li.SetTransparency(1f);
+                }
+            }
+        }
+
         public void SuperFocus()
         {
             var unrelated = new List<Node>();
@@ -86,27 +105,38 @@ namespace EcoBuilder.NodeLink
 
             foreach (Node no in nodes)
             {
-                if (no.Idx == focus.Idx)
+                if (no.Idx == focusedNode.Idx)
                 {
                     continue;
                 }
                 // uninteracting
-                if (links[focus.Idx,no.Idx] == null && links[no.Idx,focus.Idx] == null)
+                if (links[focusedNode.Idx,no.Idx] == null && links[no.Idx,focusedNode.Idx] == null)
                 {
                     unrelated.Add(no);
                 }
-                else if (links[focus.Idx,no.Idx] != null && links[no.Idx,focus.Idx] == null)
+                else if (links[focusedNode.Idx,no.Idx] != null && links[no.Idx,focusedNode.Idx] == null)
                 {
                     consumers.Add(no);
                 }
-                else if (links[focus.Idx,no.Idx] == null && links[no.Idx,focus.Idx] != null)
+                else if (links[focusedNode.Idx,no.Idx] == null && links[no.Idx,focusedNode.Idx] != null)
                 {
                     resources.Add(no);
                 }
                 // mutual consumption
-                else if (links[focus.Idx,no.Idx] != null && links[no.Idx,focus.Idx] != null)
+                else if (links[focusedNode.Idx,no.Idx] != null && links[no.Idx,focusedNode.Idx] != null)
                 {
                     both.Add(no);
+                }
+            }
+            foreach (Link li in links)
+            {
+                if (li.Source != focusedNode && li.Target != focusedNode)
+                {
+                    li.SetTransparency(.1f);
+                }
+                else
+                {
+                    li.SetTransparency(1f);
                 }
             }
 
@@ -116,10 +146,10 @@ namespace EcoBuilder.NodeLink
             int left = both.Count;
 
             // arrange in circle around focus in middle
-            focus.FocusPos = (Vector3.up*maxHeight/2);
+            focusedNode.FocusPos = new Vector3(0, maxHeight/2, 0);
             foreach (Node no in unrelated)
             {
-                no.FocusPos = no.StressPos + 10*Vector3.forward;
+                no.FocusPos = no.StressPos + new Vector3(-3, 0, 25);
             }
 
             if (right+left == 0)
@@ -131,51 +161,36 @@ namespace EcoBuilder.NodeLink
             foreach (Node no in consumers)
             {
                 angle += 1f / (consumers.Count+1) * range;
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .5f)
-                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+                              + focusedNode.FocusPos;
             }
             angle = 0;
             foreach (Node no in resources)
             {
                 angle -= 1f / (resources.Count+1) * range;
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .5f)
-                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+                              + focusedNode.FocusPos;
             }
             angle -= 1f / (resources.Count+1) * range;
             range = 2 * Mathf.PI * ((float)(left) / (right+left));
             foreach (Node no in both)
             {
                 angle -= 1f / (both.Count+1) * range;
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), .5f)
-                               * (maxHeight/2) + (Vector3.up*maxHeight/2);
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+                              + focusedNode.FocusPos;
             }
 
-            // foreach (Link li in links)
-            // {
-            //     if (li.Source != focus && li.Target != focus)
-            //     {
-            //         li.SetTransparency(.1f);
-            //     }
-            //     else
-            //     {
-            //         li.SetTransparency(1f);
-            //     }
-            // }
         }
         bool frozen = false;
         public void Freeze()
         {
-            focus = null;
+            focusedNode = null;
             // StartCoroutine(ResetPan(Vector2.zero, 1f));
             StartCoroutine(ResetZoom(Vector3.one, 1f));
 
             GetComponent<Animator>().SetTrigger("Freeze");
             frozen = true;
         }
-        public void MoveLeft()
-        {}
-        public void MoveMiddle()
-        {}
 
 
         [SerializeField] MeshRenderer disk;
@@ -290,9 +305,9 @@ namespace EcoBuilder.NodeLink
                 if (pressedNode != null)
                 {
                     // pressedNode.Outline(0);
-                    tooltip.Enable(true);
+                    tooltip.Enable();
                     tooltip.ShowInspect();
-                    tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
+                    tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position), true);
                     // if (pressedNode.Removable)
                     // {
                     //     StartCoroutine(WaitThenDelete(holdThreshold, ped));
@@ -323,7 +338,7 @@ namespace EcoBuilder.NodeLink
         //     potentialHold = false;
         //     RemoveNode(pressedNode.Idx);
         //     pressedNode = null;
-        //     tooltip.Enable(false);
+        //     tooltip.Disable();
         // }
         public void OnPointerUp(PointerEventData ped)
         {
@@ -343,12 +358,11 @@ namespace EcoBuilder.NodeLink
 
                         // pressedNode.Unoutline();
                         pressedNode = null;
-                        tooltip.Enable(false);
+                        tooltip.Disable();
                     }
                     else if (!frozen)
                     {
                         Unfocus();
-                        OnEmptyPressed.Invoke();
                     }
                 }
                 else if (!ped.dragging && pressedNode != null) // not dragging but not deleted either
@@ -358,16 +372,16 @@ namespace EcoBuilder.NodeLink
 
                     // pressedNode.Unoutline();
                     pressedNode = null;
-                    tooltip.Enable(false);
+                    tooltip.Disable();
                 }
             }
         }
 
+        [SerializeField] UI.Tooltip tooltip;
         Node dummySource;
         Link dummyLink;
         Node potentialSource;
         Link potentialLink;
-        [SerializeField] UI.Tooltip tooltip;
         public void OnBeginDrag(PointerEventData ped)
         {
             // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
@@ -377,7 +391,7 @@ namespace EcoBuilder.NodeLink
                 if (pressedNode != null)
                 {
                     // pressedNode.Shake(false);
-                    tooltip.Enable(true);
+                    tooltip.Enable();
 
                     if (pressedNode.CanBeTarget)
                     {
@@ -400,7 +414,7 @@ namespace EcoBuilder.NodeLink
                 else
                 {
                     PauseLayout(false);
-                    tooltip.Enable(false);
+                    tooltip.Disable();
                 }
             }
         }
@@ -470,11 +484,11 @@ namespace EcoBuilder.NodeLink
                     // potentialLink.Outline(0);
 
 
-                    var tipPos = Camera.main.WorldToScreenPoint(dummySource.transform.position);
-                    tooltip.SetPos(tipPos);
                     Vector3 screenPoint = ped.position;
                     screenPoint.z = pressedNode.transform.position.z - Camera.main.transform.position.z;
                     dummySource.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
+
+                    tooltip.SetPos(screenPoint);
                     if (snappedNode!=null && snappedNode!=pressedNode)
                     {
                         dummyLink.Source = pressedNode; // hide dummyLink
@@ -545,7 +559,7 @@ namespace EcoBuilder.NodeLink
                         Destroy(dummySource.gameObject);
                     }
 
-                    tooltip.Enable(false);
+                    tooltip.Disable();
                 }
             }
         }

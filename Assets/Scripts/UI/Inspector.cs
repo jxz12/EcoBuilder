@@ -14,6 +14,7 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
+        public event Action<int> OnDespawned;
 
         public event Action OnIncubated;
         public event Action OnUnincubated;
@@ -25,6 +26,8 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
+        [SerializeField] Animator infoAnimator, typeAnimator;
+        
         [SerializeField] JonnyGenerator.JonnyGenerator factory;
         // [SerializeField] Archie.Seed factory;
         [SerializeField] Incubator incubator;
@@ -42,24 +45,26 @@ namespace EcoBuilder.UI
             public bool Editable { get; set; } = true;
             public GameObject GObject { get; set; } = null;
 
-            public Species(int idx, bool isProducer, float size, float greed)
+            public Species(int idx, bool isProducer)
             {
                 Idx = idx;
                 IsProducer = isProducer;
-                BodySize = size;
-                Greediness = greed;
-                RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
+                RerollSeed();
             }
             // to set seed from file
             public Species(int idx, bool isProducer, float size, float greed, int seed)
-                : this(idx, isProducer, size, greed)
+                : this(idx, isProducer)
             {
+                BodySize = size;
+                Greediness = greed;
                 RandomSeed = seed;
             }
 
             // for refreshing a species
             public void RerollSeed()
             {
+                BodySize = UnityEngine.Random.Range(0, 1f);
+                Greediness = UnityEngine.Random.Range(0, 1f);
                 RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
             }
         }
@@ -104,10 +109,9 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubator.Unincubate();
-                print("TODO:");
                 incubated = null;
             }
-            Species s = new Species(nextIdx, isProducer, 0, .5f);
+            Species s = new Species(nextIdx, isProducer);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
@@ -117,7 +121,8 @@ namespace EcoBuilder.UI
             greedSlider.interactable = true;
 
             incubated = s;
-            GetComponent<Animator>().SetTrigger("Incubate");
+            infoAnimator.SetTrigger("Incubate");
+            typeAnimator.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
         void RefreshIncubated()
@@ -126,6 +131,7 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             incubated.RerollSeed();
+            SetSlidersWithoutEventCallbacks(incubated.BodySize, incubated.Greediness);
             factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
             nameText.text = incubated.GObject.name;
         }
@@ -135,7 +141,8 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             Spawn(incubated);
-            GetComponent<Animator>().SetTrigger("Spawn");
+            infoAnimator.SetTrigger("Spawn");
+            typeAnimator.SetBool("Visible", true);
             inspected = incubated;
             incubated = null;
             OnUnincubated.Invoke();
@@ -196,88 +203,15 @@ namespace EcoBuilder.UI
         /////////////////////
         // external stuff
 
-        // for loading from level
-        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable)
-        {
-            if (inspected != null)
-                throw new Exception("somehow inspecting??");
-            if (size < 0 || size > 1)
-                throw new Exception("size not in bounds");
-            if (greed < 0 || greed > 1)
-                throw new Exception("greed not in bounds");
-
-            var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
-            toSpawn.Editable = editable;
-            toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
-            
-            Spawn(toSpawn);
-            return toSpawn.Idx;
-        }
-        // called when nodelink is pressed
-        public void Uninspect()
-        {
-            if (inspected != null) // if inspecting
-            {
-                inspected = null;
-            }
-            else if (incubated != null) // if incubating
-            {
-                incubator.Unincubate();
-                incubated = null;
-            }
-            GetComponent<Animator>().SetTrigger("Uninspect");
-        }
-        public void UnspawnSpecies(int idx)
-        {
-            if (!spawnedSpecies.ContainsKey(idx))
-                throw new Exception("idx not spawned");
-
-            if (inspected == spawnedSpecies[idx])
-            {
-                GetComponent<Animator>().SetTrigger("Uninspect");
-                inspected = null;
-            }
-            GetComponent<Animator>().SetBool("All Spawned", false);
-
-            spawnedSpecies.Remove(idx);
-        }
-        public void SetProducersAvailable(bool available)
-        {
-            if (available)
-            {
-                producerButton.interactable = true;
-                GetComponent<Animator>().SetBool("All Spawned", false);
-            }
-            else
-            {
-                producerButton.interactable = false;
-                if (consumerButton.interactable == false)
-                    GetComponent<Animator>().SetBool("All Spawned", true);
-            }
-        }
-        public void SetConsumersAvailable(bool available)
-        {
-            if (available)
-            {
-                consumerButton.interactable = true;
-                GetComponent<Animator>().SetBool("All Spawned", false);
-            }
-            else
-            {
-                consumerButton.interactable = false;
-                if (producerButton.interactable == false)
-                    GetComponent<Animator>().SetBool("All Spawned", true);
-            }
-        }
-
         public void InspectSpecies(int idx)
         {
             if (inspected == null)
             {
-                GetComponent<Animator>().SetTrigger("Inspect");
+                infoAnimator.SetTrigger("Inspect");
             }
             if (incubated != null)
             {
+                typeAnimator.SetBool("Visible", true);
                 incubator.Unincubate();
                 incubated = null;
                 OnUnincubated.Invoke();
@@ -298,14 +232,78 @@ namespace EcoBuilder.UI
                 greedSlider.interactable = false;
             }
         }
+        public void Unincubate()
+        {
+            if (incubated != null)
+            {
+                incubator.Unincubate();
+                incubated = null;
+                infoAnimator.SetTrigger("Unincubate");
+                typeAnimator.SetBool("Visible", true);
+            }
+        }
+        public void Uninspect()
+        {
+            if (inspected != null)
+            {
+                inspected = null;
+                infoAnimator.SetTrigger("Uninspect");
+            }
+        }
+        private void DespawnSpecies(int idx)
+        {
+            if (!spawnedSpecies.ContainsKey(idx))
+            {
+                throw new Exception("idx not spawned");
+            }
+
+            if (inspected == spawnedSpecies[idx])
+            {
+                infoAnimator.SetTrigger("Uninspect");
+                inspected = null;
+            }
+            // GetComponent<Animator>().SetBool("All Spawned", false);
+
+            spawnedSpecies.Remove(idx);
+        }
+        public void SetProducersAvailable(bool available)
+        {
+            producerButton.interactable = available;
+        }
+        public void SetConsumersAvailable(bool available)
+        {
+            consumerButton.interactable = available;
+        }
+
+        // for loading from level
+        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable)
+        {
+            if (inspected != null)
+                throw new Exception("somehow inspecting??");
+            if (size < 0 || size > 1)
+                throw new Exception("size not in bounds");
+            if (greed < 0 || greed > 1)
+                throw new Exception("greed not in bounds");
+
+            var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
+            toSpawn.Editable = editable;
+            toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
+            
+            Spawn(toSpawn);
+            return toSpawn.Idx;
+        }
         public void Hide()
         {
-            // TODO: so ugly, overhaul needed
-            if (!GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Idle"))
-                GetComponent<Animator>().SetTrigger("Uninspect");
-
             if (incubated != null)
+            {
                 incubator.Unincubate();
+                infoAnimator.SetTrigger("Unincubate");
+            }
+            else if (inspected != null)
+            {
+                infoAnimator.SetTrigger("Uninspect");
+                typeAnimator.SetBool("Visible", false);
+            }
         }
 
 

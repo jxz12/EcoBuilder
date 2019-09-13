@@ -13,15 +13,37 @@ namespace EcoBuilder.UI
 
 		void FixedUpdate()
 		{
-			transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, .02f);
+			if (visible)
+			{
+				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, .2f);
+			}
+			else
+			{
+				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, .2f);
+			}
+			transform.position = Vector3.Lerp(transform.position, target, .5f);
 		}
-		public void SetPos(Vector2 screenPos)
+		Vector2 target;
+		public void SetPos(Vector2 screenPos, bool noLerp=false)
 		{
-			transform.position = screenPos;
+			target = screenPos;
+			if (noLerp)
+			{
+				transform.position = target;
+			}
 		}
-		public void Enable(bool enabled)
+		bool visible = false;
+		public void Enable()
 		{
-			gameObject.SetActive(enabled);
+			if (!visible)
+			{
+				visible = true;
+				transform.localScale = Vector3.zero;
+			}
+		}
+		public void Disable()
+		{
+			visible = false;
 		}
 		public void ShowInspect()
 		{
@@ -32,49 +54,41 @@ namespace EcoBuilder.UI
 			tip.sprite = linkSprite;
 			// TODO: these colours might be solved in a later version of unity
 			// tip.color = Color.black;
-			// transform.localScale = Vector3.one;
 		}
 		public void ShowNoLink()
 		{
 			tip.sprite = noLinkSprite;
 			// tip.color = Color.black;
-			// transform.localScale = Vector3.one;
 		}
 		public void ShowAddLink()
 		{
 			tip.sprite = addlinkSprite;
-			// tip.color = Color.green;
-			// transform.localScale = Vector3.one;
+			tip.color = Color.green;
 		}
 		public void ShowNoAddLink()
 		{
 			tip.sprite = noAddlinkSprite;
 			// tip.color = Color.green;
-			// transform.localScale = Vector3.one;
 		}
 		public void ShowUnlink()
 		{
 			tip.sprite = unlinkSprite;
 			// tip.color = Color.red;
-			// transform.localScale = Vector3.one;
 		}
 		public void ShowNoUnlink()
 		{
 			tip.sprite = noUnlinkSprite;
 			// tip.color = Color.red;
-			// transform.localScale = Vector3.one;
 		}
 		public void ShowTrash()
 		{
 			tip.sprite = trashSprite;
 			// tip.color = Color.black;
-			// transform.localScale = Vector3.zero;
 		}
 		public void ShowNoTrash()
 		{
 			tip.sprite = notrashSprite;
 			// tip.color = Color.black;
-			// transform.localScale = Vector3.one;
 		}
 	}
 }
