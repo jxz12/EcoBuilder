@@ -8,7 +8,7 @@ using System.Diagnostics; // TIME TESTING
 
 namespace EcoBuilder.Archie{
     using JohnnysInterface;
-    public class Seed : MonoBehaviour, ISpeciesGenerator
+    public class Archie : MonoBehaviour, ISpeciesGenerator
     {
         public GameObject producer;
         public GameObject consumer;
@@ -42,7 +42,7 @@ namespace EcoBuilder.Archie{
         }
         public GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
         {
-            UnityEngine.Random.seed = randomSeed;
+            UnityEngine.Random.InitState(randomSeed);
 
             GameObject species;
             GameObject reference;
@@ -74,12 +74,10 @@ namespace EcoBuilder.Archie{
 
         public void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population = -1) 
         {
-            UnityEngine.Random.seed = randomSeed;
+            UnityEngine.Random.InitState(randomSeed);
 
-            bool isProducer = true;
             if (species.GetComponent<Plantwork>() == null)
             {
-                isProducer = false;
                 var animal_structure = species.transform.Find("bones").gameObject;
 
                 Stopwatch bone_time = new Stopwatch(); // TIME TESTING
