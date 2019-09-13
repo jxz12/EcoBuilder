@@ -7,9 +7,10 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink : MonoBehaviour
     {
-        public event Action OnEmptyPressed;
+        // public event Action OnEmptyPressed;
         public event Action<int> OnNodeFocused;
-        public event Action<int> OnNodeRemoved;
+        public event Action OnUnfocused;
+        public event Action OnEmptyPressed;
         public event Action<int, int> OnLinkAdded;
         public event Action<int, int> OnLinkRemoved;
 
@@ -18,7 +19,6 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         [SerializeField] float etaMax, etaDecay;
-        // [SerializeField] float eta;
         float etaIteration = 0;
         private void FixedUpdate()
         {
@@ -107,18 +107,15 @@ namespace EcoBuilder.NodeLink
             newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2, shape);
             nodes[idx] = newNode;
 
-            FocusNode(idx);
-
             adjacency[idx] = new HashSet<int>();
             toBFS.Enqueue(idx);
 
             constraintsSolved = false;
         }
 
-
-        void RemoveNode(int idx)
+        public void RemoveNode(int idx)
         {
-            if (focus != null && focus.Idx == idx)
+            if (focusedNode != null && focusedNode.Idx == idx)
                 Unfocus();
 
             Destroy(nodes[idx].gameObject);
@@ -148,7 +145,6 @@ namespace EcoBuilder.NodeLink
             trophicLevels.RemoveAt(idx);
 
             constraintsSolved = false;
-            OnNodeRemoved.Invoke(idx);
         }
 
         public void AddLink(int i, int j)

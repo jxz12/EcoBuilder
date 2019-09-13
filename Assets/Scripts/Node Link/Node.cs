@@ -8,7 +8,6 @@ namespace EcoBuilder.NodeLink
         public int Idx { get; private set; }
         public Color Col {
             get { return shape!=null? shape.GetComponent<MeshRenderer>().material.color : Color.black; }
-            // set { if (mr!=null) mr.material.color = new Color(value.r, value.g, value.b, mr.material.color.a); }
         }
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
@@ -60,35 +59,37 @@ namespace EcoBuilder.NodeLink
         }
         public void Outline(int colourIdx=0)
         {
-            var outline = shape.GetComponent<cakeslice.Outline>();
+            var outline = GetComponent<cakeslice.Outline>();
             if (outline == null)
             {
-                outline = shape.AddComponent<cakeslice.Outline>();
+                outline = gameObject.AddComponent<cakeslice.Outline>();
             }
             outline.color = colourIdx;
         }
         public void Unoutline()
         {
-            if (shape.GetComponent<cakeslice.Outline>() != null)
-                Destroy(shape.GetComponent<cakeslice.Outline>());
+            if (GetComponent<cakeslice.Outline>() != null)
+                Destroy(GetComponent<cakeslice.Outline>());
         }
-        bool flashing;
+        bool flashing = false;
         public void Flash(bool isFlashing)
         {
             flashing = isFlashing;
-            // anim.SetBool("Flashing", isFlashing);
+            GetComponent<Animator>().SetBool("Flashing", isFlashing);
         }
-        // void Update()
-        // {
-        //     if ((Time.time*60) % 60 < 30 && flashing)
-        //     {
-        //         GetComponent<MeshRenderer>().material.color = new Color(1,.01f,.01f,1);
-        //     }
-        //     else
-        //     {
-        //         GetComponent<MeshRenderer>().material.color = new Color(.01f,.3f,1,.3f);
-        //     }
-        // }
+        void Update()
+        {
+            if ((Time.time*60) % 60 < 30 && flashing)
+            {
+                // GetComponent<MeshRenderer>().material.color = new Color(1,.01f,.01f,1);
+                GetComponent<MeshRenderer>().enabled = true;
+            }
+            else
+            {
+                // GetComponent<MeshRenderer>().material.color = new Color(.01f,.3f,1,.3f);
+                GetComponent<MeshRenderer>().enabled = false;
+            }
+        }
         // public void Shake(bool isShaking)
         // {
         //     anim.SetBool("Shaking", isShaking);

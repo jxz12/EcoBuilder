@@ -1,4 +1,4 @@
-Shader "Unlit/ColorDifference"
+Shader "Unlit/ColorFade"
 {
     Properties
     {
