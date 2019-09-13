@@ -26,6 +26,8 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refreshButton;
+        [SerializeField] Animator infoAnimator, typeAnimator;
+        
         [SerializeField] JonnyGenerator.JonnyGenerator factory;
         // [SerializeField] Archie.Seed factory;
         [SerializeField] Incubator incubator;
@@ -119,7 +121,8 @@ namespace EcoBuilder.UI
             greedSlider.interactable = true;
 
             incubated = s;
-            GetComponent<Animator>().SetTrigger("Incubate");
+            infoAnimator.SetTrigger("Incubate");
+            typeAnimator.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
         void RefreshIncubated()
@@ -138,7 +141,8 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             Spawn(incubated);
-            GetComponent<Animator>().SetTrigger("Spawn");
+            infoAnimator.SetTrigger("Spawn");
+            typeAnimator.SetBool("Visible", true);
             inspected = incubated;
             incubated = null;
             OnUnincubated.Invoke();
@@ -203,10 +207,11 @@ namespace EcoBuilder.UI
         {
             if (inspected == null)
             {
-                GetComponent<Animator>().SetTrigger("Inspect");
+                infoAnimator.SetTrigger("Inspect");
             }
             if (incubated != null)
             {
+                typeAnimator.SetBool("Visible", true);
                 incubator.Unincubate();
                 incubated = null;
                 OnUnincubated.Invoke();
@@ -233,7 +238,8 @@ namespace EcoBuilder.UI
             {
                 incubator.Unincubate();
                 incubated = null;
-                GetComponent<Animator>().SetTrigger("Unincubate");
+                infoAnimator.SetTrigger("Unincubate");
+                typeAnimator.SetBool("Visible", true);
             }
         }
         public void Uninspect()
@@ -241,7 +247,7 @@ namespace EcoBuilder.UI
             if (inspected != null)
             {
                 inspected = null;
-                GetComponent<Animator>().SetTrigger("Uninspect");
+                infoAnimator.SetTrigger("Uninspect");
             }
         }
         private void DespawnSpecies(int idx)
@@ -253,7 +259,7 @@ namespace EcoBuilder.UI
 
             if (inspected == spawnedSpecies[idx])
             {
-                GetComponent<Animator>().SetTrigger("Uninspect");
+                infoAnimator.SetTrigger("Uninspect");
                 inspected = null;
             }
             // GetComponent<Animator>().SetBool("All Spawned", false);
@@ -262,31 +268,11 @@ namespace EcoBuilder.UI
         }
         public void SetProducersAvailable(bool available)
         {
-            if (available)
-            {
-                producerButton.interactable = true;
-                // GetComponent<Animator>().SetBool("All Spawned", false);
-            }
-            else
-            {
-                producerButton.interactable = false;
-                // if (consumerButton.interactable == false)
-                //     GetComponent<Animator>().SetBool("All Spawned", true);
-            }
+            producerButton.interactable = available;
         }
         public void SetConsumersAvailable(bool available)
         {
-            if (available)
-            {
-                consumerButton.interactable = true;
-                // GetComponent<Animator>().SetBool("All Spawned", false);
-            }
-            else
-            {
-                consumerButton.interactable = false;
-                // if (producerButton.interactable == false)
-                //     GetComponent<Animator>().SetBool("All Spawned", true);
-            }
+            consumerButton.interactable = available;
         }
 
         // for loading from level
@@ -311,11 +297,12 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubator.Unincubate();
-                GetComponent<Animator>().SetTrigger("Unincubate");
+                infoAnimator.SetTrigger("Unincubate");
             }
             else if (inspected != null)
             {
-                GetComponent<Animator>().SetTrigger("Uninspect");
+                infoAnimator.SetTrigger("Uninspect");
+                typeAnimator.SetBool("Visible", false);
             }
         }
 
