@@ -1603,8 +1603,8 @@ MonoBehaviour:
     congratulation: Well done! You have built your first ecosystem, using the same
       models that real researchers study every day. Try the remaining levels if you
       are up for a challenge!
-    numProducers: -1
-    numConsumers: -1
+    numProducers: 3
+    numConsumers: 4
     minEdges: -1
     maxEdges: -1
     minChain: -1
