@@ -42,7 +42,7 @@ namespace EcoBuilder.Model
             public double Interference { get; set; }
             public double Efficiency { get; set; }
 
-            public double Abundance { get; set; }
+            public double Abundance { get; set; } = 1; // init positive
 
             public Species(int idx)
             {
@@ -274,7 +274,6 @@ namespace EcoBuilder.Model
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
-            print(idx+" "+abundance);
             if (abundance <= 0)
             {
                 return 0;
@@ -289,7 +288,6 @@ namespace EcoBuilder.Model
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
-            print(res+":"+con+" "+flux);
             if (flux <= 0)
             {
                 return 0;

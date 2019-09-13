@@ -45,8 +45,8 @@ namespace EcoBuilder.UI
 			Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g.name);
 			Action fooo = ()=> Start();
 			inspector.OnSpawned += foo;
-			nodelink.OnEmptyPressed += fooo;
-			bar = ()=> { inspector.OnSpawned -= foo; nodelink.OnEmptyPressed -= fooo; };
+			nodelink.OnUnfocused += fooo;
+			bar = ()=> { inspector.OnSpawned -= foo; nodelink.OnUnfocused -= fooo; };
 		}
 		string firstSpeciesName;
 		void ExplainSpawn(string speciesName)

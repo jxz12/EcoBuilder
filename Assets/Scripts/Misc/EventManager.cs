@@ -17,19 +17,24 @@ namespace EcoBuilder
             ////////////////////////
             // hook up events
 
-            inspector.OnIncubated +=         ()=> nodelink.MoveLeft();
-            inspector.OnUnincubated +=       ()=> nodelink.MoveMiddle();
-            inspector.OnSpawned +=        (i,g)=> model.AddSpecies(i);
+            inspector.OnIncubated +=         ()=> nodelink.FullUnfocus();
+            inspector.OnUnincubated +=       ()=> print("TODO:");
             inspector.OnSpawned +=        (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnIsProducerSet +=  (i,b)=> model.SetSpeciesIsProducer(i,b);
+            inspector.OnSpawned +=        (i,g)=> model.AddSpecies(i);
+            // inspector.OnSpawned +=        (i,g)=> status.AddIdx(i);
+            inspector.OnDespawned +=        (i)=> nodelink.RemoveNode(i);
+            inspector.OnDespawned +=        (i)=> model.RemoveSpecies(i);
+            inspector.OnDespawned +=        (i)=> status.RemoveIdx(i);
+            ///////////////////////////
             inspector.OnIsProducerSet +=  (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
+            inspector.OnIsProducerSet +=  (i,b)=> model.SetSpeciesIsProducer(i,b);
             inspector.OnIsProducerSet +=  (i,b)=> status.AddType(i,b);
             inspector.OnSizeSet +=        (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=       (i,x)=> model.SetSpeciesInterference(i,x);
 
-
             nodelink.OnNodeFocused +=    (i)=> inspector.InspectSpecies(i);
-            nodelink.OnEmptyPressed +=    ()=> inspector.Uninspect();
+            nodelink.OnUnfocused +=       ()=> inspector.Uninspect();
+            nodelink.OnEmptyPressed +=    ()=> inspector.Unincubate();
             nodelink.OnEmptyPressed +=    ()=> status.ShowHelp(false);
             nodelink.OnLinkAdded +=    (i,j)=> model.AddInteraction(i,j);
             nodelink.OnLinkRemoved +=  (i,j)=> model.RemoveInteraction(i,j);
@@ -38,12 +43,6 @@ namespace EcoBuilder
             nodelink.OnConstraints +=     ()=> status.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=     ()=> status.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=     ()=> status.DisplayMaxLoop(nodelink.MaxLoop);
-            ///////////////////////////
-            print("TODO: move into inspector, with activation on strong-focus");
-            nodelink.OnNodeRemoved +=     (i)=> inspector.UnspawnSpecies(i);
-            nodelink.OnNodeRemoved +=     (i)=> model.RemoveSpecies(i);
-            nodelink.OnNodeRemoved +=     (i)=> status.RemoveIdx(i);
-
 
             model.OnEndangered +=  (i)=> nodelink.FlashNode(i);
             model.OnRescued +=     (i)=> nodelink.UnflashNode(i);
@@ -89,9 +88,9 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
-            
-            // TODO: this is a little hacky? It may have to be changed when super focus is added anyway
-            nodelink.Unfocus();
+
+            // TODO: bad practice, this may get called before spawn
+            inspector.OnSpawned += (i,g)=> nodelink.FocusNode(i);
         }
         void CompleteLevel()
         {

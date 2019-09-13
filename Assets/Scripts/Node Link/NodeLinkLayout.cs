@@ -17,7 +17,7 @@ namespace EcoBuilder.NodeLink
                 // get average of all positions, and center
                 Vector3 centroid;
 
-                if (focus == null)
+                if (focusedNode == null)
                 {
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
@@ -36,7 +36,7 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    centroid = focus.StressPos;
+                    centroid = focusedNode.StressPos;
 
                     nodesParent.localPosition =
                         Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up * centroid.y,
@@ -69,11 +69,11 @@ namespace EcoBuilder.NodeLink
             else
             {
                 nodesParent.localPosition =
-                    Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*maxHeight/2,
+                    Vector3.SmoothDamp(nodesParent.localPosition, -focusedNode.FocusPos,
                                        ref nodesVelocity, layoutSmoothTime);
                 graphParent.localPosition =
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
-                                       ref graphVelocity, layoutSmoothTime);
+                                    ref graphVelocity, layoutSmoothTime);
 
                 foreach (Node no in nodes)
                 {
