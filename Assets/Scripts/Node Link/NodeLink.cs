@@ -191,7 +191,7 @@ namespace EcoBuilder.NodeLink
         }
         public void SetIfNodeRemovable(int idx, bool removable)
         {
-            nodes[idx].Removable = removable;
+            // nodes[idx].Removable = removable;
             // if (removable)
             //     nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
             // else
@@ -241,17 +241,6 @@ namespace EcoBuilder.NodeLink
                     li.TileSpeed = minLinkFlow;
                 }
             }
-        }
-        public Tuple<List<int>, List<int>> GetLinkIndices()
-        {
-            var sources = new List<int>();
-            var targets = new List<int>();
-            foreach (var ij in links.IndexPairs)
-            {
-                sources.Add(ij.Item1);
-                targets.Add(ij.Item2);
-            }
-            return Tuple.Create(sources, targets);
         }
     }
 }

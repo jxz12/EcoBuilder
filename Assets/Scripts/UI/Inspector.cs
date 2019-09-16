@@ -25,11 +25,11 @@ namespace EcoBuilder.UI
         [SerializeField] Slider greedSlider;
 
         [SerializeField] Text nameText;
-        [SerializeField] Button refreshButton;
+        [SerializeField] Button refroveButton;
         [SerializeField] Animator infoAnimator, typeAnimator;
         
         [SerializeField] JonnyGenerator.JonnyGenerator factory;
-        // [SerializeField] Archie.Seed factory;
+        // [SerializeField] Archie.ArchieGenerator factory;
         [SerializeField] Incubator incubator;
 
         public class Species
@@ -43,6 +43,7 @@ namespace EcoBuilder.UI
 
             // TODO: separate this into greed and size?
             public bool Editable { get; set; } = true;
+            public bool Removable { get; set; } = true;
             public GameObject GObject { get; set; } = null;
 
             public Species(int idx, bool isProducer)
@@ -70,6 +71,7 @@ namespace EcoBuilder.UI
         }
 
         Dictionary<int, Species> spawnedSpecies = new Dictionary<int, Species>();
+        Dictionary<int, Species> graveyard = new Dictionary<int, Species>();
         int nextIdx = 0;
         Species incubated = null, inspected = null;
 
@@ -77,7 +79,7 @@ namespace EcoBuilder.UI
         {
             producerButton.onClick.AddListener(()=> IncubateNew(true));
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
-            refreshButton.onClick.AddListener(()=> RefreshIncubated());
+            refroveButton.onClick.AddListener(()=> RefreshOrRemove());
 
             SizeSliderCallback = x=> SetSize();
             GreedSliderCallback = x=> SetGreed();
@@ -99,6 +101,25 @@ namespace EcoBuilder.UI
             OnGreedSet.Invoke(toSpawn.Idx, toSpawn.Greediness);
             nextIdx += 1;
         }
+        void Despawn(Species toDespawn)
+        {
+            if (!spawnedSpecies.ContainsKey(toDespawn.Idx))
+            {
+                throw new Exception("idx not spawned");
+            }
+
+            if (inspected == toDespawn)
+            {
+                infoAnimator.SetTrigger("Uninspect");
+                inspected = null;
+            }
+            spawnedSpecies.Remove(toDespawn.Idx);
+            graveyard.Add(toDespawn.Idx, toDespawn);
+
+            // take back GameObject before nodelink destroys it
+            toDespawn.GObject.transform.SetParent(transform);
+            toDespawn.GObject.SetActive(false);
+        }
 
         void IncubateNew(bool isProducer)
         {
@@ -113,27 +134,47 @@ namespace EcoBuilder.UI
             }
             Species s = new Species(nextIdx, isProducer);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
+            s.Editable = true;
+            s.Removable = true;
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
 
             SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
             sizeSlider.interactable = true;
             greedSlider.interactable = true;
+            refroveButton.interactable = true;
 
             incubated = s;
             infoAnimator.SetTrigger("Incubate");
             typeAnimator.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
-        void RefreshIncubated()
+        void RefreshOrRemove()
         {
-            if (incubated == null)
-                throw new Exception("nothing incubated");
-
-            incubated.RerollSeed();
-            SetSlidersWithoutEventCallbacks(incubated.BodySize, incubated.Greediness);
-            factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
-            nameText.text = incubated.GObject.name;
+            if (incubated != null)
+            {
+                incubated.RerollSeed();
+                SetSlidersWithoutEventCallbacks(incubated.BodySize, incubated.Greediness);
+                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                nameText.text = incubated.GObject.name;
+            }
+            else if (inspected != null)
+            {
+                if (!inspected.Removable)
+                {
+                    throw new Exception("inspected not removable");
+                }
+                else
+                {
+                    int despawnedIdx = inspected.Idx;
+                    Despawn(inspected);
+                    OnDespawned.Invoke(despawnedIdx);
+                }
+            }
+            else
+            {
+                throw new Exception("nothing incubated or inspected");
+            }
         }
         void SpawnIncubated()
         {
@@ -141,11 +182,12 @@ namespace EcoBuilder.UI
                 throw new Exception("nothing incubated");
 
             Spawn(incubated);
-            infoAnimator.SetTrigger("Spawn");
-            typeAnimator.SetBool("Visible", true);
-            inspected = incubated;
+            int spawnedIdx = incubated.Idx;
             incubated = null;
             OnUnincubated.Invoke();
+
+            InspectSpecies(spawnedIdx);
+            typeAnimator.SetBool("Visible", true);
         }
 
         void SetSize()
@@ -221,16 +263,9 @@ namespace EcoBuilder.UI
             nameText.text = inspected.GObject.name;
             SetSlidersWithoutEventCallbacks(inspected.BodySize, inspected.Greediness);
 
-            if (inspected.Editable)
-            {
-                sizeSlider.interactable = true;
-                greedSlider.interactable = true;
-            }
-            else
-            {
-                sizeSlider.interactable = false;
-                greedSlider.interactable = false;
-            }
+            sizeSlider.interactable = greedSlider.interactable
+                                    = inspected.Editable;
+            refroveButton.interactable = inspected.Removable;
         }
         public void Unincubate()
         {
@@ -250,22 +285,6 @@ namespace EcoBuilder.UI
                 infoAnimator.SetTrigger("Uninspect");
             }
         }
-        private void DespawnSpecies(int idx)
-        {
-            if (!spawnedSpecies.ContainsKey(idx))
-            {
-                throw new Exception("idx not spawned");
-            }
-
-            if (inspected == spawnedSpecies[idx])
-            {
-                infoAnimator.SetTrigger("Uninspect");
-                inspected = null;
-            }
-            // GetComponent<Animator>().SetBool("All Spawned", false);
-
-            spawnedSpecies.Remove(idx);
-        }
         public void SetProducersAvailable(bool available)
         {
             producerButton.interactable = available;
@@ -276,7 +295,7 @@ namespace EcoBuilder.UI
         }
 
         // for loading from level
-        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable)
+        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable, bool removable=false)
         {
             if (inspected != null)
                 throw new Exception("somehow inspecting??");
@@ -287,11 +306,19 @@ namespace EcoBuilder.UI
 
             var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
             toSpawn.Editable = editable;
+            toSpawn.Removable = removable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
             Spawn(toSpawn);
             return toSpawn.Idx;
         }
+        public void Respawn(int idx)
+        {
+            Spawn(graveyard[idx]);
+            graveyard[idx].GObject.SetActive(true);
+            graveyard.Remove(idx);
+        }
+
         public void Hide()
         {
             if (incubated != null)
@@ -304,27 +331,6 @@ namespace EcoBuilder.UI
                 infoAnimator.SetTrigger("Uninspect");
                 typeAnimator.SetBool("Visible", false);
             }
-        }
-
-
-
-
-        // for saving to csv
-        public Tuple<List<int>, List<int>, List<float>, List<float>> GetSpeciesTraits()
-        {
-            var idxs = new List<int>();
-            var seeds = new List<int>();
-            var sizes = new List<float>();
-            var greeds = new List<float>();
-
-            foreach (Species s in spawnedSpecies.Values)
-            {
-                idxs.Add(s.Idx);
-                seeds.Add(s.RandomSeed);
-                sizes.Add(s.BodySize);
-                greeds.Add(s.Greediness);
-            }
-            return Tuple.Create(idxs, seeds, sizes, greeds);
         }
     }
 }

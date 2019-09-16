@@ -297,15 +297,14 @@ namespace EcoBuilder.Model
                 return (Mathf.Log(flux, 2)-logMinFlux) / (logMaxFlux-logMinFlux);
             }
         }
+        // public Tuple<List<string>, List<double>> GetParameterisation()
+        // {
+        //     var names = new List<string>()
+        //         { "r0","z0","a0","beta","p_v","p_d","e_p","e_c","kg_min","kg_max","a_ii_min","a_ii_max"};
+        //     var vals = new List<double>()
+        //         { r0,z0,a0,beta,p_v,p_d,e_p,e_c,kg_min,kg_max,a_ii_min,a_ii_max};
 
-        public Tuple<List<string>, List<double>> GetParameterisation()
-        {
-            var names = new List<string>()
-                { "r0","z0","a0","beta","p_v","p_d","e_p","e_c","kg_min","kg_max","a_ii_min","a_ii_max"};
-            var vals = new List<double>()
-                { r0,z0,a0,beta,p_v,p_d,e_p,e_c,kg_min,kg_max,a_ii_min,a_ii_max};
-
-            return Tuple.Create(names, vals);
-        }
+        //     return Tuple.Create(names, vals);
+        // }
     }
 }

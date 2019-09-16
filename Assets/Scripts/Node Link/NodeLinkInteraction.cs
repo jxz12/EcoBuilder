@@ -158,14 +158,14 @@ namespace EcoBuilder.NodeLink
             }
             float range = Mathf.PI * ((float)(right) / (right+left));
             float angle = 0;
-            foreach (Node no in consumers)
+            foreach (Node no in consumers.OrderBy(x=>-trophicLevels[x.Idx]))
             {
                 angle += 1f / (consumers.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
                               + focusedNode.FocusPos;
             }
             angle = 0;
-            foreach (Node no in resources)
+            foreach (Node no in resources.OrderBy(x=>trophicLevels[x.Idx]))
             {
                 angle -= 1f / (resources.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
@@ -173,7 +173,7 @@ namespace EcoBuilder.NodeLink
             }
             angle -= 1f / (resources.Count+1) * range;
             range = 2 * Mathf.PI * ((float)(left) / (right+left));
-            foreach (Node no in both)
+            foreach (Node no in both.OrderBy(x=>trophicLevels[x.Idx]))
             {
                 angle -= 1f / (both.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
@@ -304,7 +304,7 @@ namespace EcoBuilder.NodeLink
                 pressedNode = ClosestSnappedNode(ped);
                 if (pressedNode != null)
                 {
-                    // pressedNode.Outline(0);
+                    pressedNode.Outline(1);
                     tooltip.Enable();
                     tooltip.ShowInspect();
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position), true);
@@ -356,7 +356,14 @@ namespace EcoBuilder.NodeLink
                         FocusNode(pressedNode.Idx);
                         OnNodeFocused.Invoke(pressedNode.Idx);
 
-                        // pressedNode.Unoutline();
+                        if (pressedNode == focusedNode)
+                        {
+                            pressedNode.Outline(0);
+                        }
+                        else
+                        {
+                            pressedNode.Unoutline();
+                        }
                         pressedNode = null;
                         tooltip.Disable();
                     }
@@ -370,7 +377,14 @@ namespace EcoBuilder.NodeLink
                     FocusNode(pressedNode.Idx);
                     OnNodeFocused.Invoke(pressedNode.Idx);
 
-                    // pressedNode.Unoutline();
+                    if (pressedNode == focusedNode)
+                    {
+                        pressedNode.Outline(0);
+                    }
+                    else
+                    {
+                        pressedNode.Unoutline();
+                    }
                     pressedNode = null;
                     tooltip.Disable();
                 }
@@ -403,7 +417,6 @@ namespace EcoBuilder.NodeLink
                         dummyLink.Source = dummySource;
 
                         potentialLink = dummyLink;
-                        // potentialLink.Outline(0);
                     }
                     else
                     {
@@ -431,57 +444,81 @@ namespace EcoBuilder.NodeLink
                         || links[snappedNode.Idx, pressedNode.Idx].Removable))
                 {
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(snappedNode.transform.position));
-                    if (potentialSource != snappedNode)
+                    if (potentialSource != snappedNode) // if not same as previous
                     {
                         if (potentialSource != null)
                         {
-                            // potentialSource.Unoutline();
+                            if (potentialSource == focusedNode)
+                            {
+                                potentialSource.Outline(1);
+                            }
+                            else
+                            {
+                                potentialSource.Unoutline();
+                            }
                         }
                         potentialSource = snappedNode;
                     }
 
                     Link snappedLink = links[snappedNode.Idx, pressedNode.Idx];
-                    if (snappedLink == null)
+                    if (snappedLink == null) // link can be added
                     {
                         dummyLink.Source = snappedNode;
                         if (potentialLink != dummyLink)
                         {
-                            // potentialLink.Unoutline();
+                            potentialLink.Unoutline();
                             potentialLink = dummyLink;
+                            if (potentialSource == focusedNode)
+                            {
+                                potentialSource.Outline(1);
+                            }
+                            else
+                            {
+                                potentialSource.Unoutline();
+                            }
                         }
-                        // potentialSource.Outline(1);
-                        // potentialLink.Outline(1);
+                        pressedNode.Outline(1);
+                        potentialSource.Outline(1);
+                        potentialLink.Outline(1);
 
                         tooltip.ShowAddLink();
                     }
-                    else
+                    else // link can be deleted
                     {
                         if (potentialLink != snappedLink)
                         {
-                            // potentialLink.Unoutline();
-                            potentialLink = dummyLink;
+                            potentialLink.Unoutline();
                         }
+                        pressedNode.Outline(2);
                         dummyLink.Source = pressedNode; // hide dummyLink
-                        // potentialSource.Outline(2);
+                        potentialSource.Outline(2);
                         potentialLink = links[snappedNode.Idx, pressedNode.Idx];
-                        // potentialLink.Outline(2);
+                        potentialLink.Outline(2);
 
                         tooltip.ShowUnlink();
                     }
                 }
-                else
+                else // no snap
                 {
                     if (potentialSource != null)
                     {
-                        // potentialSource.Unoutline();
+                        if (potentialSource == focusedNode)
+                        {
+                            potentialSource.Outline(0);
+                        }
+                        else
+                        {
+                            potentialSource.Unoutline();
+                        }
                         potentialSource = null;
                     }
                     if (potentialLink != dummyLink)
                     {
-                        // potentialLink.Unoutline();
+                        potentialLink.Unoutline();
                         potentialLink = dummyLink;
                     }
-                    // potentialLink.Outline(0);
+                    pressedNode.Outline(1);
+                    potentialLink.Outline(1);
 
 
                     Vector3 screenPoint = ped.position;
@@ -537,17 +574,31 @@ namespace EcoBuilder.NodeLink
             {
                 if (pressedNode != null)
                 {
-                    // pressedNode.Unoutline();
+                    if (pressedNode == focusedNode)
+                    {
+                        pressedNode.Outline(0);
+                    }
+                    else
+                    {
+                        pressedNode.Unoutline();
+                    }
                     pressedNode = null;
 
                     if (potentialLink != null)
                     {
-                        // potentialLink.Unoutline();
+                        potentialLink.Unoutline();
                         potentialLink = null;
                     }
                     if (potentialSource != null)
                     {
-                        // potentialSource.Unoutline();
+                        if (potentialSource == focusedNode)
+                        {
+                            potentialSource.Outline(0);
+                        }
+                        else
+                        {
+                            potentialSource.Unoutline();
+                        }
                         potentialSource = null;
                     }
                     if (dummyLink != null)

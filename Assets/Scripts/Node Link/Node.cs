@@ -14,7 +14,6 @@ namespace EcoBuilder.NodeLink
         public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
-        public bool Removable { get; set; } = true;
 
         public Vector3 velocity;  // for public use with Vector3.SmoothDamp
 
@@ -59,17 +58,21 @@ namespace EcoBuilder.NodeLink
         }
         public void Outline(int colourIdx=0)
         {
-            var outline = GetComponent<cakeslice.Outline>();
+            // var outline = GetComponent<cakeslice.Outline>();
+            var outline = shape.GetComponent<cakeslice.Outline>();
             if (outline == null)
             {
-                outline = gameObject.AddComponent<cakeslice.Outline>();
+                // outline = gameObject.AddComponent<cakeslice.Outline>();
+                outline = shape.AddComponent<cakeslice.Outline>();
             }
             outline.color = colourIdx;
         }
         public void Unoutline()
         {
-            if (GetComponent<cakeslice.Outline>() != null)
-                Destroy(GetComponent<cakeslice.Outline>());
+            // if (GetComponent<cakeslice.Outline>() != null)
+            //     Destroy(GetComponent<cakeslice.Outline>());
+            if (shape.GetComponent<cakeslice.Outline>() != null)
+                Destroy(shape.GetComponent<cakeslice.Outline>());
         }
         bool flashing = false;
         public void Flash(bool isFlashing)
@@ -82,12 +85,18 @@ namespace EcoBuilder.NodeLink
             if ((Time.time*60) % 60 < 30 && flashing)
             {
                 // GetComponent<MeshRenderer>().material.color = new Color(1,.01f,.01f,1);
-                GetComponent<MeshRenderer>().enabled = true;
+                // GetComponent<MeshRenderer>().enabled = false;
+                // shape.SetActive(false);
+                // shape.SetActive(false);
+                shape.GetComponent<MeshRenderer>().enabled = false;
             }
             else
             {
                 // GetComponent<MeshRenderer>().material.color = new Color(.01f,.3f,1,.3f);
-                GetComponent<MeshRenderer>().enabled = false;
+                // GetComponent<MeshRenderer>().enabled = true;
+                // shape.SetActive(true);
+                if (shape != null)
+                    shape.GetComponent<MeshRenderer>().enabled = true;
             }
         }
         // public void Shake(bool isShaking)
