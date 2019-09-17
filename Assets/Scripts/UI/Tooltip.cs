@@ -52,6 +52,10 @@ namespace EcoBuilder.UI
 		{
 			tip.sprite = unlinkSprite;
 		}
+		public void ShowAddLink()
+		{
+			tip.sprite = addlinkSprite;
+		}
 		public void ShowBanned()
 		{
 			tip.sprite = bannedSprite;

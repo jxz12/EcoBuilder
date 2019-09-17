@@ -10,12 +10,12 @@ namespace EcoBuilder.NodeLink
         public event Action<int> OnNodeFocused;
         public event Action OnUnfocused;
         public event Action OnEmptyPressed;
-        // public event Action<int, int> OnLinked;
-        // public event Action<int, int> OnUnlinked;
+        public event Action OnConstraints;
 
         // called when user does something
         public event Action<int, int> OnUserLinked;
         public event Action<int, int> OnUserUnlinked;
+
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
@@ -51,43 +51,6 @@ namespace EcoBuilder.NodeLink
             if (!Input.anyKey && Input.touchCount==0)
                 RotateWithMomentum();
         }
-        bool constraintsSolved = true, calculating = false;
-        public bool Ready { get { return constraintsSolved && !calculating; } }
-        private void LateUpdate()
-        {
-            if (!constraintsSolved && !calculating && nodes.Count>0)
-            {
-                ///////////////////////////////
-                // do constraint calculations
-
-                constraintsSolved = true;
-                etaIteration = 0; // reset SGD
-
-                Disjoint = CheckDisjoint();
-                NumEdges = links.Count();
-
-                HashSet<int> basal = BuildTrophicEquations();
-                var heights = HeightBFS(basal);
-                LaplacianDetZero = (heights.Count != nodes.Count);
-                // MaxTrophic done in Update()
-
-                if (superfocused)
-                {
-                    SuperFocus();
-                }
-
-                MaxChain = 0;
-                foreach (int height in heights.Values)
-                    MaxChain = Math.Max(height, MaxChain);
-
-                #if UNITY_WEBGL
-                    ConstraintsSync();
-                #else
-                    ConstraintsAsync();
-                #endif
-            }
-        }
-
 
 
         ///////////////////////////////////
@@ -133,7 +96,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
             toBFS.Enqueue(idx);
-            constraintsSolved = false;
+            ConstraintsSolved = false;
         }
 
         public void RemoveNode(int idx)
@@ -164,8 +127,7 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
-
-            constraintsSolved = false;
+            ConstraintsSolved = false;
         }
 
         // public void AddNode(int idx)
@@ -184,7 +146,7 @@ namespace EcoBuilder.NodeLink
         //     adjacency[idx] = new HashSet<int>();
         //     toBFS.Enqueue(idx);
 
-        //     constraintsSolved = false;
+        //     ConstraintsSolved = false;
         // }
         // public void RemoveNode(int idx)
         // {
@@ -219,7 +181,7 @@ namespace EcoBuilder.NodeLink
         //     trophicA.RemoveAt(idx);
         //     trophicLevels.RemoveAt(idx);
 
-        //     constraintsSolved = false;
+        //     ConstraintsSolved = false;
         // }
 
         public void AddLink(int i, int j)
@@ -235,7 +197,7 @@ namespace EcoBuilder.NodeLink
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            constraintsSolved = false;
+            ConstraintsSolved = false;
             // OnLinked.Invoke(i, j);
         }
         public void RemoveLink(int i, int j)
@@ -252,7 +214,7 @@ namespace EcoBuilder.NodeLink
                 links[j,i].Curved = false;
             }
 
-            constraintsSolved = false;
+            ConstraintsSolved = false;
             // OnUnlinked.Invoke(i, j);
         }
 
@@ -290,7 +252,14 @@ namespace EcoBuilder.NodeLink
 
         public IEnumerable<int> GetTargets(int source)
         {
-            return links.GetColumnIndicesInRow(source);
+            foreach (int target in links.GetColumnIndicesInRow(source))
+            {
+                // FIXME: ugly
+                if (adjacency.ContainsKey(target))
+                {
+                    yield return target;
+                }
+            }
         }
 
         [SerializeField] float minNodeSize, maxNodeSize;

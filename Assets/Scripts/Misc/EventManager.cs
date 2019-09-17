@@ -23,6 +23,14 @@ namespace EcoBuilder
                     model.EquilibriumAsync(nodelink.GetTargets);
                 #endif
             }
+            if (!nodelink.ConstraintsSolved && !nodelink.IsCalculating)
+            {
+                #if UNITY_WEBGL
+                    nodelink.ConstraintsSync();
+                #else
+                    nodelink.ConstraintsAsync();
+                #endif
+            }
         }
 
         void Start()
@@ -36,13 +44,13 @@ namespace EcoBuilder
             inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
+            inspector.OnDespawned +=       (i)=> status.RemoveIdx(i);
             inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
             inspector.OnIsProducerSet += (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
             inspector.OnIsProducerSet += (i,b)=> model.SetSpeciesIsProducer(i,b);
             inspector.OnIsProducerSet += (i,b)=> status.AddType(i,b);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
-            inspector.OnDespawned +=       (i)=> status.RemoveIdx(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
