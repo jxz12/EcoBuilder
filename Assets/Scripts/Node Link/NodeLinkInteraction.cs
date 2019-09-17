@@ -224,30 +224,15 @@ namespace EcoBuilder.NodeLink
         void Zoom(float amount)
         {
             float zoom = amount * zoomMultiplier;
+            if (Input.touchCount == 2)
+            {
+                zoom *= zoomMultiplier; // TODO: not good
+            }
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
             graphParent.localScale *= 1 + zoom;
         }
-        void Pan(Vector2 amount)
-        {
-            Vector2 toPan = amount * panMultiplier;
-            GetComponent<RectTransform>().anchoredPosition += toPan;
-        }
-
-        // IEnumerator ResetPan(Vector2 goalPan, float duration)
-        // {
-        //     var rt = GetComponent<RectTransform>();
-        //     Vector2 startPan = rt.anchoredPosition;
-        //     float startTime = Time.time;
-        //     while (Time.time < startTime + duration)
-        //     {
-        //         rt.anchoredPosition = Vector3.Lerp(startPan, goalPan, (Time.time-startTime)/duration);
-        //         // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
-        //         yield return null;
-        //     }
-        //     rt.anchoredPosition = goalPan;
-        // }
         IEnumerator ResetZoom(Vector3 endZoom, float duration)
         {
             Vector3 startZoom = graphParent.localScale;
@@ -265,6 +250,24 @@ namespace EcoBuilder.NodeLink
             }
             graphParent.localScale = endZoom;
         }
+        // void Pan(Vector2 amount)
+        // {
+        //     Vector2 toPan = amount * panMultiplier;
+        //     GetComponent<RectTransform>().anchoredPosition += toPan;
+        // }
+        // IEnumerator ResetPan(Vector2 goalPan, float duration)
+        // {
+        //     var rt = GetComponent<RectTransform>();
+        //     Vector2 startPan = rt.anchoredPosition;
+        //     float startTime = Time.time;
+        //     while (Time.time < startTime + duration)
+        //     {
+        //         rt.anchoredPosition = Vector3.Lerp(startPan, goalPan, (Time.time-startTime)/duration);
+        //         // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
+        //         yield return null;
+        //     }
+        //     rt.anchoredPosition = goalPan;
+        // }
 
         void Rotate(Vector2 amount)
         {
@@ -303,13 +306,12 @@ namespace EcoBuilder.NodeLink
                     pressedNode.Outline(1);
                     tooltip.Enable();
                     tooltip.ShowInspect();
-                    tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position), true);
+                    tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
                 }
             }
         }
         public void OnPointerUp(PointerEventData ped)
         {
-            // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 PauseLayout(false);
@@ -318,7 +320,6 @@ namespace EcoBuilder.NodeLink
                 {
                     if (pressedNode != null)
                     {
-                        // pressedNode.Shake(false);
                         FocusNode(pressedNode.Idx);
                         OnNodeFocused.Invoke(pressedNode.Idx);
 
@@ -375,12 +376,10 @@ namespace EcoBuilder.NodeLink
         Link potentialLink;
         public void OnBeginDrag(PointerEventData ped)
         {
-            // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 if (pressedNode != null)
                 {
-                    // pressedNode.Shake(false);
                     tooltip.Enable();
 
                     if (pressedNode.CanBeTarget)
@@ -396,7 +395,7 @@ namespace EcoBuilder.NodeLink
                     }
                     else
                     {
-                        tooltip.ShowNoLink();
+                        tooltip.ShowBanned();
                     }
                      
                 }
@@ -409,7 +408,6 @@ namespace EcoBuilder.NodeLink
         }
         public void OnDrag(PointerEventData ped)
         {
-            // if (ped.pointerId==-1 || Input.touchCount==1 && ped.pointerId==0)
             if ((ped.pointerId==-1 || ped.pointerId==0)
                 && pressedNode!=null && pressedNode.CanBeTarget)
             {
@@ -457,7 +455,7 @@ namespace EcoBuilder.NodeLink
                         potentialSource.Outline(1);
                         potentialLink.Outline(1);
 
-                        tooltip.ShowAddLink();
+                        tooltip.ShowLink();
                     }
                     else // link can be deleted
                     {
@@ -505,14 +503,7 @@ namespace EcoBuilder.NodeLink
                     if (snappedNode!=null && snappedNode!=pressedNode)
                     {
                         dummyLink.Source = pressedNode; // hide dummyLink
-                        if (links[snappedNode.Idx, pressedNode.Idx] == null)
-                        {
-                            tooltip.ShowNoAddLink();
-                        }
-                        else
-                        {
-                            tooltip.ShowNoUnlink();
-                        }
+                        tooltip.ShowBanned();
                     }
                     else
                     {
@@ -527,7 +518,7 @@ namespace EcoBuilder.NodeLink
                 if (ped.pointerId == -1)
                     Rotate(ped.delta);
                 else if (Input.touchCount == 1)
-                    Rotate(ped.delta * .5f); // TODO: magic number
+                    Rotate(ped.delta * rotationMultiplier);
             }
             if (Input.touchCount == 2) // if pinch/pan
             {
@@ -536,8 +527,8 @@ namespace EcoBuilder.NodeLink
 
                 float dist = (t1.position - t2.position).magnitude;
                 float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                Zoom(.05f * (dist - prevDist)); // TODO: magic number
-                // Pan(.5f * (t1.deltaPosition + t2.deltaPosition) / 2);
+                Zoom(dist - prevDist);
+                // Pan((t1.deltaPosition + t2.deltaPosition) / 2);
             }
             if (ped.pointerId == -3) // or middle click
             {
@@ -649,15 +640,11 @@ namespace EcoBuilder.NodeLink
                     Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
 
                     // if the click is within the clickable radius
-                    if ((ped.position-screenPos).sqrMagnitude < radius)
+                    float dist = (ped.position-screenPos).sqrMagnitude;
+                    if (dist < radius && dist < closestDist)
                     {
-                        // choose the node closer to the screen
-                        float dist = (Camera.main.transform.position - node.transform.position).sqrMagnitude;
-                        if (dist < closestDist)
-                        {
-                            closest = node;
-                            closestDist = dist;
-                        }
+                        closest = node;
+                        closestDist = dist;
                     }
                 }
                 return closest;

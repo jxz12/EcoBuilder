@@ -13,37 +13,45 @@ namespace EcoBuilder
         [SerializeField] Model.Model model;
         [SerializeField] MoveRecorder recorder;
 
+        void LateUpdate()
+        {
+            if (!model.AtEquilibrium && !model.IsCalculating)
+            {
+                #if UNITY_WEBGL
+                    model.EquilibriumSync(nodelink.GetTargets);
+                #else
+                    model.EquilibriumAsync(nodelink.GetTargets);
+                #endif
+            }
+        }
+
         void Start()
         {
             ///////////////////////////////////
             // hook up events between objects
 
-            inspector.OnIncubated +=   ()=> nodelink.FullUnfocus();
-            inspector.OnUnincubated += ()=> print("TODO:");
-            inspector.OnSpawned +=    (i)=> nodelink.AddNode(i);
-            inspector.OnSpawned +=    (i)=> model.AddSpecies(i);
-            inspector.OnDespawned +=  (i)=> nodelink.RemoveNode(i);
-            inspector.OnDespawned +=  (i)=> model.RemoveSpecies(i);
-            inspector.OnDespawned +=  (i)=> status.RemoveIdx(i);
-            ///////////////////////////
-            inspector.OnShaped +=   (i,g)=> nodelink.ShapeNode(i,g);
+            inspector.OnIncubated +=        ()=> nodelink.FullUnfocus();
+            inspector.OnUnincubated +=      ()=> print("TODO:");
+            inspector.OnSpawned +=         (i)=> nodelink.AddNode(i);
+            inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
+            inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
+            inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
+            inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
             inspector.OnIsProducerSet += (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
             inspector.OnIsProducerSet += (i,b)=> model.SetSpeciesIsProducer(i,b);
             inspector.OnIsProducerSet += (i,b)=> status.AddType(i,b);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
+            inspector.OnDespawned +=       (i)=> status.RemoveIdx(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
             nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
-            nodelink.OnLinked +=    (i,j)=> model.AddInteraction(i,j);
-            nodelink.OnUnlinked +=  (i,j)=> model.RemoveInteraction(i,j);
-            ///////////////////////////
-            nodelink.OnConstraints += ()=> status.DisplayDisjoint(nodelink.Disjoint);
-            nodelink.OnConstraints += ()=> status.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnConstraints += ()=> status.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnConstraints += ()=> status.DisplayMaxLoop(nodelink.MaxLoop);
+            nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
+            nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
+            nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
+            nodelink.OnConstraints +=  ()=> status.DisplayMaxLoop(nodelink.MaxLoop);
 
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
@@ -56,9 +64,7 @@ namespace EcoBuilder
             status.OnConsumersAvailable += (b)=> inspector.SetConsumersAvailable(b);
             status.OnLevelCompleted     +=  ()=> CompleteLevel();
 
-            ///////////////////////////
-            // set up data collection
-
+            // data collection
             inspector.OnUserSpawned +=   (i)=> nodelink.FocusNode(i);
             inspector.OnUserSpawned +=   (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned += (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
@@ -88,6 +94,7 @@ namespace EcoBuilder
                     level.Details.sizes[i],
                     level.Details.greeds[i],
                     level.Details.randomSeeds[i],
+                    level.Details.editables[i], // TODO: split into two here
                     level.Details.editables[i]);
                 inspector.SetSpeciesRemovable(i, false);
                 if (newIdx != i)

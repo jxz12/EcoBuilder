@@ -79,8 +79,8 @@ namespace EcoBuilder.UI
 
 			bar();
 			Action<int, int> foo = (i,j)=> ExplainFinishFlag();
-			nodelink.OnLinked += foo;
-			bar = ()=> nodelink.OnLinked -= foo;
+			nodelink.OnUserLinked += foo;
+			bar = ()=> nodelink.OnUserLinked -= foo;
 		}
 		void ExplainFinishFlag()
 		{

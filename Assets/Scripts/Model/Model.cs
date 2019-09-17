@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 // for heavy calculations
 using System.Threading.Tasks;
 
@@ -26,8 +27,8 @@ namespace EcoBuilder.Model
                e_p = 0.2,          // plant efficiency
                e_c = 0.5,          // animal efficiency
 
-               kg_min =   1e-3,     // min body size
-               kg_max =   1e3       // max body size
+               kg_min = 1e-3,     // min body size
+               kg_max = 1e3       // max body size
                ;
 
         double a_ii_min, a_ii_max;  // calculated at runtime
@@ -106,20 +107,31 @@ namespace EcoBuilder.Model
             );
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
+        Dictionary<Species, int> speciesToIdx = new Dictionary<Species, int>();
 
         public void AddSpecies(int idx)
         {
+            if (idxToSpecies.ContainsKey(idx))
+                throw new Exception("already contains idx " + idx);
+
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
+
             idxToSpecies.Add(idx, newSpecies);
-            equilibriumSolved = false;
+            speciesToIdx.Add(newSpecies, idx);
+            AtEquilibrium = false;
         }
         public void RemoveSpecies(int idx)
         {
+            if (!idxToSpecies.ContainsKey(idx))
+                throw new Exception("does not contain idx " + idx);
+
             Species toRemove = idxToSpecies[idx];
             simulation.RemoveSpecies(toRemove);
+
             idxToSpecies.Remove(idx);
-            equilibriumSolved = false;
+            speciesToIdx.Remove(toRemove);
+            AtEquilibrium = false;
         }
         static double GetOnLogScale(double normalised, double minVal, double maxVal)
         {
@@ -141,7 +153,7 @@ namespace EcoBuilder.Model
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
             s.Efficiency = s.IsProducer? e_p : e_c;
 
-            equilibriumSolved = false;
+            AtEquilibrium = false;
         }
         public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
@@ -151,37 +163,14 @@ namespace EcoBuilder.Model
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
 
-            equilibriumSolved = false;
+            AtEquilibrium = false;
         }
         public void SetSpeciesInterference(int idx, float greedNormalised)
         {
             idxToSpecies[idx].Interference = -GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
 
-            equilibriumSolved = false;
+            AtEquilibrium = false;
         }
-
-        public void AddInteraction(int resource, int consumer)
-        {
-            if (resource == consumer)
-                throw new Exception("can't eat itself");
-
-            Species res = idxToSpecies[resource], con = idxToSpecies[consumer];
-            simulation.AddInteraction(res, con);
-            equilibriumSolved = false;
-        }
-        public void RemoveInteraction(int resource, int consumer)
-        {
-            if (resource == consumer)
-                throw new Exception("can't eat itself");
-
-            Species res = idxToSpecies[resource], con = idxToSpecies[consumer];
-            simulation.RemoveInteraction(res, con);
-            equilibriumSolved = false;
-        }
-
-
-
-
 
 
 
@@ -201,26 +190,17 @@ namespace EcoBuilder.Model
         public float TotalAbundance { get; private set; } = 0;
         public float Complexity { get; private set; } = 0;
 
-        bool equilibriumSolved = true, calculating = false;
-        public bool Ready { get { return equilibriumSolved && !calculating; } }
-        void LateUpdate()
-        {
-            if (!equilibriumSolved && !calculating)// && idxToSpecies.Count>0)
-            {
-                equilibriumSolved = true;
+        public bool Ready { get { return AtEquilibrium && !IsCalculating; } }
 
-                #if UNITY_WEBGL
-                    EquilibriumSync();
-                #else
-                    EquilibriumAsync();
-                #endif
-            }
-        }
-
-        async void EquilibriumAsync()
+        public bool AtEquilibrium { get; private set; } = true;
+        public bool IsCalculating { get; private set; } = false;
+        public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
-            calculating = true;
-            Feasible = await Task.Run(() => simulation.SolveFeasibility());
+            AtEquilibrium = true;
+            IsCalculating = true;
+            Feasible = await Task.Run(() => simulation.SolveFeasibility(
+                s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i])));
+
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
@@ -232,12 +212,16 @@ namespace EcoBuilder.Model
 
             ShowAbundanceWarnings();
 
-            calculating = false;
+            IsCalculating = false;
             OnEquilibrium.Invoke();
         }
-        void EquilibriumSync()
+
+        public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
-            Feasible = simulation.SolveFeasibility();
+            AtEquilibrium = true;
+            Feasible = simulation.SolveFeasibility(
+                s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]));
+
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
@@ -297,14 +281,5 @@ namespace EcoBuilder.Model
                 return (Mathf.Log(flux, 2)-logMinFlux) / (logMaxFlux-logMinFlux);
             }
         }
-        // public Tuple<List<string>, List<double>> GetParameterisation()
-        // {
-        //     var names = new List<string>()
-        //         { "r0","z0","a0","beta","p_v","p_d","e_p","e_c","kg_min","kg_max","a_ii_min","a_ii_max"};
-        //     var vals = new List<double>()
-        //         { r0,z0,a0,beta,p_v,p_d,e_p,e_c,kg_min,kg_max,a_ii_min,a_ii_max};
-
-        //     return Tuple.Create(names, vals);
-        // }
     }
 }

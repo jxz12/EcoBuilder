@@ -16,7 +16,6 @@ namespace EcoBuilder.NodeLink
         public bool Disjoint { get; private set; } = false;
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
-        // public float MaxTrophic { get; private set; } = 0;
         public int MaxChain { get; private set; } = 0;
         public int MaxLoop { get; private set; } = 0;
         async void ConstraintsAsync()
