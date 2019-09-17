@@ -8,7 +8,7 @@ namespace EcoBuilder.UI
     public class Incubator : MonoBehaviour,
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
-        public event Action OnSpawned;
+        public event Action OnDropped;
         // public event Action<bool> OnDroppable;
 
         [SerializeField] RectTransform incubatedParent;
@@ -74,7 +74,7 @@ namespace EcoBuilder.UI
         {
             if (dragging && ped.pointerCurrentRaycast.gameObject == dropZone.gameObject)
             {
-                OnSpawned.Invoke();
+                OnDropped.Invoke();
                 GetComponent<Animator>().SetTrigger("Spawn");
             }
         }

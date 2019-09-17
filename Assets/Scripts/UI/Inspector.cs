@@ -10,10 +10,11 @@ namespace EcoBuilder.UI
     public class Inspector : MonoBehaviour
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
-        public event Action<int, GameObject> OnSpawned;
+        public event Action<int, GameObject> OnShaped;
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
+        public event Action<int> OnSpawned;
         public event Action<int> OnDespawned;
 
         public event Action OnIncubated;
@@ -21,12 +22,14 @@ namespace EcoBuilder.UI
 
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
+        [SerializeField] Button undoButton;
+        [SerializeField] Button redoButton;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
 
         [SerializeField] Text nameText;
         [SerializeField] Button refroveButton;
-        [SerializeField] Animator infoAnimator, typeAnimator;
+        [SerializeField] Animator movesAnim, traitsAnim, typesAnim;
         
         [SerializeField] JonnyGenerator.JonnyGenerator factory;
         // [SerializeField] Archie.ArchieGenerator factory;
@@ -86,7 +89,7 @@ namespace EcoBuilder.UI
             sizeSlider.onValueChanged.AddListener(SizeSliderCallback);
             greedSlider.onValueChanged.AddListener(GreedSliderCallback);
 
-            incubator.OnSpawned += ()=> SpawnIncubated();
+            incubator.OnDropped += ()=> SpawnIncubated();
         }
         UnityAction<float> SizeSliderCallback, GreedSliderCallback;
 
@@ -94,7 +97,7 @@ namespace EcoBuilder.UI
         void Spawn(Species toSpawn)
         {
             spawnedSpecies[toSpawn.Idx] = toSpawn;
-            OnSpawned.Invoke(toSpawn.Idx, toSpawn.GObject); // must be invoked first
+            OnShaped.Invoke(toSpawn.Idx, toSpawn.GObject); // must be invoked first
 
             OnIsProducerSet.Invoke(toSpawn.Idx, toSpawn.IsProducer);
             OnSizeSet.Invoke(toSpawn.Idx, toSpawn.BodySize);
@@ -103,16 +106,6 @@ namespace EcoBuilder.UI
         }
         void Despawn(Species toDespawn)
         {
-            if (!spawnedSpecies.ContainsKey(toDespawn.Idx))
-            {
-                throw new Exception("idx not spawned");
-            }
-
-            if (inspected == toDespawn)
-            {
-                infoAnimator.SetTrigger("Uninspect");
-                inspected = null;
-            }
             spawnedSpecies.Remove(toDespawn.Idx);
             graveyard.Add(toDespawn.Idx, toDespawn);
 
@@ -145,11 +138,11 @@ namespace EcoBuilder.UI
             refroveButton.interactable = true;
 
             incubated = s;
-            infoAnimator.SetTrigger("Incubate");
-            typeAnimator.SetBool("Visible", false);
+            traitsAnim.SetTrigger("Incubate");
+            typesAnim.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
-        void RefreshOrRemove()
+        void RefreshOrRemove() // only called on inspected or incubated
         {
             if (incubated != null)
             {
@@ -166,9 +159,10 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    int despawnedIdx = inspected.Idx;
                     Despawn(inspected);
-                    OnDespawned.Invoke(despawnedIdx);
+                    OnDespawned.Invoke(inspected.Idx); // must be invoked last
+                    inspected = null;
+                    traitsAnim.SetTrigger("Uninspect");
                 }
             }
             else
@@ -184,10 +178,12 @@ namespace EcoBuilder.UI
             Spawn(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
+
             OnUnincubated.Invoke();
+            OnSpawned.Invoke(spawnedIdx);
 
             InspectSpecies(spawnedIdx);
-            typeAnimator.SetBool("Visible", true);
+            typesAnim.SetBool("Visible", true);
         }
 
         void SetSize()
@@ -234,26 +230,18 @@ namespace EcoBuilder.UI
 
 
 
-
-
-
-
-
-
-
-
         /////////////////////
-        // external stuff
+        // public stuff
 
         public void InspectSpecies(int idx)
         {
             if (inspected == null)
             {
-                infoAnimator.SetTrigger("Inspect");
+                traitsAnim.SetTrigger("Inspect");
             }
             if (incubated != null)
             {
-                typeAnimator.SetBool("Visible", true);
+                typesAnim.SetBool("Visible", true);
                 incubator.Unincubate();
                 incubated = null;
                 OnUnincubated.Invoke();
@@ -273,8 +261,8 @@ namespace EcoBuilder.UI
             {
                 incubator.Unincubate();
                 incubated = null;
-                infoAnimator.SetTrigger("Unincubate");
-                typeAnimator.SetBool("Visible", true);
+                traitsAnim.SetTrigger("Unincubate");
+                typesAnim.SetBool("Visible", true);
             }
         }
         public void Uninspect()
@@ -282,7 +270,7 @@ namespace EcoBuilder.UI
             if (inspected != null)
             {
                 inspected = null;
-                infoAnimator.SetTrigger("Uninspect");
+                traitsAnim.SetTrigger("Uninspect");
             }
         }
         public void SetProducersAvailable(bool available)
@@ -291,6 +279,7 @@ namespace EcoBuilder.UI
         }
         public void SetConsumersAvailable(bool available)
         {
+            print(available);
             consumerButton.interactable = available;
         }
 
@@ -312,8 +301,26 @@ namespace EcoBuilder.UI
             Spawn(toSpawn);
             return toSpawn.Idx;
         }
-        public void Respawn(int idx)
+        // for un/redo
+        public void DespawnSpecies(int idx)
         {
+            if (!spawnedSpecies.ContainsKey(idx))
+            {
+                throw new Exception("idx not spawned");
+            }
+            if (spawnedSpecies[idx] == inspected)
+            {
+                traitsAnim.SetTrigger("Uninspect");
+                inspected = null;
+            }
+            Despawn(spawnedSpecies[idx]);
+        }
+        public void RespawnSpecies(int idx)
+        {
+            if (!graveyard.ContainsKey(idx))
+            {
+                throw new Exception("idx not in graveyard");
+            }
             Spawn(graveyard[idx]);
             graveyard[idx].GObject.SetActive(true);
             graveyard.Remove(idx);
@@ -324,12 +331,12 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubator.Unincubate();
-                infoAnimator.SetTrigger("Unincubate");
+                traitsAnim.SetTrigger("Unincubate");
             }
             else if (inspected != null)
             {
-                infoAnimator.SetTrigger("Uninspect");
-                typeAnimator.SetBool("Visible", false);
+                traitsAnim.SetTrigger("Uninspect");
+                typesAnim.SetBool("Visible", false);
             }
         }
     }

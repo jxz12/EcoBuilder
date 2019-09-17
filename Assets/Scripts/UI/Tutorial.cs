@@ -44,9 +44,9 @@ namespace EcoBuilder.UI
 			bar();
 			Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g.name);
 			Action fooo = ()=> Start();
-			inspector.OnSpawned += foo;
+			inspector.OnShaped += foo;
 			nodelink.OnUnfocused += fooo;
-			bar = ()=> { inspector.OnSpawned -= foo; nodelink.OnUnfocused -= fooo; };
+			bar = ()=> { inspector.OnShaped -= foo; nodelink.OnUnfocused -= fooo; };
 		}
 		string firstSpeciesName;
 		void ExplainSpawn(string speciesName)
@@ -63,8 +63,8 @@ namespace EcoBuilder.UI
 
 			bar();
 			Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g.name);
-			inspector.OnSpawned += foo;
-			bar = ()=> inspector.OnSpawned -= foo;
+			inspector.OnShaped += foo;
+			bar = ()=> inspector.OnShaped -= foo;
 		}
 		void ExplainInteraction(string speciesName)
 		{

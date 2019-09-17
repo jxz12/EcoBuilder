@@ -11,20 +11,19 @@ namespace EcoBuilder
         [SerializeField] UI.Tutorial tutorial;
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
-
-        Recorder recorder = new Recorder();
+        [SerializeField] MoveRecorder recorder;
 
         void Start()
         {
-            ////////////////////////
-            // hook up events
+            ///////////////////////////////////
+            // hook up events between objects
 
             inspector.OnIncubated +=         ()=> nodelink.FullUnfocus();
             inspector.OnUnincubated +=       ()=> print("TODO:");
-            inspector.OnSpawned +=        (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnSpawned +=        (i,g)=> model.AddSpecies(i);
-            inspector.OnSpawned +=        (i,g)=> recorder.RecordSpeciesSpawn(i,x=>);
-            // inspector.OnSpawned +=        (i,g)=> status.AddIdx(i);
+            inspector.OnShaped +=         (i,g)=> nodelink.AddNode(i,g);
+            inspector.OnShaped +=         (i,g)=> model.AddSpecies(i);
+            // inspector.OnShaped +=        (i,g)=> status.AddIdx(i);
+            inspector.OnSpawned +=          (i)=> nodelink.FocusNode(i);
             inspector.OnDespawned +=        (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=        (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=        (i)=> status.RemoveIdx(i);
@@ -57,6 +56,11 @@ namespace EcoBuilder
             status.OnProducersAvailable += (b)=> inspector.SetProducersAvailable(b);
             status.OnConsumersAvailable += (b)=> inspector.SetConsumersAvailable(b);
             status.OnLevelCompleted     +=  ()=> CompleteLevel();
+
+            ///////////////////////////
+            // set up data collection
+            inspector.OnSpawned +=   (i)=> recorder.RecordSpeciesSpawn(i, inspector.DespawnSpecies, inspector.RespawnSpecies);
+            inspector.OnDespawned += (i)=> recorder.RecordSpeciesDespawn(i, inspector.RespawnSpecies, inspector.DespawnSpecies);
 
 
             ///////////////////
@@ -92,8 +96,6 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
 
-            // TODO: bad practice, this may get called before spawn
-            inspector.OnSpawned += (i,g)=> nodelink.FocusNode(i);
         }
         void CompleteLevel()
         {
@@ -101,16 +103,7 @@ namespace EcoBuilder
             nodelink.Freeze();
             status.Confetti();
             recorder.Record();
-
-            // GameManager.Instance.SavePlayedLevel(status.NumStars, model.TotalFlux);
-
-            // var traits = inspector.GetSpeciesTraits();
-            // var indices = nodelink.GetLinkIndices();
-            // var param = model.GetParameterisation();
-
-            // GameManager.Instance.SaveFoodWebToCSV(traits.Item1, traits.Item2, traits.Item3, traits.Item4,
-            //                                       indices.Item1, indices.Item2,
-            //                                       param.Item1, param.Item2);
+            GameManager.Instance.SavePlayedLevel(status.NumStars, model.TotalFlux);
         }
     }
 }
