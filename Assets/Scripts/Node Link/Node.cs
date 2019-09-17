@@ -19,19 +19,21 @@ namespace EcoBuilder.NodeLink
 
         GameObject shape;
 
-        public void Init(int idx, Vector3 pos, float size, GameObject shapeObject)
+        public void Init(int idx, Vector3 pos, float size)
         {
             Idx = idx;
             name = idx.ToString();
             transform.localPosition = StressPos = FocusPos = pos;
             Size = size;
+        }
 
+        public void Shape(GameObject shapeObject)
+        {
             shape = shapeObject;
-            shape.transform.SetParent(transform, false);
+            shape.transform.SetParent(transform);
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
-
-            GetComponent<SphereCollider>().enabled = true;
+            shape.transform.localScale = Vector3.one;
 
             // // TODO: change this messiness
             // Mesh outlineMesh = shapeObject.GetComponent<MeshFilter>().mesh;

@@ -14,8 +14,11 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
+
         public event Action<int> OnSpawned;
         public event Action<int> OnDespawned;
+        public event Action<int> OnUserSpawned; // when created from incubator
+        public event Action<int> OnUserDespawned; // when removed from button
 
         public event Action OnIncubated;
         public event Action OnUnincubated;
@@ -93,25 +96,27 @@ namespace EcoBuilder.UI
         }
         UnityAction<float> SizeSliderCallback, GreedSliderCallback;
 
-
-        void Spawn(Species toSpawn)
+        void Shape(Species toShape)
         {
-            spawnedSpecies[toSpawn.Idx] = toSpawn;
-            OnShaped.Invoke(toSpawn.Idx, toSpawn.GObject); // must be invoked first
+            spawnedSpecies[toShape.Idx] = toShape;
+            OnSpawned.Invoke(toShape.Idx); // must be invoked first
 
-            OnIsProducerSet.Invoke(toSpawn.Idx, toSpawn.IsProducer);
-            OnSizeSet.Invoke(toSpawn.Idx, toSpawn.BodySize);
-            OnGreedSet.Invoke(toSpawn.Idx, toSpawn.Greediness);
+            OnShaped.Invoke(toShape.Idx, toShape.GObject);
+            OnIsProducerSet.Invoke(toShape.Idx, toShape.IsProducer);
+            OnSizeSet.Invoke(toShape.Idx, toShape.BodySize);
+            OnGreedSet.Invoke(toShape.Idx, toShape.Greediness);
             nextIdx += 1;
         }
-        void Despawn(Species toDespawn)
+        void Bury(Species toBury)
         {
-            spawnedSpecies.Remove(toDespawn.Idx);
-            graveyard.Add(toDespawn.Idx, toDespawn);
+            spawnedSpecies.Remove(toBury.Idx);
+            graveyard.Add(toBury.Idx, toBury);
 
             // take back GameObject before nodelink destroys it
-            toDespawn.GObject.transform.SetParent(transform);
-            toDespawn.GObject.SetActive(false);
+            toBury.GObject.transform.SetParent(transform, false);
+            toBury.GObject.SetActive(false);
+
+            OnDespawned.Invoke(toBury.Idx); // must be invoked last
         }
 
         void IncubateNew(bool isProducer)
@@ -159,8 +164,8 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    Despawn(inspected);
-                    OnDespawned.Invoke(inspected.Idx); // must be invoked last
+                    Bury(inspected);
+                    OnUserDespawned.Invoke(inspected.Idx);
                     inspected = null;
                     traitsAnim.SetTrigger("Uninspect");
                 }
@@ -175,12 +180,12 @@ namespace EcoBuilder.UI
             if (incubated == null)
                 throw new Exception("nothing incubated");
 
-            Spawn(incubated);
+            Shape(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
 
             OnUnincubated.Invoke();
-            OnSpawned.Invoke(spawnedIdx);
+            OnUserSpawned.Invoke(spawnedIdx);
 
             InspectSpecies(spawnedIdx);
             typesAnim.SetBool("Visible", true);
@@ -279,12 +284,15 @@ namespace EcoBuilder.UI
         }
         public void SetConsumersAvailable(bool available)
         {
-            print(available);
             consumerButton.interactable = available;
+        }
+        public void SetSpeciesRemovable(int idx, bool removable)
+        {
+            spawnedSpecies[idx].Removable = removable;
         }
 
         // for loading from level
-        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable, bool removable=false)
+        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable)
         {
             if (inspected != null)
                 throw new Exception("somehow inspecting??");
@@ -295,14 +303,13 @@ namespace EcoBuilder.UI
 
             var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
             toSpawn.Editable = editable;
-            toSpawn.Removable = removable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
-            Spawn(toSpawn);
+            Shape(toSpawn);
             return toSpawn.Idx;
         }
         // for un/redo
-        public void DespawnSpecies(int idx)
+        public void Despawn(int idx)
         {
             if (!spawnedSpecies.ContainsKey(idx))
             {
@@ -313,16 +320,16 @@ namespace EcoBuilder.UI
                 traitsAnim.SetTrigger("Uninspect");
                 inspected = null;
             }
-            Despawn(spawnedSpecies[idx]);
+            Bury(spawnedSpecies[idx]);
         }
-        public void RespawnSpecies(int idx)
+        public void Respawn(int idx)
         {
             if (!graveyard.ContainsKey(idx))
             {
                 throw new Exception("idx not in graveyard");
             }
-            Spawn(graveyard[idx]);
             graveyard[idx].GObject.SetActive(true);
+            Shape(graveyard[idx]);
             graveyard.Remove(idx);
         }
 
