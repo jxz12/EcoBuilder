@@ -52,43 +52,34 @@ namespace EcoBuilder.UI
 		public void ShowLink()
 		{
 			tip.sprite = linkSprite;
-			// TODO: these colours might be solved in a later version of unity
-			// tip.color = Color.black;
 		}
 		public void ShowNoLink()
 		{
 			tip.sprite = noLinkSprite;
-			// tip.color = Color.black;
 		}
 		public void ShowAddLink()
 		{
 			tip.sprite = addlinkSprite;
-			tip.color = Color.green;
 		}
 		public void ShowNoAddLink()
 		{
 			tip.sprite = noAddlinkSprite;
-			// tip.color = Color.green;
 		}
 		public void ShowUnlink()
 		{
 			tip.sprite = unlinkSprite;
-			// tip.color = Color.red;
 		}
 		public void ShowNoUnlink()
 		{
 			tip.sprite = noUnlinkSprite;
-			// tip.color = Color.red;
 		}
 		public void ShowTrash()
 		{
 			tip.sprite = trashSprite;
-			// tip.color = Color.black;
 		}
 		public void ShowNoTrash()
 		{
 			tip.sprite = notrashSprite;
-			// tip.color = Color.black;
 		}
 	}
 }
