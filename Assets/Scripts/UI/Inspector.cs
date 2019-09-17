@@ -47,8 +47,8 @@ namespace EcoBuilder.UI
             public float BodySize { get; set; }
             public float Greediness { get; set; }
 
-            // TODO: separate this into greed and size?
-            public bool Editable { get; set; } = true;
+            public bool SizeEditable { get; set; } = true;
+            public bool GreedEditable { get; set; } = true;
             public bool Removable { get; set; } = true;
             public GameObject GObject { get; set; } = null;
 
@@ -132,8 +132,8 @@ namespace EcoBuilder.UI
             }
             Species s = new Species(nextIdx, isProducer);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            s.Editable = true;
-            s.Removable = true;
+            // s.Editable = true;
+            // s.Removable = true;
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
 
@@ -256,8 +256,8 @@ namespace EcoBuilder.UI
             nameText.text = inspected.GObject.name;
             SetSlidersWithoutEventCallbacks(inspected.BodySize, inspected.Greediness);
 
-            sizeSlider.interactable = greedSlider.interactable
-                                    = inspected.Editable;
+            sizeSlider.interactable  = inspected.SizeEditable;
+            greedSlider.interactable = inspected.GreedEditable;
             refroveButton.interactable = inspected.Removable;
         }
         public void Unincubate()
@@ -292,7 +292,7 @@ namespace EcoBuilder.UI
         }
 
         // for loading from level
-        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool editable)
+        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool sizeEditable, bool greedEditable)
         {
             if (inspected != null)
                 throw new Exception("somehow inspecting??");
@@ -302,7 +302,8 @@ namespace EcoBuilder.UI
                 throw new Exception("greed not in bounds");
 
             var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
-            toSpawn.Editable = editable;
+            toSpawn.SizeEditable = sizeEditable;
+            toSpawn.GreedEditable = greedEditable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
             Shape(toSpawn);

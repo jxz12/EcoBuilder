@@ -7,30 +7,25 @@ namespace EcoBuilder.UI
 	{
         [SerializeField] Image tip;
         [SerializeField] Sprite inspectSprite;
-        [SerializeField] Sprite linkSprite, addlinkSprite, unlinkSprite;
-		[SerializeField] Sprite noLinkSprite, noAddlinkSprite, noUnlinkSprite;
+        [SerializeField] Sprite linkSprite, addlinkSprite, unlinkSprite, bannedSprite;
         [SerializeField] Sprite trashSprite, notrashSprite;
+
+		[SerializeField] float scaleLerp;
 
 		void FixedUpdate()
 		{
 			if (visible)
 			{
-				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, .2f);
+				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, scaleLerp);
 			}
 			else
 			{
-				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, .2f);
+				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, scaleLerp);
 			}
-			transform.position = Vector3.Lerp(transform.position, target, .5f);
 		}
-		Vector2 target;
-		public void SetPos(Vector2 screenPos, bool noLerp=false)
+		public void SetPos(Vector2 screenPos)
 		{
-			target = screenPos;
-			if (noLerp)
-			{
-				transform.position = target;
-			}
+			transform.position = screenPos;
 		}
 		bool visible = false;
 		public void Enable()
@@ -53,25 +48,13 @@ namespace EcoBuilder.UI
 		{
 			tip.sprite = linkSprite;
 		}
-		public void ShowNoLink()
-		{
-			tip.sprite = noLinkSprite;
-		}
-		public void ShowAddLink()
-		{
-			tip.sprite = addlinkSprite;
-		}
-		public void ShowNoAddLink()
-		{
-			tip.sprite = noAddlinkSprite;
-		}
 		public void ShowUnlink()
 		{
 			tip.sprite = unlinkSprite;
 		}
-		public void ShowNoUnlink()
+		public void ShowBanned()
 		{
-			tip.sprite = noUnlinkSprite;
+			tip.sprite = bannedSprite;
 		}
 		public void ShowTrash()
 		{
