@@ -455,7 +455,7 @@ namespace EcoBuilder.NodeLink
                         potentialSource.Outline(1);
                         potentialLink.Outline(1);
 
-                        tooltip.ShowLink();
+                        tooltip.ShowAddLink();
                     }
                     else // link can be deleted
                     {

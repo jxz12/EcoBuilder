@@ -10,27 +10,55 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
-        public event Action OnConstraints;
-
         // TODO: option to highlight tallest species or longest loop on selection
         public bool Disjoint { get; private set; } = false;
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
         public int MaxChain { get; private set; } = 0;
         public int MaxLoop { get; private set; } = 0;
-        async void ConstraintsAsync()
-        {
-            calculating = true;
 
+        public bool ConstraintsSolved { get; private set; }= true;
+        public bool IsCalculating { get; private set; } = false;
+        public bool Ready { get { return ConstraintsSolved && !IsCalculating; } }
+
+        public async void ConstraintsAsync()
+        {
+            ConstraintsSolved = true;
+            IsCalculating = true;
+
+            Foo();
             MaxLoop = await Task.Run(()=> LongestLoop());
 
-            calculating = false;
+            IsCalculating = false;
             OnConstraints.Invoke();
         }
-        void ConstraintsSync()
+        public void ConstraintsSync()
         {
+            ConstraintsSolved = true;
+
+            Foo();
             MaxLoop = LongestLoop();
             OnConstraints.Invoke();
+        }
+        // FIXME:
+        void Foo()
+        {
+            etaIteration = 0; // reset SGD
+
+            Disjoint = CheckDisjoint();
+            NumEdges = links.Count();
+
+            HashSet<int> basal = BuildTrophicEquations();
+            var heights = HeightBFS(basal);
+            LaplacianDetZero = (heights.Count != nodes.Count);
+            // MaxTrophic done in Update()
+
+            if (superfocused)
+                SuperFocus();
+
+            MaxChain = 0;
+            foreach (int height in heights.Values)
+                MaxChain = Math.Max(height, MaxChain);
         }
 
         ///////////////////////////////////////////////////////

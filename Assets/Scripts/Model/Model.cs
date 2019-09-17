@@ -9,6 +9,10 @@ namespace EcoBuilder.Model
 {
     public class Model : MonoBehaviour
     {   
+        public event Action OnEquilibrium;
+        public event Action<int> OnEndangered;
+        public event Action<int> OnRescued;
+
         ///////////////////////////////////////////////////////////
         // MODEL DESCRIPION:
         //  foraging for plants follows a grazing strategy
@@ -178,10 +182,6 @@ namespace EcoBuilder.Model
         /////////////////////////////////////
         // actual calculations here
 
-        public event Action OnEquilibrium;
-        public event Action<int> OnEndangered;
-        public event Action<int> OnRescued;
-
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
         // public bool Nonreactive { get; private set; } = false;
@@ -190,10 +190,10 @@ namespace EcoBuilder.Model
         public float TotalAbundance { get; private set; } = 0;
         public float Complexity { get; private set; } = 0;
 
-        public bool Ready { get { return AtEquilibrium && !IsCalculating; } }
-
         public bool AtEquilibrium { get; private set; } = true;
         public bool IsCalculating { get; private set; } = false;
+        public bool Ready { get { return AtEquilibrium && !IsCalculating; } }
+
         public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
             AtEquilibrium = true;
