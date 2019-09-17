@@ -12,6 +12,10 @@ namespace EcoBuilder.Archie
         public static float Distance_from_Line(Vector3 base_of_line, Vector3 direction_of_line, Vector3 position, bool line_wise = true)
         {
             Vector3 base_to_point = position - base_of_line;
+            if ( base_of_line + direction_of_line == position )
+            {
+                return 0.0f;
+            }
             if (direction_of_line.magnitude > 0)
             {
                 Vector3 direction = direction_of_line.Normalize();
@@ -49,52 +53,97 @@ namespace EcoBuilder.Archie
             // else, solve, using normal, to find distance
             else
             {
-
+                //find unit normal vector
+                Vector3 unit_normal = Vector3.Cross(directionA, directionB);
+                float distance = Vector3.Dot(unit_normal, position) - Vector3.Dot(unit_normal, base_vector);
+                return distance;
             }
 
         }
 
-        public static List<Vector3> Clear_Simplex_Area()
+        public static List<Vector3> Clear_Simplex_Area(List<Vector3> points, Vector3[] tetrahedron_corners)
         {
+            List<Vector3> exterior_vertices = new List<Vector3>();
             // use plane equation to find if inside or outside tetrahedron
             // or use barycentric coordinates (but difficult without numpy)
+            Matrix4x4 T;
+            if (T.determinante != 0)
+            {
+                Matrix4x4 inverse = T.inverse;
+                foreach ( Vector3 p in points )
+                {
+                    if (!Array.Exists(tetrahedron_corners, p))
+                    {
+                        Vector3 LeftHandSide = p - tetrahedron_corners[0];
+                        Vector4 Barycentric = inverse.MultiplyVector(Vector4.LeftHandSide);
+                    }
 
+                }
+            }
         }
 
         class face
         {
             public Vector3[] corners;
-            public OrderedDictionary<> Conflict_List;
+            public SortedDictionary<float, Vector3> Conflict_List;
             public bool complete;
 
             public face(Vector3 corner1, Vector3 corner2, Vector3 corner3)
             {
+                Conflict_List = new SortedDictionary<float, Vector3>();
                 corners = new {corner1, corner2, corner3};
                 complete = false;
             }
         }
 
-        public static void Distribute_Conflicts(points, edge_list)
+        public static void Distribute_Conflicts(List<Vector3> points, face[] face_list)
         {
-            for ( int i = 0 ; i < points.Count ; i++ )
+            foreach ( Vector3 p in points )
             {
-                List<float> distances = new List<float>();
-                for ( int j = 0 ; j < edge_list.Count ; j++ )
+                SortedList<float,int> distances = new SortedList<float, int>();
+                for ( int j = 0 ; j < face_list.Count ; j++ )
                 {
-                    distances.Add(Distance_from_Plane(edge_list[j][0],edge_list[j][1] - edge_list[j][0], edge_list[j][2] - edge_list[j][0], points[i]));
+                    distances.Add(Distance_from_Plane(face_list[j][0],face_list[j][1] - face_list[j][0], face_list[j][2] - face_list[j][0], p),j);
                 }
-            }
-for p in points:
-    distances = []
-        for edge in edge_list:
-            distances.append(distance_from_line(edge.vertexA, edge.vertexB - edge.vertexA, p))
-        edge_list[distances.index(min(distances))].conflict_lists[min(distances)] = p
+                face_list[distances.Values[0]].Conflict_List.Add(distances.Keys[0], p);
 
+            }
         }
 
-        public static void it()
+        public static void it(List<face> face_list)
         {
-
+            List<face> new_face_list = new List<face>();
+            foreach ( face face_element in face_list )
+            {
+                if ( face_element.Conflict_List.Count >= 1 )
+                {
+                    Vector3 furthest_from_face = face_element.Conflict_List.Values[face_element.Conflict_List.Count - 1];
+                    Vector3[]  corners = new Vector3[4];
+                    List<Vector3> remaining_conflicts = clear_simplex_area(face_element.Conflict_List.Values, corners);
+                    //draw tetrahedron
+                    face[] daughter_faces = new face[3];
+                    for ( int i = 0 ; i < daughter_faces.Length ; i++ )
+                    {
+                        daughter_faces[i] = face(face_element[i], face_element[i + 1 % 3], furthest_from_face);
+                    }
+                    Distribute_Conflicts(remaining_conflicts, daughter_faces);
+                    foreach ( face daughter in daughter_faces )
+                    {
+                        if (daughter.Conflict_List.Count <= 0)
+                        {
+                            daughter.complete = true;
+                        }
+                    }
+                    new_face_list.Add(daughter_faces[0]);
+                    new_face_list.Add(daughter_faces[1]);
+                    new_face_list.Add(daughter_faces[2]);
+                }
+                else
+                {
+                    face_element.complete = true;
+                    new_face_list.Add(face_element);
+                }
+            }
         }
     }
 }
