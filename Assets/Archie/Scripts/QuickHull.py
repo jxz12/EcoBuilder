@@ -165,6 +165,19 @@ def draw_active_edge(startvector, endvector, active):
     edge_drawer.pen(pencolor='black')
     edge_drawer.penup()
 
+def draw_complete_edge(startvector, endvector, active = True):
+    edge_drawer = turtle
+    edge_drawer.penup()
+    if active:
+        edge_drawer.pen(pencolor='blue')
+    else:
+        edge_drawer.pen(pencolor='black')
+    edge_drawer.setpos(startvector.x, startvector.y)
+    edge_drawer.pendown()
+    edge_drawer.setpos(endvector.x, endvector.y)
+    edge_drawer.pen(pencolor='black')
+    edge_drawer.penup()
+
 draw_triangle(triangle_corners)
 
 # removing points inside maximal simplex
@@ -240,25 +253,30 @@ def it(edge_list):
             draw_points(remaining_conflicts)
             daughter_edges = [face(edge.vertexA, furthest_from_face), face(edge.vertexB, furthest_from_face)] 
             distribute_conflicts(remaining_conflicts, daughter_edges)
-            if len(sorted_points) == 1:
-                for daughter in daughter_edges:
+            for daughter in daughter_edges:
+                if len(daughter.conflict_lists) <= 0: 
                     daughter.complete = True
+                    draw_complete_edge(daughter.vertexA, daughter.vertexB)
             new_edge_list.append(daughter_edges[0])
             new_edge_list.append(daughter_edges[1])
         else:
             print "skip"
             new_edge_list.append(edge)
             edge.complete = True
+            draw_complete_edge(edge.vertexA, edge.vertexB)
     return new_edge_list
 
 
 all_complete = False
-while not all_complete:
+while len(edge_list) > 0:
     print "round"
     edge_list = it(edge_list)
     all_complete = True
+    new_edge_list = []
     for edge in edge_list:
-        all_complete = all_complete and edge.complete
+        if not edge.complete:
+            new_edge_list.append(edge)
+    edge_list = new_edge_list
 # it(it(it(it(it(edge_list)))))
 
 
