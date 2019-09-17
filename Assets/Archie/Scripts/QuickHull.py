@@ -36,10 +36,12 @@ def dot(vector1, vector2):
 
 def distance_from_line(base_of_line, direction_of_line, position, line_wise=True):
     point2point = position - base_of_line
+    if ( base_of_line + direction_of_line == position):
+        return 0
     if direction_of_line.magnitude() > 0 :
         direction = direction_of_line.normalize()
         projection_length = dot(point2point,direction)
-        if projection_length > direction_of_line.magnitude() and line_wise:   #these two lines prevent closest ones been chosen which are not within line length (in other words, if line is finite)
+        if (projection_length > direction_of_line.magnitude() or projection_length < 0) and line_wise:   #these two lines prevent closest ones been chosen which are not within line length (in other words, if line is finite)
             return float("inf")
         returning = math.pow(point2point.magnitude(),2) - math.pow(projection_length,2)
         if returning >= 0 :
@@ -85,6 +87,7 @@ points = []
 import random
 seed= 14
 #error list: 1, 3,5,6,(8),9,13,(14)
+#with recent changes, 1, 3, 5, 6, 8, 9, 13, 14 are tested and working correctly
 print "Rand Seed: " + str(seed)
 random.seed(seed)
 
@@ -131,9 +134,12 @@ for p in points:
         print "ding"
         max_distance = p
         print max_distance
+        print current
+        print testing
 third = max_distance
 
 triangle_corners = [base[0],base[1],third]
+print triangle_corners
 
 # drawing triangle (maximal simplex, first hull)
 def draw_triangle(three_corners):
@@ -234,6 +240,9 @@ def it(edge_list):
             draw_points(remaining_conflicts)
             daughter_edges = [face(edge.vertexA, furthest_from_face), face(edge.vertexB, furthest_from_face)] 
             distribute_conflicts(remaining_conflicts, daughter_edges)
+            if len(sorted_points) == 1:
+                for daughter in daughter_edges:
+                    daughter.complete = True
             new_edge_list.append(daughter_edges[0])
             new_edge_list.append(daughter_edges[1])
         else:
