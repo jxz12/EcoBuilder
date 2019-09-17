@@ -47,11 +47,9 @@ namespace EcoBuilder.NodeLink
                 }
 
 
-                float maxTrophic = 1;
-                foreach (float trophic in trophicLevels)
-                    maxTrophic = Mathf.Max(trophic, maxTrophic);
                 float height = Mathf.Min(MaxChain, maxHeight);
-                float trophicScaling = maxTrophic>1? height / (maxTrophic-1) : 1;
+                float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
+
 
                 foreach (Node no in nodes)
                 {
@@ -119,8 +117,7 @@ namespace EcoBuilder.NodeLink
         // SGD
         private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
         {
-            foreach (int j in FYShuffle(nodes.Indices))
-            // foreach (int j in FYShuffle(d_j.Keys))
+            foreach (int j in FYShuffle(adjacency.Keys))
             {
                 if (i != j)
                 {
@@ -204,17 +201,42 @@ namespace EcoBuilder.NodeLink
         // return set of roots to the tree
         private HashSet<int> BuildTrophicEquations()
         {
-            foreach (int i in nodes.Indices)
-                trophicA[i] = 0;
+            // foreach (int i in nodes.Indices)
+            //     trophicA[i] = 0;
 
-            foreach (var ij in links.IndexPairs)
+            // foreach (var ij in links.IndexPairs)
+            // {
+            //     int res=ij.Item1, con=ij.Item2;
+            //     trophicA[con] += 1f;
+            // }
+
+            // var basal = new HashSet<int>();
+            // foreach (int i in nodes.Indices)
+            // {
+            //     if (trophicA[i] != 0)
+            //         trophicA[i] = -1f / trophicA[i]; // ensures diagonal dominance
+            //     else
+            //         basal.Add(i);
+            // }
+            // return basal;
+
+            // FIXME: ugly
+            foreach (int i in adjacency.Keys)
             {
-                int res=ij.Item1, con=ij.Item2;
-                trophicA[con] += 1f;
+                trophicA[i] = 0;
             }
-
+            foreach (int i in adjacency.Keys)
+            {
+                foreach (int j in links.GetColumnIndicesInRow(i))
+                {
+                    if (adjacency.ContainsKey(j))
+                    {
+                        trophicA[j] += 1f;
+                    }
+                }
+            }
             var basal = new HashSet<int>();
-            foreach (int i in nodes.Indices)
+            foreach (int i in adjacency.Keys)
             {
                 if (trophicA[i] != 0)
                     trophicA[i] = -1f / trophicA[i]; // ensures diagonal dominance
@@ -228,14 +250,35 @@ namespace EcoBuilder.NodeLink
         void TrophicGaussSeidel()
         {
             SparseVector<float> temp = new SparseVector<float>();
-            foreach (var ij in links.IndexPairs)
+            // foreach (var ij in links.IndexPairs)
+            // {
+            //     int res = ij.Item1, con = ij.Item2;
+            //     temp[con] += trophicA[con] * trophicLevels[res];
+            // }
+            // foreach (int i in nodes.Indices)
+            // {
+            //     trophicLevels[i] = (1 - temp[i]);
+            // }
+            // MaxTrophic = 0;
+            // foreach (float trophic in trophicLevels)
+            //     MaxTrophic = Mathf.Max(trophic, MaxTrophic);
+            
+            // FIXME: ugly
+            foreach (int i in adjacency.Keys)
             {
-                int res = ij.Item1, con = ij.Item2;
-                temp[con] += trophicA[con] * trophicLevels[res];
+                foreach (int j in links.GetColumnIndicesInRow(i))
+                {
+                    if (adjacency.ContainsKey(j))
+                    {
+                        temp[j] += trophicA[j] * trophicLevels[i];
+                    }
+                }
             }
-            foreach (int i in nodes.Indices)
+            MaxTrophic = 0;
+            foreach (int i in adjacency.Keys)
             {
                 trophicLevels[i] = (1 - temp[i]);
+                MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
             }
         }
 

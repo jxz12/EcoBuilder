@@ -15,18 +15,18 @@ namespace EcoBuilder.NodeLink
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
         public int MaxChain { get; private set; } = 0;
+        public float MaxTrophic { get; private set; } = 1;
         public int MaxLoop { get; private set; } = 0;
 
         public bool ConstraintsSolved { get; private set; }= true;
         public bool IsCalculating { get; private set; } = false;
-        public bool Ready { get { return ConstraintsSolved && !IsCalculating; } }
 
         public async void ConstraintsAsync()
         {
             ConstraintsSolved = true;
             IsCalculating = true;
 
-            Foo();
+            RefreshTrophic();
             MaxLoop = await Task.Run(()=> LongestLoop());
 
             IsCalculating = false;
@@ -36,12 +36,11 @@ namespace EcoBuilder.NodeLink
         {
             ConstraintsSolved = true;
 
-            Foo();
+            RefreshTrophic();
             MaxLoop = LongestLoop();
             OnConstraints.Invoke();
         }
-        // FIXME:
-        void Foo()
+        void RefreshTrophic()
         {
             etaIteration = 0; // reset SGD
 
@@ -51,7 +50,6 @@ namespace EcoBuilder.NodeLink
             HashSet<int> basal = BuildTrophicEquations();
             var heights = HeightBFS(basal);
             LaplacianDetZero = (heights.Count != nodes.Count);
-            // MaxTrophic done in Update()
 
             if (superfocused)
                 SuperFocus();
@@ -59,6 +57,8 @@ namespace EcoBuilder.NodeLink
             MaxChain = 0;
             foreach (int height in heights.Values)
                 MaxChain = Math.Max(height, MaxChain);
+
+            // MaxTrophic cannot be here as it is always evolving
         }
 
         ///////////////////////////////////////////////////////

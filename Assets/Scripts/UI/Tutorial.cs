@@ -25,7 +25,7 @@ namespace EcoBuilder.UI
 			transform.localRotation = Quaternion.Euler(0,0,45);
 			transform.localPosition = new Vector2(-20, -420);
 
-			inspector.SetConsumersAvailable(false);
+			inspector.SetConsumerAvailability(false);
 			inspector.OnIncubated += ExplainInspector;
 
 			bar = ()=> { inspector.OnIncubated -= ExplainInspector; };
@@ -52,8 +52,8 @@ namespace EcoBuilder.UI
 		void ExplainSpawn(string speciesName)
 		{
 			// TODO: make these species unremovable
-			inspector.SetConsumersAvailable(true);
-			inspector.SetProducersAvailable(false);
+			inspector.SetConsumerAvailability(true);
+			inspector.SetProducerAvailability(false);
 
 			help.SetText("Your " + speciesName + " is born! Plants grow on their own, and so do not need food. Press somewhere in the background to reset and add an animal.");
 			help.Show(true);
@@ -68,7 +68,7 @@ namespace EcoBuilder.UI
 		}
 		void ExplainInteraction(string speciesName)
 		{
-			inspector.SetConsumersAvailable(false);
+			inspector.SetConsumerAvailability(false);
 			help.SetText("Your " + speciesName + " is hungry! Drag from it to the " + firstSpeciesName + " to give it some food.");
 			help.Show(true);
 

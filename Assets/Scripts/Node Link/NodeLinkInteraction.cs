@@ -103,6 +103,10 @@ namespace EcoBuilder.NodeLink
 
             foreach (Node no in nodes)
             {
+                // FIXME: ugly
+                if (!adjacency.ContainsKey(no.Idx))
+                    continue;
+
                 if (no.Idx == focusedNode.Idx)
                 {
                     continue;
@@ -635,8 +639,9 @@ namespace EcoBuilder.NodeLink
                 Node closest = null;
                 float closestDist = float.MaxValue;
                 float radius = snapRadius * snapRadius;
-                foreach (Node node in nodes)
+                foreach (int i in adjacency.Keys)
                 {
+                    Node node = nodes[i];
                     Vector2 screenPos = Camera.main.WorldToScreenPoint(node.transform.position);
 
                     // if the click is within the clickable radius
