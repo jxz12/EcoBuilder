@@ -11,11 +11,11 @@ namespace EcoBuilder.NodeLink
         public event Action OnUnfocused;
         public event Action OnEmptyPressed;
         public event Action OnConstraints;
+        public event Action OnLinked;
 
         // called when user does something
         public event Action<int, int> OnUserLinked;
         public event Action<int, int> OnUserUnlinked;
-
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
@@ -85,14 +85,12 @@ namespace EcoBuilder.NodeLink
                     links[idx,col].gameObject.SetActive(true);
                     adjacency[idx].Add(col);
                     adjacency[col].Add(idx);
-                    // OnLinked.Invoke(row, idx);
                 }
                 foreach (int row in links.GetRowIndicesInColumn(idx))
                 {
                     links[row,idx].gameObject.SetActive(true);
                     adjacency[idx].Add(row);
                     adjacency[row].Add(idx);
-                    // OnLinked.Invoke(row, idx);
                 }
             }
             toBFS.Enqueue(idx);
@@ -111,12 +109,10 @@ namespace EcoBuilder.NodeLink
             foreach (Link li in links.GetColumnData(idx))
             {
                 li.gameObject.SetActive(false);
-                // OnUnlinked.Invoke(li.Source.Idx, li.Target.Idx);
             }
             foreach (Link li in links.GetRowData(idx))
             {
                 li.gameObject.SetActive(false);
-                // OnUnlinked.Invoke(li.Source.Idx, li.Target.Idx);
             }
 
             // prevent memory leak in SGD data structures
@@ -198,7 +194,7 @@ namespace EcoBuilder.NodeLink
             adjacency[j].Add(i);
 
             ConstraintsSolved = false;
-            // OnLinked.Invoke(i, j);
+            OnLinked.Invoke();
         }
         public void RemoveLink(int i, int j)
         {
@@ -215,7 +211,7 @@ namespace EcoBuilder.NodeLink
             }
 
             ConstraintsSolved = false;
-            // OnUnlinked.Invoke(i, j);
+            OnLinked.Invoke();
         }
 
         public void ShapeNode(int idx, GameObject shape)
@@ -268,7 +264,8 @@ namespace EcoBuilder.NodeLink
             float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
-                if (!no.isActiveAndEnabled)
+                // FIXME: ugly
+                if (!adjacency.ContainsKey(no.Idx))
                     continue;
 
                 float size = sizes(no.Idx);
@@ -288,7 +285,8 @@ namespace EcoBuilder.NodeLink
             float flowRange = maxLinkFlow - minLinkFlow;
             foreach (Link li in links)
             {
-                if (!li.isActiveAndEnabled)
+                // FIXME: ugly
+                if (!adjacency.ContainsKey(li.Source.Idx) || !adjacency.ContainsKey(li.Target.Idx))
                     continue;
 
                 int res=li.Source.Idx, con=li.Target.Idx;

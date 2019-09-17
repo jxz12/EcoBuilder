@@ -190,9 +190,8 @@ namespace EcoBuilder.Model
         public float TotalAbundance { get; private set; } = 0;
         public float Complexity { get; private set; } = 0;
 
-        public bool AtEquilibrium { get; private set; } = true;
         public bool IsCalculating { get; private set; } = false;
-        public bool Ready { get { return AtEquilibrium && !IsCalculating; } }
+        public bool AtEquilibrium { get; set; } = false;
 
         public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
@@ -204,8 +203,6 @@ namespace EcoBuilder.Model
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
-            // print("flux: " + TotalFlux);
-
             Stable = await Task.Run(() => simulation.SolveStability());
             Complexity = (float)simulation.MayComplexity;
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
@@ -215,7 +212,6 @@ namespace EcoBuilder.Model
             IsCalculating = false;
             OnEquilibrium.Invoke();
         }
-
         public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
             AtEquilibrium = true;

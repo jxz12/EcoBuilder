@@ -13,26 +13,6 @@ namespace EcoBuilder
         [SerializeField] Model.Model model;
         [SerializeField] MoveRecorder recorder;
 
-        void LateUpdate()
-        {
-            if (!model.AtEquilibrium && !model.IsCalculating)
-            {
-                #if UNITY_WEBGL
-                    model.EquilibriumSync(nodelink.GetTargets);
-                #else
-                    model.EquilibriumAsync(nodelink.GetTargets);
-                #endif
-            }
-            if (!nodelink.ConstraintsSolved && !nodelink.IsCalculating)
-            {
-                #if UNITY_WEBGL
-                    nodelink.ConstraintsSync();
-                #else
-                    nodelink.ConstraintsAsync();
-                #endif
-            }
-        }
-
         void Start()
         {
             ///////////////////////////////////
@@ -54,6 +34,7 @@ namespace EcoBuilder
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
+            nodelink.OnLinked +=       ()=> model.AtEquilibrium = false;
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
             nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
@@ -68,11 +49,11 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> status.DisplayScore(model.TotalFlux);
             model.OnEquilibrium += ()=> status.DisplayFeastability(model.Feasible, model.Stable);
 
-            status.OnProducersAvailable += (b)=> inspector.SetProducersAvailable(b);
-            status.OnConsumersAvailable += (b)=> inspector.SetConsumersAvailable(b);
+            status.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
+            status.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
             status.OnLevelCompleted     +=  ()=> CompleteLevel();
 
-            // data collection
+            // collection
             inspector.OnUserSpawned +=   (i)=> nodelink.FocusNode(i);
             inspector.OnUserSpawned +=   (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned += (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
@@ -93,7 +74,10 @@ namespace EcoBuilder
             }
             
             status.ConstrainFromLevel(level);
-            status.AllowUpdateWhen(()=> model.Ready && nodelink.Ready);
+            status.AllowUpdateWhen(()=> model.AtEquilibrium &&
+                                        !model.IsCalculating &&
+                                        nodelink.ConstraintsSolved &&
+                                        !nodelink.IsCalculating);
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -104,6 +88,7 @@ namespace EcoBuilder
                     level.Details.randomSeeds[i],
                     level.Details.editables[i], // TODO: split into two here
                     level.Details.editables[i]);
+
                 inspector.SetSpeciesRemovable(i, false);
                 if (newIdx != i)
                     throw new Exception("inspector not adding indices contiguously");
@@ -113,10 +98,33 @@ namespace EcoBuilder
                 int i = level.Details.resources[ij];
                 int j = level.Details.consumers[ij];
                 nodelink.AddLink(i, j);
+
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
 
         }
+
+        void LateUpdate()
+        {
+            // TODO: move these conditions into variables here
+            if (!model.AtEquilibrium && !model.IsCalculating)
+            {
+                #if UNITY_WEBGL
+                    model.EquilibriumSync(nodelink.GetTargets);
+                #else
+                    model.EquilibriumAsync(nodelink.GetTargets);
+                #endif
+            }
+            if (!nodelink.ConstraintsSolved && !nodelink.IsCalculating)
+            {
+                #if UNITY_WEBGL
+                    nodelink.ConstraintsSync();
+                #else
+                    nodelink.ConstraintsAsync();
+                #endif
+            }
+        }
+
         void CompleteLevel()
         {
             inspector.Hide();

@@ -278,11 +278,11 @@ namespace EcoBuilder.UI
                 traitsAnim.SetTrigger("Uninspect");
             }
         }
-        public void SetProducersAvailable(bool available)
+        public void SetProducerAvailability(bool available)
         {
             producerButton.interactable = available;
         }
-        public void SetConsumersAvailable(bool available)
+        public void SetConsumerAvailability(bool available)
         {
             consumerButton.interactable = available;
         }
