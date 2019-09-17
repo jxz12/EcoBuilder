@@ -28,22 +28,23 @@ namespace EcoBuilder
             undos = new Stack<Move>();
             redos = new Stack<Move>();
             undoButton.onClick.AddListener(Undo);
-            undoButton.onClick.AddListener(Redo);
+            redoButton.onClick.AddListener(Redo);
+        }
+        void NewMove(Move move)
+        {
+            undos.Push(move);
+            redos.Clear();
+            undoButton.interactable = true;
+            redoButton.interactable = false;
         }
 
-        public void RecordSpeciesSpawn(int idx, Action<int> Despawn, Action<int> Respawn)
+        public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
-            undos.Push(new Move(()=>Despawn(idx), ()=>Respawn(idx)));
-            redos.Clear();
-            undoButton.interactable = true;
-            redoButton.interactable = false;
+            NewMove(new Move(()=>Despawn(idx), ()=>Respawn(idx)));
         }
-        public void RecordSpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
+        public void SpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
-            undos.Push(new Move(()=>Respawn(idx), ()=>Despawn(idx)));
-            redos.Clear();
-            undoButton.interactable = true;
-            redoButton.interactable = false;
+            NewMove(new Move(()=>Respawn(idx), ()=>Despawn(idx)));
         }
         // public void RecordSpeciesType(int idx, bool type, Action<int, bool> Undo)
         // {
@@ -58,14 +59,14 @@ namespace EcoBuilder
         // {
         //     UnityEngine.Debug.Log("TODO:");
         // }
-        // public void RecordInteractionAdded(int res, int con, Action<int, int> Undo)
-        // {
-        //     UnityEngine.Debug.Log("TODO:");
-        // }
-        // public void RecordInteractionRemoved(int res, int con, Action<int, int> Undo)
-        // {
-        //     UnityEngine.Debug.Log("TODO:");
-        // }
+        public void InteractionAdded(int res, int con, Action<int,int> Add, Action<int,int> Remove)
+        {
+            NewMove(new Move(()=>Remove(res,con), ()=>Add(res,con)));
+        }
+        public void InteractionRemoved(int res, int con, Action<int,int> Add, Action<int,int> Remove)
+        {
+            NewMove(new Move(()=>Add(res,con), ()=>Remove(res,con)));
+        }
 
         // connected to buttons
         public void Undo()

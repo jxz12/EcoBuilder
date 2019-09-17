@@ -7,12 +7,15 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink : MonoBehaviour
     {
-        // public event Action OnEmptyPressed;
         public event Action<int> OnNodeFocused;
         public event Action OnUnfocused;
         public event Action OnEmptyPressed;
-        public event Action<int, int> OnLinkAdded;
-        public event Action<int, int> OnLinkRemoved;
+        public event Action<int, int> OnLinked;
+        public event Action<int, int> OnUnlinked;
+
+        // called when user does something
+        public event Action<int, int> OnUserLinked;
+        public event Action<int, int> OnUserUnlinked;
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
@@ -94,7 +97,7 @@ namespace EcoBuilder.NodeLink
         SparseMatrix<Link> links = new SparseMatrix<Link>();
         Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
 
-        public void AddNode(int idx, GameObject shape)
+        public void AddNode(int idx)
         {
             if (nodes[idx] != null)
                 throw new Exception("already has idx " + idx);
@@ -104,7 +107,7 @@ namespace EcoBuilder.NodeLink
             var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
             // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
 
-            newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2, shape);
+            newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2);
             nodes[idx] = newNode;
 
             adjacency[idx] = new HashSet<int>();
@@ -112,9 +115,18 @@ namespace EcoBuilder.NodeLink
 
             constraintsSolved = false;
         }
+        public void ShapeNode(int idx, GameObject shape)
+        {
+            if (nodes[idx] == null)
+                throw new Exception("no index " + idx);
+
+            nodes[idx].Shape(shape);
+        }
 
         public void RemoveNode(int idx)
         {
+            if (nodes[idx] == null)
+                throw new Exception("no index " + idx);
             if (focusedNode != null && focusedNode.Idx == idx)
                 Unfocus();
 
@@ -161,7 +173,7 @@ namespace EcoBuilder.NodeLink
             adjacency[j].Add(i);
 
             constraintsSolved = false;
-            OnLinkAdded.Invoke(i, j);
+            OnLinked.Invoke(i, j);
         }
         public void RemoveLink(int i, int j)
         {
@@ -178,7 +190,7 @@ namespace EcoBuilder.NodeLink
             }
 
             constraintsSolved = false;
-            OnLinkRemoved.Invoke(i,j);
+            OnUnlinked.Invoke(i, j);
         }
 
         public void SetIfNodeCanBeSource(int idx, bool canBeSource) // basal
