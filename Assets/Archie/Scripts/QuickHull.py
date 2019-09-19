@@ -91,7 +91,7 @@ seed= 14
 print "Rand Seed: " + str(seed)
 random.seed(seed)
 
-for i in range(0,20):
+for i in range(0,1000):
     points.append(Vector(random.randint(-200,200),random.randint(-200,200)))
     print points[len(points)-1]
 
