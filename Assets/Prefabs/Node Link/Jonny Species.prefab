@@ -39,7 +39,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 455293264}
-  m_Mesh: {fileID: 4300012, guid: 0335b7e33c36a424083880636e4db54c, type: 3}
+  m_Mesh: {fileID: 0}
 --- !u!23 &455293266
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -116,7 +116,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1638611466}
-  m_Mesh: {fileID: 4300014, guid: 0335b7e33c36a424083880636e4db54c, type: 3}
+  m_Mesh: {fileID: 0}
 --- !u!23 &1638611468
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -193,7 +193,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1886545496}
-  m_Mesh: {fileID: 4300004, guid: 0335b7e33c36a424083880636e4db54c, type: 3}
+  m_Mesh: {fileID: 0}
 --- !u!23 &1886545498
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -311,6 +311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 0
+  isProducer: 0
   body: {fileID: 4822296920973503334}
   eyes: {fileID: 1886545499}
   nose: {fileID: 455293267}

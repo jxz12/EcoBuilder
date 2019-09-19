@@ -25,11 +25,8 @@ namespace EcoBuilder.Model
 
         // external dictionary for lookup
         Dictionary<T, int> externToIntern = new Dictionary<T, int>();
-        Dictionary<T, HashSet<T>> externInteractions = new Dictionary<T, HashSet<T>>();
-
         // internal 0-based indexing for matrix operations
         List<T> internToExtern = new List<T>();
-        List<HashSet<int>> internInteractions = new List<HashSet<int>>();
 
         public void AddSpecies(T species)
         {
@@ -39,10 +36,10 @@ namespace EcoBuilder.Model
             int n = internToExtern.Count;
 
             externToIntern[species] = n;
-            externInteractions[species] = new HashSet<T>();
+            // externInteractions[species] = new HashSet<T>();
 
             internToExtern.Add(species);
-            internInteractions.Add(new HashSet<int>());
+            // internInteractions.Add(new HashSet<int>());
 
             ResizeMatrices(n+1);
         }
@@ -53,48 +50,13 @@ namespace EcoBuilder.Model
 
             int n = internToExtern.Count;
 
-            externInteractions.Remove(species);
-            foreach (var hash in externInteractions.Values)
-                hash.Remove(species);
-
             // O(n) but that's okay, as it shifts indices as required
             internToExtern.Remove(species);
             externToIntern.Clear();
             for (int i=0; i<n-1; i++)
                 externToIntern[internToExtern[i]] = i;
 
-            // iterate through all possible interactions
-            // to fix adjacency indices according to the above shift
-            internInteractions.RemoveAt(n-1);
-            for (int i=0; i<n-1; i++)
-            {
-                T res = internToExtern[i];
-                internInteractions[i].Clear();
-                for (int j=0; j<n-1; j++)
-                {
-                    T con = internToExtern[j];
-                    if (externInteractions[res].Contains(con))
-                        internInteractions[i].Add(j);
-                }
-            }
-
             ResizeMatrices(n-1);
-        }
-        public void AddInteraction(T res, T con)
-        {
-            if (externInteractions[res].Contains(con))
-                throw new Exception("ecosystem has interaction already");
-
-            externInteractions[res].Add(con);
-            internInteractions[externToIntern[res]].Add(externToIntern[con]);
-        }
-        public void RemoveInteraction(T res, T con)
-        {
-            if (!externInteractions[res].Contains(con))
-                throw new Exception("ecosystem does not have that interaction");
-
-            externInteractions[res].Remove(con);
-            internInteractions[externToIntern[res]].Remove(externToIntern[con]);
         }
 
         Matrix<double> interaction, flux;
@@ -121,7 +83,7 @@ namespace EcoBuilder.Model
             }
         }
 
-        void BuildInteractionMatrix()
+        void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
@@ -129,27 +91,22 @@ namespace EcoBuilder.Model
             interaction.Clear();
             negGrowth.Clear();
 
-            // double max=0, min=double.MaxValue;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
                 negGrowth[i] = -r_i(res);
                 interaction[i,i] = a_ii(res);
-                foreach (int j in internInteractions[i])
+                foreach (T con in Consumers(res))
                 {
-                    T con = internToExtern[j];
+                    int j = externToIntern[con];
                     double a = a_ij(res, con);
                     double e = e_ij(res, con);
 
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
-                    // max = Math.Max(max, a);
-                    // min = Math.Min(min, a);
-
                     flux[i,j] = e * a;
                 }
             }
-            // UnityEngine.Debug.Log(min + " " + max);
         }
 
         // Depends on A and b being correct
@@ -184,26 +141,23 @@ namespace EcoBuilder.Model
         }
 
         // // depends on community being correct, and also destroys it
-		// void BuildHermitianMatrix()
-		// {
-		// 	int n = internToExtern.Count;
+        // void BuildHermitianMatrix()
+        // {
+        //     int n = internToExtern.Count;
 
         //     hermitian.Clear();
-		// 	for (int i=0; i<n; i++)
-		// 	{
-		// 		for (int j=0; j<i; j++)
-		// 		{
-		// 			hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
-		// 		}
-		// 	}
-		// }
-
-
-
+        //     for (int i=0; i<n; i++)
+        //     {
+        //         for (int j=0; j<i; j++)
+        //         {
+        //             hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
+        //         }
+        //     }
+        // }
 
         ///////////
         // O(n^3)
-        public bool SolveFeasibility()
+        public bool SolveFeasibility(Func<T, IEnumerable<T>> Consumers)
         {
             int n = internToExtern.Count;
             if (n == 0)
@@ -212,7 +166,7 @@ namespace EcoBuilder.Model
                 return false;
             }
 
-            BuildInteractionMatrix();
+            BuildInteractionMatrix(Consumers);
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
@@ -222,10 +176,12 @@ namespace EcoBuilder.Model
 
             // solve flux values
             TotalFlux = 0;
-            for (int i=0; i<internInteractions.Count; i++)
+            for (int i=0; i<n; i++)
             {
-                foreach (int j in internInteractions[i])
+                T res = internToExtern[i];
+                foreach (T con in Consumers(res))
                 {
+                    int j = externToIntern[con];
                     flux[i,j] *= abundance[i] * abundance[j];
                     TotalFlux += flux[i,j];
                 }
@@ -351,16 +307,16 @@ namespace EcoBuilder.Model
 
 
         // public bool SolveReactivity()
-		// {
-		// 	// calculate M + M^T
-		// 	BuildHermitianMatrix();
+        // {
+        //     // calculate M + M^T
+        //     BuildHermitianMatrix();
 
-		// 	// get largest real part of any eigenvalue
-		// 	var eigenValues = hermitian.Evd().EigenValues;
+        //     // get largest real part of any eigenvalue
+        //     var eigenValues = hermitian.Evd().EigenValues;
 
-		// 	double Lambda = eigenValues.Real().Maximum();
-		// 	return Lambda <= 0;
-		// }
+        //     double Lambda = eigenValues.Real().Maximum();
+        //     return Lambda <= 0;
+        // }
 
 
 
