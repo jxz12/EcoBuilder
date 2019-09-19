@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 // for heavy calculations
 using System.Threading.Tasks;
@@ -18,12 +17,10 @@ namespace EcoBuilder.NodeLink
         public float MaxTrophic { get; private set; } = 1;
         public int MaxLoop { get; private set; } = 0;
 
-        public bool ConstraintsSolved { get; private set; }= true;
         public bool IsCalculating { get; private set; } = false;
 
         public async void ConstraintsAsync()
         {
-            ConstraintsSolved = true;
             IsCalculating = true;
 
             RefreshTrophic();
@@ -34,10 +31,9 @@ namespace EcoBuilder.NodeLink
         }
         public void ConstraintsSync()
         {
-            ConstraintsSolved = true;
-
             RefreshTrophic();
             MaxLoop = LongestLoop();
+
             OnConstraints.Invoke();
         }
         void RefreshTrophic()

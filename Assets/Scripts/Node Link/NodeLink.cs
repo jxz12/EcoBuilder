@@ -80,6 +80,7 @@ namespace EcoBuilder.NodeLink
                     throw new Exception("node already active at idx " + idx);
 
                 nodes[idx].gameObject.SetActive(true);
+                adjacency[idx] = new HashSet<int>();
                 foreach (int col in links.GetColumnIndicesInRow(idx))
                 {
                     links[idx,col].gameObject.SetActive(true);
@@ -94,7 +95,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
             toBFS.Enqueue(idx);
-            ConstraintsSolved = false;
+            // ConstraintsSolved = false;
         }
 
         public void RemoveNode(int idx)
@@ -123,62 +124,8 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
-            ConstraintsSolved = false;
-        }
-
-        // public void AddNode(int idx)
-        // {
-        //     if (nodes[idx] != null)
-        //         throw new Exception("already has idx " + idx);
-
-        //     Node newNode = Instantiate(nodePrefab, nodesParent);
-
-        //     var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
-        //     // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
-
-        //     newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2);
-        //     nodes[idx] = newNode;
-
-        //     adjacency[idx] = new HashSet<int>();
-        //     toBFS.Enqueue(idx);
-
-        //     ConstraintsSolved = false;
-        // }
-        // public void RemoveNode(int idx)
-        // {
-        //     if (nodes[idx] == null)
-        //         throw new Exception("no index " + idx);
-        //     if (focusedNode != null && focusedNode.Idx == idx)
-        //         Unfocus();
-
-        //     Destroy(nodes[idx].gameObject);
-        //     nodes.RemoveAt(idx);
-
-        //     // prevent memory leak in sparse matrices
-        //     var toRemove = new List<Tuple<int,int>>();
-        //     foreach (int other in links.GetColumnIndicesInRow(idx))
-        //         toRemove.Add(Tuple.Create(idx, other));
-        //     foreach (int other in links.GetRowIndicesInColumn(idx))
-        //         toRemove.Add(Tuple.Create(other, idx));
-
-        //     foreach (var ij in toRemove)
-        //         RemoveLink(ij.Item1, ij.Item2);
-
-        //     // prevent memory leak in SGD data structures
-        //     adjacency.Remove(idx);
-        //     toBFS.Clear();
-        //     foreach (int i in adjacency.Keys)
-        //     {
-        //         adjacency[i].Remove(idx);
-        //         toBFS.Enqueue(i);
-        //     }
-
-        //     // prevent memory leak in trophic level data structures
-        //     trophicA.RemoveAt(idx);
-        //     trophicLevels.RemoveAt(idx);
-
-        //     ConstraintsSolved = false;
-        // }
+            // ConstraintsSolved = false;
+        }        
 
         public void AddLink(int i, int j)
         {
@@ -193,7 +140,7 @@ namespace EcoBuilder.NodeLink
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            ConstraintsSolved = false;
+            // ConstraintsSolved = false;
             OnLinked.Invoke();
         }
         public void RemoveLink(int i, int j)
@@ -210,7 +157,7 @@ namespace EcoBuilder.NodeLink
                 links[j,i].Curved = false;
             }
 
-            ConstraintsSolved = false;
+            // ConstraintsSolved = false;
             OnLinked.Invoke();
         }
 
@@ -265,7 +212,7 @@ namespace EcoBuilder.NodeLink
             foreach (Node no in nodes)
             {
                 // FIXME: ugly
-                if (!adjacency.ContainsKey(no.Idx))
+                if (!no.gameObject.activeSelf)
                     continue;
 
                 float size = sizes(no.Idx);
@@ -286,7 +233,7 @@ namespace EcoBuilder.NodeLink
             foreach (Link li in links)
             {
                 // FIXME: ugly
-                if (!adjacency.ContainsKey(li.Source.Idx) || !adjacency.ContainsKey(li.Target.Idx))
+                if (!li.gameObject.activeSelf)
                     continue;
 
                 int res=li.Source.Idx, con=li.Target.Idx;

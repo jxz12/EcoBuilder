@@ -6,12 +6,13 @@ namespace EcoBuilder
     // this class handles communication between all the top level components
     public class EventManager : MonoBehaviour
     {
+        [SerializeField] NodeLink.NodeLink nodelink;
+        [SerializeField] Model.Model model;
+
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.StatusBar status;
         [SerializeField] UI.Tutorial tutorial;
-        [SerializeField] NodeLink.NodeLink nodelink;
-        [SerializeField] Model.Model model;
-        [SerializeField] MoveRecorder recorder;
+        [SerializeField] UI.MoveRecorder recorder;
 
         void Start()
         {
@@ -26,15 +27,15 @@ namespace EcoBuilder
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=       (i)=> status.RemoveIdx(i);
             inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
-            inspector.OnIsProducerSet += (i,b)=> nodelink.SetIfNodeCanBeTarget(i,!b);
-            inspector.OnIsProducerSet += (i,b)=> model.SetSpeciesIsProducer(i,b);
-            inspector.OnIsProducerSet += (i,b)=> status.AddType(i,b);
+            inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
+            inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
+            inspector.OnIsProducerSet += (i,x)=> status.AddType(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
+            inspector.OnUserSpawned +=       (i)=> nodelink.FocusNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
-            nodelink.OnLinked +=       ()=> model.AtEquilibrium = false;
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
             nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
@@ -54,12 +55,23 @@ namespace EcoBuilder
             status.OnLevelCompleted     +=  ()=> CompleteLevel();
 
             // collection
-            inspector.OnUserSpawned +=   (i)=> nodelink.FocusNode(i);
-            inspector.OnUserSpawned +=   (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
-            inspector.OnUserDespawned += (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
-            nodelink.OnUserLinked +=   (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            nodelink.OnUserUnlinked += (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
+            inspector.OnSpawned +=         (i)=> atEquilibrium = false;
+            inspector.OnSpawned +=         (i)=> graphSolved = false;
+            inspector.OnDespawned +=       (i)=> atEquilibrium = false;
+            inspector.OnDespawned +=       (i)=> graphSolved = false;
+            nodelink.OnLinked +=            ()=> atEquilibrium = false;
+            nodelink.OnLinked +=            ()=> graphSolved = false;
+            inspector.OnIsProducerSet += (i,x)=> atEquilibrium = false;
+            inspector.OnSizeSet +=       (i,x)=> atEquilibrium = false;
+            inspector.OnGreedSet +=      (i,x)=> atEquilibrium = false;
 
+            inspector.OnUserSpawned +=           (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
+            inspector.OnUserDespawned +=         (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
+            nodelink.OnUserLinked +=           (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
+            nodelink.OnUserUnlinked +=         (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
+            inspector.OnUserIsProducerSet += (i,x,y)=> recorder.TypeSet(i, x, y, inspector.SetIsProducer);
+            inspector.OnUserSizeSet +=       (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
+            inspector.OnUserGreedSet +=      (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
 
 
 
@@ -74,9 +86,9 @@ namespace EcoBuilder
             }
             
             status.ConstrainFromLevel(level);
-            status.AllowUpdateWhen(()=> model.AtEquilibrium &&
+            status.AllowUpdateWhen(()=> atEquilibrium &&
                                         !model.IsCalculating &&
-                                        nodelink.ConstraintsSolved &&
+                                        graphSolved &&
                                         !nodelink.IsCalculating);
 
             for (int i=0; i<level.Details.numSpecies; i++)
@@ -98,29 +110,29 @@ namespace EcoBuilder
                 int i = level.Details.resources[ij];
                 int j = level.Details.consumers[ij];
                 nodelink.AddLink(i, j);
-
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
-
         }
 
+        bool atEquilibrium = true, graphSolved = true;
         void LateUpdate()
         {
-            // TODO: move these conditions into variables here
-            if (!model.AtEquilibrium && !model.IsCalculating)
+            if (!graphSolved && !nodelink.IsCalculating)
             {
-                #if UNITY_WEBGL
-                    model.EquilibriumSync(nodelink.GetTargets);
-                #else
-                    model.EquilibriumAsync(nodelink.GetTargets);
-                #endif
-            }
-            if (!nodelink.ConstraintsSolved && !nodelink.IsCalculating)
-            {
+                graphSolved = true;
                 #if UNITY_WEBGL
                     nodelink.ConstraintsSync();
                 #else
                     nodelink.ConstraintsAsync();
+                #endif
+            }
+            if (!atEquilibrium && !model.IsCalculating)
+            {
+                atEquilibrium = true;
+                #if UNITY_WEBGL
+                    model.EquilibriumSync(nodelink.GetTargets);
+                #else
+                    model.EquilibriumAsync(nodelink.GetTargets);
                 #endif
             }
         }
