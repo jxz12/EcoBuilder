@@ -45,14 +45,18 @@ namespace EcoBuilder.NodeLink
             {
                 if (focusedNode == nodes[idx])
                 {
-                    // do nothing
+                    // go back to previous focus
+                    superfocused = false;
+                    foreach (Link li in links)
+                    {
+                        li.SetTransparency(1f);
+                    }
                 }
-                else
+                else // already superfocused, but switch
                 {
                     focusedNode = nodes[idx];
                     focusedNode.Outline();
                     SuperFocus();
-                    superfocused = true;
                 }
             }
         }
@@ -104,7 +108,7 @@ namespace EcoBuilder.NodeLink
             foreach (Node no in nodes)
             {
                 // FIXME: ugly
-                if (!adjacency.ContainsKey(no.Idx))
+                if (!no.gameObject.activeSelf)
                     continue;
 
                 if (no.Idx == focusedNode.Idx)
@@ -132,6 +136,10 @@ namespace EcoBuilder.NodeLink
             }
             foreach (Link li in links)
             {
+                // FIXME: ugly
+                if (!li.gameObject.activeSelf)
+                    continue;
+
                 if (li.Source != focusedNode && li.Target != focusedNode)
                 {
                     li.SetTransparency(.1f);
@@ -195,24 +203,24 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        [SerializeField] MeshRenderer disk;
+        // [SerializeField] MeshRenderer disk;
         bool doLayout = true;
-        // TODO: make this nicer and smoother
+
         void PauseLayout(bool paused)
         {
             if (doLayout != paused) // if already paused
                 return;
 
-            Color c = disk.material.color;
-            if (paused)
-            {
-                c *= 1.5f;
-            }
-            else
-            {
-                c /= 1.5f;
-            }
-            disk.material.color = c;
+            // Color c = disk.material.color;
+            // if (paused)
+            // {
+            //     c *= 1.5f;
+            // }
+            // else
+            // {
+            //     c /= 1.5f;
+            // }
+            // disk.material.color = c;
             doLayout = !paused;
         }
 

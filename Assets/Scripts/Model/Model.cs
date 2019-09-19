@@ -123,7 +123,7 @@ namespace EcoBuilder.Model
 
             idxToSpecies.Add(idx, newSpecies);
             speciesToIdx.Add(newSpecies, idx);
-            AtEquilibrium = false;
+            // AtEquilibrium = false;
         }
         public void RemoveSpecies(int idx)
         {
@@ -135,7 +135,7 @@ namespace EcoBuilder.Model
 
             idxToSpecies.Remove(idx);
             speciesToIdx.Remove(toRemove);
-            AtEquilibrium = false;
+            // AtEquilibrium = false;
         }
         static double GetOnLogScale(double normalised, double minVal, double maxVal)
         {
@@ -157,7 +157,7 @@ namespace EcoBuilder.Model
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
             s.Efficiency = s.IsProducer? e_p : e_c;
 
-            AtEquilibrium = false;
+            // AtEquilibrium = false;
         }
         public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
@@ -167,13 +167,13 @@ namespace EcoBuilder.Model
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
 
-            AtEquilibrium = false;
+            // AtEquilibrium = false;
         }
         public void SetSpeciesInterference(int idx, float greedNormalised)
         {
             idxToSpecies[idx].Interference = -GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
 
-            AtEquilibrium = false;
+            // AtEquilibrium = false;
         }
 
 
@@ -191,12 +191,11 @@ namespace EcoBuilder.Model
         public float Complexity { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
-        public bool AtEquilibrium { get; set; } = false;
 
         public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
-            AtEquilibrium = true;
             IsCalculating = true;
+
             Feasible = await Task.Run(() => simulation.SolveFeasibility(
                 s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i])));
 
@@ -214,7 +213,6 @@ namespace EcoBuilder.Model
         }
         public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
-            AtEquilibrium = true;
             Feasible = simulation.SolveFeasibility(
                 s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]));
 
@@ -249,8 +247,8 @@ namespace EcoBuilder.Model
         }
 
         // TODO: change these from hard coded to init in Start()
-        float logMinAbundance = Mathf.Log(6e-8f, 2);
-        float logMaxAbundance = Mathf.Log(2f, 2);
+        float logMinAbundance = Mathf.Log10(6e-8f);
+        float logMaxAbundance = Mathf.Log10(2f);
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
@@ -260,11 +258,11 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return (Mathf.Log(abundance, 2)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
+                return (Mathf.Log10(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
             }
         }
-        float logMinFlux = Mathf.Log(1e-13f, 2);
-        float logMaxFlux = Mathf.Log(8e-7f, 2);
+        float logMinFlux = Mathf.Log10(1e-13f);
+        float logMaxFlux = Mathf.Log10(8e-7f);
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
@@ -274,7 +272,7 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return (Mathf.Log(flux, 2)-logMinFlux) / (logMaxFlux-logMinFlux);
+                return (Mathf.Log10(flux)-logMinFlux) / (logMaxFlux-logMinFlux);
             }
         }
     }

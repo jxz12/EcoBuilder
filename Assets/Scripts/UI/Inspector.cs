@@ -14,11 +14,14 @@ namespace EcoBuilder.UI
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
-
         public event Action<int> OnSpawned;
         public event Action<int> OnDespawned;
-        public event Action<int> OnUserSpawned; // when created from incubator
-        public event Action<int> OnUserDespawned; // when removed from button
+
+        public event Action<int, bool, bool> OnUserIsProducerSet;
+        public event Action<int, float, float> OnUserSizeSet;
+        public event Action<int, float, float> OnUserGreedSet;
+        public event Action<int> OnUserSpawned;
+        public event Action<int> OnUserDespawned;
 
         public event Action OnIncubated;
         public event Action OnUnincubated;
@@ -70,9 +73,9 @@ namespace EcoBuilder.UI
             // for refreshing a species
             public void RerollSeed()
             {
+                RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
                 BodySize = UnityEngine.Random.Range(0, 1f);
                 Greediness = UnityEngine.Random.Range(0, 1f);
-                RandomSeed = UnityEngine.Random.Range(0, int.MaxValue);
             }
         }
 
@@ -87,8 +90,8 @@ namespace EcoBuilder.UI
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             refroveButton.onClick.AddListener(()=> RefreshOrRemove());
 
-            SizeSliderCallback = x=> SetSize();
-            GreedSliderCallback = x=> SetGreed();
+            SizeSliderCallback = x=> SetSizeFromSlider();
+            GreedSliderCallback = x=> SetGreedFromSlider();
             sizeSlider.onValueChanged.AddListener(SizeSliderCallback);
             greedSlider.onValueChanged.AddListener(GreedSliderCallback);
 
@@ -132,8 +135,9 @@ namespace EcoBuilder.UI
             }
             Species s = new Species(nextIdx, isProducer);
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            // s.Editable = true;
-            // s.Removable = true;
+            s.SizeEditable = true;
+            s.GreedEditable = true;
+            s.Removable = true;
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
 
@@ -191,7 +195,7 @@ namespace EcoBuilder.UI
             typesAnim.SetBool("Visible", true);
         }
 
-        void SetSize()
+        void SetSizeFromSlider()
         {
             if (incubated != null)
             {
@@ -200,12 +204,14 @@ namespace EcoBuilder.UI
             }
             else if (inspected != null)
             {
+                float prevSize = inspected.BodySize;
                 inspected.BodySize = sizeSlider.normalizedValue;
-                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
+                OnUserSizeSet.Invoke(inspected.Idx, prevSize, inspected.BodySize);
+                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             }
         }
-        void SetGreed()
+        void SetGreedFromSlider()
         {
             if (incubated != null)
             {
@@ -214,9 +220,11 @@ namespace EcoBuilder.UI
             }
             else if (inspected != null)
             {
+                float prevGreed = inspected.Greediness;
                 inspected.Greediness = greedSlider.normalizedValue;
-                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
                 OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
+                OnUserGreedSet.Invoke(inspected.Idx, prevGreed, inspected.Greediness);
+                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
             }
         }
 
@@ -309,6 +317,7 @@ namespace EcoBuilder.UI
             Shape(toSpawn);
             return toSpawn.Idx;
         }
+
         // for un/redo
         public void Despawn(int idx)
         {
@@ -332,6 +341,49 @@ namespace EcoBuilder.UI
             graveyard[idx].GObject.SetActive(true);
             Shape(graveyard[idx]);
             graveyard.Remove(idx);
+        }
+        public void SetIsProducer(int idx, bool isProducer)
+        {
+            if (!spawnedSpecies.ContainsKey(idx))
+            {
+                throw new Exception("idx not spawned");
+            }
+            Species s = spawnedSpecies[idx];
+            s.IsProducer = isProducer;
+            OnIsProducerSet.Invoke(idx, isProducer);
+            factory.RegenerateSpecies(s.GObject, s.BodySize, s.Greediness, s.RandomSeed);
+        }
+        public void SetSize(int idx, float size)
+        {
+            if (!spawnedSpecies.ContainsKey(idx))
+            {
+                throw new Exception("idx not spawned");
+            }
+            Species s = spawnedSpecies[idx];
+            s.BodySize = size;
+            OnSizeSet.Invoke(idx, size);
+            factory.RegenerateSpecies(s.GObject, s.BodySize, s.Greediness, s.RandomSeed);
+
+            if (inspected == s)
+            {
+                SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
+            }
+        }
+        public void SetGreed(int idx, float greed)
+        {
+            if (!spawnedSpecies.ContainsKey(idx))
+            {
+                throw new Exception("idx not spawned");
+            }
+            Species s = spawnedSpecies[idx];
+            s.Greediness = greed;
+            OnGreedSet.Invoke(idx, greed);
+            factory.RegenerateSpecies(s.GObject, s.BodySize, s.Greediness, s.RandomSeed);
+
+            if (inspected == s)
+            {
+                SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
+            }
         }
 
         public void Hide()
