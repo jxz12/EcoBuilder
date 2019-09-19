@@ -254,7 +254,8 @@ namespace EcoBuilder.NodeLink
             foreach (int i in nodes.Indices)
             {
                 trophicLevels[i] = (1 - temp[i]);
-                MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
+                if (nodes[i].gameObject.activeSelf)
+                    MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
             }
         }
 
