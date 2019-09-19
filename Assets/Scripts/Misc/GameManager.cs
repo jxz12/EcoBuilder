@@ -16,7 +16,7 @@ namespace EcoBuilder
                 if (gameManager == null)
                 {
                     Debug.LogError("No active GameManager");
-                    gameManager = new GameObject("Game Manager").AddComponent<GameManager>();
+                    // gameManager = new GameObject("Game Manager").AddComponent<GameManager>();
                     // remove for build
                 }
                 return gameManager;
@@ -177,91 +177,90 @@ namespace EcoBuilder
             this.education = education;
         }
 
-        public void SaveFoodWebToCSV(
-            List<int> speciesIdxs, List<int> randomSeeds,
-            List<float> sizes, List<float> greeds,
-            List<int> resources, List<int> consumers,
-            List<string> paramNames, List<double> paramValues)
-        {
-            var sb = new StringBuilder();
-            int n = speciesIdxs.Count;
-            if (n != randomSeeds.Count || n != sizes.Count || n != greeds.Count)
-                throw new Exception("length of traits not equal to length of idxs");
+        // public void SaveFoodWebToCSV(
+        //     List<int> speciesIdxs, List<int> randomSeeds,
+        //     List<float> sizes, List<float> greeds,
+        //     List<int> resources, List<int> consumers,
+        //     List<string> paramNames, List<double> paramValues)
+        // {
+        //     var sb = new StringBuilder();
+        //     int n = speciesIdxs.Count;
+        //     if (n != randomSeeds.Count || n != sizes.Count || n != greeds.Count)
+        //         throw new Exception("length of traits not equal to length of idxs");
 
-            int m = resources.Count;
-            if (m != consumers.Count)
-                throw new Exception("length of sources not equal to length of targets");
+        //     int m = resources.Count;
+        //     if (m != consumers.Count)
+        //         throw new Exception("length of sources not equal to length of targets");
 
-            int p = paramNames.Count;
-            if (p != paramValues.Count)
-                throw new Exception("length of param names not equal to values");
+        //     int p = paramNames.Count;
+        //     if (p != paramValues.Count)
+        //         throw new Exception("length of param names not equal to values");
             
-            string datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
-            sb.Append(datetime).Append("\n");
-            sb.Append("Age,").Append(age).Append("\n");
-            sb.Append("Gender,").Append(gender).Append("\n");
-            sb.Append("Education,").Append(education).Append("\n");
+        //     string datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
+        //     sb.Append(datetime).Append("\n");
+        //     sb.Append("Age,").Append(age).Append("\n");
+        //     sb.Append("Gender,").Append(gender).Append("\n");
+        //     sb.Append("Education,").Append(education).Append("\n");
 
-            sb.Append("Index,");
-            for (int i=0; i<n-1; i++)
-            {
-                sb.Append(speciesIdxs[i]).Append(",");
-            }
-            sb.Append(speciesIdxs[n-1]).Append("\nRandom Seed,");
-            for (int i=0; i<n-1; i++)
-            {
-                sb.Append(randomSeeds[i]).Append(",");
-            }
-            sb.Append(randomSeeds[n-1]).Append("\nBody Size,");
-            for (int i=0; i<n-1; i++)
-            {
-                sb.Append(sizes[i]).Append(",");
-            }
-            sb.Append(sizes[n-1]).Append("\nGreediness,");
-            for (int i=0; i<n-1; i++)
-            {
-                sb.Append(greeds[i]).Append(",");
-            }
-            sb.Append(greeds[n-1]);
+        //     sb.Append("Index,");
+        //     for (int i=0; i<n-1; i++)
+        //     {
+        //         sb.Append(speciesIdxs[i]).Append(",");
+        //     }
+        //     sb.Append(speciesIdxs[n-1]).Append("\nRandom Seed,");
+        //     for (int i=0; i<n-1; i++)
+        //     {
+        //         sb.Append(randomSeeds[i]).Append(",");
+        //     }
+        //     sb.Append(randomSeeds[n-1]).Append("\nBody Size,");
+        //     for (int i=0; i<n-1; i++)
+        //     {
+        //         sb.Append(sizes[i]).Append(",");
+        //     }
+        //     sb.Append(sizes[n-1]).Append("\nGreediness,");
+        //     for (int i=0; i<n-1; i++)
+        //     {
+        //         sb.Append(greeds[i]).Append(",");
+        //     }
+        //     sb.Append(greeds[n-1]);
             
-            if (m > 0)
-            {
-                sb.Append("\nResource,");
-                for (int ij=0; ij<m-1; ij++)
-                {
-                    sb.Append(resources[ij]).Append(",");
-                }
-                sb.Append(resources[m-1]).Append("\nConsumer,");
-                for (int ij=0; ij<m-1; ij++)
-                {
-                    sb.Append(consumers[ij]).Append(",");
-                }
-                sb.Append(consumers[m-1]);
-            }
+        //     if (m > 0)
+        //     {
+        //         sb.Append("\nResource,");
+        //         for (int ij=0; ij<m-1; ij++)
+        //         {
+        //             sb.Append(resources[ij]).Append(",");
+        //         }
+        //         sb.Append(resources[m-1]).Append("\nConsumer,");
+        //         for (int ij=0; ij<m-1; ij++)
+        //         {
+        //             sb.Append(consumers[ij]).Append(",");
+        //         }
+        //         sb.Append(consumers[m-1]);
+        //     }
 
-            sb.Append("\nParameter,");
-            for (int i=0; i<p-1; i++)
-            {
-                sb.Append(paramNames[i]).Append(",");
-            }
-            sb.Append(paramNames[p-1]).Append("\nValue,");
-            for (int i=0; i<p-1; i++)
-            {
-                sb.Append(paramValues[i]).Append(",");
-            }
-            sb.Append(paramValues[p-1]);
+        //     sb.Append("\nParameter,");
+        //     for (int i=0; i<p-1; i++)
+        //     {
+        //         sb.Append(paramNames[i]).Append(",");
+        //     }
+        //     sb.Append(paramNames[p-1]).Append("\nValue,");
+        //     for (int i=0; i<p-1; i++)
+        //     {
+        //         sb.Append(paramValues[i]).Append(",");
+        //     }
+        //     sb.Append(paramValues[p-1]);
 
-            try
-            {
-                System.IO.File.WriteAllText(Application.persistentDataPath+"/"+datetime+".csv", sb.ToString());
-            }
-            catch (Exception e)
-            {
-                print("I hate my life\n" + e.Message);
-            }
-            
+        //     try
+        //     {
+        //         System.IO.File.WriteAllText(Application.persistentDataPath+"/"+datetime+".csv", sb.ToString());
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         print("I hate my life\n" + e.Message);
+        //     }
+        // }
 
-        }
         public void ReturnToMenu()
         {
             if (PlayedLevel != null)

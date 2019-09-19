@@ -7,12 +7,15 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink : MonoBehaviour
     {
-        // public event Action OnEmptyPressed;
         public event Action<int> OnNodeFocused;
         public event Action OnUnfocused;
         public event Action OnEmptyPressed;
-        public event Action<int, int> OnLinkAdded;
-        public event Action<int, int> OnLinkRemoved;
+        public event Action OnConstraints;
+        public event Action OnLinked;
+
+        // called when user does something
+        public event Action<int, int> OnUserLinked;
+        public event Action<int, int> OnUserUnlinked;
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
@@ -48,43 +51,6 @@ namespace EcoBuilder.NodeLink
             if (!Input.anyKey && Input.touchCount==0)
                 RotateWithMomentum();
         }
-        bool constraintsSolved = true, calculating = false;
-        public bool Ready { get { return constraintsSolved && !calculating; } }
-        private void LateUpdate()
-        {
-            if (!constraintsSolved && !calculating && nodes.Count>0)
-            {
-                ///////////////////////////////
-                // do constraint calculations
-
-                constraintsSolved = true;
-                etaIteration = 0; // reset SGD
-
-                Disjoint = CheckDisjoint();
-                NumEdges = links.Count();
-
-                HashSet<int> basal = BuildTrophicEquations();
-                var heights = HeightBFS(basal);
-                LaplacianDetZero = (heights.Count != nodes.Count);
-                // MaxTrophic done in Update()
-
-                if (superfocused)
-                {
-                    SuperFocus();
-                }
-
-                MaxChain = 0;
-                foreach (int height in heights.Values)
-                    MaxChain = Math.Max(height, MaxChain);
-
-                #if UNITY_WEBGL
-                    ConstraintsSync();
-                #else
-                    ConstraintsAsync();
-                #endif
-            }
-        }
-
 
 
         ///////////////////////////////////
@@ -94,42 +60,61 @@ namespace EcoBuilder.NodeLink
         SparseMatrix<Link> links = new SparseMatrix<Link>();
         Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
 
-        public void AddNode(int idx, GameObject shape)
+        public void AddNode(int idx)
         {
-            if (nodes[idx] != null)
-                throw new Exception("already has idx " + idx);
-
-            Node newNode = Instantiate(nodePrefab, nodesParent);
-
-            var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
-            // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
-
-            newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2, shape);
-            nodes[idx] = newNode;
-
             adjacency[idx] = new HashSet<int>();
-            toBFS.Enqueue(idx);
 
-            constraintsSolved = false;
+            if (nodes[idx] == null)
+            {
+                Node newNode = Instantiate(nodePrefab, nodesParent);
+
+                var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
+                // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
+
+                newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2);
+                nodes[idx] = newNode;
+            }
+            else // readdition
+            {
+                if (nodes[idx].isActiveAndEnabled)
+                    throw new Exception("node already active at idx " + idx);
+
+                nodes[idx].gameObject.SetActive(true);
+                adjacency[idx] = new HashSet<int>();
+                foreach (int col in links.GetColumnIndicesInRow(idx))
+                {
+                    links[idx,col].gameObject.SetActive(true);
+                    adjacency[idx].Add(col);
+                    adjacency[col].Add(idx);
+                }
+                foreach (int row in links.GetRowIndicesInColumn(idx))
+                {
+                    links[row,idx].gameObject.SetActive(true);
+                    adjacency[idx].Add(row);
+                    adjacency[row].Add(idx);
+                }
+            }
+            toBFS.Enqueue(idx);
+            // ConstraintsSolved = false;
         }
 
         public void RemoveNode(int idx)
         {
+            if (nodes[idx] == null)
+                throw new Exception("no index " + idx);
             if (focusedNode != null && focusedNode.Idx == idx)
-                Unfocus();
+                FullUnfocus();
 
-            Destroy(nodes[idx].gameObject);
-            nodes.RemoveAt(idx);
-
-            // prevent memory leak in sparse matrices
-            var toRemove = new List<Tuple<int,int>>();
-            foreach (int other in links.GetColumnIndicesInRow(idx))
-                toRemove.Add(Tuple.Create(idx, other));
-            foreach (int other in links.GetRowIndicesInColumn(idx))
-                toRemove.Add(Tuple.Create(other, idx));
-
-            foreach (var ij in toRemove)
-                RemoveLink(ij.Item1, ij.Item2);
+            // disable instead of completely remove
+            nodes[idx].gameObject.SetActive(false);
+            foreach (Link li in links.GetColumnData(idx))
+            {
+                li.gameObject.SetActive(false);
+            }
+            foreach (Link li in links.GetRowData(idx))
+            {
+                li.gameObject.SetActive(false);
+            }
 
             // prevent memory leak in SGD data structures
             adjacency.Remove(idx);
@@ -139,13 +124,8 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
-
-            // prevent memory leak in trophic level data structures
-            trophicA.RemoveAt(idx);
-            trophicLevels.RemoveAt(idx);
-
-            constraintsSolved = false;
-        }
+            // ConstraintsSolved = false;
+        }        
 
         public void AddLink(int i, int j)
         {
@@ -160,8 +140,8 @@ namespace EcoBuilder.NodeLink
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            constraintsSolved = false;
-            OnLinkAdded.Invoke(i, j);
+            // ConstraintsSolved = false;
+            OnLinked.Invoke();
         }
         public void RemoveLink(int i, int j)
         {
@@ -177,10 +157,17 @@ namespace EcoBuilder.NodeLink
                 links[j,i].Curved = false;
             }
 
-            constraintsSolved = false;
-            OnLinkRemoved.Invoke(i,j);
+            // ConstraintsSolved = false;
+            OnLinked.Invoke();
         }
 
+        public void ShapeNode(int idx, GameObject shape)
+        {
+            if (nodes[idx] == null)
+                throw new Exception("no index " + idx);
+
+            nodes[idx].Shape(shape);
+        }
         public void SetIfNodeCanBeSource(int idx, bool canBeSource) // basal
         {
             nodes[idx].CanBeSource = canBeSource;
@@ -189,14 +176,14 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        public void SetIfNodeRemovable(int idx, bool removable)
-        {
-            nodes[idx].Removable = removable;
-            // if (removable)
-            //     nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
-            // else
-            //     nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
-        }
+        // public void SetIfNodeRemovable(int idx, bool removable)
+        // {
+        //     // nodes[idx].Removable = removable;
+        //     // if (removable)
+        //     //     nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
+        //     // else
+        //     //     nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
+        // }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
@@ -206,6 +193,17 @@ namespace EcoBuilder.NodeLink
             //     links[i,j].GetComponent<LineRenderer>().material = linkFixed;
         }
 
+        public IEnumerable<int> GetTargets(int source)
+        {
+            foreach (int target in links.GetColumnIndicesInRow(source))
+            {
+                // FIXME: ugly
+                if (adjacency.ContainsKey(target))
+                {
+                    yield return target;
+                }
+            }
+        }
 
         [SerializeField] float minNodeSize, maxNodeSize;
         public void ResizeNodes(Func<int, float> sizes)
@@ -213,6 +211,10 @@ namespace EcoBuilder.NodeLink
             float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
+                // FIXME: ugly
+                if (!no.gameObject.activeSelf)
+                    continue;
+
                 float size = sizes(no.Idx);
                 if (size > 0)
                 {
@@ -230,6 +232,10 @@ namespace EcoBuilder.NodeLink
             float flowRange = maxLinkFlow - minLinkFlow;
             foreach (Link li in links)
             {
+                // FIXME: ugly
+                if (!li.gameObject.activeSelf)
+                    continue;
+
                 int res=li.Source.Idx, con=li.Target.Idx;
                 float flow = flows(res, con);
                 if (flow > 0)
@@ -241,17 +247,6 @@ namespace EcoBuilder.NodeLink
                     li.TileSpeed = minLinkFlow;
                 }
             }
-        }
-        public Tuple<List<int>, List<int>> GetLinkIndices()
-        {
-            var sources = new List<int>();
-            var targets = new List<int>();
-            foreach (var ij in links.IndexPairs)
-            {
-                sources.Add(ij.Item1);
-                targets.Add(ij.Item2);
-            }
-            return Tuple.Create(sources, targets);
         }
     }
 }

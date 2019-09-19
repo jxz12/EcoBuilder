@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 // for heavy calculations
 using System.Threading.Tasks;
 
@@ -8,6 +9,10 @@ namespace EcoBuilder.Model
 {
     public class Model : MonoBehaviour
     {   
+        public event Action OnEquilibrium;
+        public event Action<int> OnEndangered;
+        public event Action<int> OnRescued;
+
         ///////////////////////////////////////////////////////////
         // MODEL DESCRIPION:
         //  foraging for plants follows a grazing strategy
@@ -26,8 +31,8 @@ namespace EcoBuilder.Model
                e_p = 0.2,          // plant efficiency
                e_c = 0.5,          // animal efficiency
 
-               kg_min =   1e-3,     // min body size
-               kg_max =   1e3       // max body size
+               kg_min = 1e-3,     // min body size
+               kg_max = 1e3       // max body size
                ;
 
         double a_ii_min, a_ii_max;  // calculated at runtime
@@ -106,20 +111,31 @@ namespace EcoBuilder.Model
             );
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
+        Dictionary<Species, int> speciesToIdx = new Dictionary<Species, int>();
 
         public void AddSpecies(int idx)
         {
+            if (idxToSpecies.ContainsKey(idx))
+                throw new Exception("already contains idx " + idx);
+
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
+
             idxToSpecies.Add(idx, newSpecies);
-            equilibriumSolved = false;
+            speciesToIdx.Add(newSpecies, idx);
+            // AtEquilibrium = false;
         }
         public void RemoveSpecies(int idx)
         {
+            if (!idxToSpecies.ContainsKey(idx))
+                throw new Exception("does not contain idx " + idx);
+
             Species toRemove = idxToSpecies[idx];
             simulation.RemoveSpecies(toRemove);
+
             idxToSpecies.Remove(idx);
-            equilibriumSolved = false;
+            speciesToIdx.Remove(toRemove);
+            // AtEquilibrium = false;
         }
         static double GetOnLogScale(double normalised, double minVal, double maxVal)
         {
@@ -141,7 +157,7 @@ namespace EcoBuilder.Model
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
             s.Efficiency = s.IsProducer? e_p : e_c;
 
-            equilibriumSolved = false;
+            // AtEquilibrium = false;
         }
         public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
@@ -151,47 +167,20 @@ namespace EcoBuilder.Model
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
 
-            equilibriumSolved = false;
+            // AtEquilibrium = false;
         }
         public void SetSpeciesInterference(int idx, float greedNormalised)
         {
             idxToSpecies[idx].Interference = -GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
 
-            equilibriumSolved = false;
+            // AtEquilibrium = false;
         }
-
-        public void AddInteraction(int resource, int consumer)
-        {
-            if (resource == consumer)
-                throw new Exception("can't eat itself");
-
-            Species res = idxToSpecies[resource], con = idxToSpecies[consumer];
-            simulation.AddInteraction(res, con);
-            equilibriumSolved = false;
-        }
-        public void RemoveInteraction(int resource, int consumer)
-        {
-            if (resource == consumer)
-                throw new Exception("can't eat itself");
-
-            Species res = idxToSpecies[resource], con = idxToSpecies[consumer];
-            simulation.RemoveInteraction(res, con);
-            equilibriumSolved = false;
-        }
-
-
-
-
 
 
 
 
         /////////////////////////////////////
         // actual calculations here
-
-        public event Action OnEquilibrium;
-        public event Action<int> OnEndangered;
-        public event Action<int> OnRescued;
 
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
@@ -201,30 +190,17 @@ namespace EcoBuilder.Model
         public float TotalAbundance { get; private set; } = 0;
         public float Complexity { get; private set; } = 0;
 
-        bool equilibriumSolved = true, calculating = false;
-        public bool Ready { get { return equilibriumSolved && !calculating; } }
-        void LateUpdate()
-        {
-            if (!equilibriumSolved && !calculating)// && idxToSpecies.Count>0)
-            {
-                equilibriumSolved = true;
+        public bool IsCalculating { get; private set; } = false;
 
-                #if UNITY_WEBGL
-                    EquilibriumSync();
-                #else
-                    EquilibriumAsync();
-                #endif
-            }
-        }
-
-        async void EquilibriumAsync()
+        public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
-            calculating = true;
-            Feasible = await Task.Run(() => simulation.SolveFeasibility());
+            IsCalculating = true;
+
+            Feasible = await Task.Run(() => simulation.SolveFeasibility(
+                s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i])));
+
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
-
-            // print("flux: " + TotalFlux);
 
             Stable = await Task.Run(() => simulation.SolveStability());
             Complexity = (float)simulation.MayComplexity;
@@ -232,12 +208,14 @@ namespace EcoBuilder.Model
 
             ShowAbundanceWarnings();
 
-            calculating = false;
+            IsCalculating = false;
             OnEquilibrium.Invoke();
         }
-        void EquilibriumSync()
+        public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
-            Feasible = simulation.SolveFeasibility();
+            Feasible = simulation.SolveFeasibility(
+                s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]));
+
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
@@ -269,8 +247,8 @@ namespace EcoBuilder.Model
         }
 
         // TODO: change these from hard coded to init in Start()
-        float logMinAbundance = Mathf.Log(6e-8f, 2);
-        float logMaxAbundance = Mathf.Log(2f, 2);
+        float logMinAbundance = Mathf.Log10(6e-8f);
+        float logMaxAbundance = Mathf.Log10(2f);
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
@@ -280,11 +258,11 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return (Mathf.Log(abundance, 2)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
+                return (Mathf.Log10(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
             }
         }
-        float logMinFlux = Mathf.Log(1e-13f, 2);
-        float logMaxFlux = Mathf.Log(8e-7f, 2);
+        float logMinFlux = Mathf.Log10(1e-13f);
+        float logMaxFlux = Mathf.Log10(8e-7f);
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
@@ -294,18 +272,8 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return (Mathf.Log(flux, 2)-logMinFlux) / (logMaxFlux-logMinFlux);
+                return (Mathf.Log10(flux)-logMinFlux) / (logMaxFlux-logMinFlux);
             }
-        }
-
-        public Tuple<List<string>, List<double>> GetParameterisation()
-        {
-            var names = new List<string>()
-                { "r0","z0","a0","beta","p_v","p_d","e_p","e_c","kg_min","kg_max","a_ii_min","a_ii_max"};
-            var vals = new List<double>()
-                { r0,z0,a0,beta,p_v,p_d,e_p,e_c,kg_min,kg_max,a_ii_min,a_ii_max};
-
-            return Tuple.Create(names, vals);
         }
     }
 }

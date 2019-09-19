@@ -41,9 +41,9 @@ namespace EcoBuilder.JonnyGenerator
             Color c = GetColor(isProducer, size, greed);
             js.GetComponent<MeshRenderer>().material.color = c;
 
-            js.SetEyesMesh(eyes[UnityEngine.Random.Range(0, eyes.Count)]);
-            js.SetNoseMesh(noses[UnityEngine.Random.Range(0, noses.Count)]);
-            js.SetMouthMesh(mouths[UnityEngine.Random.Range(0, mouths.Count)]);
+        //     js.SetEyesMesh(eyes[UnityEngine.Random.Range(0, eyes.Count)]);
+        //     js.SetNoseMesh(noses[UnityEngine.Random.Range(0, noses.Count)]);
+        //     js.SetMouthMesh(mouths[UnityEngine.Random.Range(0, mouths.Count)]);
         }
         private Color GetColor(bool isProducer, float size, float greed)
         {

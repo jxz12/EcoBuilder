@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 // for heavy calculations
 using System.Threading.Tasks;
@@ -10,28 +9,52 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
-        public event Action OnConstraints;
-
         // TODO: option to highlight tallest species or longest loop on selection
         public bool Disjoint { get; private set; } = false;
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
-        // public float MaxTrophic { get; private set; } = 0;
         public int MaxChain { get; private set; } = 0;
+        public float MaxTrophic { get; private set; } = 1;
         public int MaxLoop { get; private set; } = 0;
-        async void ConstraintsAsync()
-        {
-            calculating = true;
 
+        public bool IsCalculating { get; private set; } = false;
+
+        public async void ConstraintsAsync()
+        {
+            IsCalculating = true;
+
+            RefreshTrophic();
             MaxLoop = await Task.Run(()=> LongestLoop());
 
-            calculating = false;
+            IsCalculating = false;
             OnConstraints.Invoke();
         }
-        void ConstraintsSync()
+        public void ConstraintsSync()
         {
+            RefreshTrophic();
             MaxLoop = LongestLoop();
+
             OnConstraints.Invoke();
+        }
+        void RefreshTrophic()
+        {
+            etaIteration = 0; // reset SGD
+
+            Disjoint = CheckDisjoint();
+            NumEdges = links.Count();
+
+            HashSet<int> basal = BuildTrophicEquations();
+            var heights = HeightBFS(basal);
+            LaplacianDetZero = (heights.Count != nodes.Count);
+
+            if (superfocused)
+                SuperFocus();
+
+            MaxChain = 0;
+            foreach (int height in heights.Values)
+                MaxChain = Math.Max(height, MaxChain);
+
+            // MaxTrophic cannot be here as it is always evolving
         }
 
         ///////////////////////////////////////////////////////
