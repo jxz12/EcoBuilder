@@ -60,6 +60,14 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        public void SwitchFocus(int idx) // urgh
+        {
+            if (focusedNode != nodes[idx] && nodes[idx].gameObject.activeSelf)
+            {
+                FocusNode(idx);
+                OnNodeFocused.Invoke(idx);
+            }
+        }
         void Unfocus()
         {
             if (focusedNode != null)

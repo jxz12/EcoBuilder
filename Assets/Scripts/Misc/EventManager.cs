@@ -32,7 +32,7 @@ namespace EcoBuilder
             inspector.OnIsProducerSet += (i,x)=> status.AddType(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
-            inspector.OnUserSpawned +=       (i)=> nodelink.FocusNode(i);
+            inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
@@ -54,7 +54,6 @@ namespace EcoBuilder
             status.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
             status.OnLevelCompleted     +=  ()=> CompleteLevel();
 
-            // collection
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
             inspector.OnDespawned +=       (i)=> atEquilibrium = false;
@@ -72,6 +71,8 @@ namespace EcoBuilder
             inspector.OnUserIsProducerSet += (i,x,y)=> recorder.TypeSet(i, x, y, inspector.SetIsProducer);
             inspector.OnUserSizeSet +=       (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet +=      (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
+
+            recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
 
 
 

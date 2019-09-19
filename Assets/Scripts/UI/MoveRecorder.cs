@@ -7,19 +7,23 @@ namespace EcoBuilder.UI
 {
     public class MoveRecorder : MonoBehaviour
     {
+        public event Action<int> OnSpeciesUndone;
+
         [SerializeField] Button undoButton;
         [SerializeField] Button redoButton;
 
         class Move
         {
-            public bool Structural { get; private set; }
+            public int idx;
+            public bool isStructural;
             public Action Undo { get; private set; }
             public Action Redo { get; private set; }
-            public Move(Action Undo, Action Redo, bool structural)
+            public Move(Action Undo, Action Redo, int idx, bool isStructural)
             {
                 this.Undo = Undo;
                 this.Redo = Redo;
-                this.Structural = structural;
+                this.idx = idx;
+                this.isStructural = isStructural;
             }
         }
 
@@ -38,69 +42,92 @@ namespace EcoBuilder.UI
             redos.Clear();
             undoButton.interactable = true;
             redoButton.interactable = false;
-            print(undos.Count);
         }
 
         public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
-            NewMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), true));
+            NewMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), idx, true));
         }
         public void SpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
-            NewMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), true));
+            NewMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), idx, true));
         }
         public void InteractionAdded(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
-            NewMove(new Move(()=>Remove(res,con), ()=>Add(res,con), true));
+            NewMove(new Move(()=>Remove(res,con), ()=>Add(res,con), int.MinValue, true));
         }
         public void InteractionRemoved(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
-            NewMove(new Move(()=>Add(res,con), ()=>Remove(res,con), true));
+            NewMove(new Move(()=>Add(res,con), ()=>Remove(res,con), int.MinValue, true));
         }
 
         public void TypeSet(int idx, bool prev, bool current, Action<int, bool> SetType)
         {
-            NewMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), false));
+            NewMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, false));
         }
         public void SizeSet(int idx, float prev, float current, Action<int, float> SetSize)
         {
-            NewMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), false));
+            NewMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, false));
         }
         public void GreedSet(int idx, float prev, float current, Action<int, float> SetGreed)
         {
-            NewMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), false));
+            NewMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, false));
         }
 
         // connected to buttons
         public void Undo()
         {
-            // do at least one undo
-            undos.Peek().Undo();
-            redos.Push(undos.Pop());
-
-            while (undos.Count>0 && !undos.Peek().Structural) // keep going until last structural change
+            int idx = undos.Peek().idx;
+            if (undos.Peek().isStructural)
             {
+                // do at least one undo
                 undos.Peek().Undo();
                 redos.Push(undos.Pop());
+            }
+            else
+            {
+                // keep going until last structural change to this species
+                while (undos.Count>0 && !undos.Peek().isStructural && undos.Peek().idx==idx)
+                {
+                    undos.Peek().Undo();
+                    redos.Push(undos.Pop());
+                }
             }
 
             undoButton.interactable = undos.Count > 0;
             redoButton.interactable = true;
+
+            if (idx != int.MinValue)
+            {
+                OnSpeciesUndone.Invoke(idx);
+            }
         }
         public void Redo()
         {
-            // do at least one undo
-            redos.Peek().Undo();
-            undos.Push(redos.Pop());
-
-            while (redos.Count>0 && !redos.Peek().Structural) // keep going until last structural change
+            int idx = redos.Peek().idx;
+            if (redos.Peek().isStructural)
             {
-                redos.Peek().Undo();
+                // do at least one undo
+                redos.Peek().Redo();
                 undos.Push(redos.Pop());
+            }
+            else
+            {
+                // keep going until last structural change to this species
+                while (redos.Count>0 && !redos.Peek().isStructural && redos.Peek().idx==idx)
+                {
+                    redos.Peek().Redo();
+                    undos.Push(redos.Pop());
+                }
             }
 
             redoButton.interactable = redos.Count > 0;
             undoButton.interactable = true;
+
+            if (idx != int.MinValue)
+            {
+                OnSpeciesUndone.Invoke(idx);
+            }
         }
         public void Record()
         {
