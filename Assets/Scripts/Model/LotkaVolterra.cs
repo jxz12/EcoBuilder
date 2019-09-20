@@ -83,7 +83,7 @@ namespace EcoBuilder.Model
             }
         }
 
-        void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
+        public void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
@@ -166,7 +166,7 @@ namespace EcoBuilder.Model
                 return false;
             }
 
-            BuildInteractionMatrix(Consumers);
+            // BuildInteractionMatrix(Consumers);
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 

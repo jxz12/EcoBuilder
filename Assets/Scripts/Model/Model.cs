@@ -196,8 +196,10 @@ namespace EcoBuilder.Model
         {
             IsCalculating = true;
 
-            Feasible = await Task.Run(() => simulation.SolveFeasibility(
-                s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i])));
+            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
+            simulation.BuildInteractionMatrix(map); // not async, in order to keep state consistent
+
+            Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
 
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
@@ -213,8 +215,9 @@ namespace EcoBuilder.Model
         }
         public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
-            Feasible = simulation.SolveFeasibility(
-                s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]));
+            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
+            simulation.BuildInteractionMatrix(map);
+            Feasible = simulation.SolveFeasibility(map);
 
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;

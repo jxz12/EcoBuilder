@@ -23,12 +23,13 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
-            transform.localPosition = StressPos = FocusPos = pos;
+            transform.localPosition = StressPos = pos;
             Size = size;
         }
 
         public void Shape(GameObject shapeObject)
         {
+            transform.position = shapeObject.transform.position;
             shape = shapeObject;
             shape.transform.SetParent(transform);
             shape.transform.localPosition = Vector3.zero;

@@ -24,7 +24,8 @@ namespace EcoBuilder.NodeLink
             IsCalculating = true;
 
             RefreshTrophic();
-            MaxLoop = await Task.Run(()=> LongestLoop());
+            var inout = JohnsonInOut(); // not async to synchronize state
+            MaxLoop = await Task.Run(()=> LongestLoop(inout.Item1, inout.Item2));
 
             IsCalculating = false;
             OnConstraints.Invoke();
@@ -32,7 +33,8 @@ namespace EcoBuilder.NodeLink
         public void ConstraintsSync()
         {
             RefreshTrophic();
-            MaxLoop = LongestLoop();
+            var inout = JohnsonInOut();
+            MaxLoop = LongestLoop(inout.Item1, inout.Item2);
 
             OnConstraints.Invoke();
         }
@@ -137,40 +139,45 @@ namespace EcoBuilder.NodeLink
 
 
         ///////////////////////////////////
-        // for loops
+        // loops
 
-        // very slow, so run async if possible
-        int LongestLoop()
+        Tuple<Dictionary<int, HashSet<int>>, Dictionary<int, HashSet<int>>> JohnsonInOut()
         {
-            var outgoingCopy = new Dictionary<int, HashSet<int>>();
             var incomingCopy = new Dictionary<int, HashSet<int>>();
+            var outgoingCopy = new Dictionary<int, HashSet<int>>();
             foreach (int i in nodes.Indices)
             {
-                outgoingCopy[i] = new HashSet<int>();
                 incomingCopy[i] = new HashSet<int>();
+                outgoingCopy[i] = new HashSet<int>();
             }
             foreach (var ij in links.IndexPairs)
             {
                 int i=ij.Item1, j=ij.Item2;
-                outgoingCopy[i].Add(j);
                 incomingCopy[j].Add(i);
+                outgoingCopy[i].Add(j);
             }
+            return Tuple.Create(incomingCopy, outgoingCopy);
+        }
+
+        // very slow, so run async if possible
+        int LongestLoop(Dictionary<int, HashSet<int>> incoming, Dictionary<int, HashSet<int>> outgoing)
+        {
 
 			int longestPath = 0;
             foreach (Node no in nodes)
             {
                 int idx = no.Idx;
                 // if the strongly connected component is bigger than just the vertex
-                var scc = StronglyConnectedComponent(idx, outgoingCopy, incomingCopy);
+                var scc = StronglyConnectedComponent(idx, outgoing, incoming);
 
-                longestPath = Math.Max(longestPath, JohnsonSingleSource(idx, outgoingCopy).Count);
+                longestPath = Math.Max(longestPath, JohnsonSingleSource(idx, outgoing).Count);
 
                 // remove node from graph
-                outgoingCopy.Remove(idx);
-                incomingCopy.Remove(idx);
-                foreach (var set in outgoingCopy.Values)
+                outgoing.Remove(idx);
+                incoming.Remove(idx);
+                foreach (var set in outgoing.Values)
                     set.Remove(idx);
-                foreach (var set in incomingCopy.Values)
+                foreach (var set in incoming.Values)
                     set.Remove(idx);
             }
 			return longestPath;
