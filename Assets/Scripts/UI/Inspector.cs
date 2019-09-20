@@ -115,9 +115,9 @@ namespace EcoBuilder.UI
             spawnedSpecies.Remove(toBury.Idx);
             graveyard.Add(toBury.Idx, toBury);
 
-            // take back GameObject before nodelink destroys it
-            toBury.GObject.transform.SetParent(transform, false);
-            toBury.GObject.SetActive(false);
+            // // take back GameObject before nodelink destroys it
+            // toBury.GObject.transform.SetParent(transform, false);
+            // toBury.GObject.SetActive(false);
 
             OnDespawned.Invoke(toBury.Idx); // must be invoked last
         }

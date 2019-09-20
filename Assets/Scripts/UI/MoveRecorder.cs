@@ -16,8 +16,8 @@ namespace EcoBuilder.UI
         {
             public int idx;
             public bool isStructural;
-            public Action Undo { get; private set; }
-            public Action Redo { get; private set; }
+            public Action Undo;
+            public Action Redo;
             public Move(Action Undo, Action Redo, int idx, bool isStructural)
             {
                 this.Undo = Undo;
