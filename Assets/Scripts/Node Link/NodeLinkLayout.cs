@@ -134,19 +134,15 @@ namespace EcoBuilder.NodeLink
                         nodes[i].StressPos -= mu * r;
                         nodes[j].StressPos += mu * r;
                     }
-                    else if (mag < 1) // otherwise push away if too close
+                    else if (mag < 1) // otherwise push away if too close (jakobsen)
                     {
-                        // float mu = Mathf.Min(separationStep, 1);
-                        float mu = 1;
-
                         Vector3 r = ((mag-1)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
-                        nodes[i].StressPos -= mu * r;
-                        nodes[j].StressPos += mu * r;
+                        nodes[i].StressPos -= r;
+                        nodes[j].StressPos += r;
                     }
                 }
             }
-            // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
         }
 
         private Dictionary<int, int> ShortestPathsBFS(int source)
@@ -204,17 +200,10 @@ namespace EcoBuilder.NodeLink
             foreach (int i in nodes.Indices)
                 trophicA[i] = 0;
 
-            // foreach (var ij in links.IndexPairs)
-            // {
-            //     int res=ij.Item1, con=ij.Item2;
-            //     trophicA[con] += 1f;
-            // }
-
-            // FIXME: ugly
-            foreach (Link li in links)
+            foreach (var ij in links.IndexPairs)
             {
-                if (li.gameObject.activeSelf)
-                    trophicA[li.Target.Idx] += 1f;
+                int res=ij.Item1, con=ij.Item2;
+                trophicA[con] += 1f;
             }
 
             var basal = new HashSet<int>();
@@ -232,30 +221,16 @@ namespace EcoBuilder.NodeLink
         void TrophicGaussSeidel()
         {
             SparseVector<float> temp = new SparseVector<float>();
-            // foreach (var ij in links.IndexPairs)
-            // {
-            //     int res = ij.Item1, con = ij.Item2;
-            //     temp[con] += trophicA[con] * trophicLevels[res];
-            // }
-            // MaxTrophic = 0;
-            // foreach (int i in nodes.Indices)
-            // {
-            //     trophicLevels[i] = (1 - temp[i]);
-            //     MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
-            // }
-            
-            // FIXME: ugly
-            foreach (Link li in links)
+            foreach (var ij in links.IndexPairs)
             {
-                if (li.gameObject.activeSelf)
-                    temp[li.Target.Idx] += trophicA[li.Target.Idx] * trophicLevels[li.Source.Idx];
+                int res = ij.Item1, con = ij.Item2;
+                temp[con] += trophicA[con] * trophicLevels[res];
             }
             MaxTrophic = 0;
             foreach (int i in nodes.Indices)
             {
                 trophicLevels[i] = (1 - temp[i]);
-                if (nodes[i].gameObject.activeSelf)
-                    MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
+                MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
             }
         }
 

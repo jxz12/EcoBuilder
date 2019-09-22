@@ -36,7 +36,6 @@ namespace EcoBuilder.NodeLink
             shape.transform.localRotation = Quaternion.identity;
             shape.transform.localScale = Vector3.one;
 
-            // // TODO: change this messiness
             // Mesh outlineMesh = shapeObject.GetComponent<MeshFilter>().mesh;
             // outlineMesh = Instantiate(outlineMesh);
  
@@ -102,9 +101,5 @@ namespace EcoBuilder.NodeLink
                     shape.GetComponent<MeshRenderer>().enabled = true;
             }
         }
-        // public void Shake(bool isShaking)
-        // {
-        //     anim.SetBool("Shaking", isShaking);
-        // }
     }
 }

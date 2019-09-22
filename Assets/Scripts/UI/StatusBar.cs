@@ -7,15 +7,15 @@ namespace EcoBuilder.UI
 {
     public class StatusBar : MonoBehaviour
     {
+        public event Action<bool> OnProducersAvailable;
+        public event Action<bool> OnConsumersAvailable;
+        public event Action OnLevelCompleted;
+
+
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraint heart, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
         [SerializeField] RectTransform levelParent;
-
-        public event Action<bool> OnProducersAvailable;
-        public event Action<bool> OnConsumersAvailable;
-
-        public event Action OnLevelCompleted;
 
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
@@ -53,8 +53,15 @@ namespace EcoBuilder.UI
         {
             help.Show(showing);
         }
-        // public void HighlightType()
-        // {}
+        [SerializeField] GameObject scoreParent, constraintsParent;
+        public void HideScore()
+        {
+            scoreParent.gameObject.SetActive(false);
+        }
+        public void HideConstraints()
+        {
+            constraintsParent.gameObject.SetActive(false);
+        }
 
 
 

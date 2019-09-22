@@ -74,8 +74,9 @@ namespace EcoBuilder.UI
             NewMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, false));
         }
 
+
         // connected to buttons
-        public void Undo()
+        void Undo()
         {
             int idx = undos.Peek().idx;
             if (undos.Peek().isStructural)
@@ -102,7 +103,7 @@ namespace EcoBuilder.UI
                 OnSpeciesUndone.Invoke(idx);
             }
         }
-        public void Redo()
+        void Redo()
         {
             int idx = redos.Peek().idx;
             if (redos.Peek().isStructural)

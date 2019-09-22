@@ -87,6 +87,8 @@ namespace EcoBuilder.Model
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
+            if (n == 0)
+                return;
 
             interaction.Clear();
             negGrowth.Clear();
@@ -114,6 +116,8 @@ namespace EcoBuilder.Model
         {
             // calculates every element of the Jacobian, evaluated at equilibrium point
             int n = internToExtern.Count;
+            if (n == 0)
+                return;
 
             community.Clear();
             for (int i=0; i<n; i++)
@@ -163,7 +167,7 @@ namespace EcoBuilder.Model
             if (n == 0)
             {
                 TotalAbundance = TotalFlux = 0;
-                return false;
+                return true;
             }
 
             // BuildInteractionMatrix(Consumers);

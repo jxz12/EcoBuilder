@@ -64,6 +64,9 @@ namespace EcoBuilder.NodeLink
 
         bool CheckDisjoint()
         {
+            if (nodes.Count == 0)
+                return false;
+
             // pick a random vertex
             int source = nodes.Indices.First();
             var q = new Queue<int>();
@@ -141,6 +144,7 @@ namespace EcoBuilder.NodeLink
         ///////////////////////////////////
         // loops
 
+        // ignores 'graveyard' species
         Tuple<Dictionary<int, HashSet<int>>, Dictionary<int, HashSet<int>>> JohnsonInOut()
         {
             var incomingCopy = new Dictionary<int, HashSet<int>>();
