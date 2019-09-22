@@ -115,10 +115,6 @@ namespace EcoBuilder.UI
             spawnedSpecies.Remove(toBury.Idx);
             graveyard.Add(toBury.Idx, toBury);
 
-            // // take back GameObject before nodelink destroys it
-            // toBury.GObject.transform.SetParent(transform, false);
-            // toBury.GObject.SetActive(false);
-
             OnDespawned.Invoke(toBury.Idx); // must be invoked last
         }
 
@@ -134,10 +130,14 @@ namespace EcoBuilder.UI
                 incubated = null;
             }
             Species s = new Species(nextIdx, isProducer);
+            if (sizeIfFixed >= 0)
+                s.BodySize = sizeIfFixed;
+            if (greedIfFixed >= 0)
+                s.Greediness = greedIfFixed;
+            s.Removable = removeEnabled;
+
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            s.SizeEditable = true;
-            s.GreedEditable = true;
-            s.Removable = true;
+
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
 
@@ -156,6 +156,11 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubated.RerollSeed();
+                if (sizeIfFixed >= 0)
+                    incubated.BodySize = sizeIfFixed;
+                if (greedIfFixed >= 0)
+                    incubated.Greediness = greedIfFixed;
+
                 SetSlidersWithoutEventCallbacks(incubated.BodySize, incubated.Greediness);
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
@@ -398,6 +403,29 @@ namespace EcoBuilder.UI
                 traitsAnim.SetTrigger("Uninspect");
                 typesAnim.SetBool("Visible", false);
             }
+        }
+        [SerializeField] GameObject sizeParent, greedParent;
+        public void HideSizeSlider()
+        {
+            sizeParent.SetActive(false);
+        }
+        public void HideGreedSlider()
+        {
+            greedParent.SetActive(false);
+        }
+        bool removeEnabled = true;
+        public void HideRemoveButton()
+        {
+            removeEnabled = false;
+        }
+        float sizeIfFixed = -1, greedIfFixed = -1;
+        public void FixSize(float fixedSize)
+        {
+            sizeIfFixed = fixedSize;
+        }
+        public void FixGreed(float fixedGreed)
+        {
+            greedIfFixed = fixedGreed;
         }
     }
 }

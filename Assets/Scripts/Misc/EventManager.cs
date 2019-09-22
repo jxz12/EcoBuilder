@@ -20,7 +20,7 @@ namespace EcoBuilder
             // hook up events between objects
 
             inspector.OnIncubated +=        ()=> nodelink.FullUnfocus();
-            inspector.OnUnincubated +=      ()=> print("TODO:");
+            inspector.OnUnincubated +=      ()=> print("perhaps move left and right again?");
             inspector.OnSpawned +=         (i)=> nodelink.AddNode(i);
             inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
@@ -37,7 +37,7 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
+            // nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
@@ -83,10 +83,10 @@ namespace EcoBuilder
             if (level == null)
             {
                 level = GameManager.Instance.GetNewLevel();
-                // tutorial.gameObject.SetActive(true);
+                tutorial.gameObject.SetActive(true);
             }
-            
             status.ConstrainFromLevel(level);
+
             status.AllowUpdateWhen(()=> atEquilibrium &&
                                         !model.IsCalculating &&
                                         graphSolved &&
@@ -99,8 +99,8 @@ namespace EcoBuilder
                     level.Details.sizes[i],
                     level.Details.greeds[i],
                     level.Details.randomSeeds[i],
-                    level.Details.editables[i], // TODO: split into two here
-                    level.Details.editables[i]);
+                    level.Details.sizeEditable,
+                    level.Details.greedEditable);
 
                 inspector.SetSpeciesRemovable(i, false);
                 if (newIdx != i)

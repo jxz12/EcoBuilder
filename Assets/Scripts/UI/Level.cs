@@ -26,6 +26,9 @@ namespace EcoBuilder.UI
             // constraints
             public int numProducers;
             public int numConsumers;
+            public bool sizeEditable;
+            public bool greedEditable;
+
             public int minEdges;
             public int maxEdges;
             public int minChain;
@@ -39,7 +42,6 @@ namespace EcoBuilder.UI
             public List<float> sizes;
             public List<float> greeds;
             public List<int> randomSeeds;
-            public List<bool> editables;
             // edges
             public int numInteractions;
             public List<int> resources;
@@ -59,7 +61,7 @@ namespace EcoBuilder.UI
         public LevelDetails Details {
             get { return details; }
             private set { details = value; }
-        }
+        } // stupid unity serializable grumble
 
         // thumbnail
         [SerializeField] Text numberText;
@@ -241,35 +243,12 @@ namespace EcoBuilder.UI
             GameManager.Instance.PlayLevel(this);
         }
 
-        IEnumerator LerpToPos(Vector2 endPos, float duration)
+        Vector2 velocity, targetPos;
+        Vector2 sizocity, targetSize;
+        void FixedUpdate()
         {
-            Vector2 startPos = transform.localPosition;
-            float startTime = Time.time;
-            while (Time.time < startTime + duration)
-            {
-                float t = (Time.time-startTime) / duration * 2;
-                // if (t < 1) 
-                // {
-                //     transform.localPosition = startPos + (endPos-startPos)/2f*t*t*t;
-                // }
-                // else
-                // {
-                //     t -= 2;
-                //     transform.localPosition = startPos + (endPos-startPos)/2f*(t*t*t + 2f);
-                // }
-                if (t < 1) 
-                {
-                    transform.localPosition = startPos + (endPos-startPos)/2f*t*t;
-                }
-                else
-                {
-                    t -= 1;
-                    transform.localPosition = startPos - (endPos-startPos)/2f*(t*(t-2)-1);
-                }
-                yield return null;
-            }
-            transform.localPosition = endPos;
-            descriptionArea.verticalNormalizedPosition = 1;
+            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, .15f);
+            GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, .15f);
         }
 
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
@@ -282,7 +261,8 @@ namespace EcoBuilder.UI
             transform.SetParent(thumbnailedParent, true);
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
-            StartCoroutine(LerpToPos(thumbnailedPos, .5f));
+            targetPos = thumbnailedPos;
+            targetSize = new Vector2(100,100);
 		}
 		public void ShowThumbnailNewParent(RectTransform newParent, Vector2 newPos)
         {
@@ -301,16 +281,19 @@ namespace EcoBuilder.UI
             transform.SetParent(GameManager.Instance.Overlay.transform, true);
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
-            StartCoroutine(LerpToPos(Vector2.zero, .5f));
+            targetPos = thumbnailedPos;
+            targetSize = new Vector2(450, 850);
 		}
         public void ShowFinishFlag()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+            targetSize = new Vector2(110, 110);
         }
         // called when game is ended
         public void ShowNavigation()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
+            targetSize = new Vector2(350, 100);
         }
     }
 }

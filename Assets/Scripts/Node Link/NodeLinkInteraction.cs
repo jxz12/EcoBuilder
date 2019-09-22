@@ -62,7 +62,7 @@ namespace EcoBuilder.NodeLink
         }
         public void SwitchFocus(int idx) // urgh
         {
-            if (focusedNode != nodes[idx] && nodes[idx].gameObject.activeSelf)
+            if (focusedNode != nodes[idx] && nodes[idx] != null)
             {
                 FocusNode(idx);
                 OnNodeFocused.Invoke(idx);
@@ -115,10 +115,6 @@ namespace EcoBuilder.NodeLink
 
             foreach (Node no in nodes)
             {
-                // FIXME: ugly
-                if (!no.gameObject.activeSelf)
-                    continue;
-
                 if (no.Idx == focusedNode.Idx)
                 {
                     continue;
@@ -144,10 +140,6 @@ namespace EcoBuilder.NodeLink
             }
             foreach (Link li in links)
             {
-                // FIXME: ugly
-                if (!li.gameObject.activeSelf)
-                    continue;
-
                 if (li.Source != focusedNode && li.Target != focusedNode)
                 {
                     li.SetTransparency(.1f);

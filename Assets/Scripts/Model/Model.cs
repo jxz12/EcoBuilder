@@ -123,7 +123,6 @@ namespace EcoBuilder.Model
 
             idxToSpecies.Add(idx, newSpecies);
             speciesToIdx.Add(newSpecies, idx);
-            // AtEquilibrium = false;
         }
         public void RemoveSpecies(int idx)
         {
@@ -156,8 +155,6 @@ namespace EcoBuilder.Model
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
             s.Efficiency = s.IsProducer? e_p : e_c;
-
-            // AtEquilibrium = false;
         }
         public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
@@ -166,14 +163,10 @@ namespace EcoBuilder.Model
 
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
-
-            // AtEquilibrium = false;
         }
         public void SetSpeciesInterference(int idx, float greedNormalised)
         {
             idxToSpecies[idx].Interference = -GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
-
-            // AtEquilibrium = false;
         }
 
 
@@ -188,7 +181,7 @@ namespace EcoBuilder.Model
 
         public float TotalFlux { get; private set; } = 0;
         public float TotalAbundance { get; private set; } = 0;
-        public float Complexity { get; private set; } = 0;
+        // public float Complexity { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
 
@@ -205,7 +198,7 @@ namespace EcoBuilder.Model
             TotalAbundance = (float)simulation.TotalAbundance;
 
             Stable = await Task.Run(() => simulation.SolveStability());
-            Complexity = (float)simulation.MayComplexity;
+            // Complexity = (float)simulation.MayComplexity;
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             ShowAbundanceWarnings();
@@ -223,7 +216,7 @@ namespace EcoBuilder.Model
             TotalAbundance = (float)simulation.TotalAbundance;
 
             Stable = simulation.SolveStability();
-            Complexity = (float)simulation.MayComplexity;
+            // Complexity = (float)simulation.MayComplexity;
             // Nonreactive = simulation.SolveReactivity();
 
             ShowAbundanceWarnings();
