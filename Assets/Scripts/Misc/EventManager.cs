@@ -47,7 +47,8 @@ namespace EcoBuilder
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
             model.OnEquilibrium += ()=> nodelink.ResizeNodes(i=> model.GetScaledAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetScaledFlux(i,j));
-            model.OnEquilibrium += ()=> status.DisplayScore(model.TotalFlux);
+            // model.OnEquilibrium += ()=> status.DisplayScore(model.TotalFlux);
+            model.OnEquilibrium += ()=> status.DisplayScore(model.Complexity);
             model.OnEquilibrium += ()=> status.DisplayFeastability(model.Feasible, model.Stable);
 
             status.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
@@ -83,14 +84,15 @@ namespace EcoBuilder
             if (level == null)
             {
                 level = GameManager.Instance.GetNewLevel();
-                tutorial.gameObject.SetActive(true);
+                // tutorial.gameObject.SetActive(true);
             }
             status.ConstrainFromLevel(level);
 
             status.AllowUpdateWhen(()=> atEquilibrium &&
                                         !model.IsCalculating &&
                                         graphSolved &&
-                                        !nodelink.IsCalculating);
+                                        !nodelink.IsCalculating &&
+                                        !tutorial.Teaching);
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {

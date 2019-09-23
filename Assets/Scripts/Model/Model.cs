@@ -181,7 +181,7 @@ namespace EcoBuilder.Model
 
         public float TotalFlux { get; private set; } = 0;
         public float TotalAbundance { get; private set; } = 0;
-        // public float Complexity { get; private set; } = 0;
+        public float Complexity { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
 
@@ -197,8 +197,8 @@ namespace EcoBuilder.Model
             TotalFlux = (float)simulation.TotalFlux;
             TotalAbundance = (float)simulation.TotalAbundance;
 
-            Stable = await Task.Run(() => simulation.SolveStability());
-            // Complexity = (float)simulation.MayComplexity;
+            Stable = await Task.Run(()=> simulation.SolveStability());
+            Complexity = await Task.Run(()=> (float)simulation.MayComplexity);
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             ShowAbundanceWarnings();
@@ -216,7 +216,7 @@ namespace EcoBuilder.Model
             TotalAbundance = (float)simulation.TotalAbundance;
 
             Stable = simulation.SolveStability();
-            // Complexity = (float)simulation.MayComplexity;
+            Complexity = (float)simulation.MayComplexity;
             // Nonreactive = simulation.SolveReactivity();
 
             ShowAbundanceWarnings();
