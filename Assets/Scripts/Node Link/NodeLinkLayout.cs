@@ -47,14 +47,26 @@ namespace EcoBuilder.NodeLink
                 }
 
 
-                float height = Mathf.Min(MaxChain, maxHeight);
-                float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
-
-
+                if (constrainTrophic)
+                {
+                    float height = Mathf.Min(MaxChain, maxHeight);
+                    float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
+                    foreach (Node no in nodes)
+                    {
+                        float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
+                        no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
+                    }
+                }
+                else
+                {
+                    centroid.y = float.MaxValue;
+                    foreach (Node no in nodes)
+                        centroid.y = Mathf.Min(centroid.y, no.StressPos.y);
+                    foreach (Node no in nodes)
+                        no.StressPos -= centroid;
+                }
                 foreach (Node no in nodes)
                 {
-                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                    no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
 
                     no.transform.localPosition =
                         Vector3.SmoothDamp(no.transform.localPosition, no.StressPos,
@@ -117,7 +129,34 @@ namespace EcoBuilder.NodeLink
         // SGD
         private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
         {
-            foreach (int j in FYShuffle(adjacency.Keys))
+            foreach (int j in FYShuffle(nodes.Indices))
+            {
+                if (i != j)
+                {
+                    Vector3 X_ij = nodes[i].StressPos - nodes[j].StressPos;
+                    float mag = X_ij.magnitude;
+
+                    if (d_j.ContainsKey(j)) // if there is a path between the two
+                    {
+                        int d_ij = d_j[j];
+                        float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+
+                        Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                        nodes[i].StressPos -= mu * r;
+                        nodes[j].StressPos += mu * r;
+                    }
+                    else if (mag < 1) // otherwise push away if too close (jakobsen)
+                    {
+                        Vector3 r = ((mag-1)/2) * (X_ij/mag);
+                        nodes[i].StressPos -= r;
+                        nodes[j].StressPos += r;
+                    }
+                }
+            }
+        }
+        private void LayoutSGDHorizontal(int i, Dictionary<int, int> d_j, float eta)
+        {
+            foreach (int j in FYShuffle(nodes.Indices))
             {
                 if (i != j)
                 {
@@ -190,6 +229,7 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for trophic level calculation
 
+        [SerializeField] bool constrainTrophic;
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();
 

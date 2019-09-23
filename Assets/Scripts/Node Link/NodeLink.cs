@@ -22,7 +22,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         [SerializeField] float etaMax, etaDecay;
-        float etaIteration = 0;
+        int etaIteration = 0;
         private void FixedUpdate()
         {
             //////////////////////
@@ -34,8 +34,12 @@ namespace EcoBuilder.NodeLink
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);
 
-                    float eta = etaMax / (1f + etaDecay*(float)etaIteration++);
-                    LayoutSGD(dq, d_j, eta);
+                    float eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
+                    if (constrainTrophic)
+                        LayoutSGDHorizontal(dq, d_j, eta);
+                    else
+                        LayoutSGD(dq, d_j, eta);
+
                     toBFS.Enqueue(dq);
                 }
             }
@@ -65,6 +69,7 @@ namespace EcoBuilder.NodeLink
 
         public void AddNode(int idx)
         {
+            // TODO: fix later
             if (nodes[idx] != null)
                 throw new Exception("index " + idx + " already added");
 
@@ -72,8 +77,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
 
-                var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
-                // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
+                var startPos = new Vector3(-.5f, 0, -.5f);
 
                 newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2);
                 nodes[idx] = newNode;
@@ -106,6 +110,7 @@ namespace EcoBuilder.NodeLink
                 foreach (int row in links.GetRowIndicesInColumn(idx))
                     linkGrave.RemoveAt(row, idx);
             }
+            nodes[idx].StressPos += UnityEngine.Random.insideUnitSphere * .2f; // prevent divide by zero
             toBFS.Enqueue(idx);
         }
 

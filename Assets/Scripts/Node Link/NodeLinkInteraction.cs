@@ -49,6 +49,7 @@ namespace EcoBuilder.NodeLink
                     superfocused = false;
                     foreach (Link li in links)
                     {
+                        //TODO: make this smooth
                         li.SetTransparency(1f);
                     }
                 }
@@ -142,7 +143,7 @@ namespace EcoBuilder.NodeLink
             {
                 if (li.Source != focusedNode && li.Target != focusedNode)
                 {
-                    li.SetTransparency(.1f);
+                    li.SetTransparency(.05f);
                 }
                 else
                 {
@@ -159,7 +160,7 @@ namespace EcoBuilder.NodeLink
             focusedNode.FocusPos = new Vector3(0, maxHeight/2, 0);
             foreach (Node no in unrelated)
             {
-                no.FocusPos = no.StressPos + new Vector3(-3, 0, 25);
+                no.FocusPos = no.StressPos + new Vector3(-4, -4, 25);
             }
 
             if (right+left == 0)
@@ -362,22 +363,22 @@ namespace EcoBuilder.NodeLink
                         Unfocus();
                     }
                 }
-                else if (!ped.dragging && pressedNode != null) // not dragging but not deleted either
-                {
-                    FocusNode(pressedNode.Idx);
-                    OnNodeFocused.Invoke(pressedNode.Idx);
+                // else if (!ped.dragging && pressedNode != null) // not dragging but not deleted either
+                // {
+                //     FocusNode(pressedNode.Idx);
+                //     OnNodeFocused.Invoke(pressedNode.Idx);
 
-                    if (pressedNode == focusedNode)
-                    {
-                        pressedNode.Outline(0);
-                    }
-                    else
-                    {
-                        pressedNode.Unoutline();
-                    }
-                    pressedNode = null;
-                    tooltip.Disable();
-                }
+                //     if (pressedNode == focusedNode)
+                //     {
+                //         pressedNode.Outline(0);
+                //     }
+                //     else
+                //     {
+                //         pressedNode.Unoutline();
+                //     }
+                //     pressedNode = null;
+                //     tooltip.Disable();
+                // }
             }
         }
 

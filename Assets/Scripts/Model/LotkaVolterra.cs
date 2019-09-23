@@ -286,6 +286,7 @@ namespace EcoBuilder.Model
             }
 
             MayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
+            // MayComplexity = standardDev * Math.Sqrt(richness*connectance);
 
             if (variance > 0)
             {

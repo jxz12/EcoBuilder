@@ -405,13 +405,13 @@ namespace EcoBuilder.UI
             }
         }
         [SerializeField] GameObject sizeParent, greedParent;
-        public void HideSizeSlider()
+        public void HideSizeSlider(bool hidden)
         {
-            sizeParent.SetActive(false);
+            sizeParent.SetActive(!hidden);
         }
-        public void HideGreedSlider()
+        public void HideGreedSlider(bool hidden)
         {
-            greedParent.SetActive(false);
+            greedParent.SetActive(!hidden);
         }
         bool removeEnabled = true;
         public void HideRemoveButton()
@@ -419,11 +419,11 @@ namespace EcoBuilder.UI
             removeEnabled = false;
         }
         float sizeIfFixed = -1, greedIfFixed = -1;
-        public void FixSize(float fixedSize)
+        public void FixInitialSize(float fixedSize)
         {
             sizeIfFixed = fixedSize;
         }
-        public void FixGreed(float fixedGreed)
+        public void FixInitialGreed(float fixedGreed)
         {
             greedIfFixed = fixedGreed;
         }

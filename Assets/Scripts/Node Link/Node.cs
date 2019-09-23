@@ -23,7 +23,7 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
-            transform.localPosition = StressPos = pos;
+            StressPos = pos;
             Size = size;
         }
 
