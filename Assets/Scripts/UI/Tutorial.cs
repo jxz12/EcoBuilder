@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace EcoBuilder.UI
 {
@@ -20,7 +19,7 @@ namespace EcoBuilder.UI
             inspector.HideSizeSlider(true);
             inspector.HideGreedSlider(true);
             inspector.FixInitialSize(.5f);
-            inspector.FixInitialGreed(.5f);
+            inspector.FixInitialGreed(.3f);
             inspector.HideRemoveButton();
             status.HideScore();
             status.HideConstraints();
@@ -34,6 +33,8 @@ namespace EcoBuilder.UI
             if (bar != null)
                 bar();
             help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the leaf in the bottom right.");
+            help.SetSide(true);
+            help.SetDistFromTop(.05f);
 
             inspector.SetConsumerAvailability(false);
             inspector.OnIncubated += ExplainInspector;
@@ -48,7 +49,7 @@ namespace EcoBuilder.UI
             help.Show(true);
 
             bar();
-            Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g.name);
+            Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g,x);
             Action fooo = ()=> ExplainIntro();
             inspector.OnShaped += foo;
             nodelink.OnEmptyPressed += fooo;
@@ -56,40 +57,48 @@ namespace EcoBuilder.UI
             bar = ()=> { inspector.OnShaped -= foo; nodelink.OnEmptyPressed -= fooo; };
             GetComponent<Animator>().SetInteger("Progress", 1);
         }
-        string firstSpeciesName;
-        void ExplainSpawn(string speciesName)
+        GameObject firstSpecies;
+        int firstIdx;
+        void ExplainSpawn(GameObject first, int idx) // TODO: add another state to show pointer to paw
         {
+            firstSpecies = first;
+            firstIdx = idx;
             inspector.SetConsumerAvailability(true);
             inspector.SetProducerAvailability(false);
 
-            help.SetText("Your " + speciesName + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by pressing the paw button.");
+            help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by pressing the paw button.");
             help.Show(true);
-            firstSpeciesName = speciesName;
 
             bar();
-            Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g.name);
+            Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g,x);
+            Action fooo = ()=> help.Show(false);
+            Action foooo = ()=> help.Show(true);
             inspector.OnShaped += foo;
-            bar = ()=> inspector.OnShaped -= foo;
+            inspector.OnIncubated += fooo;
+            inspector.OnUnincubated += foooo;
+            bar = ()=> { inspector.OnShaped -= foo; inspector.OnIncubated -= fooo; inspector.OnUnincubated -= foooo; };
             GetComponent<Animator>().SetInteger("Progress", 2);
         }
         // TODO: get references to both species, and map the drag cursor to them
-        void ExplainInteraction(string speciesName)
+        GameObject secondSpecies;
+        int secondIdx;
+        void ExplainInteraction(GameObject second, int idx)
         {
+            secondSpecies = second;
+            secondIdx = idx;
             inspector.SetConsumerAvailability(false);
-            help.SetText("Your " + speciesName + " is hungry! Drag from it to the " + firstSpeciesName + " to give it some food.");
+            help.SetText("Your " + secondSpecies.name + " is hungry! Drag from it to the " + firstSpecies.name + " to give it some food.");
             help.Show(true);
 
             bar();
-            Action<int, int> foo = (i,j)=> ExplainFirstEcosystem();
+            Action<int, int> foo = (i,j)=> { ExplainFirstEcosystem(); help.Show(false); StartCoroutine(WaitThenDo(2, ()=>help.Show(true))); };
             nodelink.OnUserLinked += foo;
             bar = ()=> nodelink.OnUserLinked -= foo;
             GetComponent<Animator>().SetInteger("Progress", 3);
         }
         void ExplainFirstEcosystem()
         {
-            help.Show(false);
-            help.SetText("Well done! You have built your first ecosystem. Now let's edit your species. Click on your " + firstSpeciesName + " again.");
-            StartCoroutine(WaitThenShowHelp(2));
+            help.SetText("Well done! You have built your first ecosystem. Now let's edit your species. Click on your " + firstSpecies.name + " to examine it again.");
 
             bar();
             Action<int> foo = (i)=> { if (i==0) ExplainSize(); };
@@ -97,10 +106,10 @@ namespace EcoBuilder.UI
             bar = ()=> nodelink.OnNodeFocused -= foo;
             GetComponent<Animator>().SetInteger("Progress", 4);
         }
-        IEnumerator WaitThenShowHelp(float seconds)
+        IEnumerator WaitThenDo(float seconds, Action Todo)
         {
             yield return new WaitForSeconds(seconds);
-            help.Show(true);
+            Todo();
         }
         void ExplainSize()
         {
@@ -110,17 +119,22 @@ namespace EcoBuilder.UI
 
             bar();
             Action<int, float, float> foo = (i,x,y)=> ExplainFinish();
-            Action fooo = ()=> ExplainFirstEcosystem();
+            Action fooo = ()=> { help.Show(true); ExplainFirstEcosystem(); inspector.HideSizeSlider(true); };
+            Action<int> foooo = (i)=>{if (i!=firstIdx) fooo();};
             inspector.OnUserSizeSet += foo;
-            nodelink.OnEmptyPressed += fooo;
+            nodelink.OnUnfocused += fooo;
+            nodelink.OnNodeFocused += foooo;
 
-            bar = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnEmptyPressed -= fooo; };
+            bar = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnUnfocused -= fooo; nodelink.OnNodeFocused -= foooo; };
             GetComponent<Animator>().SetInteger("Progress", 5);
         }
+
+        // TODO: make this an overall delay, instead of one inside the function;
         void ExplainFinish()
         {
-            help.Show(true);
-            help.SetText("You should notice that smaller species grow faster. This is exactly what happens in the real world! Press the finish flag in the top right to finish this level when you are ready.");
+            help.Show(false);
+            StartCoroutine(WaitThenDo(3, ()=>help.Show(true)));
+            help.SetText("The bigger the species looks, the larger its population. You should notice that the smaller the species, the larger its population. This is exactly how real world works! Smaller species, such as grass, can grow much faster than larger ones, like trees. Press the finish flag in the top right to finish this level when you are ready.");
             Teaching = false;
 
             bar();
@@ -131,7 +145,7 @@ namespace EcoBuilder.UI
         }
         void SetFinishMessage()
         {
-            help.SetText("Congratulations! You have built your first ecosystem. The next few levels will introduce more concepts that you need to know to play the game.");
+            help.SetText("Congratulations on finishing the first tutorial! The next few levels will introduce more concepts that you will need to know to play the game.");
 
             bar();
             GetComponent<Animator>().SetInteger("Progress", 7);

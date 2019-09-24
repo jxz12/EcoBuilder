@@ -17,7 +17,7 @@ namespace EcoBuilder.UI
         public event Action<int> OnSpawned;
         public event Action<int> OnDespawned;
 
-        public event Action<int, bool, bool> OnUserIsProducerSet;
+        // public event Action<int, bool, bool> OnUserIsProducerSet;
         public event Action<int, float, float> OnUserSizeSet;
         public event Action<int, float, float> OnUserGreedSet;
         public event Action<int> OnUserSpawned;
@@ -28,14 +28,12 @@ namespace EcoBuilder.UI
 
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
-        [SerializeField] Button undoButton;
-        [SerializeField] Button redoButton;
         [SerializeField] Slider sizeSlider;
         [SerializeField] Slider greedSlider;
 
         [SerializeField] Text nameText;
         [SerializeField] Button refroveButton;
-        [SerializeField] Animator movesAnim, traitsAnim, typesAnim;
+        [SerializeField] Animator traitsAnim, typesAnim;
         
         [SerializeField] JonnyGenerator.JonnyGenerator factory;
         // [SerializeField] Archie.ArchieGenerator factory;
@@ -134,7 +132,6 @@ namespace EcoBuilder.UI
                 s.BodySize = sizeIfFixed;
             if (greedIfFixed >= 0)
                 s.Greediness = greedIfFixed;
-            s.Removable = removeEnabled;
 
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
 
@@ -145,6 +142,7 @@ namespace EcoBuilder.UI
             sizeSlider.interactable = true;
             greedSlider.interactable = true;
             refroveButton.interactable = true;
+            refroveButton.gameObject.SetActive(true);
 
             incubated = s;
             traitsAnim.SetTrigger("Incubate");
@@ -272,6 +270,8 @@ namespace EcoBuilder.UI
             sizeSlider.interactable  = inspected.SizeEditable;
             greedSlider.interactable = inspected.GreedEditable;
             refroveButton.interactable = inspected.Removable;
+
+            refroveButton.gameObject.SetActive(removeEnabled);
         }
         public void Unincubate()
         {
@@ -281,6 +281,7 @@ namespace EcoBuilder.UI
                 incubated = null;
                 traitsAnim.SetTrigger("Unincubate");
                 typesAnim.SetBool("Visible", true);
+                OnUnincubated.Invoke();
             }
         }
         public void Uninspect()
@@ -327,15 +328,22 @@ namespace EcoBuilder.UI
         public void Despawn(int idx)
         {
             if (!spawnedSpecies.ContainsKey(idx))
-            {
                 throw new Exception("idx not spawned");
-            }
+
             if (spawnedSpecies[idx] == inspected)
             {
                 traitsAnim.SetTrigger("Uninspect");
                 inspected = null;
             }
             Bury(spawnedSpecies[idx]);
+        }
+        public void DespawnCompletely(int idx)
+        {
+            if (!graveyard.ContainsKey(idx))
+                throw new Exception("idx not in graveyard");
+
+            Destroy(graveyard[idx].GObject); // TODO: check if null?
+            graveyard.Remove(idx);
         }
         public void Respawn(int idx)
         {
