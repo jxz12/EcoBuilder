@@ -250,6 +250,7 @@ namespace EcoBuilder.Archie
                     f.Connect_to_Edge(this);
                 }
             }
+
         }
 
         // public static void Distribute_Conflicts(Vector3[] points, List<face> face_list)
@@ -354,6 +355,7 @@ namespace EcoBuilder.Archie
                 {
                     // Adding the relevant edge to the edge list
                     horizon_edge_list.Add(current_face.edges.Find(element1 => element1.connected_faces.Exists(element2 => element2 == last_face)));
+                    UnityEngine.Debug.Log("INTREST: " + horizon_edge_list[horizon_edge_list.Count - 1].connected_faces.Exists(element2 => visited_faces.Contains(element2)));
                     return "H";
                 }
             }
@@ -445,9 +447,12 @@ namespace EcoBuilder.Archie
                     var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
                     // var new_face = new face(e.vertices[0], e.vertices[1], furthest_from_face);
                     // e.connected_faces[e.connected_faces.FindIndex(element => visited_faces.Contains(element))] = new_face;
+                    UnityEngine.Debug.Log("F: " + e.connected_faces.Exists(element => visited_faces.Contains(element)));
                     e.connected_faces.Remove(e.connected_faces.Find(element => visited_faces.Contains(element)));
+                    UnityEngine.Debug.Log("P: " + e.connected_faces.Count);
                     e.Connect_to_Face(new_face);
                     daughter_faces.Add(new_face);
+                    UnityEngine.Debug.Log("daughter first link count: " + new_face.edges.Count);
                     index += 1;
                 }
                 // for ( int i = 0 ; i < daughter_faces.Count ; i++ )
@@ -537,6 +542,7 @@ namespace EcoBuilder.Archie
                         }
                     }
                 }
+                UnityEngine.Debug.Log("new edge count: " + new_edges.Count);
 
 
                 // // Making new edges between new daughter faces
@@ -702,7 +708,8 @@ namespace EcoBuilder.Archie
             {
                 foreach (Vector3 c2 in tetrahedron_corners)
                 {
-                    if ( c1 != c2 && !edge_list.Exists(element => (element.vertices[0] == c2 &&element.vertices[1] == c1)))
+                    // if ( c1 != c2 && !edge_list.Exists(element => (element.vertices[0] == c2 &&element.vertices[1] == c1)))
+                    if (c1 != c2 && !edge_list.Exists(element => (Array.Exists(element.vertices, element1 => element1 == c2) && Array.Exists(element.vertices, element2 => element2 == c1))))
                     {
                         edge_list.Add(new edge(c1, c2));
                     }
