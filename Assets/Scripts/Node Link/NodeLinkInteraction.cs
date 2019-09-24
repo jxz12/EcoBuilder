@@ -49,7 +49,6 @@ namespace EcoBuilder.NodeLink
                     superfocused = false;
                     foreach (Link li in links)
                     {
-                        //TODO: make this smooth
                         li.SetTransparency(1f);
                     }
                 }

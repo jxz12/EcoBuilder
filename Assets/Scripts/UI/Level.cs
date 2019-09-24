@@ -26,7 +26,7 @@ namespace EcoBuilder.UI
             // constraints
             public int numProducers;
             public int numConsumers;
-            public bool sizeEditable;
+            public bool sizeEditable; // TODO: maybe change this back to list again!!!
             public bool greedEditable;
 
             public int minEdges;

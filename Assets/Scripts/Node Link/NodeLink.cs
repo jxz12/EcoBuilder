@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using SparseMatrix;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
@@ -152,6 +153,19 @@ namespace EcoBuilder.NodeLink
                 toBFS.Enqueue(i);
             }
         }        
+        public void RemoveNodeCompletely(int idx)
+        {
+            if (nodeGrave[idx] == null)
+                throw new Exception("node not in graveyard");
+            
+            Destroy(nodeGrave[idx].gameObject);
+            nodeGrave.RemoveAt(idx);
+
+            foreach (int col in linkGrave.GetColumnIndicesInRow(idx).ToArray())
+                linkGrave.RemoveAt(idx, col);
+            foreach (int row in linkGrave.GetRowIndicesInColumn(idx).ToArray())
+                linkGrave.RemoveAt(row, idx);
+        }
 
         public void AddLink(int i, int j)
         {
