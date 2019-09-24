@@ -444,7 +444,9 @@ namespace EcoBuilder.Archie
                     // }
                     var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
                     // var new_face = new face(e.vertices[0], e.vertices[1], furthest_from_face);
-                    e.connected_faces[e.connected_faces.FindIndex(element => visited_faces.Contains(element))] = new_face;
+                    // e.connected_faces[e.connected_faces.FindIndex(element => visited_faces.Contains(element))] = new_face;
+                    e.connected_faces.Remove(e.connected_faces.Find(element => visited_faces.Contains(element)));
+                    e.Connect_to_Face(new_face);
                     daughter_faces.Add(new_face);
                     index += 1;
                 }
@@ -495,34 +497,96 @@ namespace EcoBuilder.Archie
                 //     // }
                 // }
 
-                // Making new edges between new daughter faces
-                var polyhedron_corner_pairs = from f in daughter_faces
-                                         from c1 in f.corners
-                                         from c2 in f.corners
-                                         where !horizon_edge_list.Exists(element => Array.Exists(element.corners, element1 => element1 == c1) || Array.Exists(element.corners, element2 => element2 == c2)) && !polyhedron_corner_pairs.Exists(element => element.Exists( element1 => element1== c1 || element1 == c2 ))
-                                         select new Vector3[]{c1, c2};
-                List<edge> edge_list = new List<edge>(horizon_edge_list);
-                foreach (Vector3 c1 in polyhedron_corners)
+                var new_edges = new List<edge>();
+                foreach (face f1 in daughter_faces)
                 {
-                    foreach (Vector3 c2 in polyhedron_corners)
+                    foreach(face f2 in daughter_faces)
                     {
-                        if (c1 != c2 && !edge_list.Exists(element => (element.vertices[0] == c2 && element.vertices[1] == c1 ) || (element.vertices[0] == c1 && element.vertices[1] == c2)))
+                        if( f1 != f2)
                         {
-                            edge_list.Add(new edge(c1, c2));
+                            foreach( Vector3 c1A in f1.corners)
+                            {
+                                foreach (Vector3 c1B in f1.corners)
+                                {
+                                    if ( c1A != c1B)
+                                    {
+                                        if (f2.corners.Contains(c1A) && f2.corners.Contains(c1B))
+                                        {
+                                            bool unique = true;
+                                            foreach ( edge e in horizon_edge_list)
+                                            {
+                                                unique = unique && !(e.vertices.Contains(c1A) && e.vertices.Contains(c1B));
+                                            }
+                                            foreach (edge e in new_edges)
+                                            {
+                                                unique = unique && !(e.vertices.Contains(c1A) && e.vertices.Contains(c1B));
+                                            }
+                                            if (unique)
+                                            {
+                                                var new_edge = new edge(c1A, c1B);
+                                                new_edge.Connect_to_Face(f1);
+                                                new_edge.Connect_to_Face(f2);
+                                                new_edges.Add(new_edge);
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                            }
                         }
                     }
                 }
-                UnityEngine.Debug.Log("edge length: " + edge_list.Count);
-                foreach (edge e in edge_list)
-                {
-                    foreach (face f in daughter_faces)
-                    {
-                        if (Array.Exists(f.corners, element => element == e.vertices[0]) && Array.Exists(f.corners, element => element == e.vertices[1]) && !horizon_edge_list.Contains(e))
-                        {
-                            e.Connect_to_Face(f);
-                        }
-                    }
-                }
+
+
+                // // Making new edges between new daughter faces
+                // var polyhedron_corner_pairs = from f in daughter_faces
+                //                          from c1 in f.corners
+                //                          from c2 in f.corners
+                //                          where c1 != c2 &&
+                //                          select new HashSet<Vector3>(c1, c2);
+
+
+                // List<edge> new_edges = new List<edge>();
+                // foreach (edge e in horizon_edge_list)
+                // {
+                //     foreach (Vector3[] c in polyhedron_corner_pairs)
+                //     {
+                //         if (Array.Exists(e.vertices, element => element == c[0]) || Array.Exists(e.vertices, element => element == c[1]))
+                //         {
+                //             new_edges.Add( new edge(c[0], c[1]) );
+                //         }
+
+                //     }
+                // }
+                // foreach (edge e in new_edges)
+                // {
+                //     daughter_faces.Find(a_face => a_face.corners.Exists(a_corner => a_corner == e.vertices[0]) 
+                //     && a_face.corners.Exists(a_corner => a_corner == e.vertices[1]));
+                // }
+
+                // List<edge> edge_list = new List<edge>(horizon_edge_list);
+                // foreach (Vector3 c1 in polyhedron_corners)
+                // {
+                //     foreach (Vector3 c2 in polyhedron_corners)
+                //     {
+                //         if (c1 != c2 && !edge_list.Exists(element => (element.vertices[0] == c2 && element.vertices[1] == c1 ) || (element.vertices[0] == c1 && element.vertices[1] == c2)))
+                //         {
+                //             edge_list.Add(new edge(c1, c2));
+                //         }
+                //     }
+                // }
+                // UnityEngine.Debug.Log("edge length: " + edge_list.Count);
+                // foreach (edge e in edge_list)
+                // {
+                //     foreach (face f in daughter_faces)
+                //     {
+                //         if (Array.Exists(f.corners, element => element == e.vertices[0]) && Array.Exists(f.corners, element => element == e.vertices[1]) && !horizon_edge_list.Contains(e))
+                //         {
+                //             e.Connect_to_Face(f);
+                //         }
+                //     }
+                // }
 
                 //Testing
                 foreach( face f in daughter_faces)
@@ -530,6 +594,7 @@ namespace EcoBuilder.Archie
                     if (f.edges.Count != 3)
                     {
                         UnityEngine.Debug.Log("ERROR: daughter face isn't connected to 3 other faces");
+                        UnityEngine.Debug.Log(f.edges.Count);
                     }
                 }
 
