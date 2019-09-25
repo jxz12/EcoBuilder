@@ -293,8 +293,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd8f305c9412a4b3d8526a79dfb087d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 0
-  number_of_points: 4
+  seed: 4
+  number_of_points: 7
   myPrefab: {fileID: 1405208283769239244, guid: 497c17d3956f04027b45b96258caeec7,
     type: 3}
 --- !u!1 &2141183040
