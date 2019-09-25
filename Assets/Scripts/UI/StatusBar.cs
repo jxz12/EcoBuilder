@@ -44,7 +44,13 @@ namespace EcoBuilder.UI
             help.SetText(Playing.Details.introduction);
             Playing.ShowThumbnailNewParent(levelParent, Vector2.zero);
             Playing.OnFinishClicked += CompleteLevel;
+
+            target1 = Playing.Details.targetScore1;
+            target2 = Playing.Details.targetScore2;
+            defaultScoreCol = scoreText.color;
         }
+        int target1, target2;
+        Color defaultScoreCol;
 
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
@@ -54,7 +60,25 @@ namespace EcoBuilder.UI
             help.SetDistFromTop(.15f);
             help.SetSide(false, false);
 
-            GameManager.Instance.SavePlayedLevel(NumStars, currentScore);
+            if (NumStars < 1 || NumStars > 3)
+                throw new Exception("cannot pass with less than 0 or more than 3 stars");
+
+            if (NumStars > Playing.Details.numStars)
+                Playing.Details.numStars = NumStars;
+
+            if (currentScore > Playing.Details.highScore)
+                Playing.Details.highScore = currentScore;
+
+            // unlock next level if not unlocked
+            if (Playing.NextLevel.Details.numStars == -1)
+            {
+                print("TODO: animation here!");
+                Playing.NextLevel.Details.numStars = 0;
+                Playing.NextLevel.SaveToFile();
+                Playing.NextLevel.Unlock();
+            }
+            Playing.SaveToFile();
+
             OnLevelCompleted.Invoke();
             Confetti();
         }
@@ -146,8 +170,9 @@ namespace EcoBuilder.UI
         }
 
 		bool feasible, stable;
-        float targetAbundance, abundance;
-        float targetScore, currentScore;
+        bool starsNeedUpdate = false;
+        // float targetAbundance, abundance;
+        int targetScore, currentScore;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
@@ -155,11 +180,18 @@ namespace EcoBuilder.UI
 			stable = isStable;
             shield.Display(stable);
         }
-        public void DisplayScore(float score)
+        public void DisplayScore(int score)
         {
+            scoreText.color = score >= currentScore? Color.green : Color.red;
+
+            scoreText.text = score.ToString();
             currentScore = score;
-            scoreText.text = GameManager.Instance.NormaliseScore(score).ToString();//"000");
-            // print(score);
+            starsNeedUpdate = true;
+        }
+        void FixedUpdate()
+        {
+            if (CanUpdate())
+                scoreText.color = Color.Lerp(scoreText.color, defaultScoreCol, .05f);
         }
 
 
@@ -177,16 +209,15 @@ namespace EcoBuilder.UI
             {
                 Playing.SetFinishable(false);
             }
-            else
+            else if (starsNeedUpdate)
             {
+                starsNeedUpdate = false;
+
                 Playing.SetFinishable(true);
                 int newNumStars = 0;
                 star1.SetBool("Filled", false);
                 star2.SetBool("Filled", false);
                 star3.SetBool("Filled", false);
-
-                int target1 = GameManager.Instance.NormaliseScore(Playing.Details.targetScore1);
-                int target2 = GameManager.Instance.NormaliseScore(Playing.Details.targetScore2);
 
                 if (!disjoint && feasible && stable &&
                     leaf.IsSatisfied && paw.IsSatisfied &&
@@ -195,14 +226,12 @@ namespace EcoBuilder.UI
                     newNumStars += 1;
                     star1.SetBool("Filled", true);
 
-                    int score = GameManager.Instance.NormaliseScore(currentScore);
-
-                    if (score >= target1)
+                    if (currentScore >= target1)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
 
-                        if (score >= target2)
+                        if (currentScore >= target2)
                         {
                             newNumStars += 1;
                             star3.SetBool("Filled", true);

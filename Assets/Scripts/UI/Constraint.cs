@@ -43,6 +43,7 @@ namespace EcoBuilder.UI
         }
         public void Display(bool satisfied)
         {
+			IsSatisfied = satisfied;
             icon.color = IsSatisfied? Color.green : Color.white;
         }
     }

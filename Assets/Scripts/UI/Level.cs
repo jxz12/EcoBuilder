@@ -48,9 +48,9 @@ namespace EcoBuilder.UI
             public List<int> consumers;
 
             // high scores
-            public float targetScore1;
-            public float targetScore2;
-            public float highScore;
+            public int targetScore1;
+            public int targetScore2;
+            public int highScore;
 
             // -1 is locked, 0,1,2,3 unlocked plus number of stars
             public int numStars;
@@ -69,14 +69,14 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite[] starImages;
 
         // card
-		[SerializeField] Text title;
-		[SerializeField] Text description;
+        [SerializeField] Text title;
+        [SerializeField] Text description;
         [SerializeField] ScrollRect descriptionArea;
-		[SerializeField] Text producers;
-		[SerializeField] Text consumers;
-		[SerializeField] Text target1;
-		[SerializeField] Text target2;
-		[SerializeField] Text highScore;
+        [SerializeField] Text producers;
+        [SerializeField] Text consumers;
+        [SerializeField] Text target1;
+        [SerializeField] Text target2;
+        [SerializeField] Text highScore;
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
@@ -86,6 +86,8 @@ namespace EcoBuilder.UI
 
         // navigation
         [SerializeField] RectTransform nextLevelParent;
+
+        [SerializeField] GameObject landscape; // TODO:
 
         void Start()
         {
@@ -98,14 +100,18 @@ namespace EcoBuilder.UI
                 throw new Exception("num edge sources and targets do not match");
 
             numberText.text = Details.idx.ToString();
-			title.text = Details.title;
-			description.text = Details.description;
+            title.text = Details.title;
+            description.text = Details.description;
 
-			producers.text = Details.numProducers.ToString();
-			consumers.text = Details.numConsumers.ToString();
-			target1.text = GameManager.Instance.NormaliseScore(Details.targetScore1).ToString("000");
-			target2.text = GameManager.Instance.NormaliseScore(Details.targetScore2).ToString("000");
-            highScore.text = GameManager.Instance.NormaliseScore(Details.highScore).ToString("000");
+            producers.text = Details.numProducers.ToString();
+            consumers.text = Details.numConsumers.ToString();
+
+            // target1.text = GameManager.Instance.NormaliseScore(Details.targetScore1).ToString("000");
+            // target2.text = GameManager.Instance.NormaliseScore(Details.targetScore2).ToString("000");
+            // highScore.text = GameManager.Instance.NormaliseScore(Details.highScore).ToString("000");
+            target1.text = Details.targetScore1.ToString("000");
+            target2.text = Details.targetScore2.ToString("000");
+            highScore.text = Details.highScore.ToString("000");
 
             if (Details.highScore >= details.targetScore1)
                 target1.color = Color.grey;
@@ -212,11 +218,11 @@ namespace EcoBuilder.UI
             replayButton.gameObject.SetActive(true);
         }
         public Level NextLevel { get; private set; }
-		public void StartGame()
-		{
+        public void StartGame()
+        {
             GameManager.Instance.PlayLevel(this);
             StartCoroutine(WaitThenEnableQuitReplay());
-		}
+        }
         public void BackToMenu()
         {
             // TODO: 'are you sure' option
@@ -257,24 +263,25 @@ namespace EcoBuilder.UI
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
         RectTransform thumbnailedParent;
         Vector2 thumbnailedPos;
-		public void ShowThumbnail()
-		{
+        public void ShowThumbnail()
+        {
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
 
             transform.SetParent(thumbnailedParent, true);
+            transform.localScale = Vector3.one;
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
             targetPos = thumbnailedPos;
             targetSize = new Vector2(100,100);
-		}
-		public void ShowThumbnailNewParent(RectTransform newParent, Vector2 newPos)
+        }
+        public void ShowThumbnailNewParent(RectTransform newParent, Vector2 newPos)
         {
             thumbnailedParent = newParent;
             thumbnailedPos = newPos;
             ShowThumbnail();
         }
-		public void ShowCard()
-		{
+        public void ShowCard()
+        {
             if (GameManager.Instance.Overlay.transform.childCount > 0)
                 return;
 
@@ -282,11 +289,12 @@ namespace EcoBuilder.UI
 
             thumbnailedPos = transform.localPosition;
             transform.SetParent(GameManager.Instance.Overlay.transform, true);
+            transform.localScale = Vector3.one;
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
             targetPos = thumbnailedPos;
             targetSize = new Vector2(450, 850);
-		}
+        }
         public void ShowFinishFlag()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);

@@ -122,43 +122,6 @@ namespace EcoBuilder
             UnloadScene(SceneManager.GetActiveScene().name);
             LoadScene("Play");
         }
-        public void SavePlayedLevel(int numStars, float score)
-        {
-            if (numStars < 1 || numStars > 3)
-                throw new Exception("cannot pass with less than 0 or more than 3 stars");
-
-            if (PlayedLevel != null)
-            {
-                if (numStars > PlayedLevel.Details.numStars)
-                    PlayedLevel.Details.numStars = numStars;
-
-                if (score > PlayedLevel.Details.highScore)
-                    PlayedLevel.Details.highScore = score;
-
-                // unlock next level if not unlocked
-                if (PlayedLevel.NextLevel.Details.numStars == -1)
-                {
-                    print("TODO: animation here!");
-                    PlayedLevel.NextLevel.Details.numStars = 0;
-                    PlayedLevel.NextLevel.SaveToFile();
-                    PlayedLevel.NextLevel.Unlock();
-                }
-
-
-                PlayedLevel.SaveToFile();
-            }
-            else
-            {
-                print("HOW DID YOU GET HERE");
-            }
-        }
-
-
-
-
-
-
-
 
 
 
@@ -175,90 +138,7 @@ namespace EcoBuilder
         {
             this.education = education;
         }
-
-        // public void SaveFoodWebToCSV(
-        //     List<int> speciesIdxs, List<int> randomSeeds,
-        //     List<float> sizes, List<float> greeds,
-        //     List<int> resources, List<int> consumers,
-        //     List<string> paramNames, List<double> paramValues)
-        // {
-        //     var sb = new StringBuilder();
-        //     int n = speciesIdxs.Count;
-        //     if (n != randomSeeds.Count || n != sizes.Count || n != greeds.Count)
-        //         throw new Exception("length of traits not equal to length of idxs");
-
-        //     int m = resources.Count;
-        //     if (m != consumers.Count)
-        //         throw new Exception("length of sources not equal to length of targets");
-
-        //     int p = paramNames.Count;
-        //     if (p != paramValues.Count)
-        //         throw new Exception("length of param names not equal to values");
-            
-        //     string datetime = DateTime.Now.ToString("yyyyMMddHHmmss");
-        //     sb.Append(datetime).Append("\n");
-        //     sb.Append("Age,").Append(age).Append("\n");
-        //     sb.Append("Gender,").Append(gender).Append("\n");
-        //     sb.Append("Education,").Append(education).Append("\n");
-
-        //     sb.Append("Index,");
-        //     for (int i=0; i<n-1; i++)
-        //     {
-        //         sb.Append(speciesIdxs[i]).Append(",");
-        //     }
-        //     sb.Append(speciesIdxs[n-1]).Append("\nRandom Seed,");
-        //     for (int i=0; i<n-1; i++)
-        //     {
-        //         sb.Append(randomSeeds[i]).Append(",");
-        //     }
-        //     sb.Append(randomSeeds[n-1]).Append("\nBody Size,");
-        //     for (int i=0; i<n-1; i++)
-        //     {
-        //         sb.Append(sizes[i]).Append(",");
-        //     }
-        //     sb.Append(sizes[n-1]).Append("\nGreediness,");
-        //     for (int i=0; i<n-1; i++)
-        //     {
-        //         sb.Append(greeds[i]).Append(",");
-        //     }
-        //     sb.Append(greeds[n-1]);
-            
-        //     if (m > 0)
-        //     {
-        //         sb.Append("\nResource,");
-        //         for (int ij=0; ij<m-1; ij++)
-        //         {
-        //             sb.Append(resources[ij]).Append(",");
-        //         }
-        //         sb.Append(resources[m-1]).Append("\nConsumer,");
-        //         for (int ij=0; ij<m-1; ij++)
-        //         {
-        //             sb.Append(consumers[ij]).Append(",");
-        //         }
-        //         sb.Append(consumers[m-1]);
-        //     }
-
-        //     sb.Append("\nParameter,");
-        //     for (int i=0; i<p-1; i++)
-        //     {
-        //         sb.Append(paramNames[i]).Append(",");
-        //     }
-        //     sb.Append(paramNames[p-1]).Append("\nValue,");
-        //     for (int i=0; i<p-1; i++)
-        //     {
-        //         sb.Append(paramValues[i]).Append(",");
-        //     }
-        //     sb.Append(paramValues[p-1]);
-
-        //     try
-        //     {
-        //         System.IO.File.WriteAllText(Application.persistentDataPath+"/"+datetime+".csv", sb.ToString());
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         print("I hate my life\n" + e.Message);
-        //     }
-        // }
+        // TODO: username for leaderboards
 
         public void ReturnToMenu()
         {
@@ -270,54 +150,5 @@ namespace EcoBuilder
             GameManager.Instance.UnloadScene("Play");
             GameManager.Instance.LoadScene("Menu");
         }
-
-        public int NormaliseScore(float input)
-        {
-            if (input <= 0)
-                return 0;
-
-            // // for flux
-            // float normalised = Mathf.Log(input * 1e15f, 2) * 25;
-            // float normalised = input * 1e13f;
-
-            // // for complexity
-            // float normalised = Mathf.Log(input * 1e7f, 2) * 25;
-            float normalised = input * 1e5f;
-
-            int score = (int)Math.Truncate(normalised * 100) / 100;
-            return Math.Max(score, 0);
-        }
-
-
-
-
-
-
-
-
-        // [SerializeField] List<Mesh> numbers;
-        // public Mesh GetNumberMesh(int number)
-        // {
-        //     if (number < 0 || number > 9)
-        //         throw new Exception("number out of range");
-
-        //     return numbers[number];
-        // }
-
-        // int landscapeNumber = 0;
-		// [SerializeField] List<GameObject> landscapes;
-        // public void SwitchLandscape(bool increment)
-        // {
-        //     if (increment)
-        //         landscapeNumber += 1;
-        //     else
-        //         landscapeNumber -= 1;
-
-        //     if (landscapeNumber < 0)
-        //         landscapeNumber = landscapes.Count - 1;
-        //     if (landscapeNumber >= landscapes.Count)
-        //         landscapeNumber = 0;
-        // }
-        // public GameObject SelectedLandscape { get { return landscapes[landscapeNumber]; } }
     }
 }

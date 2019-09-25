@@ -179,9 +179,9 @@ namespace EcoBuilder.Model
         public bool Stable { get; private set; } = false;
         // public bool Nonreactive { get; private set; } = false;
 
-        public float TotalFlux { get; private set; } = 0;
-        public float TotalAbundance { get; private set; } = 0;
-        public float Complexity { get; private set; } = 0;
+        // public float TotalAbundance { get; private set; } = 0;
+        public int NormalisedFlux { get; private set; } = 0;
+        public int NormalisedComplexity { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
 
@@ -193,12 +193,9 @@ namespace EcoBuilder.Model
             simulation.BuildInteractionMatrix(map); // not async, in order to keep state consistent
 
             Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
-
-            TotalFlux = (float)simulation.TotalFlux;
-            TotalAbundance = (float)simulation.TotalAbundance;
-
+            NormalisedFlux = NormaliseFlux(simulation.TotalFlux);
             Stable = await Task.Run(()=> simulation.SolveStability());
-            Complexity = await Task.Run(()=> (float)simulation.MayComplexity);
+            NormalisedComplexity = NormaliseComplexity(simulation.CalculateMayComplexity());
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             ShowAbundanceWarnings();
@@ -210,19 +207,37 @@ namespace EcoBuilder.Model
         {
             Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
             simulation.BuildInteractionMatrix(map);
+
             Feasible = simulation.SolveFeasibility(map);
-
-            TotalFlux = (float)simulation.TotalFlux;
-            TotalAbundance = (float)simulation.TotalAbundance;
-
+            NormalisedFlux = NormaliseFlux(simulation.TotalFlux);
             Stable = simulation.SolveStability();
-            Complexity = (float)simulation.MayComplexity;
+            NormalisedComplexity = NormaliseComplexity(simulation.CalculateMayComplexity());
             // Nonreactive = simulation.SolveReactivity();
 
             ShowAbundanceWarnings();
 
             OnEquilibrium.Invoke();
         }
+        readonly double fluxThreshold = 8e-7;
+        public int NormaliseFlux(double input)
+        {
+            // for flux
+            double normalised = input<fluxThreshold? .5f : input/fluxThreshold;
+
+            int score = (int)Math.Truncate(normalised * 100);
+            return Math.Max(score, 0);
+        }
+        readonly double complexityThreshold = .01;
+        public int NormaliseComplexity(double input)
+        {
+            // for complexity
+            double normalised = input<complexityThreshold? .5f : input/complexityThreshold;
+            print(input);
+
+            int score = (int)Math.Truncate(normalised * 100);
+            return Math.Max(score, 0);
+        }
+
         void ShowAbundanceWarnings()
         {
             // show abundance warnings
@@ -242,9 +257,8 @@ namespace EcoBuilder.Model
             }
         }
 
-        // TODO: change these from hard coded to init in Start()
-        float logMinAbundance = Mathf.Log10(6e-8f);
-        float logMaxAbundance = Mathf.Log10(2f);
+        readonly float logMinAbundance = Mathf.Log10(6e-8f);
+        readonly float logMaxAbundance = Mathf.Log10(2f);
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
@@ -257,8 +271,8 @@ namespace EcoBuilder.Model
                 return (Mathf.Log10(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
             }
         }
-        float logMinFlux = Mathf.Log10(1e-13f);
-        float logMaxFlux = Mathf.Log10(8e-7f);
+        readonly float logMinFlux = Mathf.Log10(1e-13f);
+        readonly float logMaxFlux = Mathf.Log10(8e-7f);
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
