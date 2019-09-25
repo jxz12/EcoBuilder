@@ -148,6 +148,20 @@ namespace EcoBuilder.Archie
             return base_of_triangle * height_of_triangle * 0.5f;
         }
 
+        // public struct conflict_point
+        // {
+        //     public Vector3 position;
+        //     public float distance_from_plane;
+        //     public conflict_point(Vector3 point, float distance)
+        //     {
+        //         if ( distance < 0 || distance > float.PositiveInfinity )
+        //         {
+        //             return;
+        //         }
+        //         position = point;
+        //         distance_from_plane = distance_from_plane;
+        //     }
+        // }
         public class face
         {
             public Vector3[] corners;
@@ -158,14 +172,18 @@ namespace EcoBuilder.Archie
 
                 }
             }
-            public SortedList<float, Vector3> Conflict_List;
+            // public SortedList<float, Vector3> Conflict_List;
+            public List<Vector3> Conflict_List;
+            // public List<conflict_point> Conflict_List;
             public bool hidden;
             public bool complete;
             public List<edge> edges;
 
             public face(Vector3 corner1, Vector3 corner2, Vector3 corner3)
             {
-                Conflict_List = new SortedList<float, Vector3>();
+                // Conflict_List = new SortedList<float, Vector3>();
+                Conflict_List = new List<Vector3>();
+                // Conflict_List = new List<conflict_point>();
                 corners = (new Vector3[]{corner1, corner2, corner3});
                 complete = false;
                 hidden = false;
@@ -221,6 +239,17 @@ namespace EcoBuilder.Archie
                 }
             }
 
+            public override string ToString()
+            {
+                string s = "";
+                foreach (Vector3 vertex in vertices)
+                {
+                    s += vertex.ToString();
+                    s += " ";
+                }
+                return s;
+            }
+
         }
 
         public static void Distribute_Conflicts(Vector3[] points, List<face> face_list)
@@ -228,19 +257,21 @@ namespace EcoBuilder.Archie
             foreach (Vector3 p in points)
             {
 
-                SortedList<float, face> distances = new SortedList<float, face>();
-                foreach (face f in face_list)
-                {
-                    var distance = Distance_from_Plane(f.corners[0], f.corners[1] - f.corners[0], f.corners[2] - f.corners[0], p, false);
-                    if ( distance > 0 && distance < float.PositiveInfinity)
-                    {
-                        distances.Add(distance, f);
-                    }
-                }
-                if (distances.Count > 0)
-                {
-                    distances.Values[0].Conflict_List.Add(distances.Keys[0], p);
-                }
+                // SortedList<float, face> distances = new SortedList<float, face>();
+                // foreach (face f in face_list)
+                // {
+                //     var distance = Distance_from_Plane(f.corners[0], f.corners[1] - f.corners[0], f.corners[2] - f.corners[0], p, false);
+                //     if ( distance > 0 && distance < float.PositiveInfinity)
+                //     {
+                //         distances.Add(distance, f);
+                //     }
+                // }
+                // if (distances.Count > 0)
+                // {
+                //     distances.Values[0].Conflict_List.Add(distances.Keys[0], p);
+                // }
+                face_list.OrderBy(f => Distance_from_Plane(f.corners[0], f.corners[2] - f.corners[0], f.corners[1] - f.corners[0], p, false)).First().Conflict_List.Add(p);
+                // face_list.MinBy(f => Distance_from_Plane(f.corners[0], f.corners[1] - f.corners[0], f.corners[2] - f.corners[0], p, false)).Conflict_List.Add(p);
             }
         }
 
@@ -317,11 +348,31 @@ namespace EcoBuilder.Archie
                 {
                     face last_face = visited_faces.Peek();
                     edge horizon_edge = current_face.edges.Find(element1 => element1.connected_faces.Exists(element2 => element2 == last_face));
+                    UnityEngine.Debug.Log("last face: " + last_face);
+                    UnityEngine.Debug.Log("current face: " + current_face);
+
                     // Adding the relevant edge to the edge list
                     horizon_edge_list.Push(horizon_edge);
                     List<Vector3> new_face_corners = new List<Vector3>(horizon_edge.vertices);
                     new_face_corners.Add(furthest_from_face);
-                    var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
+                    // var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
+                    //new stuff - generate and filter
+
+                    var possible_faces = from c1 in new_face_corners
+                                         from c2 in new_face_corners
+                                         from c3 in new_face_corners
+                                         where c1 != c2 && c1 != c3 && c2 != c3
+                                         select new face(c1, c2, c3);
+
+                    var front_facing_faces = from t in possible_faces
+                                             where Distance_from_Plane(t.corners[0], t.corners[1] - t.corners[0], t.corners[2] - t.corners[0], Array.Find(last_face.corners, corner => !Array.Exists(t.corners, c => c == corner)), false) < 0
+                                             select t;
+
+                    var new_face = front_facing_faces.First();
+
+                                            
+
+                                        
 
                     // Modify horizon edges so they point to new face
                     horizon_edge.connected_faces.Remove(last_face);
@@ -341,12 +392,23 @@ namespace EcoBuilder.Archie
 
             }
             string path = "";
-            visited_faces.Push(current_face);
             UnityEngine.Debug.Log("Visit: ");
             path += 'V';
             foreach (edge e in current_face.edges)
             {
+                visited_faces.Push(current_face);
+                //testing
+                if (e.connected_faces.Count < 2 || !e.connected_faces.Contains(current_face))
+                {
+                    UnityEngine.Debug.Log("WARNING, MAKING ONE WAY TRIP: " + !e.connected_faces.Contains(current_face));
+                }
+                UnityEngine.Debug.Log("Flag: " + !e.connected_faces.Contains(current_face));
+                UnityEngine.Debug.Log("current face: " + current_face);
+                UnityEngine.Debug.Log("top of stack: " + visited_faces.Peek());
+                UnityEngine.Debug.Log("traversing edge: " + e);
+                //testing
                 face next_face = e.connected_faces.Find(element => element != current_face);
+                UnityEngine.Debug.Log("next face: " + next_face);
                 path += '[';
                 path += Flood_Fill_and_Make(furthest_from_face, next_face, horizon_edge_list, visited_faces, daughter_faces);
                 path += ']';
@@ -369,7 +431,8 @@ namespace EcoBuilder.Archie
             if (face_element.Conflict_List.Count >= 1)
             {
                 // We select the furthest point from the face (found by accessing the face's sorted List)
-                Vector3 furthest_from_face = face_element.Conflict_List.Values[face_element.Conflict_List.Count - 1];
+                // Vector3 furthest_from_face = face_element.Conflict_List.Values[face_element.Conflict_List.Count - 1];
+                Vector3 furthest_from_face = face_element.Conflict_List.OrderByDescending(element => Distance_from_Plane(face_element.corners[0], face_element.corners[2] - face_element.corners[0], face_element.corners[1] - face_element.corners[0], element, false)).First();
                 // Flood search based off what this furthest point can see
                 var horizon_edge_list = new Stack<edge>();
                 var current_face = face_element;
@@ -478,7 +541,8 @@ namespace EcoBuilder.Archie
                 }
 
                 // Combine the conflict list of obsolete hidden faces
-                Vector3[] compound_conflict_list = (from face in hidden_faces from point in face.Conflict_List.Values select point).ToArray();
+                // Vector3[] compound_conflict_list = (from face in hidden_faces from point in face.Conflict_List.Values select point).ToArray();
+                Vector3[] compound_conflict_list = (from face in hidden_faces from point in face.Conflict_List select point).ToArray();
                 UnityEngine.Debug.Log(compound_conflict_list.Length);
 
                 // Remove points which are now hidden by the new faces
