@@ -45,7 +45,7 @@ namespace EcoBuilder.NodeLink
             {
                 if (focusedNode == nodes[idx])
                 {
-                    // go back to previous focus
+                    // TODO: make this show non-linked species instead!
                     superfocused = false;
                     foreach (Link li in links)
                     {
@@ -199,7 +199,6 @@ namespace EcoBuilder.NodeLink
         public void Freeze()
         {
             focusedNode = null;
-            // StartCoroutine(ResetPan(Vector2.zero, 1f));
             StartCoroutine(ResetZoom(Vector3.one, 1f));
 
             GetComponent<Animator>().SetTrigger("Freeze");
@@ -207,24 +206,11 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        // [SerializeField] MeshRenderer disk;
         bool doLayout = true;
-
         void PauseLayout(bool paused)
         {
             if (doLayout != paused) // if already paused
                 return;
-
-            // Color c = disk.material.color;
-            // if (paused)
-            // {
-            //     c *= 1.5f;
-            // }
-            // else
-            // {
-            //     c /= 1.5f;
-            // }
-            // disk.material.color = c;
             doLayout = !paused;
         }
 
@@ -266,27 +252,11 @@ namespace EcoBuilder.NodeLink
             }
             graphParent.localScale = endZoom;
         }
-        // void Pan(Vector2 amount)
-        // {
-        //     Vector2 toPan = amount * panMultiplier;
-        //     GetComponent<RectTransform>().anchoredPosition += toPan;
-        // }
-        // IEnumerator ResetPan(Vector2 goalPan, float duration)
-        // {
-        //     var rt = GetComponent<RectTransform>();
-        //     Vector2 startPan = rt.anchoredPosition;
-        //     float startTime = Time.time;
-        //     while (Time.time < startTime + duration)
-        //     {
-        //         rt.anchoredPosition = Vector3.Lerp(startPan, goalPan, (Time.time-startTime)/duration);
-        //         // rt.anchoredPosition = Vector3.Lerp(rt.anchoredPosition, goalPan, .02f);
-        //         yield return null;
-        //     }
-        //     rt.anchoredPosition = goalPan;
-        // }
 
         void Rotate(Vector2 amount)
         {
+            // TODO: include Screen.dpi
+            // TODO: also make the jumps smoother, for this and zoom
             float ySpin = -amount.x * rotationMultiplier;
             yRotationMomentum = ySpin;
             yMinRotationMomentum = Mathf.Abs(yMinRotationMomentum) * Mathf.Sign(ySpin);

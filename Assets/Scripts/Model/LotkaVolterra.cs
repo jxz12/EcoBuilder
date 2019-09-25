@@ -224,16 +224,25 @@ namespace EcoBuilder.Model
         public bool SolveStability()
         {
             int richness = internToExtern.Count;
-            if (richness == 0)
-            {
-                MayComplexity = 0;
-                return false;
-            }
 
             BuildCommunityMatrix();
             // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
-            // calculate 'complexity'
+            // get largest real part of any eigenvalue of this community matrix
+            // to measure the local asymptotic stability
+            var eigenValues = community.Evd().EigenValues;
+            double Lambda = eigenValues.Real().Maximum();
+            return Lambda <= 0;
+        }
+        public double CalculateMayComplexity()
+        {
+            int richness = community.RowCount;
+            if (richness == 0)
+            {
+                return 0;
+            }
+
+            // 'complexity' = rho * sqrt(R*C)
             int connectance = 0;
             double mean = 0;
             double meanDiag = 0;
@@ -285,31 +294,20 @@ namespace EcoBuilder.Model
                 standardDev = Math.Sqrt(variance);
             }
 
-            MayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
-            // MayComplexity = standardDev * Math.Sqrt(richness*connectance);
+            // double mayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
+            double mayComplexity = standardDev * Math.Sqrt(richness*connectance);
+            return mayComplexity;
 
-            if (variance > 0)
-            {
-                double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
-                TangComplexity = MayComplexity * (1+correlation) - mean - meanDiag;
-            }
-            else
-            {
-                TangComplexity = 0;
-            }
-
-            // UnityEngine.Debug.Log(MayComplexity + " " + TangComplexity);
-
-
-            // get largest real part of any eigenvalue of this community matrix
-            // to measure the local asymptotic stability
-            var eigenValues = community.Evd().EigenValues;
-            double Lambda = eigenValues.Real().Maximum();
-            return Lambda <= 0;
+            // if (variance > 0)
+            // {
+            //     double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
+            //     TangComplexity = MayComplexity * (1+correlation) - mean - meanDiag;
+            // }
+            // else
+            // {
+            //     TangComplexity = 0;
+            // }
         }
-        public double MayComplexity { get; private set; }
-        public double TangComplexity { get; private set; }
-
 
         // public bool SolveReactivity()
         // {
