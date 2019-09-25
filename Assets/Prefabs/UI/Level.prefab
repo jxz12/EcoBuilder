@@ -1596,15 +1596,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   details:
     idx: 0
-    title: Tutorial
-    description: Welcome to EcoBuilder! In this level you will build your first ecosystem.
-    introduction: Welcome to EcoBuilder! Try spinning your world around by dragging,
-      or add your first species by pressing the big plus at the bottom of the screen!
-    congratulation: Well done! You have built your first ecosystem, using the same
-      models that real researchers study every day. Try the remaining levels if you
-      are up for a challenge!
-    numProducers: 1
-    numConsumers: 1
+    title: Default
+    description: Default Level
+    introduction: Default Introduction
+    congratulation: Default Congratulation
+    numProducers: -1
+    numConsumers: -1
     sizeEditable: 0
     greedEditable: 0
     minEdges: -1

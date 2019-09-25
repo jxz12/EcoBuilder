@@ -9,7 +9,6 @@ namespace EcoBuilder.UI
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
         public event Action OnDropped;
-        // public event Action<bool> OnDroppable;
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;

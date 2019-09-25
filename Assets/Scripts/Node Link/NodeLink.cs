@@ -70,7 +70,7 @@ namespace EcoBuilder.NodeLink
 
         public void AddNode(int idx)
         {
-            // TODO: fix later
+            // TODO: mystery bug?!
             if (nodes[idx] != null)
                 throw new Exception("index " + idx + " already added");
 
@@ -78,9 +78,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
 
-                var startPos = new Vector3(-.5f, 0, -.5f);
-
-                newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2);
+                newNode.Init(idx, (minNodeSize+maxNodeSize)/2);
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }

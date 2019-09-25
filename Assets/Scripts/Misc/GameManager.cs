@@ -92,9 +92,8 @@ namespace EcoBuilder
         [SerializeField] RectTransform overlayParent;
         public RectTransform Overlay { get { return overlayParent; } }
 
-        // TODO: this is pretty ugly
         [SerializeField] UI.Level LevelPrefab;
-        public UI.Level GetNewLevel()
+        public UI.Level GetDefaultLevel()
         {
            return Instantiate(LevelPrefab);
         }

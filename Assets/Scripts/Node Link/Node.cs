@@ -19,44 +19,25 @@ namespace EcoBuilder.NodeLink
 
         GameObject shape;
 
-        public void Init(int idx, Vector3 pos, float size)
+        public void Init(int idx, float size)
         {
             Idx = idx;
             name = idx.ToString();
-            StressPos = pos;
+            StressPos = Random.insideUnitSphere;
             Size = size;
         }
 
         public void Shape(GameObject shapeObject)
         {
+            // drop it in at the point at shapeObject's position, but at z=-1
+            StressPos = transform.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
+
             transform.position = shapeObject.transform.position;
             shape = shapeObject;
             shape.transform.SetParent(transform);
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
             shape.transform.localScale = Vector3.one;
-
-            // Mesh outlineMesh = shapeObject.GetComponent<MeshFilter>().mesh;
-            // outlineMesh = Instantiate(outlineMesh);
- 
-            // // https://wiki.unity3d.com/index.php/ReverseNormals
-            // Vector3[] normals = outlineMesh.normals;
-            // for (int i=0;i<normals.Length;i++)
-            //     normals[i] = -normals[i];
-            // outlineMesh.normals = normals;
- 
-            // for (int m=0;m<outlineMesh.subMeshCount;m++)
-            // {
-            //     int[] triangles = outlineMesh.GetTriangles(m);
-            //     for (int i=0;i<triangles.Length;i+=3)
-            //     {
-            //         int temp = triangles[i + 0];
-            //         triangles[i + 0] = triangles[i + 1];
-            //         triangles[i + 1] = temp;
-            //     }
-            //     outlineMesh.SetTriangles(triangles, m);
-            // }
-            // GetComponent<MeshFilter>().mesh = outlineMesh;
         }
         public void Outline(int colourIdx=0)
         {
