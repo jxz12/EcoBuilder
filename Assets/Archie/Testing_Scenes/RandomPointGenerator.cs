@@ -45,6 +45,9 @@ namespace EcoBuilder.Archie
 
         public int seed = 0;
         public int number_of_points = 5;
+
+        public GameObject myPrefab;
+
         // Update is called once per frame
         void Update()
         {
@@ -52,10 +55,17 @@ namespace EcoBuilder.Archie
             {
                 GetComponent<MeshFilter>().mesh = RandomVertices(seed,number_of_points);
                 // GetComponent<MeshFilter>().mesh = simple();
+
+                foreach ( Vector3 v in GetComponent<MeshFilter>().mesh.vertices)
+                {
+                    Instantiate(myPrefab, v, Quaternion.identity);
+
+                }
             }
             if (Input.GetKeyDown(KeyCode.H))
             {
                 GetComponent<MeshFilter>().mesh.triangles = QuickHull3D.MakeHull(GetComponent<MeshFilter>().mesh.vertices);
+                GetComponent<MeshFilter>().mesh.RecalculateNormals();
             }
             
         }
