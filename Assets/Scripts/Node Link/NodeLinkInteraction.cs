@@ -189,7 +189,11 @@ namespace EcoBuilder.NodeLink
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
                               + focusedNode.FocusPos;
             }
-
+        }
+        Vector3 graphParentUnfocused;
+        public void MoveHorizontal(float xCoord)
+        {
+            graphParentUnfocused.x = xCoord;
         }
         bool frozen = false;
         public void Freeze()

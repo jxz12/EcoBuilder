@@ -16,34 +16,51 @@ namespace EcoBuilder.UI
         Vector2 targetPos;
         Vector2 velocity;
         Vector2 canvasRefRes;
+        void Awake()
+        {
+            rt = GetComponent<RectTransform>();
+            targetPos = rt.anchoredPosition;
+            canvasRefRes = GetComponentInParent<Canvas>().GetComponent<RectTransform>().sizeDelta;
+        }
         void Start()
         {
             hideButton.onClick.AddListener(()=>Show(false));
             showButton.onClick.AddListener(()=>Show(true));
-            rt = GetComponent<RectTransform>();
-            targetPos = rt.anchoredPosition;
-            canvasRefRes = GetComponentInParent<CanvasScaler>().referenceResolution;
-            DelayThenShow();
+
+            DelayThenShow(2);
         }
-        public void SetText(string toSet)
+        void ForceUpdateLayout()
         {
-            text.text = toSet;
             Canvas.ForceUpdateCanvases();
             panelLayout.CalculateLayoutInputVertical();
             panelLayout.SetLayoutVertical();
             panelFitter.SetLayoutVertical();
         }
-        public void SetDistFromTop(float height) // 0-1 range
+        public void SetText(string toSet)
+        {
+            text.text = toSet;
+            ForceUpdateLayout();
+        }
+        public void SetDistFromTop(float height, bool damp=true) // 0-1 range
         {
             targetPos.y = canvasRefRes.y * -height;
+            if (!damp)
+            {
+                rt.anchoredPosition = targetPos;
+            }
         }
         public void SetWidth(float width)
         {
             // float x = isLeft? -canvasRefRes.x*width : canvasRefRes.x*width;
-            rt.rect.Set(0, 0, canvasRefRes.x*width, 0);
+            float prevWidth = rt.sizeDelta.x;
+            float newWidth = canvasRefRes.x * width;
+            targetPos.x *= newWidth / prevWidth;
+            rt.sizeDelta = new Vector2(newWidth, rt.sizeDelta.y);
+
+            ForceUpdateLayout();
         }
         bool isLeft;
-        public void SetSide(bool left, bool damp=false)
+        public void SetSide(bool left, bool damp=true)
         {
             if (left == isLeft)
                 return;
@@ -82,11 +99,11 @@ namespace EcoBuilder.UI
         {
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, .15f);
         }
-        public void DelayThenShow()
+        public void DelayThenShow(float seconds)
         {
             // GetComponent<Animator>().SetTrigger("Reset");
             // GetComponent<Animator>().SetBool("Show", true);
-            StartCoroutine(DelayThenShow(2, true));
+            StartCoroutine(DelayThenShow(seconds, true));
         }
         IEnumerator DelayThenShow(float seconds, bool showing)
         {

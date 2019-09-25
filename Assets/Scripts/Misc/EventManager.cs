@@ -20,7 +20,8 @@ namespace EcoBuilder
             // hook up events between objects
 
             inspector.OnIncubated +=        ()=> nodelink.FullUnfocus();
-            inspector.OnUnincubated +=      ()=> print("perhaps move left and right again?");
+            inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f); // TODO: magic number
+            inspector.OnUnincubated +=      ()=> nodelink.MoveHorizontal(0);
             inspector.OnSpawned +=         (i)=> nodelink.AddNode(i);
             inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
@@ -53,17 +54,19 @@ namespace EcoBuilder
 
             status.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             status.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            status.OnLevelCompleted     +=  ()=> CompleteLevel();
+            status.OnLevelCompleted +=      ()=> inspector.Hide();
+            status.OnLevelCompleted +=      ()=> nodelink.Freeze();
+            status.OnLevelCompleted +=      ()=> recorder.Record();
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
             inspector.OnDespawned +=       (i)=> atEquilibrium = false;
             inspector.OnDespawned +=       (i)=> graphSolved = false;
-            nodelink.OnLinked +=            ()=> atEquilibrium = false;
-            nodelink.OnLinked +=            ()=> graphSolved = false;
             inspector.OnIsProducerSet += (i,x)=> atEquilibrium = false;
             inspector.OnSizeSet +=       (i,x)=> atEquilibrium = false;
             inspector.OnGreedSet +=      (i,x)=> atEquilibrium = false;
+            nodelink.OnLinked +=            ()=> atEquilibrium = false;
+            nodelink.OnLinked +=            ()=> graphSolved = false;
 
             inspector.OnUserSpawned +=           (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=         (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
@@ -76,30 +79,14 @@ namespace EcoBuilder
             recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
-            recorder.OnSpeciesMemoryLeak +=      (i)=> print(i + " destroyed completely");
+            // recorder.OnSpeciesMemoryLeak +=      (i)=> print(i + " destroyed completely");
 
+            status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating && !tutorial.Teaching); 
 
-
-            ///////////////////
-            // set up level
-
-            var level = GameManager.Instance.PlayedLevel;
-            if (level == null)
-            {
-                level = GameManager.Instance.GetNewLevel();
-                tutorial.gameObject.SetActive(true);
-            }
-            status.ConstrainFromLevel(level);
-
-            status.AllowUpdateWhen(()=> atEquilibrium &&
-                                        !model.IsCalculating &&
-                                        graphSolved &&
-                                        !nodelink.IsCalculating &&
-                                        !tutorial.Teaching);
-
+            var level = status.Playing;
             for (int i=0; i<level.Details.numSpecies; i++)
             {
-                int newIdx = inspector.SpawnNotIncubated(
+                inspector.SpawnNotIncubated(i,
                     level.Details.plants[i],
                     level.Details.sizes[i],
                     level.Details.greeds[i],
@@ -108,8 +95,6 @@ namespace EcoBuilder
                     level.Details.greedEditable);
 
                 inspector.SetSpeciesRemovable(i, false);
-                if (newIdx != i)
-                    throw new Exception("inspector not adding indices contiguously");
             }
             for (int ij=0; ij<level.Details.numInteractions; ij++)
             {
@@ -141,15 +126,6 @@ namespace EcoBuilder
                     model.EquilibriumAsync(nodelink.GetTargets);
                 #endif
             }
-        }
-
-        void CompleteLevel()
-        {
-            inspector.Hide();
-            nodelink.Freeze();
-            status.Confetti();
-            recorder.Record();
-            GameManager.Instance.SavePlayedLevel(status.NumStars, model.TotalFlux);
         }
     }
 }

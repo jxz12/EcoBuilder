@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace EcoBuilder.UI
 {
-    public class Tutorial : MonoBehaviour
+    public partial class Tutorial : MonoBehaviour
     {
         [SerializeField] Help help;
         [SerializeField] Inspector inspector;
@@ -12,29 +12,30 @@ namespace EcoBuilder.UI
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] MoveRecorder recorder;
 
-        public bool Teaching { get; private set; } = false;
         Action bar;
-        void Start()
+        public bool Teaching { get; private set; } = false;
+        public void StartStructureLesson()
         {
             inspector.HideSizeSlider(true);
             inspector.HideGreedSlider(true);
             inspector.FixInitialSize(.5f);
             inspector.FixInitialGreed(.3f);
             inspector.HideRemoveButton();
-            status.HideScore();
-            status.HideConstraints();
+            status.HideScore(true);
+            status.HideConstraints(true);
             recorder.gameObject.SetActive(false);
-
             Teaching = true;
+
             ExplainIntro();
         }
         void ExplainIntro()
         {
             if (bar != null)
                 bar();
+
             help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the leaf in the bottom right.");
-            help.SetSide(true);
-            help.SetDistFromTop(.05f);
+            help.SetSide(false);
+            help.SetDistFromTop(.2f);
 
             inspector.SetConsumerAvailability(false);
             inspector.OnIncubated += ExplainInspector;
@@ -47,6 +48,8 @@ namespace EcoBuilder.UI
         {
             help.SetText("Here you can choose a new name for your species. You can then introduce it by dragging it into the world.");
             help.Show(true);
+            help.SetSide(true);
+            help.SetDistFromTop(.1f);
 
             bar();
             Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g,x);
@@ -59,14 +62,16 @@ namespace EcoBuilder.UI
         }
         GameObject firstSpecies;
         int firstIdx;
-        void ExplainSpawn(GameObject first, int idx) // TODO: add another state to show pointer to paw
+        void ExplainSpawn(GameObject first, int idx)
         {
             firstSpecies = first;
             firstIdx = idx;
             inspector.SetConsumerAvailability(true);
             inspector.SetProducerAvailability(false);
 
+            // help.SetDistFromTop(.05f);
             help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by pressing the paw button.");
+            help.SetDistFromTop(.02f);
             help.Show(true);
 
             bar();
@@ -79,6 +84,11 @@ namespace EcoBuilder.UI
             bar = ()=> { inspector.OnShaped -= foo; inspector.OnIncubated -= fooo; inspector.OnUnincubated -= foooo; };
             GetComponent<Animator>().SetInteger("Progress", 2);
         }
+        void WaitForAnimal()
+        {
+            // TODO: make this the state after spawn
+        }
+
         // TODO: get references to both species, and map the drag cursor to them
         GameObject secondSpecies;
         int secondIdx;
@@ -101,47 +111,24 @@ namespace EcoBuilder.UI
             help.SetText("Well done! You have built your first ecosystem. Now let's edit your species. Click on your " + firstSpecies.name + " to examine it again.");
 
             bar();
-            Action<int> foo = (i)=> { if (i==0) ExplainSize(); };
+            Action<int> foo = (i)=> { if (i==0) ExplainRemove(); };
             nodelink.OnNodeFocused += foo;
             bar = ()=> nodelink.OnNodeFocused -= foo;
             GetComponent<Animator>().SetInteger("Progress", 4);
+        }
+        void ExplainRemove()
+        {
+            // TODO: remove link (oh no! don't worry if you make mistakes, you can undo)
+        }
+        void ExplainUndo()
+        {
+            // TODO: explain undoing and removing species
+            recorder.gameObject.SetActive(true);
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
             yield return new WaitForSeconds(seconds);
             Todo();
-        }
-        void ExplainSize()
-        {
-            inspector.HideSizeSlider(false);
-            help.Show(true);
-            help.SetText("You can use this slider to change the size of your species. Try making your plant bigger and smaller.");
-
-            bar();
-            Action<int, float, float> foo = (i,x,y)=> ExplainFinish();
-            Action fooo = ()=> { help.Show(true); ExplainFirstEcosystem(); inspector.HideSizeSlider(true); };
-            Action<int> foooo = (i)=>{if (i!=firstIdx) fooo();};
-            inspector.OnUserSizeSet += foo;
-            nodelink.OnUnfocused += fooo;
-            nodelink.OnNodeFocused += foooo;
-
-            bar = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnUnfocused -= fooo; nodelink.OnNodeFocused -= foooo; };
-            GetComponent<Animator>().SetInteger("Progress", 5);
-        }
-
-        // TODO: make this an overall delay, instead of one inside the function;
-        void ExplainFinish()
-        {
-            help.Show(false);
-            StartCoroutine(WaitThenDo(3, ()=>help.Show(true)));
-            help.SetText("The bigger the species looks, the larger its population. You should notice that the smaller the species, the larger its population. This is exactly how real world works! Smaller species, such as grass, can grow much faster than larger ones, like trees. Press the finish flag in the top right to finish this level when you are ready.");
-            Teaching = false;
-
-            bar();
-            Action foo = ()=> SetFinishMessage();
-            status.OnLevelCompleted += foo;
-            bar = ()=> status.OnLevelCompleted -= foo;
-            GetComponent<Animator>().SetInteger("Progress", 6);
         }
         void SetFinishMessage()
         {

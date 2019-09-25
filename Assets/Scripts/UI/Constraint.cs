@@ -3,51 +3,47 @@ using UnityEngine.UI;
 
 namespace EcoBuilder.UI
 {
-	public class Constraint : MonoBehaviour
-	{
-		[SerializeField] Text number;
-		[SerializeField] Image icon;
-		public int ConstraintLimit { get; private set; }
-		public int CurrentValue { get; private set; }
-		public void Constrain(int limit)
-		{
-			ConstraintLimit = limit;
-			if (limit < 0)
-			{
-				gameObject.SetActive(false);
-			}
-			else
-			{
-				number.text = "0/" + limit;
-			}
-		}
-		public void Display(int value)
-		{
-			CurrentValue = value;
-			number.text = CurrentValue + "/" + ConstraintLimit;
-			IsSatisfied = (CurrentValue >= ConstraintLimit);
+    public class Constraint : MonoBehaviour
+    {
+        [SerializeField] Text number;
+        [SerializeField] Image icon;
+        public int ConstraintLimit { get; private set; }
+        public int CurrentValue { get; private set; }
+        string prefix = "     ";
+        public void Unconstrain()
+        {
+            ConstraintLimit = -1;
+            gameObject.SetActive(true);
+            IsSatisfied = true;
+            number.text = prefix + "0";
+        }
+        public void Constrain(int limit)
+        {
+            if (limit <= 0)
+                gameObject.SetActive(false);
 
-			if (IsSatisfied)
-			{
-				icon.color = Color.green;
-			}
-			else
-			{
-				icon.color = Color.white;
-			}
-		}
-		public void DisplayDirect(string value)
-		{
-			number.text = value;
-			if (value == "O") // TODO: this is awful;
-			{
-				icon.color = Color.green;
-			}
-			else
-			{
-				icon.color = Color.white;
-			}
-		}
-		public bool IsSatisfied { get; private set; }
-	}
+            ConstraintLimit = limit;
+            number.text = prefix + "0/" + limit;
+        }
+        public bool IsSatisfied { get; private set; }
+        public void Display(int value)
+        {
+            CurrentValue = value;
+            if (ConstraintLimit <= 0)
+            {
+                number.text = prefix + value.ToString();
+                IsSatisfied = true;
+            }
+            else
+            {
+                number.text = prefix + CurrentValue + "/" + ConstraintLimit;
+                IsSatisfied = (CurrentValue >= ConstraintLimit);
+                icon.color = IsSatisfied? Color.green : Color.white;
+            }
+        }
+        public void Display(bool satisfied)
+        {
+            icon.color = IsSatisfied? Color.green : Color.white;
+        }
+    }
 }

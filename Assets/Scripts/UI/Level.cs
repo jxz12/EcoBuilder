@@ -97,8 +97,6 @@ namespace EcoBuilder.UI
             if (m != Details.consumers.Count)
                 throw new Exception("num edge sources and targets do not match");
 
-            // TODO: check that constraints are possible too
-
             numberText.text = Details.idx.ToString();
 			title.text = Details.title;
 			description.text = Details.description;
@@ -119,8 +117,14 @@ namespace EcoBuilder.UI
                 starsImage.sprite = starImages[Details.numStars];
                 Unlock();
             }
-
-            thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+            finishFlag.onClick.AddListener(()=> OnFinishClicked.Invoke());
+            if (thumbnailedParent == null)
+                thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+        }
+        public event Action OnFinishClicked;
+        public void SetFinishable(bool finishable)
+        {
+            finishFlag.interactable = finishable;
         }
 
         public bool LoadFromFile(string loadPath)
@@ -219,10 +223,9 @@ namespace EcoBuilder.UI
             Destroy(gameObject);
             GameManager.Instance.ReturnToMenu();
         }
-        public Button FinishButton { get { return finishFlag; } }
         public void FinishLevel()
         {
-            NextLevel = GameManager.Instance.GetNewLevel();
+            NextLevel = Instantiate(this);
             bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
             if (successful)
             {

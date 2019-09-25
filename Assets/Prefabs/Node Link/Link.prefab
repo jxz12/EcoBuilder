@@ -74,19 +74,10 @@ LineRenderer:
   - {x: 0, y: 0, z: -100}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.15
+    widthMultiplier: 0.12
     widthCurve:
       serializedVersion: 2
       m_Curve:
-      - serializedVersion: 3
-        time: 0.28817862
-        value: 1
-        inSlope: -0.018749285
-        outSlope: -0.018749285
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.24567337
       - serializedVersion: 3
         time: 1
         value: 1

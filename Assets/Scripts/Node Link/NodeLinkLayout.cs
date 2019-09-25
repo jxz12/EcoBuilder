@@ -31,7 +31,7 @@ namespace EcoBuilder.NodeLink
                         Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
                                         ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
-                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
+                        Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused,
                                         ref graphVelocity, layoutSmoothTime);
                 }
                 else

@@ -97,16 +97,15 @@ namespace EcoBuilder.UI
         }
         UnityAction<float> SizeSliderCallback, GreedSliderCallback;
 
-        void Shape(Species toShape)
+        void SpawnWithEvents(Species toSpawn)
         {
-            spawnedSpecies[toShape.Idx] = toShape;
-            OnSpawned.Invoke(toShape.Idx); // must be invoked first
+            spawnedSpecies[toSpawn.Idx] = toSpawn;
+            OnSpawned.Invoke(toSpawn.Idx); // must be invoked first
 
-            OnShaped.Invoke(toShape.Idx, toShape.GObject);
-            OnIsProducerSet.Invoke(toShape.Idx, toShape.IsProducer);
-            OnSizeSet.Invoke(toShape.Idx, toShape.BodySize);
-            OnGreedSet.Invoke(toShape.Idx, toShape.Greediness);
-            nextIdx += 1;
+            OnShaped.Invoke(toSpawn.Idx, toSpawn.GObject);
+            OnIsProducerSet.Invoke(toSpawn.Idx, toSpawn.IsProducer);
+            OnSizeSet.Invoke(toSpawn.Idx, toSpawn.BodySize);
+            OnGreedSet.Invoke(toSpawn.Idx, toSpawn.Greediness);
         }
         void Bury(Species toBury)
         {
@@ -187,9 +186,11 @@ namespace EcoBuilder.UI
             if (incubated == null)
                 throw new Exception("nothing incubated");
 
-            Shape(incubated);
+            SpawnWithEvents(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
+            while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx))
+                nextIdx += 1;
 
             OnUnincubated.Invoke();
             OnUserSpawned.Invoke(spawnedIdx);
@@ -306,8 +307,10 @@ namespace EcoBuilder.UI
         }
 
         // for loading from level
-        public int SpawnNotIncubated(bool isProducer, float size, float greed, int randomSeed, bool sizeEditable, bool greedEditable)
+        public void SpawnNotIncubated(int idx, bool isProducer, float size, float greed, int randomSeed, bool sizeEditable, bool greedEditable)
         {
+            if (spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx))
+                throw new Exception("idx already added");
             if (inspected != null)
                 throw new Exception("somehow inspecting??");
             if (size < 0 || size > 1)
@@ -315,13 +318,12 @@ namespace EcoBuilder.UI
             if (greed < 0 || greed > 1)
                 throw new Exception("greed not in bounds");
 
-            var toSpawn = new Species(nextIdx, isProducer, size, greed, randomSeed);
+            var toSpawn = new Species(idx, isProducer, size, greed, randomSeed);
             toSpawn.SizeEditable = sizeEditable;
             toSpawn.GreedEditable = greedEditable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
-            Shape(toSpawn);
-            return toSpawn.Idx;
+            SpawnWithEvents(toSpawn);
         }
 
         // for un/redo
@@ -352,7 +354,7 @@ namespace EcoBuilder.UI
                 throw new Exception("idx not in graveyard");
             }
             graveyard[idx].GObject.SetActive(true);
-            Shape(graveyard[idx]);
+            SpawnWithEvents(graveyard[idx]);
             graveyard.Remove(idx);
         }
         public void SetIsProducer(int idx, bool isProducer)
