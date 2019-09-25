@@ -151,6 +151,13 @@ namespace EcoBuilder.Archie
         public class face
         {
             public Vector3[] corners;
+            public Vector3[] ordered_corners{
+                get
+                {
+                    return corners.OrderBy(corner => corner.magnitude).ToArray();
+
+                }
+            }
             public SortedList<float, Vector3> Conflict_List;
             public bool hidden;
             public bool complete;
@@ -159,7 +166,7 @@ namespace EcoBuilder.Archie
             public face(Vector3 corner1, Vector3 corner2, Vector3 corner3)
             {
                 Conflict_List = new SortedList<float, Vector3>();
-                corners = new Vector3[]{corner1, corner2, corner3};
+                corners = (new Vector3[]{corner1, corner2, corner3});
                 complete = false;
                 hidden = false;
                 edges = new List<edge>();
@@ -178,8 +185,22 @@ namespace EcoBuilder.Archie
                 Vector3 plane_normal = Vector3.Normalize(Vector3.Cross(corners[2]-corners[0],corners[1] - corners[0]));
                 Vector3 point_to_plane = Vector3.Normalize(corners[0] - point);
                 bool visible = (Vector3.Dot(point_to_plane, plane_normal) > 0);
+                UnityEngine.Debug.Log("point of view: " + Vector3.Dot(point_to_plane, plane_normal));
+                UnityEngine.Debug.Log("Vis test: " + Vector3.Dot(point_to_plane, plane_normal));
                 return visible;
             }
+
+            public override string ToString()
+            {
+                string s = "";
+                foreach( Vector3 corner in corners )
+                {
+                    s += corner.ToString();
+                    s += " ";
+                }
+                return s;
+            }
+
         }
 
         public class edge
@@ -225,7 +246,7 @@ namespace EcoBuilder.Archie
 
         public static string Flood_Fill(Vector3 furthest_from_face, face current_face, Stack<edge> horizon_edge_list, Stack<face> visited_faces)
         {
-            UnityEngine.Debug.Log("Flooding...");
+            UnityEngine.Debug.Log("Flooding... " + current_face);
             string path = "";
             face next_face;
             face last_face;
@@ -266,10 +287,77 @@ namespace EcoBuilder.Archie
             return path;
         }
 
+        public class flood_return_type
+        {
+            public string path;
+            public Stack<edge> horizon_edge_list;
+            public Stack<face> visited_faces;
+            public List<face> daughter_faces;
+            public flood_return_type(string p, Stack<edge> h, Stack<face> v, List<face> d)
+            {
+                path = p;
+                horizon_edge_list = h;
+                visited_faces = v;
+                daughter_faces = d;
+            }
+        }
+
+        public static string Flood_Fill_and_Make(Vector3 furthest_from_face, face current_face, Stack<edge> horizon_edge_list, Stack<face> visited_faces, List<face> daughter_faces)
+        {
+            UnityEngine.Debug.Log("Flooding... " + current_face);
+            if (visited_faces.Count > 0)
+            {
+                // Testing if face is a conflict (not visible or already visited)
+                // There is some conflict, either the current face has already been visited or it is not visible from the point
+                if (visited_faces.Contains(current_face))
+                {
+                    return "C";
+                }
+                if (!current_face.Is_Visible_from_Point(furthest_from_face))
+                {
+                    face last_face = visited_faces.Peek();
+                    edge horizon_edge = current_face.edges.Find(element1 => element1.connected_faces.Exists(element2 => element2 == last_face));
+                    // Adding the relevant edge to the edge list
+                    horizon_edge_list.Push(horizon_edge);
+                    List<Vector3> new_face_corners = new List<Vector3>(horizon_edge.vertices);
+                    new_face_corners.Add(furthest_from_face);
+                    var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
+
+                    // Modify horizon edges so they point to new face
+                    horizon_edge.connected_faces.Remove(last_face);
+                    horizon_edge.Connect_to_Face(new_face);
+                    daughter_faces.Add(new_face);
+                    UnityEngine.Debug.Log("ITEM: ");
+
+                    return "H";
+                }
+            }
+            else
+            {
+                if (!current_face.Is_Visible_from_Point(furthest_from_face))
+                {
+                    return "H";
+                }
+
+            }
+            string path = "";
+            visited_faces.Push(current_face);
+            UnityEngine.Debug.Log("Visit: ");
+            path += 'V';
+            foreach (edge e in current_face.edges)
+            {
+                face next_face = e.connected_faces.Find(element => element != current_face);
+                path += '[';
+                path += Flood_Fill_and_Make(furthest_from_face, next_face, horizon_edge_list, visited_faces, daughter_faces);
+                path += ']';
+            }
+            return path;
+        }
+
 
         public static List<face> iterate(List<face> face_list)
         {
-            UnityEngine.Debug.Log("I");
+            UnityEngine.Debug.Log("Running iterate function");
             if (face_list.Count <= 0)
             {
                 // return an empty list if face_list provided is empty
@@ -287,13 +375,16 @@ namespace EcoBuilder.Archie
                 var current_face = face_element;
                 var visited_faces = new Stack<face>();
                 string path = "";
+                List<face> daughter_faces = new List<face>();
                 // Use a Flood Fill algorithm to search for horizon edges
-                path = Flood_Fill(furthest_from_face, current_face, horizon_edge_list, visited_faces);
+                // path = Flood_Fill(furthest_from_face, current_face, horizon_edge_list, visited_faces);
+                path = Flood_Fill_and_Make(furthest_from_face, current_face, horizon_edge_list, visited_faces, daughter_faces);
                 // Check for any obvious error in the results of the flood search
-                UnityEngine.Debug.Log("priority");
-                UnityEngine.Debug.Log(path);
-                UnityEngine.Debug.Log(horizon_edge_list.Count);
-                UnityEngine.Debug.Log(visited_faces.Count);
+                UnityEngine.Debug.Log("Flooded, entering main debugging area");
+                UnityEngine.Debug.Log("Flood path: " + path);
+                UnityEngine.Debug.Log("Number of Horizons found: " + horizon_edge_list.Count);
+                UnityEngine.Debug.Log("Number of visible faces: " + visited_faces.Count);
+                UnityEngine.Debug.Log("Number of daughter: " + daughter_faces.Count);
                 if ( visited_faces.Count == 0 )
                 {
                     UnityEngine.Debug.Log("ERROR: current point assigned to wrong face");
@@ -307,23 +398,22 @@ namespace EcoBuilder.Archie
                     return face_list;
                 }
 
-                List<face> daughter_faces = new List<face>();
-                foreach (edge e in horizon_edge_list)
-                {
-                    // Make triangles between furthest point and horizon edges
-                    List<Vector3> new_face_corners = new List<Vector3>(e.vertices);
-                    new_face_corners.Add(furthest_from_face);
-                    var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
+                // foreach (edge e in horizon_edge_list)
+                // {
+                //     // Make triangles between furthest point and horizon edges
+                //     List<Vector3> new_face_corners = new List<Vector3>(e.vertices);
+                //     new_face_corners.Add(furthest_from_face);
+                //     var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
 
-                    // Modify horizon edges so they point to new face
-                    UnityEngine.Debug.Log("F: " + e.connected_faces.Exists(element => visited_faces.Contains(element)));
-                    e.connected_faces.Remove(e.connected_faces.Find(element => visited_faces.Contains(element)));
-                    UnityEngine.Debug.Log("P: " + e.connected_faces.Count);
-                    e.Connect_to_Face(new_face);
+                //     // Modify horizon edges so they point to new face
+                //     UnityEngine.Debug.Log("F: " + e.connected_faces.Exists(element => visited_faces.Contains(element)));
+                //     e.connected_faces.Remove(e.connected_faces.Find(element => visited_faces.Contains(element)));
+                //     UnityEngine.Debug.Log("P: " + e.connected_faces.Count);
+                //     e.Connect_to_Face(new_face);
 
-                    daughter_faces.Add(new_face);
-                    UnityEngine.Debug.Log("daughter first link count: " + new_face.edges.Count);
-                }
+                //     daughter_faces.Add(new_face);
+                //     UnityEngine.Debug.Log("daughter first link count: " + new_face.edges.Count);
+                // }
 
                 // Make and link edges that exsist inbetween the newly formed faces
                 var new_edges = new List<edge>();
@@ -469,22 +559,59 @@ namespace EcoBuilder.Archie
             // construct faces
             List<face> face_list = new List<face>();
             //...
-            if (testing >= 0)
+            // if (testing >= 0)
+            // {
+            //     UnityEngine.Debug.Log("Scenario A, test value is: " + testing);
+
+            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[2], tetrahedron_corners[1]));
+            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[1], tetrahedron_corners[3]));
+            //     face_list.Add(new face(tetrahedron_corners[1], tetrahedron_corners[2], tetrahedron_corners[3]));
+            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[3], tetrahedron_corners[2]));
+            // }
+            // else
+            // {
+            //     UnityEngine.Debug.Log("Scenario B, test value is: " + testing);
+            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[1], tetrahedron_corners[2]));
+            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[3], tetrahedron_corners[1]));
+            //     face_list.Add(new face(tetrahedron_corners[1], tetrahedron_corners[3], tetrahedron_corners[2]));
+            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[2], tetrahedron_corners[3]));
+
+            // }
+
+            // var orientated_faces = from c1 in tetrahedron_corners
+            // from c2 in tetrahedron_corners
+            // from c3 in tetrahedron_corners
+            // from c4 in tetrahedron_corners
+            // where c1 != c2 && c1 != c3 && c2 != c3 && c1 != c4 && c2 != c4 && c3 != c4
+            // where Distance_from_Plane(c1, c2 - c1, c3 - c1, c4) < 0
+            // select new face(c1, c2, c3);
+
+            var faces = from c1 in tetrahedron_corners
+                        from c2 in tetrahedron_corners
+                        from c3 in tetrahedron_corners
+                        where c1 != c2 && c1 != c3 && c2 != c3
+                        select new face(c1, c2, c3);
+
+            var front_facing_faces = from t in faces
+            where Distance_from_Plane(t.corners[0], t.corners[1] - t.corners[0], t.corners[2] - t.corners[0], Array.Find(tetrahedron_corners, corner => !Array.Exists(t.corners, c => c == corner)), false) < 0
+            select t;
+
+            // var unique_faces = front_facing_faces.DistinctBy(f => new HashSet(f.corners));
+            // var unique_faces = front_facing_faces.GroupBy(f => new HashSet<Vector3>(f.corners)).Select(group => group.First());
+            // var unique_faces = front_facing_faces.GroupBy(f => f.ordered_corners).Select(group => group.First());
+            // face_list = unique_faces.ToList<face>();
+
+            List<Vector3[]> repitision = new List<Vector3[]>();
+            foreach (face t in front_facing_faces)
             {
-                UnityEngine.Debug.Log("Scenario A, test value is: " + testing);
-                face_list.Add(new face(tetrahedron_corners[0],tetrahedron_corners[2],tetrahedron_corners[1]));
-                face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[1], tetrahedron_corners[3]));
-                face_list.Add(new face(tetrahedron_corners[1], tetrahedron_corners[2], tetrahedron_corners[3]));
-                face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[3], tetrahedron_corners[2]));
+                if (!repitision.Exists(element => element[0] == t.ordered_corners[0] && element[1] == t.ordered_corners[1] && element[2] == t.ordered_corners[2]))
+                {
+                    face_list.Add(t);
+                }
+                repitision.Add(t.ordered_corners);
             }
-            else
-            {
-                UnityEngine.Debug.Log("Scenario B, test value is: " + testing);
-                face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[1], tetrahedron_corners[2]));
-                face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[3], tetrahedron_corners[1]));
-                face_list.Add(new face(tetrahedron_corners[1], tetrahedron_corners[3], tetrahedron_corners[2]));
-                face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[2], tetrahedron_corners[3]));
-            }
+
+
             List<edge> edge_list = new List<edge>();
             foreach (Vector3 c1 in tetrahedron_corners)
             {
@@ -517,6 +644,7 @@ namespace EcoBuilder.Archie
             //     foreach (Vector3 corner in face_element.corners)
             //     {
             //         triangle_list.Add(System.Array.IndexOf(points, corner));
+            //         UnityEngine.Debug.Log("corners: " + corner);
             //     }
             // }
             // // TESTING!!!
