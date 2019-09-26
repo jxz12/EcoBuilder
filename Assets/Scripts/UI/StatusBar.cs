@@ -49,7 +49,7 @@ namespace EcoBuilder.UI
             target2 = Playing.Details.targetScore2;
             defaultScoreCol = scoreText.color;
         }
-        int target1, target2;
+        float target1, target2;
         Color defaultScoreCol;
 
         HashSet<int> producers = new HashSet<int>();
@@ -96,11 +96,11 @@ namespace EcoBuilder.UI
             help.Show(showing);
         }
         [SerializeField] GameObject scoreParent, constraintsParent;
-        public void HideScore(bool hidden)
+        public void HideScore(bool hidden=true)
         {
             scoreParent.gameObject.SetActive(!hidden);
         }
-        public void HideConstraints(bool hidden)
+        public void HideConstraints(bool hidden=true)
         {
             constraintsParent.gameObject.SetActive(!hidden);
         }
@@ -172,7 +172,7 @@ namespace EcoBuilder.UI
 		bool feasible, stable;
         bool starsNeedUpdate = false;
         // float targetAbundance, abundance;
-        int targetScore, currentScore;
+        float currentScore, showingScore;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
@@ -180,16 +180,17 @@ namespace EcoBuilder.UI
 			stable = isStable;
             shield.Display(stable);
         }
-        public void DisplayScore(int score)
+        public void DisplayScore(float score)
         {
             scoreText.color = score >= currentScore? Color.green : Color.red;
-
-            scoreText.text = score.ToString();
             currentScore = score;
             starsNeedUpdate = true;
         }
         void FixedUpdate()
         {
+            // showingScore = Mathf.Lerp(showingScore, currentScore, .2f);
+            showingScore = Mathf.Lerp(showingScore, currentScore, 1);
+            scoreText.text = ((int)Math.Truncate(showingScore * 100)).ToString();
             if (CanUpdate())
                 scoreText.color = Color.Lerp(scoreText.color, defaultScoreCol, .05f);
         }

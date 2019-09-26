@@ -415,18 +415,18 @@ namespace EcoBuilder.UI
             }
         }
         [SerializeField] GameObject sizeParent, greedParent;
-        public void HideSizeSlider(bool hidden)
+        public void HideSizeSlider(bool hidden=true)
         {
             sizeParent.SetActive(!hidden);
         }
-        public void HideGreedSlider(bool hidden)
+        public void HideGreedSlider(bool hidden=true)
         {
             greedParent.SetActive(!hidden);
         }
         bool removeEnabled = true;
-        public void HideRemoveButton()
+        public void HideRemoveButton(bool hidden=true)
         {
-            removeEnabled = false;
+            removeEnabled = !hidden;
         }
         float sizeIfFixed = -1, greedIfFixed = -1;
         public void FixInitialSize(float fixedSize)

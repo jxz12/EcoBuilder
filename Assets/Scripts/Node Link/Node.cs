@@ -31,10 +31,10 @@ namespace EcoBuilder.NodeLink
         {
             // drop it in at the point at shapeObject's position, but at z=-1
             StressPos = transform.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
-
             transform.position = shapeObject.transform.position;
+
             shape = shapeObject;
-            shape.transform.SetParent(transform);
+            shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
             shape.transform.localScale = Vector3.one;

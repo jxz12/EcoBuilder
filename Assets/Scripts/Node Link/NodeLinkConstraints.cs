@@ -49,8 +49,10 @@ namespace EcoBuilder.NodeLink
             var heights = HeightBFS(basal);
             LaplacianDetZero = (heights.Count != nodes.Count);
 
-            if (superfocused)
-                SuperFocus();
+            if (focusState == FocusState.SuperFocus)
+                SuperFocus(focusedNode.Idx);
+            else if (focusState == FocusState.SuperUnfocus)
+                SuperUnfocus(focusedNode.Idx);
 
             MaxChain = 0;
             foreach (int height in heights.Values)

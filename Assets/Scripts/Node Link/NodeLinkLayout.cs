@@ -12,7 +12,7 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-            if (!superfocused)
+            if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperUnfocus)
             {
                 // get average of all positions, and center
                 Vector3 centroid;
@@ -46,7 +46,6 @@ namespace EcoBuilder.NodeLink
                                         ref graphVelocity, layoutSmoothTime);
                 }
 
-
                 if (constrainTrophic)
                 {
                     float height = Mathf.Min(MaxChain, maxHeight);
@@ -74,7 +73,6 @@ namespace EcoBuilder.NodeLink
                     no.transform.localScale =
                         Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
                 }
-
             }
             else
             {
@@ -96,30 +94,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        float yRotation = 0, yRotationMomentum = 0;
-        private void RotateWithMomentum()
-        {
-            if (!superfocused)
-            {
-                yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
-                yRotation += yRotationMomentum;
 
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
-
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
-            }
-            else
-            {
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, rotationTween);
-
-                var graphParentGoal = Quaternion.identity;
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
-            }
-        }
 
         /////////////////////////////////
         // for stress-based layout
