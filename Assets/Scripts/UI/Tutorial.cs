@@ -1,110 +1,141 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace EcoBuilder.UI
 {
-	public class Tutorial : MonoBehaviour
-	{
-		[SerializeField] Help help;
-		[SerializeField] Inspector inspector;
-		[SerializeField] StatusBar status;
-		[SerializeField] NodeLink.NodeLink nodelink;
-		[SerializeField] Image pointer;
+    public partial class Tutorial : MonoBehaviour
+    {
+        [SerializeField] Help help;
+        [SerializeField] Inspector inspector;
+        [SerializeField] StatusBar status;
+        [SerializeField] NodeLink.NodeLink nodelink;
+        [SerializeField] MoveRecorder recorder;
 
-		Action bar;
-		void Start()
-		{
-			if (bar != null)
-				bar();
+        Action bar;
+        public bool Teaching { get; private set; } = false;
+        public void StartStructureLesson()
+        {
+            inspector.HideSizeSlider(true);
+            inspector.HideGreedSlider(true);
+            inspector.FixInitialSize(.5f);
+            inspector.FixInitialGreed(.3f);
+            inspector.HideRemoveButton();
+            status.HideScore(true);
+            status.HideConstraints(true);
+            recorder.gameObject.SetActive(false);
+            Teaching = true;
 
-			help.SetText("Welcome to EcoBuilder! In this level you will build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the big plus at the bottom of the screen.");
-			// help.Show(true);
+            ExplainIntro();
+        }
+        void ExplainIntro()
+        {
+            if (bar != null)
+                bar();
 
-			transform.localRotation = Quaternion.Euler(0,0,45);
-			transform.localPosition = new Vector2(-20, -420);
+            help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the leaf in the bottom right.");
+            help.SetSide(false);
+            help.SetDistFromTop(.2f);
 
-			inspector.SetConsumerAvailability(false);
-			inspector.OnIncubated += ExplainInspector;
+            inspector.SetConsumerAvailability(false);
+            inspector.OnIncubated += ExplainInspector;
 
-			bar = ()=> { inspector.OnIncubated -= ExplainInspector; };
-		}
-		void ExplainInspector()
-		{
-			// TODO: don't let the user see mass or greed
-			help.SetText("Here you can edit your species or choose a new name. You can then introduce it by dragging it into the world.");
-			help.Show(true);
-			// help.SetY(-420);
+            bar = ()=> { inspector.OnIncubated -= ExplainInspector; };
+            GetComponent<Animator>().SetInteger("Progress", 0);
+        }
 
-			// TODO: this should probably all be in an animator
-			transform.localRotation = Quaternion.Euler(0,0,20);
-			transform.localPosition = new Vector2(160, -353);
+        void ExplainInspector()
+        {
+            help.SetText("Here you can choose a new name for your species. You can then introduce it by dragging it into the world.");
+            help.Show(true);
+            help.SetSide(true);
+            help.SetDistFromTop(.1f);
 
-			bar();
-			Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g.name);
-			Action fooo = ()=> Start();
-			inspector.OnShaped += foo;
-			nodelink.OnUnfocused += fooo;
-			bar = ()=> { inspector.OnShaped -= foo; nodelink.OnUnfocused -= fooo; };
-		}
-		string firstSpeciesName;
-		void ExplainSpawn(string speciesName)
-		{
-			// TODO: make these species unremovable
-			inspector.SetConsumerAvailability(true);
-			inspector.SetProducerAvailability(false);
+            bar();
+            Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g,x);
+            Action fooo = ()=> ExplainIntro();
+            inspector.OnShaped += foo;
+            nodelink.OnEmptyPressed += fooo;
 
-			help.SetText("Your " + speciesName + " is born! Plants grow on their own, and so do not need food. Press somewhere in the background to reset and add an animal.");
-			help.Show(true);
-			// help.SetY(-135);
-			firstSpeciesName = speciesName;
-			pointer.enabled = false;
+            bar = ()=> { inspector.OnShaped -= foo; nodelink.OnEmptyPressed -= fooo; };
+            GetComponent<Animator>().SetInteger("Progress", 1);
+        }
+        GameObject firstSpecies;
+        int firstIdx;
+        void ExplainSpawn(GameObject first, int idx)
+        {
+            firstSpecies = first;
+            firstIdx = idx;
+            inspector.SetConsumerAvailability(true);
+            inspector.SetProducerAvailability(false);
 
-			bar();
-			Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g.name);
-			inspector.OnShaped += foo;
-			bar = ()=> inspector.OnShaped -= foo;
-		}
-		void ExplainInteraction(string speciesName)
-		{
-			inspector.SetConsumerAvailability(false);
-			help.SetText("Your " + speciesName + " is hungry! Drag from it to the " + firstSpeciesName + " to give it some food.");
-			help.Show(true);
+            // help.SetDistFromTop(.05f);
+            help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by pressing the paw button.");
+            help.SetDistFromTop(.02f);
+            help.Show(true);
 
-			pointer.enabled = true;
-			transform.localRotation = Quaternion.identity;
-			transform.localPosition = new Vector2(0, -192);
-			GetComponent<Animator>().SetBool("Drag", true);
+            bar();
+            Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g,x);
+            Action fooo = ()=> help.Show(false);
+            Action foooo = ()=> help.Show(true);
+            inspector.OnShaped += foo;
+            inspector.OnIncubated += fooo;
+            inspector.OnUnincubated += foooo;
+            bar = ()=> { inspector.OnShaped -= foo; inspector.OnIncubated -= fooo; inspector.OnUnincubated -= foooo; };
+            GetComponent<Animator>().SetInteger("Progress", 2);
+        }
+        void WaitForAnimal()
+        {
+            // TODO: make this the state after spawn
+        }
 
-			bar();
-			Action<int, int> foo = (i,j)=> ExplainFinishFlag();
-			nodelink.OnUserLinked += foo;
-			bar = ()=> nodelink.OnUserLinked -= foo;
-		}
-		void ExplainFinishFlag()
-		{
-			help.SetText("Well done! The size of each species indicates its population size, and the flow along the links indicates the speed of eating. Press the red finish flag to complete the level!");// If all of your species can coexist, then you can finish the level by pressing the big red finish flag in the top-right corner.");
-			GetComponent<Animator>().SetBool("Drag", false);
-			StartCoroutine(WaitThenShow());
+        // TODO: get references to both species, and map the drag cursor to them
+        GameObject secondSpecies;
+        int secondIdx;
+        void ExplainInteraction(GameObject second, int idx)
+        {
+            secondSpecies = second;
+            secondIdx = idx;
+            inspector.SetConsumerAvailability(false);
+            help.SetText("Your " + secondSpecies.name + " is hungry! Drag from it to the " + firstSpecies.name + " to give it some food.");
+            help.Show(true);
 
-			var rt = GetComponent<RectTransform>();
-			rt.anchorMax = rt.anchorMin = new Vector2(1,1);
-			rt.anchoredPosition = new Vector2(-90,-50);
-			transform.localRotation = Quaternion.Euler(0,0,-45);
+            bar();
+            Action<int, int> foo = (i,j)=> { ExplainFirstEcosystem(); help.Show(false); StartCoroutine(WaitThenDo(2, ()=>help.Show(true))); };
+            nodelink.OnUserLinked += foo;
+            bar = ()=> nodelink.OnUserLinked -= foo;
+            GetComponent<Animator>().SetInteger("Progress", 3);
+        }
+        void ExplainFirstEcosystem()
+        {
+            help.SetText("Well done! You have built your first ecosystem. Now let's edit your species. Click on your " + firstSpecies.name + " to examine it again.");
 
-			bar();
-			status.OnLevelCompleted += SetFinishMessage;
-		}
-		IEnumerator WaitThenShow()
-		{
-			yield return new WaitForSeconds(2);
-			help.Show(true);
-		}
-		void SetFinishMessage()
-		{
-			help.SetText("Congratulations! You have built your first ecosystem. Try the remaining levels if you would like a challenge!");
-			gameObject.SetActive(false);
-		}
-	}
+            bar();
+            Action<int> foo = (i)=> { if (i==0) ExplainRemove(); };
+            nodelink.OnNodeFocused += foo;
+            bar = ()=> nodelink.OnNodeFocused -= foo;
+            GetComponent<Animator>().SetInteger("Progress", 4);
+        }
+        void ExplainRemove()
+        {
+            // TODO: remove link (oh no! don't worry if you make mistakes, you can undo)
+        }
+        void ExplainUndo()
+        {
+            // TODO: explain undoing and removing species
+            recorder.gameObject.SetActive(true);
+        }
+        IEnumerator WaitThenDo(float seconds, Action Todo)
+        {
+            yield return new WaitForSeconds(seconds);
+            Todo();
+        }
+        void SetFinishMessage()
+        {
+            help.SetText("Congratulations on finishing the first tutorial! The next few levels will introduce more concepts that you will need to know to play the game.");
+
+            bar();
+            GetComponent<Animator>().SetInteger("Progress", 7);
+        }
+    }
 }

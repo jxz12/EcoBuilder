@@ -31,7 +31,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
   m_FloatCurves:
   - curve:
       serializedVersion: 2
@@ -49,7 +49,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Color.r
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   - curve:
@@ -68,7 +68,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Color.g
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   - curve:
@@ -87,22 +87,22 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Color.b
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_PPtrCurves:
   - curve:
     - time: 0
-      value: {fileID: 21300000, guid: 3e6bcc60e2319644081634bdc8a162c2, type: 3}
+      value: {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
     attribute: m_Sprite
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   - curve:
     - time: 0
-      value: {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
+      value: {fileID: 21300000, guid: 3e6bcc60e2319644081634bdc8a162c2, type: 3}
     attribute: m_Sprite
-    path: Name/Refresh/Button
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_SampleRate: 60
@@ -113,50 +113,50 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 3428544762
+      path: 2566238437
       attribute: 2015549526
       script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 1
     - serializedVersion: 2
-      path: 151100094
+      path: 2525012269
       attribute: 2015549526
       script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 1
     - serializedVersion: 2
-      path: 3428544762
+      path: 2525012269
       attribute: 3
       script: {fileID: 0}
       typeID: 4
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 3428544762
+      path: 2525012269
       attribute: 2526845255
       script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 3428544762
+      path: 2525012269
       attribute: 4215373228
       script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 0
     - serializedVersion: 2
-      path: 3428544762
+      path: 2525012269
       attribute: 2334886179
       script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
       typeID: 114
       customType: 0
       isPPtrCurve: 0
     pptrCurveMapping:
-    - {fileID: 21300000, guid: 3e6bcc60e2319644081634bdc8a162c2, type: 3}
     - {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
+    - {fileID: 21300000, guid: 3e6bcc60e2319644081634bdc8a162c2, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
@@ -194,7 +194,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.x
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -213,7 +213,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.y
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -232,7 +232,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.z
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -251,7 +251,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Color.r
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   - curve:
@@ -270,7 +270,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Color.g
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   - curve:
@@ -289,7 +289,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_Color.b
-    path: Name/Refresh/Button/Icon
+    path: Name/Text/Refrove/Button/Icon
     classID: 114
     script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_EulerEditorCurves: []

@@ -83,14 +83,18 @@ namespace EcoBuilder.Model
             }
         }
 
+        int connectance;
         public void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
         {
             // create Matrix and Vector that MathNet understands
             int n = internToExtern.Count;
+            if (n == 0)
+                return;
 
             interaction.Clear();
             negGrowth.Clear();
 
+            connectance = 0;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -104,7 +108,8 @@ namespace EcoBuilder.Model
 
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
-                    flux[i,j] = e * a;
+                    flux[i,j] = e * a; // init flux here, multiply by abundances later
+                    connectance += 1;
                 }
             }
         }
@@ -114,6 +119,8 @@ namespace EcoBuilder.Model
         {
             // calculates every element of the Jacobian, evaluated at equilibrium point
             int n = internToExtern.Count;
+            if (n == 0)
+                return;
 
             community.Clear();
             for (int i=0; i<n; i++)
@@ -163,7 +170,7 @@ namespace EcoBuilder.Model
             if (n == 0)
             {
                 TotalAbundance = TotalFlux = 0;
-                return false;
+                return true;
             }
 
             // BuildInteractionMatrix(Consumers);
@@ -182,7 +189,7 @@ namespace EcoBuilder.Model
                 foreach (T con in Consumers(res))
                 {
                     int j = externToIntern[con];
-                    flux[i,j] *= abundance[i] * abundance[j];
+                    flux[i,j] *= abundance[i] * abundance[j]; // complete values
                     TotalFlux += flux[i,j];
                 }
             }
@@ -194,6 +201,7 @@ namespace EcoBuilder.Model
                 TotalAbundance += abundance[i];
                 if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i]))
                     abundance[i] = 0;
+
                 if (abundance[i] <= 0)
                     feasible = false;
             }
@@ -219,82 +227,8 @@ namespace EcoBuilder.Model
         // also O(n^3)
         public bool SolveStability()
         {
-            int richness = internToExtern.Count;
-            if (richness == 0)
-            {
-                MayComplexity = 0;
-                return false;
-            }
-
             BuildCommunityMatrix();
             // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
-
-            // calculate 'complexity'
-            int connectance = 0;
-            double mean = 0;
-            double meanDiag = 0;
-            double meanOffDiag = 0;
-            double meanOffDiagPairs = 0;
-            for (int i=0; i<richness; i++)
-            {
-                meanDiag += community[i,i];
-                for (int j=0; j<richness; j++)
-                {
-                    mean += community[i,j];
-                    if (i!=j && community[i,j]!=0)
-                    {
-                        meanOffDiag += community[i,j];
-                        connectance += 1;
-                        if (i<j)
-                        {
-                            meanOffDiagPairs += community[i,j] * community[j,i];
-                        }
-                    }
-                }
-            }
-
-            if (richness > 0)
-            {
-                mean /= richness*richness;
-                meanDiag /= richness;
-            }
-
-            // only account for non zeros
-            double variance = 0;
-            double standardDev = 0;
-            if (connectance > 0)
-            {
-                meanOffDiag /= connectance;
-
-                for (int i=0; i<richness; i++)
-                {
-                    for (int j=0; j<richness; j++)
-                    {
-                        if (i!=j && community[i,j]!=0)
-                        {
-                            double deviation = community[i,j] - meanOffDiag;
-                            variance += deviation * deviation;
-                        }
-                    }
-                }
-                variance /= connectance;
-                standardDev = Math.Sqrt(variance);
-            }
-
-            MayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
-
-            if (variance > 0)
-            {
-                double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
-                TangComplexity = MayComplexity * (1+correlation) - mean - meanDiag;
-            }
-            else
-            {
-                TangComplexity = 0;
-            }
-
-            // UnityEngine.Debug.Log(MayComplexity + " " + TangComplexity);
-
 
             // get largest real part of any eigenvalue of this community matrix
             // to measure the local asymptotic stability
@@ -302,9 +236,74 @@ namespace EcoBuilder.Model
             double Lambda = eigenValues.Real().Maximum();
             return Lambda <= 0;
         }
-        public double MayComplexity { get; private set; }
-        public double TangComplexity { get; private set; }
+        public double CalculateMayComplexity()
+        {
+            int richness = community.RowCount;
+            if (richness == 0 || connectance == 0)
+                return 0;
 
+            // 'complexity' = rho * sqrt(R*C)
+            // double mean = 0;
+            // double meanDiag = 0;
+            double meanOffDiag = 0;
+            int numOffDiagEntries = 0;
+            // double meanOffDiagPairs = 0;
+            for (int i=0; i<richness; i++)
+            {
+                // meanDiag += community[i,i];
+                for (int j=0; j<richness; j++)
+                {
+                    // mean += community[i,j];
+                    if (i!=j && community[i,j]!=0)
+                    {
+                        meanOffDiag += community[i,j];
+                        numOffDiagEntries += 1;
+                    }
+
+                    // if (i<j)
+                    //     meanOffDiagPairs += community[i,j] * community[j,i];
+                }
+            }
+
+            // if (richness > 0)
+            // {
+            //     mean /= richness*richness;
+            //     meanDiag /= richness;
+            // }
+
+            // only account for non zeros
+            double variance = 0;
+            double standardDev = 0;
+            meanOffDiag /= numOffDiagEntries;
+
+            for (int i=0; i<richness; i++)
+            {
+                for (int j=0; j<richness; j++)
+                {
+                    if (i!=j && community[i,j]!=0)
+                    {
+                        double deviation = community[i,j] - meanOffDiag;
+                        variance += deviation * deviation;
+                    }
+                }
+            }
+            variance /= numOffDiagEntries;
+            standardDev = Math.Sqrt(variance);
+
+            // double mayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
+            double mayComplexity = standardDev * Math.Sqrt(richness*connectance);
+            return mayComplexity;
+
+            // if (variance > 0)
+            // {
+            //     double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
+            //     TangComplexity = MayComplexity * (1+correlation) - mean - meanDiag;
+            // }
+            // else
+            // {
+            //     TangComplexity = 0;
+            // }
+        }
 
         // public bool SolveReactivity()
         // {

@@ -20,7 +20,8 @@ namespace EcoBuilder
             // hook up events between objects
 
             inspector.OnIncubated +=        ()=> nodelink.FullUnfocus();
-            inspector.OnUnincubated +=      ()=> print("TODO:");
+            inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f); // TODO: magic number
+            inspector.OnUnincubated +=      ()=> nodelink.MoveHorizontal(0);
             inspector.OnSpawned +=         (i)=> nodelink.AddNode(i);
             inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
@@ -47,64 +48,52 @@ namespace EcoBuilder
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
             model.OnEquilibrium += ()=> nodelink.ResizeNodes(i=> model.GetScaledAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetScaledFlux(i,j));
-            model.OnEquilibrium += ()=> status.DisplayScore(model.TotalFlux);
+            // model.OnEquilibrium += ()=> status.DisplayScore(model.NormalisedFlux);
+            model.OnEquilibrium += ()=> status.DisplayScore(model.NormalisedComplexity);
             model.OnEquilibrium += ()=> status.DisplayFeastability(model.Feasible, model.Stable);
 
             status.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             status.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            status.OnLevelCompleted     +=  ()=> CompleteLevel();
+            status.OnLevelCompleted +=      ()=> inspector.Hide();
+            status.OnLevelCompleted +=      ()=> nodelink.Freeze();
+            status.OnLevelCompleted +=      ()=> recorder.Record();
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
             inspector.OnDespawned +=       (i)=> atEquilibrium = false;
             inspector.OnDespawned +=       (i)=> graphSolved = false;
-            nodelink.OnLinked +=            ()=> atEquilibrium = false;
-            nodelink.OnLinked +=            ()=> graphSolved = false;
             inspector.OnIsProducerSet += (i,x)=> atEquilibrium = false;
             inspector.OnSizeSet +=       (i,x)=> atEquilibrium = false;
             inspector.OnGreedSet +=      (i,x)=> atEquilibrium = false;
+            nodelink.OnLinked +=            ()=> atEquilibrium = false;
+            nodelink.OnLinked +=            ()=> graphSolved = false;
 
             inspector.OnUserSpawned +=           (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=         (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
             nodelink.OnUserLinked +=           (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=         (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            inspector.OnUserIsProducerSet += (i,x,y)=> recorder.TypeSet(i, x, y, inspector.SetIsProducer);
+            // inspector.OnUserIsProducerSet += (i,x,y)=> recorder.TypeSet(i, x, y, inspector.SetIsProducer);
             inspector.OnUserSizeSet +=       (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet +=      (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
 
             recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
+            recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
+            recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
 
+            status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating && !tutorial.Teaching); 
 
-
-            ///////////////////
-            // set up level
-
-            var level = GameManager.Instance.PlayedLevel;
-            if (level == null)
-            {
-                level = GameManager.Instance.GetNewLevel();
-                // tutorial.gameObject.SetActive(true);
-            }
-            
-            status.ConstrainFromLevel(level);
-            status.AllowUpdateWhen(()=> atEquilibrium &&
-                                        !model.IsCalculating &&
-                                        graphSolved &&
-                                        !nodelink.IsCalculating);
-
+            var level = status.Playing;
             for (int i=0; i<level.Details.numSpecies; i++)
             {
-                int newIdx = inspector.SpawnNotIncubated(
+                inspector.SpawnNotIncubated(i,
                     level.Details.plants[i],
                     level.Details.sizes[i],
                     level.Details.greeds[i],
                     level.Details.randomSeeds[i],
-                    level.Details.editables[i], // TODO: split into two here
-                    level.Details.editables[i]);
+                    level.Details.sizeEditable,
+                    level.Details.greedEditable);
 
                 inspector.SetSpeciesRemovable(i, false);
-                if (newIdx != i)
-                    throw new Exception("inspector not adding indices contiguously");
             }
             for (int ij=0; ij<level.Details.numInteractions; ij++)
             {
@@ -136,15 +125,6 @@ namespace EcoBuilder
                     model.EquilibriumAsync(nodelink.GetTargets);
                 #endif
             }
-        }
-
-        void CompleteLevel()
-        {
-            inspector.Hide();
-            nodelink.Freeze();
-            status.Confetti();
-            recorder.Record();
-            GameManager.Instance.SavePlayedLevel(status.NumStars, model.TotalFlux);
         }
     }
 }

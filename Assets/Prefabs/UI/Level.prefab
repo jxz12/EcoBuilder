@@ -1122,7 +1122,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.003251674}
+  m_AnchoredPosition: {x: 0, y: -0.35872042}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1907157808438662216
@@ -1596,34 +1596,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   details:
     idx: 0
-    title: Tutorial
-    description: Welcome to EcoBuilder! In this level you will build your first ecosystem.
-    introduction: Welcome to EcoBuilder! Try spinning your world around by dragging,
-      or add your first species by pressing the big plus at the bottom of the screen!
-    congratulation: Well done! You have built your first ecosystem, using the same
-      models that real researchers study every day. Try the remaining levels if you
-      are up for a challenge!
-    numProducers: 3
-    numConsumers: 4
+    title: Default
+    description: Default Level
+    introduction: Default Introduction
+    congratulation: Default Congratulation
+    numProducers: -1
+    numConsumers: -1
+    sizeEditable: 0
+    greedEditable: 0
     minEdges: -1
     maxEdges: -1
     minChain: -1
     maxChain: -1
     minLoop: -1
     maxLoop: -1
-    numSpecies: 2
-    plants: 0100
-    sizes:
-    - 0
-    - 0.5
-    greeds:
-    - 0.5
-    - 0.5
-    randomSeeds: 0100000002000000
-    editables: 0101
-    numInteractions: 1
-    resources: 00000000
-    consumers: 01000000
+    numSpecies: 0
+    plants: 
+    sizes: []
+    greeds: []
+    randomSeeds: 
+    numInteractions: 0
+    resources: 
+    consumers: 
     targetScore1: 0
     targetScore2: 0
     highScore: 0
@@ -3453,7 +3447,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4203834934605314358}
   m_HandleRect: {fileID: 3354432201899250630}
   m_Direction: 2
-  m_Value: 0.50000036
+  m_Value: 0.500035
   m_Size: 0
   m_NumberOfSteps: 0
   m_OnValueChanged:

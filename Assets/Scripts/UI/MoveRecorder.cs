@@ -8,22 +8,24 @@ namespace EcoBuilder.UI
     public class MoveRecorder : MonoBehaviour
     {
         public event Action<int> OnSpeciesUndone;
+        public event Action<int> OnSpeciesMemoryLeak;
 
         [SerializeField] Button undoButton;
         [SerializeField] Button redoButton;
 
         class Move
         {
+            public enum Type { Spawn, Despawn, Interaction, Production, Size, Greed };
             public int idx;
-            public bool isStructural;
+            public Type type;
             public Action Undo;
             public Action Redo;
-            public Move(Action Undo, Action Redo, int idx, bool isStructural)
+            public Move(Action Undo, Action Redo, int idx, Type type)
             {
                 this.Undo = Undo;
                 this.Redo = Redo;
                 this.idx = idx;
-                this.isStructural = isStructural;
+                this.type = type;
             }
         }
 
@@ -39,6 +41,12 @@ namespace EcoBuilder.UI
         void NewMove(Move move)
         {
             undos.Push(move);
+            foreach (Move redo in redos)
+            {
+                // spawned species can never be recovered
+                if (redo.type == Move.Type.Spawn)
+                    OnSpeciesMemoryLeak.Invoke(redo.idx);
+            }
             redos.Clear();
             undoButton.interactable = true;
             redoButton.interactable = false;
@@ -46,88 +54,68 @@ namespace EcoBuilder.UI
 
         public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
-            NewMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), idx, true));
+            NewMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), idx, Move.Type.Spawn));
         }
         public void SpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
-            NewMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), idx, true));
+            NewMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), idx, Move.Type.Despawn));
         }
         public void InteractionAdded(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
-            NewMove(new Move(()=>Remove(res,con), ()=>Add(res,con), int.MinValue, true));
+            NewMove(new Move(()=>Remove(res,con), ()=>Add(res,con), int.MinValue, Move.Type.Interaction));
         }
         public void InteractionRemoved(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
-            NewMove(new Move(()=>Add(res,con), ()=>Remove(res,con), int.MinValue, true));
+            NewMove(new Move(()=>Add(res,con), ()=>Remove(res,con), int.MinValue, Move.Type.Interaction));
         }
 
-        public void TypeSet(int idx, bool prev, bool current, Action<int, bool> SetType)
+        public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
         {
-            NewMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, false));
+            if (undos.Peek().type == Move.Type.Production && undos.Peek().idx == idx)
+                undos.Peek().Redo = ()=>SetType(idx,current); // don't record multiple changes
+            else
+                NewMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, Move.Type.Production));
         }
         public void SizeSet(int idx, float prev, float current, Action<int, float> SetSize)
         {
-            NewMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, false));
+            if (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx)
+                undos.Peek().Redo = ()=>SetSize(idx,current);
+            else
+                NewMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, Move.Type.Size));
         }
         public void GreedSet(int idx, float prev, float current, Action<int, float> SetGreed)
         {
-            NewMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, false));
+            if (undos.Peek().type == Move.Type.Greed && undos.Peek().idx == idx)
+                undos.Peek().Redo = ()=>SetGreed(idx,current);
+            else
+                NewMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
         }
 
+
         // connected to buttons
-        public void Undo()
+        void Undo()
         {
-            int idx = undos.Peek().idx;
-            if (undos.Peek().isStructural)
-            {
-                // do at least one undo
-                undos.Peek().Undo();
-                redos.Push(undos.Pop());
-            }
-            else
-            {
-                // keep going until last structural change to this species
-                while (undos.Count>0 && !undos.Peek().isStructural && undos.Peek().idx==idx)
-                {
-                    undos.Peek().Undo();
-                    redos.Push(undos.Pop());
-                }
-            }
+            Move toUndo = undos.Pop();
+            toUndo.Undo();
+            redos.Push(toUndo);
 
             undoButton.interactable = undos.Count > 0;
             redoButton.interactable = true;
 
-            if (idx != int.MinValue)
-            {
-                OnSpeciesUndone.Invoke(idx);
-            }
+            if (toUndo.type != Move.Type.Interaction)
+                OnSpeciesUndone.Invoke(toUndo.idx);
         }
-        public void Redo()
+        void Redo()
         {
-            int idx = redos.Peek().idx;
-            if (redos.Peek().isStructural)
-            {
-                // do at least one undo
-                redos.Peek().Redo();
-                undos.Push(redos.Pop());
-            }
-            else
-            {
-                // keep going until last structural change to this species
-                while (redos.Count>0 && !redos.Peek().isStructural && redos.Peek().idx==idx)
-                {
-                    redos.Peek().Redo();
-                    undos.Push(redos.Pop());
-                }
-            }
+            Move toRedo = redos.Pop();
+            toRedo.Redo();
+            undos.Push(toRedo);
 
             redoButton.interactable = redos.Count > 0;
             undoButton.interactable = true;
 
-            if (idx != int.MinValue)
-            {
-                OnSpeciesUndone.Invoke(idx);
-            }
+            if (toRedo.type != Move.Type.Interaction)
+                OnSpeciesUndone.Invoke(toRedo.idx);
         }
         public void Record()
         {

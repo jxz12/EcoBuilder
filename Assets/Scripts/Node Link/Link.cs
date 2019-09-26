@@ -42,9 +42,10 @@ namespace EcoBuilder.NodeLink
             if (GetComponent<cakeslice.Outline>() != null)
                 Destroy(GetComponent<cakeslice.Outline>());
         }
-        public void SetTransparency(float alpha)
+        float targetAlpha = 1;
+        public void Show(bool showing = true)
         {
-            lr.material.SetFloat("_Alpha", alpha);
+            targetAlpha = showing? 1 : 0;
         }
 
         [SerializeField] float lineWidth;
@@ -107,6 +108,7 @@ namespace EcoBuilder.NodeLink
         {
             tileOffset -= TileSpeed;
             lr.material.SetFloat("_Offset", tileOffset);
+            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .05f));
         }
     }
 }

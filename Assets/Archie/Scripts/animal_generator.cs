@@ -52,6 +52,7 @@ namespace EcoBuilder.Archie{
             var created_species = Instantiate(Animal_Prefab);
             generated_consumers.Add(created_species);
             created_species.name = "Animal_no." + (generated_consumers.Count).ToString();
+            isProducer = false;
             if (!isProducer)
             {
                 // // assign mesh
