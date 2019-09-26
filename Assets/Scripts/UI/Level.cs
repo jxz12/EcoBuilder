@@ -48,9 +48,9 @@ namespace EcoBuilder.UI
             public List<int> consumers;
 
             // high scores
-            public float targetScore1;
-            public float targetScore2;
-            public float highScore;
+            public int targetScore1;
+            public int targetScore2;
+            public int highScore;
 
             // -1 is locked, 0,1,2,3 unlocked plus number of stars
             public int numStars;
@@ -90,6 +90,7 @@ namespace EcoBuilder.UI
 
         void Start()
         {
+
             int n = Details.numSpecies;
             if (n != Details.randomSeeds.Count || n != Details.sizes.Count || n != Details.greeds.Count)
                 throw new Exception("num species and sizes or greeds do not match");
@@ -108,9 +109,9 @@ namespace EcoBuilder.UI
             // target1.text = GameManager.Instance.NormaliseScore(Details.targetScore1).ToString("000");
             // target2.text = GameManager.Instance.NormaliseScore(Details.targetScore2).ToString("000");
             // highScore.text = GameManager.Instance.NormaliseScore(Details.highScore).ToString("000");
-            target1.text = ((int)Math.Truncate(Details.targetScore1 * 100)).ToString();
-            target2.text = ((int)Math.Truncate(Details.targetScore2 * 100)).ToString();
-            highScore.text = ((int)Math.Truncate(Details.highScore * 100)).ToString();
+            target1.text = Details.targetScore1.ToString();
+            target2.text = Details.targetScore2.ToString();
+            highScore.text = Details.highScore.ToString();
 
             if (Details.highScore >= details.targetScore1)
                 target1.color = Color.grey;
@@ -125,6 +126,7 @@ namespace EcoBuilder.UI
             finishFlag.onClick.AddListener(()=> OnFinishClicked.Invoke());
             if (thumbnailedParent == null)
                 thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+            targetSize = GetComponent<RectTransform>().sizeDelta;
         }
         public event Action OnFinishClicked;
         public void SetFinishable(bool finishable)
@@ -259,8 +261,8 @@ namespace EcoBuilder.UI
         Vector2 sizocity, targetSize;
         void FixedUpdate()
         {
-            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, .15f);
-            GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, .15f);
+            // transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, .15f);
+            // GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, .15f);
         }
 
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }

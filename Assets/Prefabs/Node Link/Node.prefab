@@ -45,7 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbcce0ab1e920e344aeb923fa4534813, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocity: {x: 0, y: 0, z: 0}
+  focusState: 0
+  layoutSmoothTime: 0.5
+  sizeTween: 0.05
 --- !u!95 &95726910650056610
 Animator:
   serializedVersion: 3

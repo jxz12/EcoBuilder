@@ -108,7 +108,7 @@ namespace EcoBuilder.NodeLink
         {
             tileOffset -= TileSpeed;
             lr.material.SetFloat("_Offset", tileOffset);
-            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .05f));
+            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .1f));
         }
     }
 }

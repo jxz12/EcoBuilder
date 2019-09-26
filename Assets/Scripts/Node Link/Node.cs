@@ -9,13 +9,13 @@ namespace EcoBuilder.NodeLink
         public Color Col {
             get { return shape!=null? shape.GetComponent<MeshRenderer>().material.color : Color.black; }
         }
+        public enum FocusState { Normal, Focus, Hidden }
+        public FocusState focusState = FocusState.Normal;
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
         public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
-
-        public Vector3 velocity;  // for public use with Vector3.SmoothDamp
 
         GameObject shape;
 
@@ -80,6 +80,35 @@ namespace EcoBuilder.NodeLink
                 // shape.SetActive(true);
                 if (shape != null)
                     shape.GetComponent<MeshRenderer>().enabled = true;
+            }
+        }
+        Vector3 velocity; // for public use with Vector3.SmoothDamp
+        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
+        void FixedUpdate()
+        {
+            if (focusState == FocusState.Normal)
+            {
+                transform.localScale =
+                    Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
+                transform.localPosition =
+                    Vector3.SmoothDamp(transform.localPosition, StressPos,
+                                        ref velocity, layoutSmoothTime);
+            }
+            else if (focusState == FocusState.Focus)
+            {
+                transform.localScale =
+                    Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
+                transform.localPosition =
+                    Vector3.SmoothDamp(transform.localPosition, FocusPos,
+                                        ref velocity, layoutSmoothTime);
+            }
+            else if (focusState == FocusState.Hidden)
+            {
+                transform.localScale =
+                    Vector3.Lerp(transform.localScale, Vector3.zero, sizeTween);
+                transform.localPosition =
+                    Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,2),
+                                        ref velocity, layoutSmoothTime);
             }
         }
     }
