@@ -35,8 +35,9 @@ namespace EcoBuilder.UI
         [SerializeField] Button refroveButton;
         [SerializeField] Animator traitsAnim, typesAnim;
         
-        [SerializeField] JonnyGenerator.JonnyGenerator factory;
+        // [SerializeField] JonnyGenerator.JonnyGenerator factory;
         // [SerializeField] Archie.ArchieGenerator factory;
+        [SerializeField] Archie.animal_generator factory;
         [SerializeField] Incubator incubator;
 
         public class Species

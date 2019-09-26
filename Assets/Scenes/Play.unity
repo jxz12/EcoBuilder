@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 26841758}
   - component: {fileID: 26841763}
   - component: {fileID: 26841761}
+  - component: {fileID: 26841762}
   m_Layer: 0
   m_Name: Master
   m_TagString: Untagged
@@ -233,7 +234,7 @@ MonoBehaviour:
   - {fileID: 4300014, guid: 0335b7e33c36a424083880636e4db54c, type: 3}
   - {fileID: 4300016, guid: 0335b7e33c36a424083880636e4db54c, type: 3}
   - {fileID: 4300018, guid: 0335b7e33c36a424083880636e4db54c, type: 3}
---- !u!114 &26841763
+--- !u!114 &26841762
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -241,6 +242,35 @@ MonoBehaviour:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 26841757}
   m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1fb97e0947fd49f3842e9ce5f06eee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Animal_Prefab: {fileID: 8620083413230679600, guid: 1f2994656656b4fcdaccf128fdfadbee,
+    type: 3}
+  Consumer_Meshs:
+  - {fileID: -516739513825897564, guid: 552be06625ca0438cbfa3171f1f8877a, type: 3}
+  - {fileID: -3592776260745777201, guid: aae75ccb0d90043bca5ec9b9b01e4e44, type: 3}
+  - {fileID: 9138436511008389774, guid: 6484ef9b2dae34ea498631a18443007d, type: 3}
+  Texture_Size: 64
+  Base_Animal_Material: {fileID: 2100000, guid: 30a7978a657e5415584ce4c745ee0e9c,
+    type: 2}
+  Face_Textures:
+  - {fileID: 2800000, guid: 82ddbecd81b0e4548a9658abe88bdc01, type: 3}
+  - {fileID: 2800000, guid: a98d9d74f5d328447828b258ef9d27a9, type: 3}
+  - {fileID: 2800000, guid: d0bfc54cdaad7b342ba77e97d891c6ba, type: 3}
+  Producer: 0
+  Size: 0
+  Greed: 0
+  Seed: 0
+--- !u!114 &26841763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 26841757}
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cf3019ab9fc6f451aa607390eeb4c5f2, type: 3}
   m_Name: 
@@ -823,7 +853,7 @@ MonoBehaviour:
   refroveButton: {fileID: 916625267}
   traitsAnim: {fileID: 1168393884}
   typesAnim: {fileID: 1687319643}
-  factory: {fileID: 26841761}
+  factory: {fileID: 26841762}
   incubator: {fileID: 1297594225}
   sizeParent: {fileID: 1171145152}
   greedParent: {fileID: 537601494}
@@ -6139,40 +6169,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 397998377}
   m_CullTransparentMesh: 0
---- !u!84 &418584660
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 762
-  m_Height: 1041
-  m_AntiAliasing: 1
-  m_DepthFormat: 1
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &461407354
 GameObject:
   m_ObjectHideFlags: 0
@@ -8188,8 +8184,8 @@ MonoBehaviour:
   sourceCamera: {fileID: 1047668687}
   outlineCamera: {fileID: 1539204445}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1766008342}
-  extraRenderTexture: {fileID: 418584660}
+  renderTexture: {fileID: 1436833249}
+  extraRenderTexture: {fileID: 1113653386}
 --- !u!1 &1058571054
 GameObject:
   m_ObjectHideFlags: 0
@@ -8475,6 +8471,40 @@ MonoBehaviour:
   sizeTween: 0.05
   maxHeight: 3
   constrainTrophic: 1
+--- !u!84 &1113653386
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 762
+  m_Height: 1041
+  m_AntiAliasing: 1
+  m_DepthFormat: 1
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &1141210684
 GameObject:
   m_ObjectHideFlags: 0
@@ -9550,6 +9580,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1411415539}
   m_CullTransparentMesh: 0
+--- !u!84 &1436833249
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 762
+  m_Height: 1041
+  m_AntiAliasing: 1
+  m_DepthFormat: 1
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &1496890716
 GameObject:
   m_ObjectHideFlags: 0
@@ -9955,7 +10019,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1766008342}
+  m_TargetTexture: {fileID: 1436833249}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -10845,40 +10909,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1756137572}
   m_CullTransparentMesh: 0
---- !u!84 &1766008342
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 762
-  m_Height: 1041
-  m_AntiAliasing: 1
-  m_DepthFormat: 1
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1001 &1769435174
 PrefabInstance:
   m_ObjectHideFlags: 0
