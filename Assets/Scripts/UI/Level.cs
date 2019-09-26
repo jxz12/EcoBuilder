@@ -26,6 +26,9 @@ namespace EcoBuilder.UI
             // constraints
             public int numProducers;
             public int numConsumers;
+            public bool sizeEditable; // TODO: maybe change this back to list again!!!
+            public bool greedEditable;
+
             public int minEdges;
             public int maxEdges;
             public int minChain;
@@ -39,7 +42,6 @@ namespace EcoBuilder.UI
             public List<float> sizes;
             public List<float> greeds;
             public List<int> randomSeeds;
-            public List<bool> editables;
             // edges
             public int numInteractions;
             public List<int> resources;
@@ -59,7 +61,7 @@ namespace EcoBuilder.UI
         public LevelDetails Details {
             get { return details; }
             private set { details = value; }
-        }
+        } // stupid unity serializable grumble
 
         // thumbnail
         [SerializeField] Text numberText;
@@ -67,23 +69,24 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite[] starImages;
 
         // card
-		[SerializeField] Text title;
-		[SerializeField] Text description;
+        [SerializeField] Text title;
+        [SerializeField] Text description;
         [SerializeField] ScrollRect descriptionArea;
-		[SerializeField] Text producers;
-		[SerializeField] Text consumers;
-		[SerializeField] Text target1;
-		[SerializeField] Text target2;
-		[SerializeField] Text highScore;
+        [SerializeField] Text producers;
+        [SerializeField] Text consumers;
+        [SerializeField] Text target1;
+        [SerializeField] Text target2;
+        [SerializeField] Text highScore;
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
 
         // finish
         [SerializeField] Button finishFlag;
-
         // navigation
         [SerializeField] RectTransform nextLevelParent;
+
+        [SerializeField] GameObject landscape; // TODO:
 
         void Start()
         {
@@ -95,17 +98,19 @@ namespace EcoBuilder.UI
             if (m != Details.consumers.Count)
                 throw new Exception("num edge sources and targets do not match");
 
-            // TODO: check that constraints are possible too
-
             numberText.text = Details.idx.ToString();
-			title.text = Details.title;
-			description.text = Details.description;
+            title.text = Details.title;
+            description.text = Details.description;
 
-			producers.text = Details.numProducers.ToString();
-			consumers.text = Details.numConsumers.ToString();
-			target1.text = GameManager.Instance.NormaliseScore(Details.targetScore1).ToString("000");
-			target2.text = GameManager.Instance.NormaliseScore(Details.targetScore2).ToString("000");
-            highScore.text = GameManager.Instance.NormaliseScore(Details.highScore).ToString("000");
+            producers.text = Details.numProducers.ToString();
+            consumers.text = Details.numConsumers.ToString();
+
+            // target1.text = GameManager.Instance.NormaliseScore(Details.targetScore1).ToString("000");
+            // target2.text = GameManager.Instance.NormaliseScore(Details.targetScore2).ToString("000");
+            // highScore.text = GameManager.Instance.NormaliseScore(Details.highScore).ToString("000");
+            target1.text = ((int)Math.Truncate(Details.targetScore1 * 100)).ToString();
+            target2.text = ((int)Math.Truncate(Details.targetScore2 * 100)).ToString();
+            highScore.text = ((int)Math.Truncate(Details.highScore * 100)).ToString();
 
             if (Details.highScore >= details.targetScore1)
                 target1.color = Color.grey;
@@ -117,8 +122,14 @@ namespace EcoBuilder.UI
                 starsImage.sprite = starImages[Details.numStars];
                 Unlock();
             }
-
-            thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+            finishFlag.onClick.AddListener(()=> OnFinishClicked.Invoke());
+            if (thumbnailedParent == null)
+                thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+        }
+        public event Action OnFinishClicked;
+        public void SetFinishable(bool finishable)
+        {
+            finishFlag.interactable = finishable;
         }
 
         public bool LoadFromFile(string loadPath)
@@ -175,6 +186,10 @@ namespace EcoBuilder.UI
             {
                 print("no directory: " + dnfe.Message);
             }
+            catch (ArgumentException ae)
+            {
+                print("file not found " + ae.Message);
+            }
         }
 
 
@@ -206,21 +221,20 @@ namespace EcoBuilder.UI
             replayButton.gameObject.SetActive(true);
         }
         public Level NextLevel { get; private set; }
-		public void StartGame()
-		{
+        public void StartGame()
+        {
             GameManager.Instance.PlayLevel(this);
             StartCoroutine(WaitThenEnableQuitReplay());
-		}
+        }
         public void BackToMenu()
         {
             // TODO: 'are you sure' option
             Destroy(gameObject);
             GameManager.Instance.ReturnToMenu();
         }
-        public Button FinishButton { get { return finishFlag; } }
         public void FinishLevel()
         {
-            NextLevel = GameManager.Instance.GetNewLevel();
+            NextLevel = Instantiate(this);
             bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
             if (successful)
             {
@@ -241,57 +255,36 @@ namespace EcoBuilder.UI
             GameManager.Instance.PlayLevel(this);
         }
 
-        IEnumerator LerpToPos(Vector2 endPos, float duration)
+        Vector2 velocity, targetPos;
+        Vector2 sizocity, targetSize;
+        void FixedUpdate()
         {
-            Vector2 startPos = transform.localPosition;
-            float startTime = Time.time;
-            while (Time.time < startTime + duration)
-            {
-                float t = (Time.time-startTime) / duration * 2;
-                // if (t < 1) 
-                // {
-                //     transform.localPosition = startPos + (endPos-startPos)/2f*t*t*t;
-                // }
-                // else
-                // {
-                //     t -= 2;
-                //     transform.localPosition = startPos + (endPos-startPos)/2f*(t*t*t + 2f);
-                // }
-                if (t < 1) 
-                {
-                    transform.localPosition = startPos + (endPos-startPos)/2f*t*t;
-                }
-                else
-                {
-                    t -= 1;
-                    transform.localPosition = startPos - (endPos-startPos)/2f*(t*(t-2)-1);
-                }
-                yield return null;
-            }
-            transform.localPosition = endPos;
-            descriptionArea.verticalNormalizedPosition = 1;
+            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, .15f);
+            GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, .15f);
         }
 
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
         RectTransform thumbnailedParent;
         Vector2 thumbnailedPos;
-		public void ShowThumbnail()
-		{
+        public void ShowThumbnail()
+        {
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
 
             transform.SetParent(thumbnailedParent, true);
+            transform.localScale = Vector3.one;
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
-            StartCoroutine(LerpToPos(thumbnailedPos, .5f));
-		}
-		public void ShowThumbnailNewParent(RectTransform newParent, Vector2 newPos)
+            targetPos = thumbnailedPos;
+            targetSize = new Vector2(100,100);
+        }
+        public void ShowThumbnailNewParent(RectTransform newParent, Vector2 newPos)
         {
             thumbnailedParent = newParent;
             thumbnailedPos = newPos;
             ShowThumbnail();
         }
-		public void ShowCard()
-		{
+        public void ShowCard()
+        {
             if (GameManager.Instance.Overlay.transform.childCount > 0)
                 return;
 
@@ -299,18 +292,22 @@ namespace EcoBuilder.UI
 
             thumbnailedPos = transform.localPosition;
             transform.SetParent(GameManager.Instance.Overlay.transform, true);
+            transform.localScale = Vector3.one;
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
-            StartCoroutine(LerpToPos(Vector2.zero, .5f));
-		}
+            targetPos = thumbnailedPos;
+            targetSize = new Vector2(450, 850);
+        }
         public void ShowFinishFlag()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+            targetSize = new Vector2(110, 110);
         }
         // called when game is ended
         public void ShowNavigation()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
+            targetSize = new Vector2(350, 100);
         }
     }
 }

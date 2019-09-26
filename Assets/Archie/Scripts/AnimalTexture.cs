@@ -86,55 +86,55 @@ namespace EcoBuilder.Archie
             return returning_material;
         }
 
-        private struct GSpoint
-        {
-            // A struct storing the relevent concentratoin of substance A and B at a certain 2D coordinate
-            // based on Gray-Scott equations
-            public Vector2 position;
-            public float A;
-            public float B;
-            public Matrix4x4 Laplacian;
+        // private struct GSpoint
+        // {
+        //     // A struct storing the relevent concentratoin of substance A and B at a certain 2D coordinate
+        //     // based on Gray-Scott equations
+        //     public Vector2 position;
+        //     public float A;
+        //     public float B;
+        //     public Matrix4x4 Laplacian;
 
-            public GSpoint()
-            {
-                Laplacian = new Matrix4x4();
-                Laplacian.SetColumn(0, new Vector4
-                (
-                    0.05f,
-                    0.2f,
-                    0.05f,
-                    0
-                ));
-                Laplacian.SetColumn(1, new Vector4
-                (
-                    0.2f,
-                    -1.0f,
-                    0.2f,
-                    0
-                ));
-                Laplacian.SetColumn(2, new Vector4
-                (
-                    0.05f,
-                    0.2f,
-                    0.05f,
-                    0
-                ));
-                Laplacian.SetColumn(3, new Vector4
-                (
-                    0,
-                    0,
-                    0,
-                    0
-                ));
-                A = 0.1f;
-                B = 0;
-            }
+        //     public GSpoint()
+        //     {
+        //         Laplacian = new Matrix4x4();
+        //         Laplacian.SetColumn(0, new Vector4
+        //         (
+        //             0.05f,
+        //             0.2f,
+        //             0.05f,
+        //             0
+        //         ));
+        //         Laplacian.SetColumn(1, new Vector4
+        //         (
+        //             0.2f,
+        //             -1.0f,
+        //             0.2f,
+        //             0
+        //         ));
+        //         Laplacian.SetColumn(2, new Vector4
+        //         (
+        //             0.05f,
+        //             0.2f,
+        //             0.05f,
+        //             0
+        //         ));
+        //         Laplacian.SetColumn(3, new Vector4
+        //         (
+        //             0,
+        //             0,
+        //             0,
+        //             0
+        //         ));
+        //         A = 0.1f;
+        //         B = 0;
+        //     }
 
-            public static List<GSpoint> Calculate_and_Apply_Difference(int width, int height)
-            {
-                var cells = from i in Enumerable.Range(0, width * height) select new GSpoint();
+        //     public static List<GSpoint> Calculate_and_Apply_Difference(int width, int height)
+        //     {
+        //         var cells = from i in Enumerable.Range(0, width * height) select new GSpoint();
 
-            }
-        }
+        //     }
+        // }
     }
 }

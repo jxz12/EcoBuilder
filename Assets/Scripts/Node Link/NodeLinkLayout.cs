@@ -12,7 +12,7 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-            if (!superfocused)
+            if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperUnfocus)
             {
                 // get average of all positions, and center
                 Vector3 centroid;
@@ -31,7 +31,7 @@ namespace EcoBuilder.NodeLink
                         Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
                                         ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
-                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.zero,
+                        Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused,
                                         ref graphVelocity, layoutSmoothTime);
                 }
                 else
@@ -46,15 +46,26 @@ namespace EcoBuilder.NodeLink
                                         ref graphVelocity, layoutSmoothTime);
                 }
 
-
-                float height = Mathf.Min(MaxChain, maxHeight);
-                float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
-
-
+                if (constrainTrophic)
+                {
+                    float height = Mathf.Min(MaxChain, maxHeight);
+                    float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
+                    foreach (Node no in nodes)
+                    {
+                        float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
+                        no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
+                    }
+                }
+                else
+                {
+                    centroid.y = float.MaxValue;
+                    foreach (Node no in nodes)
+                        centroid.y = Mathf.Min(centroid.y, no.StressPos.y);
+                    foreach (Node no in nodes)
+                        no.StressPos -= centroid;
+                }
                 foreach (Node no in nodes)
                 {
-                    float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                    no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
 
                     no.transform.localPosition =
                         Vector3.SmoothDamp(no.transform.localPosition, no.StressPos,
@@ -62,7 +73,6 @@ namespace EcoBuilder.NodeLink
                     no.transform.localScale =
                         Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
                 }
-
             }
             else
             {
@@ -84,30 +94,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        float yRotation = 0, yRotationMomentum = 0;
-        private void RotateWithMomentum()
-        {
-            if (!superfocused)
-            {
-                yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
-                yRotation += yRotationMomentum;
 
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
-
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
-            }
-            else
-            {
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, rotationTween);
-
-                var graphParentGoal = Quaternion.identity;
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
-            }
-        }
 
         /////////////////////////////////
         // for stress-based layout
@@ -117,7 +104,34 @@ namespace EcoBuilder.NodeLink
         // SGD
         private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
         {
-            foreach (int j in FYShuffle(adjacency.Keys))
+            foreach (int j in FYShuffle(nodes.Indices))
+            {
+                if (i != j)
+                {
+                    Vector3 X_ij = nodes[i].StressPos - nodes[j].StressPos;
+                    float mag = X_ij.magnitude;
+
+                    if (d_j.ContainsKey(j)) // if there is a path between the two
+                    {
+                        int d_ij = d_j[j];
+                        float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+
+                        Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                        nodes[i].StressPos -= mu * r;
+                        nodes[j].StressPos += mu * r;
+                    }
+                    else if (mag < 1) // otherwise push away if too close (jakobsen)
+                    {
+                        Vector3 r = ((mag-1)/2) * (X_ij/mag);
+                        nodes[i].StressPos -= r;
+                        nodes[j].StressPos += r;
+                    }
+                }
+            }
+        }
+        private void LayoutSGDHorizontal(int i, Dictionary<int, int> d_j, float eta)
+        {
+            foreach (int j in FYShuffle(nodes.Indices))
             {
                 if (i != j)
                 {
@@ -134,19 +148,15 @@ namespace EcoBuilder.NodeLink
                         nodes[i].StressPos -= mu * r;
                         nodes[j].StressPos += mu * r;
                     }
-                    else if (mag < 1) // otherwise push away if too close
+                    else if (mag < 1) // otherwise push away if too close (jakobsen)
                     {
-                        // float mu = Mathf.Min(separationStep, 1);
-                        float mu = 1;
-
                         Vector3 r = ((mag-1)/2) * (X_ij/mag);
                         r.y = 0; // use to keep y position
-                        nodes[i].StressPos -= mu * r;
-                        nodes[j].StressPos += mu * r;
+                        nodes[i].StressPos -= r;
+                        nodes[j].StressPos += r;
                     }
                 }
             }
-            // nodes[i].GoalPos += jitterStep * UnityEngine.Random.insideUnitSphere;
         }
 
         private Dictionary<int, int> ShortestPathsBFS(int source)
@@ -194,6 +204,7 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for trophic level calculation
 
+        [SerializeField] bool constrainTrophic;
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();
 
@@ -204,17 +215,10 @@ namespace EcoBuilder.NodeLink
             foreach (int i in nodes.Indices)
                 trophicA[i] = 0;
 
-            // foreach (var ij in links.IndexPairs)
-            // {
-            //     int res=ij.Item1, con=ij.Item2;
-            //     trophicA[con] += 1f;
-            // }
-
-            // FIXME: ugly
-            foreach (Link li in links)
+            foreach (var ij in links.IndexPairs)
             {
-                if (li.gameObject.activeSelf)
-                    trophicA[li.Target.Idx] += 1f;
+                int res=ij.Item1, con=ij.Item2;
+                trophicA[con] += 1f;
             }
 
             var basal = new HashSet<int>();
@@ -232,30 +236,16 @@ namespace EcoBuilder.NodeLink
         void TrophicGaussSeidel()
         {
             SparseVector<float> temp = new SparseVector<float>();
-            // foreach (var ij in links.IndexPairs)
-            // {
-            //     int res = ij.Item1, con = ij.Item2;
-            //     temp[con] += trophicA[con] * trophicLevels[res];
-            // }
-            // MaxTrophic = 0;
-            // foreach (int i in nodes.Indices)
-            // {
-            //     trophicLevels[i] = (1 - temp[i]);
-            //     MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
-            // }
-            
-            // FIXME: ugly
-            foreach (Link li in links)
+            foreach (var ij in links.IndexPairs)
             {
-                if (li.gameObject.activeSelf)
-                    temp[li.Target.Idx] += trophicA[li.Target.Idx] * trophicLevels[li.Source.Idx];
+                int res = ij.Item1, con = ij.Item2;
+                temp[con] += trophicA[con] * trophicLevels[res];
             }
             MaxTrophic = 0;
             foreach (int i in nodes.Indices)
             {
                 trophicLevels[i] = (1 - temp[i]);
-                if (nodes[i].gameObject.activeSelf)
-                    MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
+                MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
             }
         }
 

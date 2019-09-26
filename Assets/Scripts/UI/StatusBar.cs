@@ -7,42 +7,84 @@ namespace EcoBuilder.UI
 {
     public class StatusBar : MonoBehaviour
     {
+        public event Action<bool> OnProducersAvailable;
+        public event Action<bool> OnConsumersAvailable;
+        public event Action OnLevelCompleted;
+
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] Constraint heart, leaf, paw, edge, chain, loop;
+        [SerializeField] Constraint shield, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
         [SerializeField] RectTransform levelParent;
 
-        public event Action<bool> OnProducersAvailable;
-        public event Action<bool> OnConsumersAvailable;
+        public Level Playing { get; private set; }
+        void Awake()
+        {
+            var level = GameManager.Instance.PlayedLevel;
+            if (level == null)
+            {
+                Playing = GameManager.Instance.GetDefaultLevel();
+                leaf.Unconstrain();
+                paw.Unconstrain();
+                edge.Unconstrain();
+                chain.Unconstrain();
+                loop.Unconstrain();
+                shield.Display(false);
+            }
+            else
+            {
+                Playing = level;
+                leaf.Constrain(Playing.Details.numProducers);
+                paw.Constrain(Playing.Details.numConsumers);
 
-        public event Action OnLevelCompleted;
+                edge.Constrain(Playing.Details.minEdges);
+                chain.Constrain(Playing.Details.minChain);
+                loop.Constrain(Playing.Details.minLoop);
+
+            }
+            help.SetText(Playing.Details.introduction);
+            Playing.ShowThumbnailNewParent(levelParent, Vector2.zero);
+            Playing.OnFinishClicked += CompleteLevel;
+
+            target1 = Playing.Details.targetScore1;
+            target2 = Playing.Details.targetScore2;
+            defaultScoreCol = scoreText.color;
+        }
+        float target1, target2;
+        Color defaultScoreCol;
 
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
 
-        Level constrainedFrom;
-        public void ConstrainFromLevel(Level level)
+        void CompleteLevel()
         {
-            // // take the played level and place it in the scene
-            // if (level.Details.numProducers < 0 || level.Details.numConsumers < 0)
-            //     throw new Exception("Cannot have negative numbers of species");
-            
-            leaf.Constrain(level.Details.numProducers);
-            paw.Constrain(level.Details.numConsumers);
+            help.SetDistFromTop(.15f);
+            help.SetSide(false, false);
 
-            edge.Constrain(level.Details.minEdges);
-            chain.Constrain(level.Details.minChain);
-            loop.Constrain(level.Details.minLoop);
+            if (NumStars < 1 || NumStars > 3)
+                throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            help.SetText(level.Details.introduction);
+            if (NumStars > Playing.Details.numStars)
+                Playing.Details.numStars = NumStars;
 
-            constrainedFrom = level;
-            constrainedFrom.ShowThumbnailNewParent(levelParent, Vector2.zero);
-            constrainedFrom.FinishButton.onClick.AddListener(()=> OnLevelCompleted.Invoke());
+            if (currentScore > Playing.Details.highScore)
+                Playing.Details.highScore = currentScore;
+
+            // unlock next level if not unlocked
+            if (Playing.NextLevel.Details.numStars == -1)
+            {
+                print("TODO: animation here!");
+                Playing.NextLevel.Details.numStars = 0;
+                Playing.NextLevel.SaveToFile();
+                Playing.NextLevel.Unlock();
+            }
+            Playing.SaveToFile();
+
+            OnLevelCompleted.Invoke();
+            Confetti();
         }
         void OnDestroy()
         {
-            constrainedFrom.FinishButton.onClick.RemoveListener(()=> OnLevelCompleted.Invoke());
+            Playing.OnFinishClicked -= CompleteLevel; // not sure if necessary
         }
         Func<bool> CanUpdate;
         public void AllowUpdateWhen(Func<bool> Allowed)
@@ -53,8 +95,16 @@ namespace EcoBuilder.UI
         {
             help.Show(showing);
         }
-        // public void HighlightType()
-        // {}
+        [SerializeField] GameObject scoreParent, constraintsParent;
+        public void HideScore(bool hidden=true)
+        {
+            scoreParent.gameObject.SetActive(!hidden);
+        }
+        public void HideConstraints(bool hidden=true)
+        {
+            constraintsParent.gameObject.SetActive(!hidden);
+        }
+
 
 
 
@@ -119,26 +169,30 @@ namespace EcoBuilder.UI
             loop.Display(lenLoop);
         }
 
-
-
 		bool feasible, stable;
-        float targetAbundance, abundance;
-        float targetScore, currentScore;
+        bool starsNeedUpdate = false;
+        // float targetAbundance, abundance;
+        float currentScore, showingScore;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
             feasible = isFeasible;
 			stable = isStable;
-            if (stable)
-                heart.DisplayDirect("O");
-            else
-                heart.DisplayDirect("X");
+            shield.Display(stable);
         }
         public void DisplayScore(float score)
         {
+            scoreText.color = score >= currentScore? Color.green : Color.red;
             currentScore = score;
-            scoreText.text = GameManager.Instance.NormaliseScore(score).ToString();//"000");
-            // print(score);
+            starsNeedUpdate = true;
+        }
+        void FixedUpdate()
+        {
+            // showingScore = Mathf.Lerp(showingScore, currentScore, .2f);
+            showingScore = Mathf.Lerp(showingScore, currentScore, 1);
+            scoreText.text = ((int)Math.Truncate(showingScore * 100)).ToString();
+            if (CanUpdate())
+                scoreText.color = Color.Lerp(scoreText.color, defaultScoreCol, .05f);
         }
 
 
@@ -154,34 +208,31 @@ namespace EcoBuilder.UI
 		{
             if (!CanUpdate())
             {
-                constrainedFrom.FinishButton.interactable = false;
+                Playing.SetFinishable(false);
             }
-            else
+            else if (starsNeedUpdate)
             {
-                constrainedFrom.FinishButton.interactable = true;
+                starsNeedUpdate = false;
+
+                Playing.SetFinishable(true);
                 int newNumStars = 0;
                 star1.SetBool("Filled", false);
                 star2.SetBool("Filled", false);
                 star3.SetBool("Filled", false);
 
-                int target1 = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore1);
-                int target2 = GameManager.Instance.NormaliseScore(constrainedFrom.Details.targetScore2);
-
-                if (!disjoint && feasible && //stable &&
+                if (!disjoint && feasible && stable &&
                     leaf.IsSatisfied && paw.IsSatisfied &&
                     edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
                 {
                     newNumStars += 1;
                     star1.SetBool("Filled", true);
 
-                    int score = GameManager.Instance.NormaliseScore(currentScore);
-
-                    if (score >= target1 && stable)
+                    if (currentScore >= target1)
                     {
                         newNumStars += 1;
                         star2.SetBool("Filled", true);
 
-                        if (score >= target2)
+                        if (currentScore >= target2)
                         {
                             newNumStars += 1;
                             star3.SetBool("Filled", true);
@@ -200,19 +251,20 @@ namespace EcoBuilder.UI
                 }
                 if (NumStars == 0 && newNumStars > 0)
                 {
-                    constrainedFrom.ShowFinishFlag();
+                    Playing.ShowFinishFlag();
                 }
                 else if (NumStars > 0 && newNumStars == 0)
                 {
-                    constrainedFrom.ShowThumbnail();
+                    Playing.ShowThumbnail();
                 }
                 NumStars = newNumStars;
             }
 		}
         public void Confetti()
         {
-            help.SetText(constrainedFrom.Details.congratulation);
-            help.DelayThenShow();
+            help.Show(false);
+            help.SetText(Playing.Details.congratulation);
+            help.DelayThenShow(2);
 
             GetComponent<Animator>().SetTrigger("Confetti");
             star1.SetTrigger("Confetti");

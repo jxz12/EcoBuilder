@@ -49,8 +49,10 @@ namespace EcoBuilder.NodeLink
             var heights = HeightBFS(basal);
             LaplacianDetZero = (heights.Count != nodes.Count);
 
-            if (superfocused)
-                SuperFocus();
+            if (focusState == FocusState.SuperFocus)
+                SuperFocus(focusedNode.Idx);
+            else if (focusState == FocusState.SuperUnfocus)
+                SuperUnfocus(focusedNode.Idx);
 
             MaxChain = 0;
             foreach (int height in heights.Values)
@@ -64,6 +66,9 @@ namespace EcoBuilder.NodeLink
 
         bool CheckDisjoint()
         {
+            if (nodes.Count == 0)
+                return false;
+
             // pick a random vertex
             int source = nodes.Indices.First();
             var q = new Queue<int>();
@@ -141,6 +146,7 @@ namespace EcoBuilder.NodeLink
         ///////////////////////////////////
         // loops
 
+        // ignores 'graveyard' species
         Tuple<Dictionary<int, HashSet<int>>, Dictionary<int, HashSet<int>>> JohnsonInOut()
         {
             var incomingCopy = new Dictionary<int, HashSet<int>>();

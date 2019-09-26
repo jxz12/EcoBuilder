@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using SparseMatrix;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
@@ -22,20 +23,24 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
         [SerializeField] float etaMax, etaDecay;
-        float etaIteration = 0;
+        int etaIteration = 0;
         private void FixedUpdate()
         {
             //////////////////////
             // do stress SGD
             if (nodes.Count > 0)
             {
-                if (!superfocused)
+                if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperUnfocus)
                 {
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);
 
-                    float eta = etaMax / (1f + etaDecay*(float)etaIteration++);
-                    LayoutSGD(dq, d_j, eta);
+                    float eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
+                    if (constrainTrophic)
+                        LayoutSGDHorizontal(dq, d_j, eta);
+                    else
+                        LayoutSGD(dq, d_j, eta);
+
                     toBFS.Enqueue(dq);
                 }
             }
@@ -60,42 +65,52 @@ namespace EcoBuilder.NodeLink
         SparseMatrix<Link> links = new SparseMatrix<Link>();
         Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
 
+        SparseVector<Node> nodeGrave = new SparseVector<Node>();
+        SparseMatrix<Link> linkGrave = new SparseMatrix<Link>();
+
         public void AddNode(int idx)
         {
-            adjacency[idx] = new HashSet<int>();
+            // TODO: mystery bug?!
+            if (nodes[idx] != null)
+                throw new Exception("index " + idx + " already added");
 
-            if (nodes[idx] == null)
+            if (nodes[idx] == null && nodeGrave[idx] == null) // entirely new
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
 
-                var startPos = new Vector3(UnityEngine.Random.Range(.5f, 1f), 0, -.2f);
-                // var startPos = nodesParent.InverseTransformPoint(shape.transform.position);
-
-                newNode.Init(idx, startPos, (minNodeSize+maxNodeSize)/2);
+                newNode.Init(idx, (minNodeSize+maxNodeSize)/2);
                 nodes[idx] = newNode;
-            }
-            else // readdition
-            {
-                if (nodes[idx].isActiveAndEnabled)
-                    throw new Exception("node already active at idx " + idx);
-
-                nodes[idx].gameObject.SetActive(true);
                 adjacency[idx] = new HashSet<int>();
-                foreach (int col in links.GetColumnIndicesInRow(idx))
+            }
+            else if (nodeGrave[idx] != null) // bring back old
+            {
+                nodes[idx] = nodeGrave[idx];
+                nodeGrave.RemoveAt(idx);
+                nodes[idx].gameObject.SetActive(true);
+
+                adjacency[idx] = new HashSet<int>();
+                foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
                 {
-                    links[idx,col].gameObject.SetActive(true);
+                    links[idx, col] = linkGrave[idx, col];
+                    links[idx, col].gameObject.SetActive(true);
                     adjacency[idx].Add(col);
                     adjacency[col].Add(idx);
                 }
-                foreach (int row in links.GetRowIndicesInColumn(idx))
+                foreach (int row in linkGrave.GetRowIndicesInColumn(idx))
                 {
-                    links[row,idx].gameObject.SetActive(true);
+                    links[row, idx] = linkGrave[row, idx];
+                    links[row, idx].gameObject.SetActive(true);
                     adjacency[idx].Add(row);
                     adjacency[row].Add(idx);
                 }
+                // clear linkGrave
+                foreach (int col in links.GetColumnIndicesInRow(idx))
+                    linkGrave.RemoveAt(idx, col);
+                foreach (int row in links.GetRowIndicesInColumn(idx))
+                    linkGrave.RemoveAt(row, idx);
             }
+            nodes[idx].StressPos += UnityEngine.Random.insideUnitSphere * .2f; // prevent divide by zero
             toBFS.Enqueue(idx);
-            // ConstraintsSolved = false;
         }
 
         public void RemoveNode(int idx)
@@ -105,16 +120,27 @@ namespace EcoBuilder.NodeLink
             if (focusedNode != null && focusedNode.Idx == idx)
                 FullUnfocus();
 
-            // disable instead of completely remove
+            // move to graveyard to save for later
             nodes[idx].gameObject.SetActive(false);
-            foreach (Link li in links.GetColumnData(idx))
+            nodeGrave[idx] = nodes[idx];
+            nodes.RemoveAt(idx);
+
+            foreach (int col in links.GetColumnIndicesInRow(idx))
             {
-                li.gameObject.SetActive(false);
+                links[idx, col].gameObject.SetActive(false);
+                linkGrave[idx, col] = links[idx, col];
             }
-            foreach (Link li in links.GetRowData(idx))
+            foreach (int row in links.GetRowIndicesInColumn(idx))
             {
-                li.gameObject.SetActive(false);
+                links[row, idx].gameObject.SetActive(false);
+                linkGrave[row, idx] = links[row, idx];
             }
+            // clear links
+            foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
+                links.RemoveAt(idx, col);
+            foreach (int row in linkGrave.GetRowIndicesInColumn(idx))
+                links.RemoveAt(row, idx);
+
 
             // prevent memory leak in SGD data structures
             adjacency.Remove(idx);
@@ -124,8 +150,20 @@ namespace EcoBuilder.NodeLink
                 adjacency[i].Remove(idx);
                 toBFS.Enqueue(i);
             }
-            // ConstraintsSolved = false;
         }        
+        public void RemoveNodeCompletely(int idx)
+        {
+            if (nodeGrave[idx] == null)
+                throw new Exception("node not in graveyard");
+            
+            Destroy(nodeGrave[idx].gameObject);
+            nodeGrave.RemoveAt(idx);
+
+            foreach (int col in linkGrave.GetColumnIndicesInRow(idx).ToArray())
+                linkGrave.RemoveAt(idx, col);
+            foreach (int row in linkGrave.GetRowIndicesInColumn(idx).ToArray())
+                linkGrave.RemoveAt(row, idx);
+        }
 
         public void AddLink(int i, int j)
         {
@@ -140,7 +178,6 @@ namespace EcoBuilder.NodeLink
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            // ConstraintsSolved = false;
             OnLinked.Invoke();
         }
         public void RemoveLink(int i, int j)
@@ -157,7 +194,6 @@ namespace EcoBuilder.NodeLink
                 links[j,i].Curved = false;
             }
 
-            // ConstraintsSolved = false;
             OnLinked.Invoke();
         }
 
@@ -195,14 +231,7 @@ namespace EcoBuilder.NodeLink
 
         public IEnumerable<int> GetTargets(int source)
         {
-            foreach (int target in links.GetColumnIndicesInRow(source))
-            {
-                // FIXME: ugly
-                if (adjacency.ContainsKey(target))
-                {
-                    yield return target;
-                }
-            }
+            return links.GetColumnIndicesInRow(source);
         }
 
         [SerializeField] float minNodeSize, maxNodeSize;
@@ -211,10 +240,6 @@ namespace EcoBuilder.NodeLink
             float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
-                // FIXME: ugly
-                if (!no.gameObject.activeSelf)
-                    continue;
-
                 float size = sizes(no.Idx);
                 if (size > 0)
                 {
@@ -232,10 +257,6 @@ namespace EcoBuilder.NodeLink
             float flowRange = maxLinkFlow - minLinkFlow;
             foreach (Link li in links)
             {
-                // FIXME: ugly
-                if (!li.gameObject.activeSelf)
-                    continue;
-
                 int res=li.Source.Idx, con=li.Target.Idx;
                 float flow = flows(res, con);
                 if (flow > 0)
