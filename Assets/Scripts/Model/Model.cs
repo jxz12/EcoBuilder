@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace EcoBuilder.Model
         //  Pawar et al. (2012)
         ///////////////////////////////////////////////////////////
 
-        [SerializeField]
+        [ReadOnly] [SerializeField]
         double r0 =   1.71e-6,     // production 
                z0 =   4.15e-8,     // loss constant
                a0 =   8.31e-4,     // search rate 
@@ -35,7 +36,8 @@ namespace EcoBuilder.Model
                kg_max = 1e3       // max body size
                ;
 
-        double a_ii_min, a_ii_max;  // calculated at runtime
+        [ReadOnly] [SerializeField]
+        double a_min, a_max;  // calculated at runtime
 
         class Species
         {
@@ -100,8 +102,8 @@ namespace EcoBuilder.Model
         void Awake()
         {
             // calculate bounds for a_ij and set a_ii in the same range
-            a_ii_max = ActiveCapture(kg_max, kg_min) / kg_min;
-            a_ii_min = Grazing(kg_min, kg_max) / kg_max;
+            a_max = ActiveCapture(kg_max, kg_min) / kg_min;
+            a_min = Grazing(kg_min, kg_max) / kg_max;
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
@@ -136,16 +138,6 @@ namespace EcoBuilder.Model
             speciesToIdx.Remove(toRemove);
             // AtEquilibrium = false;
         }
-        static double GetOnLogScale(double normalised, double minVal, double maxVal)
-        {
-            // float min = Mathf.Log10(minVal);
-            // float max = Mathf.Log10(maxVal);
-            // float mid = min + normalised*(max-min);
-            // return Mathf.Pow(10, mid);
-
-            // same as above commented
-            return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
-        }
 
         public void SetSpeciesIsProducer(int idx, bool isProducer)
         {
@@ -159,14 +151,14 @@ namespace EcoBuilder.Model
         public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
             Species s = idxToSpecies[idx];
-            s.BodySize = GetOnLogScale(sizeNormalised, kg_min, kg_max);
+            s.BodySize = UnNormaliseOnLogScale(sizeNormalised, kg_min, kg_max);
 
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
         }
         public void SetSpeciesInterference(int idx, float greedNormalised)
         {
-            idxToSpecies[idx].Interference = -GetOnLogScale(greedNormalised, a_ii_min, a_ii_max);
+            idxToSpecies[idx].Interference = -UnNormaliseOnLogScale(greedNormalised, a_min, a_max);
         }
 
 
@@ -180,8 +172,8 @@ namespace EcoBuilder.Model
         // public bool Nonreactive { get; private set; } = false;
 
         // public float TotalAbundance { get; private set; } = 0;
-        public int NormalisedFlux { get; private set; } = 0;
-        public int NormalisedComplexity { get; private set; } = 0;
+        public float NormalisedFlux { get; private set; } = 0;
+        public float NormalisedComplexity { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
 
@@ -193,13 +185,12 @@ namespace EcoBuilder.Model
             simulation.BuildInteractionMatrix(map); // not async, in order to keep state consistent
 
             Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
-            NormalisedFlux = NormaliseFlux(simulation.TotalFlux);
+            NormalisedFlux = NormaliseFluxScore((float)simulation.TotalFlux);
             Stable = await Task.Run(()=> simulation.SolveStability());
-            NormalisedComplexity = NormaliseComplexity(simulation.CalculateMayComplexity());
+            NormalisedComplexity = NormaliseComplexityScore((float)simulation.CalculateMayComplexity());
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
             ShowAbundanceWarnings();
-
             IsCalculating = false;
             OnEquilibrium.Invoke();
         }
@@ -209,33 +200,13 @@ namespace EcoBuilder.Model
             simulation.BuildInteractionMatrix(map);
 
             Feasible = simulation.SolveFeasibility(map);
-            NormalisedFlux = NormaliseFlux(simulation.TotalFlux);
+            NormalisedFlux = NormaliseFluxScore((float)simulation.TotalFlux);
             Stable = simulation.SolveStability();
-            NormalisedComplexity = NormaliseComplexity(simulation.CalculateMayComplexity());
+            NormalisedComplexity = NormaliseComplexityScore((float)simulation.CalculateMayComplexity());
             // Nonreactive = simulation.SolveReactivity();
 
             ShowAbundanceWarnings();
-
             OnEquilibrium.Invoke();
-        }
-        readonly double fluxThreshold = 8e-7;
-        public int NormaliseFlux(double input)
-        {
-            // for flux
-            double normalised = input<fluxThreshold? .5f : input/fluxThreshold;
-
-            int score = (int)Math.Truncate(normalised * 100);
-            return Math.Max(score, 0);
-        }
-        readonly double complexityThreshold = .01;
-        public int NormaliseComplexity(double input)
-        {
-            // for complexity
-            double normalised = input<complexityThreshold? .5f : input/complexityThreshold;
-            print(input);
-
-            int score = (int)Math.Truncate(normalised * 100);
-            return Math.Max(score, 0);
         }
 
         void ShowAbundanceWarnings()
@@ -256,9 +227,32 @@ namespace EcoBuilder.Model
                 s.Abundance = newAbundance;
             }
         }
+        static double UnNormaliseOnLogScale(double normalised, double minVal, double maxVal)
+        {
+            // float min = Mathf.Log10(minVal);
+            // float max = Mathf.Log10(maxVal);
+            // float mid = min + normalised*(max-min);
+            // return Mathf.Pow(10, mid);
 
-        readonly float logMinAbundance = Mathf.Log10(6e-8f);
-        readonly float logMaxAbundance = Mathf.Log10(2f);
+            // same as above commented
+            return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
+        }
+        static float NormaliseOnLogScale(float input, float min, float max)
+        {
+            float logIn = Mathf.Log10(input);
+            float logMin = Mathf.Log10(min);
+            float logMax = Mathf.Log10(max);
+
+            return (logIn - logMin) / (logMax - logMin);
+        }
+        static float NormaliseOnLoggedScale(float input, float logMin, float logMax)
+        {
+            return (Mathf.Log10(input) - logMin) / (logMax - logMin);
+        }
+
+        [ReadOnly] [SerializeField]
+        float minScaledAbundance = 6e-8f,
+              maxScaledAbundance = 2f;
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
@@ -268,11 +262,13 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return (Mathf.Log10(abundance)-logMinAbundance) / (logMaxAbundance-logMinAbundance);
+                return NormaliseOnLogScale(abundance, minScaledAbundance, maxScaledAbundance);
             }
         }
-        readonly float logMinFlux = Mathf.Log10(1e-13f);
-        readonly float logMaxFlux = Mathf.Log10(8e-7f);
+
+        [ReadOnly] [SerializeField]
+        float minScaledFlux = 1e-18f,
+              maxScaledFlux = 9.2e-7f;
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
@@ -282,8 +278,79 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return (Mathf.Log10(flux)-logMinFlux) / (logMaxFlux-logMinFlux);
+                // TODO: this might be slow
+                return NormaliseOnLogScale(flux, minScaledFlux, maxScaledFlux);
             }
+        }
+        float NormaliseFluxScore(float input)
+        {
+            // for flux
+            float normalised = input < maxScaledFlux ?
+                               NormaliseOnLogScale(input, minScaledFlux, maxScaledFlux)
+                             : input/maxScaledFlux;
+
+            // print("flux: " + input);
+            return Mathf.Max(normalised, 0);
+        }
+        [ReadOnly] [SerializeField]
+        float minScaledComplexity = 1e-10f,
+              maxScaledComplexity = 7e-3f;
+        float NormaliseComplexityScore(float input)
+        {
+            // for complexity
+            float normalised = input < maxScaledComplexity ?
+                               NormaliseOnLogScale(input, minScaledComplexity, maxScaledComplexity)
+                             : input/maxScaledComplexity;
+            
+            // print("complexity: " + input);
+            return Mathf.Max(normalised, 0);
+        }
+    }
+
+    // to make fields readonly
+    // [AttributeUsage(AttributeTargets.Field, Inherited = true)]
+    // public class ReadOnlyAttribute : PropertyAttribute { }
+    // #if UNITY_EDITOR
+    // [UnityEditor.CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+    // public class ReadOnlyAttributeDrawer : UnityEditor.PropertyDrawer
+    // {
+    //     public override void OnGUI(Rect rect, UnityEditor.SerializedProperty prop, GUIContent label)
+    //     {
+    //         bool wasEnabled = GUI.enabled;
+    //         GUI.enabled = false;
+    //         UnityEditor.EditorGUI.PropertyField(rect, prop);
+    //         GUI.enabled = wasEnabled;
+    //     }
+    // }
+    // #endif
+    public class ReadOnlyAttribute : PropertyAttribute {}
+    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+    public class ShowOnlyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
+        {
+            string valueStr;
+    
+            switch (prop.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    valueStr = prop.intValue.ToString();
+                    break;
+                case SerializedPropertyType.Boolean:
+                    valueStr = prop.boolValue.ToString();
+                    break;
+                case SerializedPropertyType.Float:
+                    valueStr = prop.floatValue.ToString("e1");
+                    break;
+                case SerializedPropertyType.String:
+                    valueStr = prop.stringValue;
+                    break;
+                default:
+                    valueStr = "(not supported)";
+                    break;
+            }
+    
+            EditorGUI.LabelField(position,label.text, valueStr);
         }
     }
 }

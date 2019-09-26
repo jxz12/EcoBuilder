@@ -43,9 +43,9 @@ namespace EcoBuilder.NodeLink
                 Destroy(GetComponent<cakeslice.Outline>());
         }
         float targetAlpha = 1;
-        public void SetTransparency(float alpha)
+        public void Show(bool showing = true)
         {
-            targetAlpha = alpha;
+            targetAlpha = showing? 1 : 0;
         }
 
         [SerializeField] float lineWidth;

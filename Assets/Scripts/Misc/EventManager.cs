@@ -38,7 +38,7 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            // nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
+            nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
@@ -79,7 +79,6 @@ namespace EcoBuilder
             recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
-            // recorder.OnSpeciesMemoryLeak +=      (i)=> print(i + " destroyed completely");
 
             status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating && !tutorial.Teaching); 
 

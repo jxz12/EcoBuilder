@@ -83,6 +83,7 @@ namespace EcoBuilder.Model
             }
         }
 
+        int connectance;
         public void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
         {
             // create Matrix and Vector that MathNet understands
@@ -93,6 +94,7 @@ namespace EcoBuilder.Model
             interaction.Clear();
             negGrowth.Clear();
 
+            connectance = 0;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -106,7 +108,8 @@ namespace EcoBuilder.Model
 
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
-                    flux[i,j] = e * a;
+                    flux[i,j] = e * a; // init flux here, multiply by abundances later
+                    connectance += 1;
                 }
             }
         }
@@ -186,7 +189,7 @@ namespace EcoBuilder.Model
                 foreach (T con in Consumers(res))
                 {
                     int j = externToIntern[con];
-                    flux[i,j] *= abundance[i] * abundance[j];
+                    flux[i,j] *= abundance[i] * abundance[j]; // complete values
                     TotalFlux += flux[i,j];
                 }
             }
@@ -198,6 +201,7 @@ namespace EcoBuilder.Model
                 TotalAbundance += abundance[i];
                 if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i]))
                     abundance[i] = 0;
+
                 if (abundance[i] <= 0)
                     feasible = false;
             }
@@ -223,8 +227,6 @@ namespace EcoBuilder.Model
         // also O(n^3)
         public bool SolveStability()
         {
-            int richness = internToExtern.Count;
-
             BuildCommunityMatrix();
             // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
@@ -237,62 +239,56 @@ namespace EcoBuilder.Model
         public double CalculateMayComplexity()
         {
             int richness = community.RowCount;
-            if (richness == 0)
-            {
+            if (richness == 0 || connectance == 0)
                 return 0;
-            }
 
             // 'complexity' = rho * sqrt(R*C)
-            int connectance = 0;
-            double mean = 0;
-            double meanDiag = 0;
+            // double mean = 0;
+            // double meanDiag = 0;
             double meanOffDiag = 0;
-            double meanOffDiagPairs = 0;
+            int numOffDiagEntries = 0;
+            // double meanOffDiagPairs = 0;
             for (int i=0; i<richness; i++)
             {
-                meanDiag += community[i,i];
+                // meanDiag += community[i,i];
                 for (int j=0; j<richness; j++)
                 {
-                    mean += community[i,j];
+                    // mean += community[i,j];
                     if (i!=j && community[i,j]!=0)
                     {
                         meanOffDiag += community[i,j];
-                        connectance += 1;
-                        if (i<j)
-                        {
-                            meanOffDiagPairs += community[i,j] * community[j,i];
-                        }
+                        numOffDiagEntries += 1;
                     }
+
+                    // if (i<j)
+                    //     meanOffDiagPairs += community[i,j] * community[j,i];
                 }
             }
 
-            if (richness > 0)
-            {
-                mean /= richness*richness;
-                meanDiag /= richness;
-            }
+            // if (richness > 0)
+            // {
+            //     mean /= richness*richness;
+            //     meanDiag /= richness;
+            // }
 
             // only account for non zeros
             double variance = 0;
             double standardDev = 0;
-            if (connectance > 0)
-            {
-                meanOffDiag /= connectance;
+            meanOffDiag /= numOffDiagEntries;
 
-                for (int i=0; i<richness; i++)
+            for (int i=0; i<richness; i++)
+            {
+                for (int j=0; j<richness; j++)
                 {
-                    for (int j=0; j<richness; j++)
+                    if (i!=j && community[i,j]!=0)
                     {
-                        if (i!=j && community[i,j]!=0)
-                        {
-                            double deviation = community[i,j] - meanOffDiag;
-                            variance += deviation * deviation;
-                        }
+                        double deviation = community[i,j] - meanOffDiag;
+                        variance += deviation * deviation;
                     }
                 }
-                variance /= connectance;
-                standardDev = Math.Sqrt(variance);
             }
+            variance /= numOffDiagEntries;
+            standardDev = Math.Sqrt(variance);
 
             // double mayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
             double mayComplexity = standardDev * Math.Sqrt(richness*connectance);
