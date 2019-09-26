@@ -49,7 +49,7 @@ namespace EcoBuilder.UI
             target2 = Playing.Details.targetScore2;
             defaultScoreCol = scoreText.color;
         }
-        float target1, target2;
+        int target1, target2;
         Color defaultScoreCol;
 
         HashSet<int> producers = new HashSet<int>();
@@ -66,8 +66,8 @@ namespace EcoBuilder.UI
             if (NumStars > Playing.Details.numStars)
                 Playing.Details.numStars = NumStars;
 
-            if (currentScore > Playing.Details.highScore)
-                Playing.Details.highScore = currentScore;
+            if (realisedScore > Playing.Details.highScore)
+                Playing.Details.highScore = realisedScore;
 
             // unlock next level if not unlocked
             if (Playing.NextLevel.Details.numStars == -1)
@@ -172,7 +172,7 @@ namespace EcoBuilder.UI
 		bool feasible, stable;
         bool starsNeedUpdate = false;
         // float targetAbundance, abundance;
-        float currentScore, showingScore;
+        int modelScore, realisedScore;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
@@ -182,19 +182,9 @@ namespace EcoBuilder.UI
         }
         public void DisplayScore(float score)
         {
-            scoreText.color = score >= currentScore? Color.green : Color.red;
-            currentScore = score;
+            modelScore = ((int)Math.Truncate(score * 1000));
             starsNeedUpdate = true;
         }
-        void FixedUpdate()
-        {
-            // showingScore = Mathf.Lerp(showingScore, currentScore, .2f);
-            showingScore = Mathf.Lerp(showingScore, currentScore, 1);
-            scoreText.text = ((int)Math.Truncate(showingScore * 100)).ToString();
-            if (CanUpdate())
-                scoreText.color = Color.Lerp(scoreText.color, defaultScoreCol, .05f);
-        }
-
 
 		//////////////////////
 		// score calculation
@@ -203,63 +193,80 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite targetSprite1, targetSprite2;
         [SerializeField] Text scoreText, scoreTargetText; //, abundanceText;
 
-        public int NumStars { get; private set; }
+        // public int NumStars { get; private set; }
+        int NumStars { get; set; }
 		void Update()
 		{
-            if (!CanUpdate())
-            {
-                Playing.SetFinishable(false);
-            }
-            else if (starsNeedUpdate)
-            {
-                starsNeedUpdate = false;
+            Playing.SetFinishable(CanUpdate());
 
-                Playing.SetFinishable(true);
-                int newNumStars = 0;
-                star1.SetBool("Filled", false);
-                star2.SetBool("Filled", false);
-                star3.SetBool("Filled", false);
+            int newNumStars = 0;
+            int newScore = 0;
 
-                if (!disjoint && feasible && stable &&
-                    leaf.IsSatisfied && paw.IsSatisfied &&
-                    edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
+            star1.SetBool("Filled", false);
+            star2.SetBool("Filled", false);
+            star3.SetBool("Filled", false);
+
+            if (!disjoint && feasible && stable &&
+                leaf.IsSatisfied && paw.IsSatisfied &&
+                edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
+            {
+                newScore = modelScore;
+                newNumStars += 1;
+                star1.SetBool("Filled", true);
+
+                if (newScore >= target1)
                 {
                     newNumStars += 1;
-                    star1.SetBool("Filled", true);
+                    star2.SetBool("Filled", true);
 
-                    if (currentScore >= target1)
+                    if (newScore >= target2)
                     {
                         newNumStars += 1;
-                        star2.SetBool("Filled", true);
-
-                        if (currentScore >= target2)
-                        {
-                            newNumStars += 1;
-                            star3.SetBool("Filled", true);
-                        }
+                        star3.SetBool("Filled", true);
                     }
                 }
-                if (newNumStars < 2)
-                {
-                    scoreTargetText.text = target1.ToString();//"000");
-                    scoreTargetImage.sprite = targetSprite1;
-                }
-                else
-                {
-                    scoreTargetText.text = target2.ToString();//"000");
-                    scoreTargetImage.sprite = targetSprite2;
-                }
-                if (NumStars == 0 && newNumStars > 0)
-                {
-                    Playing.ShowFinishFlag();
-                }
-                else if (NumStars > 0 && newNumStars == 0)
-                {
-                    Playing.ShowThumbnail();
-                }
-                NumStars = newNumStars;
+            }
+            else
+            {
+                newScore = 0;
+            }
+            
+            if (newScore > realisedScore)
+                scoreText.color = Color.green;
+            else if (newScore < realisedScore)
+                scoreText.color = Color.red;
+
+            realisedScore = newScore;
+            scoreText.text = realisedScore.ToString();
+            NumStars = newNumStars;
+
+
+            if (newNumStars < 2)
+            {
+                scoreTargetText.text = target1.ToString();
+                scoreTargetImage.sprite = targetSprite1;
+            }
+            else
+            {
+                scoreTargetText.text = target2.ToString();
+                scoreTargetImage.sprite = targetSprite2;
+            }
+            if (NumStars == 0 && newNumStars > 0)
+            {
+                Playing.ShowFinishFlag();
+            }
+            else if (NumStars > 0 && newNumStars == 0)
+            {
+                Playing.ShowThumbnail();
             }
 		}
+        void FixedUpdate()
+        {
+            // showingScore = Mathf.Lerp(showingScore, currentScore, .2f);
+            if (CanUpdate())
+                scoreText.color = Color.Lerp(scoreText.color, defaultScoreCol, .05f);
+        }
+
         public void Confetti()
         {
             help.Show(false);

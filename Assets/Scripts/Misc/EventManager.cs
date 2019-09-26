@@ -72,13 +72,13 @@ namespace EcoBuilder
             inspector.OnUserDespawned +=         (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
             nodelink.OnUserLinked +=           (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=         (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            // inspector.OnUserIsProducerSet += (i,x,y)=> recorder.TypeSet(i, x, y, inspector.SetIsProducer);
             inspector.OnUserSizeSet +=       (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet +=      (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
 
             recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
+            // recorder.OnSpeciesMemoryLeak +=      (i)=> model.RemoveSpecies(i);
 
             status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating && !tutorial.Teaching); 
 

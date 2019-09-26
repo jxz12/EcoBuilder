@@ -39,13 +39,13 @@ namespace EcoBuilder.UI
         {
             levels = new List<Level>();
 
-            if (!PlayerPrefs.HasKey("Has Played"))
-            {
-                SaveSceneLevels();
-                GetComponent<Animator>().SetInteger("Menu Choice", 3);
-                PlayerPrefs.SetString("Has Played", "yes");
-                PlayerPrefs.Save();
-            }
+            // if (!PlayerPrefs.HasKey("Has Played"))
+            // {
+            //     SaveSceneLevels();
+            //     GoToSurvey();
+            //     PlayerPrefs.SetString("Has Played", "yes");
+            //     PlayerPrefs.Save();
+            // }
             LoadFileLevels();
 
             // let the grid do the layout first
@@ -55,7 +55,12 @@ namespace EcoBuilder.UI
         {
             levelGrid.enabled = true;
             yield return null;
-            levelGrid.enabled = false;
+            // foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
+            // {
+            //     // print(level)
+            //     level.ShowThumbnailNewParent(levelGrid.GetComponent<RectTransform>(), level.transform.localPosition);
+            // }
+            // levelGrid.enabled = false;
         }
 
         public void ResetSaveData()
