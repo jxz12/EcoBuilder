@@ -18,11 +18,10 @@ namespace EcoBuilder
             status.HideConstraints(true);
             recorder.gameObject.SetActive(false);
 
-            // TODO: read
-            targetSize = new Vector2(100, 100);
-            targetPos = new Vector2(-84, 72);
-            targetAnchor = new Vector2(1, 0);
-            targetZRotation = -45;
+            targetSize = rt.sizeDelta;
+            targetPos = rt.anchoredPosition;
+            targetAnchor = rt.anchorMin;
+            targetZRotation = rt.rotation.eulerAngles.z;
 
             ExplainIntro();
         }
@@ -55,7 +54,7 @@ namespace EcoBuilder
             nodelink.OnEmptyPressed += fooo;
 
             bar = ()=> { inspector.OnShaped -= foo; nodelink.OnEmptyPressed -= fooo; };
-            targetPos = new Vector2(200, 15);
+            targetPos = new Vector2(160, 50);
             targetAnchor = new Vector2(.5f, 0);
             targetZRotation = 90;
         }

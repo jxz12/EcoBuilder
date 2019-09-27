@@ -20,7 +20,7 @@ namespace EcoBuilder
         private float zRotation, rotocity;
         [SerializeField] float smoothTime;
 
-        private RectTransform rt;
+        protected RectTransform rt;
 
         void Start()
         {
