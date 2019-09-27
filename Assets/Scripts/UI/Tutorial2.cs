@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace EcoBuilder.UI
 {
-    public partial class Tutorial
+    public class Tutorial2 : Tutorial
     {
-        public void StartDynamicLesson()
+        protected override void StartLesson()
         {
             inspector.HideSizeSlider(false);
             inspector.FixInitialSize(.5f);
@@ -13,10 +13,10 @@ namespace EcoBuilder.UI
             status.HideScore(true);
             status.HideConstraints(true);
             recorder.gameObject.SetActive(false);
-            Teaching = true;
 
-            ExplainIntro();
+            ExplainSize();
         }
+        Action bar;
         void ExplainSize()
         {
             inspector.HideSizeSlider(false);
@@ -24,14 +24,14 @@ namespace EcoBuilder.UI
             help.SetText("You can use this slider to change the size of your species. Try making your plant bigger or smaller.");
 
             bar();
-            Action<int, float, float> foo = (i,x,y)=> { help.Show(false); StartCoroutine(WaitThenDo(3, ()=>ExplainFinish())); };
-            Action fooo = ()=> { help.Show(true); ExplainFirstEcosystem(); inspector.HideSizeSlider(true); };
-            Action<int> foooo = (i)=>{if (i!=firstIdx) fooo();};
-            inspector.OnUserSizeSet += foo;
-            nodelink.OnUnfocused += fooo;
-            nodelink.OnNodeFocused += foooo;
+            // Action<int, float, float> foo = (i,x,y)=> { help.Show(false); StartCoroutine(WaitThenDo(3, ()=>ExplainFinish())); };
+            // Action fooo = ()=> { help.Show(true); ExplainFirstEcosystem(); inspector.HideSizeSlider(true); };
+            // Action<int> foooo = (i)=>{if (i!=firstIdx) fooo();};
+            // inspector.OnUserSizeSet += foo;
+            // nodelink.OnUnfocused += fooo;
+            // nodelink.OnNodeFocused += foooo;
 
-            bar = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnUnfocused -= fooo; nodelink.OnNodeFocused -= foooo; };
+            // bar = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnUnfocused -= fooo; nodelink.OnNodeFocused -= foooo; };
             GetComponent<Animator>().SetInteger("Progress", 5);
         }
 
@@ -41,12 +41,11 @@ namespace EcoBuilder.UI
             help.Show(true);
             help.SetWidth(.8f);
             help.SetDistFromTop(.01f);
-            Teaching = false;
 
             bar();
-            Action foo = ()=> SetFinishMessage();
-            status.OnLevelCompleted += foo;
-            bar = ()=> status.OnLevelCompleted -= foo;
+            // Action foo = ()=> SetFinishMessage();
+            // status.OnLevelCompleted += foo;
+            // bar = ()=> status.OnLevelCompleted -= foo;
             GetComponent<Animator>().SetInteger("Progress", 6);
         }
 
