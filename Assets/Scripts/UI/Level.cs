@@ -86,11 +86,12 @@ namespace EcoBuilder.UI
         // navigation
         [SerializeField] RectTransform nextLevelParent;
 
+        [SerializeField] Tutorial tutorial;
+        public Tutorial Tutorial { get; private set; }
         [SerializeField] GameObject landscape; // TODO:
 
         void Start()
         {
-
             int n = Details.numSpecies;
             if (n != Details.randomSeeds.Count || n != Details.sizes.Count || n != Details.greeds.Count)
                 throw new Exception("num species and sizes or greeds do not match");
@@ -261,8 +262,8 @@ namespace EcoBuilder.UI
         Vector2 sizocity, targetSize;
         void FixedUpdate()
         {
-            // transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, .15f);
-            // GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, .15f);
+            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, .15f);
+            GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, .15f);
         }
 
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
@@ -297,7 +298,7 @@ namespace EcoBuilder.UI
             transform.localScale = Vector3.one;
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
 
-            targetPos = thumbnailedPos;
+            targetPos = Vector3.zero;
             targetSize = new Vector2(450, 850);
         }
         public void ShowFinishFlag()

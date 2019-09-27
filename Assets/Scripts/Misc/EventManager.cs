@@ -11,7 +11,6 @@ namespace EcoBuilder
 
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.StatusBar status;
-        [SerializeField] UI.Tutorial tutorial;
         [SerializeField] UI.MoveRecorder recorder;
 
         void Start()
@@ -80,7 +79,8 @@ namespace EcoBuilder
             recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
             // recorder.OnSpeciesMemoryLeak +=      (i)=> model.RemoveSpecies(i);
 
-            status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating && !tutorial.Teaching); 
+            status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating); 
+            // TODO: && !tutorial.Teaching
 
             var level = status.Playing;
             for (int i=0; i<level.Details.numSpecies; i++)

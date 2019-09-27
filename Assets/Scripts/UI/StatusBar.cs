@@ -33,6 +33,10 @@ namespace EcoBuilder.UI
             else
             {
                 Playing = level;
+                if (level.Tutorial != null)
+                {
+                    Instantiate(level.Tutorial, transform.parent, false);
+                }
                 leaf.Constrain(Playing.Details.numProducers);
                 paw.Constrain(Playing.Details.numConsumers);
 

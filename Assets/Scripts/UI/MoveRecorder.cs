@@ -31,7 +31,7 @@ namespace EcoBuilder.UI
 
         Stack<Move> undos, redos;
         List<string> record;
-        void Start()
+        void Awake()
         {
             undos = new Stack<Move>();
             redos = new Stack<Move>();
