@@ -523,44 +523,68 @@ namespace EcoBuilder.Archie
             // the function returns a triangle list for a mesh
             List<int> triangle_list = new List<int>();
             //find maximal 3D simplex (tetrahedron)
-            Vector3[] base_line = new Vector3[]{new Vector3(),new Vector3()};
-            Vector3 third = new Vector3();
-            foreach ( Vector3 p1 in points)
-            {
-                foreach ( Vector3 p2 in points)
-                {
-                    if (( p1 - p2).magnitude > (base_line[0] - base_line[1]).magnitude)
-                    {
-                        base_line[0] = p1;
-                        base_line[1] = p2;
-                    }
-                }
-            }
-            Vector3 direction = base_line[1] - base_line[0];
-            Vector3 max_distance = base_line[0];
-            float testing = 0;
-            foreach ( Vector3 p in points )
-            {
-                float current = Distance_from_Line(base_line[0], direction, max_distance, false);
-                testing = Distance_from_Line(base_line[0], direction, p, false);
-                if ( testing > current )
-                {
-                    max_distance = p;
-                }
-            }
-            Vector3[] triangle_corners = new Vector3[]{ base_line[0], base_line[1], max_distance };
-            // OLD END
+            // Vector3[] base_line = new Vector3[]{new Vector3(),new Vector3()};
+            // Vector3 third = new Vector3();
+            // foreach ( Vector3 p1 in points)
+            // {
+            //     foreach ( Vector3 p2 in points)
+            //     {
+            //         if (( p1 - p2).magnitude > (base_line[0] - base_line[1]).magnitude)
+            //         {
+            //             base_line[0] = p1;
+            //             base_line[1] = p2;
+            //         }
+            //     }
+            // }
+            // Vector3 direction = base_line[1] - base_line[0];
+            // Vector3 max_distance = base_line[0];
+            // float testing = 0;
+            // foreach ( Vector3 p in points )
+            // {
+            //     float current = Distance_from_Line(base_line[0], direction, max_distance, false);
+            //     testing = Distance_from_Line(base_line[0], direction, p, false);
+            //     if ( testing > current )
+            //     {
+            //         max_distance = p;
+            //     }
+            // }
+            // Vector3[] triangle_corners = new Vector3[]{ base_line[0], base_line[1], max_distance };
+            // // OLD END
 
-            foreach (Vector3 p in points)
+            // foreach (Vector3 p in points)
+            // {
+            //     float current = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], max_distance, false);
+            //     testing = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], p, false);
+            //     if (System.Math.Abs(testing) > System.Math.Abs(current))
+            //     {
+            //         max_distance = p;
+            //     }
+            // }
+            // Vector3[] tetrahedron_corners = new Vector3[]{triangle_corners[0], triangle_corners[1], triangle_corners[2], max_distance};
+
+            // New
+            Vector3 largest_x = new Vector3(), largest_y = new Vector3(), largest_z = new Vector3(), other_point = new Vector3();
+            foreach ( Vector3 point in points )
             {
-                float current = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], max_distance, false);
-                testing = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], p, false);
-                if (System.Math.Abs(testing) > System.Math.Abs(current))
+                if ( point.x > largest_x.x )
                 {
-                    max_distance = p;
+                    largest_x = point;
+                }
+                else if ( point.y > largest_y.y && largest_x != point )
+                {
+                    largest_y = point;
+                }
+                else if (point.z > largest_z.z && largest_x != point && largest_y != point)
+                {
+                    largest_z = point;
+                }
+                else if (largest_x != point && largest_y != point && largest_z != point)
+                {
+                    other_point = point;
                 }
             }
-            Vector3[] tetrahedron_corners = new Vector3[]{triangle_corners[0], triangle_corners[1], triangle_corners[2], max_distance};
+            Vector3[] tetrahedron_corners = new Vector3[]{largest_x, largest_y, largest_z, other_point};
+
             //clearsimplex
             var conflict_points = Clear_Simplex_Volume(points, tetrahedron_corners).ToArray();
             UnityEngine.Debug.Log("number of conflicts: " + conflict_points.Length);
