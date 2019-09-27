@@ -15,12 +15,6 @@ namespace EcoBuilder.Archie{
 
         private AnimalTexture Texy;
 
-        //Testing Fields
-        // public bool Producer = false;
-        // public float Size;
-        // public float Greed;
-        // public int Seed;
-        // private animal_generator genny;
 
         void Awake()
         {
@@ -28,23 +22,10 @@ namespace EcoBuilder.Archie{
 
         }
 
-        // void Update()
-        // {
-        //     if (Input.GetKeyDown(KeyCode.U))
-        //     {
-        //         GenerateSpecies(Producer, Size, Greed, Seed);
-        //     }
-        //     if (Input.GetKeyDown(KeyCode.B))
-        //     {
-        //         RegenerateSpecies(generated_consumers[generated_consumers.Count - 1], Size, Greed, Seed);
-        //     }
-        // }
-
         public GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
         {
             UnityEngine.Random.InitState(randomSeed);
             var created_species = Instantiate(Animal_Prefab);
-            created_species.name = "Animal_no." + (generated_consumers.Count).ToString();
             if (!isProducer)
             {
                 Form_Animal(created_species, bodySize, greediness, randomSeed);
