@@ -39,6 +39,7 @@ namespace EcoBuilder.UI
         {
             levels = new List<Level>();
 
+            SaveSceneLevels();
             // if (!PlayerPrefs.HasKey("Has Played"))
             // {
             //     SaveSceneLevels();
@@ -46,7 +47,7 @@ namespace EcoBuilder.UI
             //     PlayerPrefs.SetString("Has Played", "yes");
             //     PlayerPrefs.Save();
             // }
-            LoadFileLevels();
+            // LoadFileLevels();
 
             // let the grid do the layout first
             StartCoroutine(EnableGridOneFrame());
@@ -96,8 +97,7 @@ namespace EcoBuilder.UI
             {
                 foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
                 {
-                    if (level.Tutorial == null)
-                        Destroy(level.gameObject);
+                    Destroy(level.gameObject);
                 }
             }
 
@@ -129,8 +129,7 @@ namespace EcoBuilder.UI
             levels = new List<Level>(levelGrid.transform.GetComponentsInChildren<Level>().OrderBy(x=>x.Details.idx));
             for (int i=0; i<levels.Count; i++)
             {
-                if (levels[i].Tutorial == null)
-                    levels[i].Details.savefilePath = Application.persistentDataPath + "/" + levels[i].Details.idx + ".gd";
+                levels[i].Details.savefilePath = Application.persistentDataPath + "/" + levels[i].Details.idx + ".gd";
             }
             for (int i=0; i<levels.Count-1; i++)
             {

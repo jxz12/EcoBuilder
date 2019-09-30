@@ -251,7 +251,12 @@ namespace EcoBuilder.NodeLink
         bool frozen = false;
         public void Freeze()
         {
-            focusedNode = null;
+            if (focusedNode != null)
+            {
+                focusedNode.Unoutline();
+                focusedNode = null;
+            }
+            focusState = FocusState.Unfocus;
             StartCoroutine(ResetZoom(Vector3.one, 1f));
 
             GetComponent<Animator>().SetTrigger("Freeze");
@@ -428,6 +433,7 @@ namespace EcoBuilder.NodeLink
                         dummySource = Instantiate(nodePrefab, nodesParent);
                         dummySource.transform.localScale = Vector3.zero;
                         dummySource.transform.position = pressedNode.transform.position;
+                        dummySource.enabled = false;
                         dummyLink = Instantiate(linkPrefab, linksParent);
                         dummyLink.Target = pressedNode;
                         dummyLink.Source = dummySource;

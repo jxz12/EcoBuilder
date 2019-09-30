@@ -39,7 +39,7 @@ namespace EcoBuilder.NodeLink
                     centroid = focusedNode.StressPos;
 
                     nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up * centroid.y,
+                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y,
                                         ref nodesVelocity, parentsSmoothTime);
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
@@ -48,6 +48,7 @@ namespace EcoBuilder.NodeLink
 
                 if (constrainTrophic)
                 {
+                    // centroid = Vector3.zero;
                     float height = Mathf.Min(MaxChain, maxHeight);
                     float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
                     foreach (Node no in nodes)

@@ -438,5 +438,9 @@ namespace EcoBuilder.UI
         {
             greedIfFixed = fixedGreed;
         }
+        public void HidePlantPawButton(bool hidden=true)
+        {
+            typesAnim.gameObject.SetActive(!hidden);
+        }
     }
 }

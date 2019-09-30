@@ -109,7 +109,6 @@ namespace EcoBuilder.NodeLink
                 foreach (int row in links.GetRowIndicesInColumn(idx))
                     linkGrave.RemoveAt(row, idx);
             }
-            nodes[idx].StressPos += UnityEngine.Random.insideUnitSphere * .2f; // prevent divide by zero
             toBFS.Enqueue(idx);
         }
 

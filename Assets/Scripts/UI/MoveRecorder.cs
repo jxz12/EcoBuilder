@@ -43,7 +43,7 @@ namespace EcoBuilder.UI
             undos.Push(move);
             foreach (Move redo in redos)
             {
-                // spawned species can never be recovered
+                // spawned species can never be recovered if previously undone
                 if (redo.type == Move.Type.Spawn)
                     OnSpeciesMemoryLeak.Invoke(redo.idx);
             }
@@ -71,21 +71,21 @@ namespace EcoBuilder.UI
 
         public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
         {
-            if (undos.Peek().type == Move.Type.Production && undos.Peek().idx == idx)
+            if (undos.Count > 0 && (undos.Peek().type == Move.Type.Production && undos.Peek().idx == idx))
                 undos.Peek().Redo = ()=>SetType(idx,current); // don't record multiple changes
             else
                 NewMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, Move.Type.Production));
         }
         public void SizeSet(int idx, float prev, float current, Action<int, float> SetSize)
         {
-            if (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx)
+            if (undos.Count > 0 && (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx))
                 undos.Peek().Redo = ()=>SetSize(idx,current);
             else
                 NewMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, Move.Type.Size));
         }
         public void GreedSet(int idx, float prev, float current, Action<int, float> SetGreed)
         {
-            if (undos.Peek().type == Move.Type.Greed && undos.Peek().idx == idx)
+            if (undos.Count > 0 && (undos.Peek().type == Move.Type.Greed && undos.Peek().idx == idx))
                 undos.Peek().Redo = ()=>SetGreed(idx,current);
             else
                 NewMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
