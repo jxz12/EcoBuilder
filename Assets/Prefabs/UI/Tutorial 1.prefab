@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7475465975059687730}
   - component: {fileID: 8884700506862841822}
   - component: {fileID: 8884700506862841823}
+  - component: {fileID: 5267688552404048076}
   m_Layer: 5
   m_Name: Tutorial 1
   m_TagString: Untagged
@@ -26,16 +27,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8884700506862841793}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: -0, z: 0.3826836, w: -0.92387944}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -84, y: 72}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -61, y: 115.3}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.33, y: 1}
 --- !u!114 &7475465975059687730
@@ -50,9 +51,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8bb83d4df9fb7d46be2058c08740c18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  point: {fileID: 0}
-  grab: {fileID: 0}
-  pan: {fileID: 0}
+  point: {fileID: 21300000, guid: 2d51f7919d7861740b467e1d1fa24867, type: 3}
+  grab: {fileID: 21300000, guid: 8c78600be78f3ab49a5a74c540eb9bcc, type: 3}
+  pan: {fileID: 21300000, guid: 4db942fb23bbc3041b97e2ee448ea126, type: 3}
   smoothTime: 0.2
 --- !u!222 &8884700506862841822
 CanvasRenderer:
@@ -84,10 +85,29 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_Sprite: {fileID: 21300000, guid: 2d51f7919d7861740b467e1d1fa24867, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+--- !u!95 &5267688552404048076
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8884700506862841793}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: b898359df8a063a49b859a99cb2f2406, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

@@ -13,13 +13,14 @@ namespace EcoBuilder.UI
         [SerializeField] Button hideButton, showButton;
 
         RectTransform rt;
-        Vector2 targetPos;
-        Vector2 velocity;
+        Vector2 targetPos, targetAnchor;
+        Vector2 velocity, anchosity;
         Vector2 canvasRefRes;
         void Awake()
         {
             rt = GetComponent<RectTransform>();
             targetPos = rt.anchoredPosition;
+            targetAnchor = rt.anchorMin;
             canvasRefRes = GetComponentInParent<Canvas>().GetComponent<RectTransform>().sizeDelta;
         }
         void Start()
@@ -68,14 +69,14 @@ namespace EcoBuilder.UI
             var rt = GetComponent<RectTransform>();
             if (left)
             {
-                rt.anchorMin = rt.anchorMax = new Vector2(0,1);
+                targetAnchor = new Vector2(0,1);
                 transform.localScale = new Vector3(-1,1,1);
                 message.transform.localScale = new Vector3(-1,1,1);
                 hideButton.transform.localScale = new Vector3(-1,1,1);
             }
             else
             {
-                rt.anchorMin = rt.anchorMax = new Vector2(1,1);
+                targetAnchor = new Vector2(1,1);
                 transform.localScale = new Vector3(1,1,1);
                 message.transform.localScale = new Vector3(1,1,1);
                 hideButton.transform.localScale = new Vector3(1,1,1);
@@ -84,6 +85,7 @@ namespace EcoBuilder.UI
             if (!damp)
             {
                 rt.anchoredPosition = targetPos;
+                rt.anchorMin = rt.anchorMax = targetAnchor;
             }
             isLeft = left;
         }
@@ -98,6 +100,7 @@ namespace EcoBuilder.UI
         void FixedUpdate()
         {
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, .15f);
+            rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, .15f);
         }
         public void DelayThenShow(float seconds)
         {

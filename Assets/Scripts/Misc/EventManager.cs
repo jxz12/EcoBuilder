@@ -37,7 +37,7 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
+            // nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
@@ -79,8 +79,10 @@ namespace EcoBuilder
             recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
             // recorder.OnSpeciesMemoryLeak +=      (i)=> model.RemoveSpecies(i);
 
-            status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating); 
-            // TODO: && !tutorial.Teaching
+            status.AllowUpdateWhen(()=> atEquilibrium &&
+                                        !model.IsCalculating &&
+                                        graphSolved &&
+                                        !nodelink.IsCalculating); 
 
             var level = status.Playing;
             for (int i=0; i<level.Details.numSpecies; i++)

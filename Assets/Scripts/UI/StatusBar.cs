@@ -16,13 +16,15 @@ namespace EcoBuilder.UI
         [SerializeField] Help help;
         [SerializeField] RectTransform levelParent;
 
+        [SerializeField] Tutorial[] tutorials;
+
         public Level Playing { get; private set; }
         void Awake()
         {
             var level = GameManager.Instance.PlayedLevel;
-            if (level == null)
+            if (level == null || level.Details.title == "Sandbox") // FIXME:
             {
-                Playing = GameManager.Instance.GetDefaultLevel();
+                Playing = GameManager.Instance.LoadLevel();
                 leaf.Unconstrain();
                 paw.Unconstrain();
                 edge.Unconstrain();
@@ -33,18 +35,18 @@ namespace EcoBuilder.UI
             else
             {
                 Playing = level;
-                if (level.Tutorial != null)
-                {
-                    Instantiate(level.Tutorial, transform.parent, false);
-                }
                 leaf.Constrain(Playing.Details.numProducers);
                 paw.Constrain(Playing.Details.numConsumers);
 
                 edge.Constrain(Playing.Details.minEdges);
                 chain.Constrain(Playing.Details.minChain);
                 loop.Constrain(Playing.Details.minLoop);
-
             }
+            if (level.Details.idx < tutorials.Length)
+            {
+                Instantiate(tutorials[level.Details.idx], transform.parent, false);
+            }
+
             help.SetText(Playing.Details.introduction);
             Playing.ShowThumbnailNewParent(levelParent, Vector2.zero);
             Playing.OnFinishClicked += CompleteLevel;
@@ -61,7 +63,7 @@ namespace EcoBuilder.UI
 
         void CompleteLevel()
         {
-            help.SetDistFromTop(.15f);
+            help.SetDistFromTop(.05f);
             help.SetSide(false, false);
 
             if (NumStars < 1 || NumStars > 3)
@@ -107,6 +109,11 @@ namespace EcoBuilder.UI
         public void HideConstraints(bool hidden=true)
         {
             constraintsParent.gameObject.SetActive(!hidden);
+        }
+        bool scorePaused = false;
+        public void PauseScoreCalculation(bool paused=true)
+        {
+            scorePaused = paused;
         }
 
 
@@ -201,6 +208,9 @@ namespace EcoBuilder.UI
         int NumStars { get; set; }
 		void Update()
 		{
+            if (scorePaused)
+                return;
+
             Playing.SetFinishable(CanUpdate());
 
             int newNumStars = 0;
@@ -242,8 +252,6 @@ namespace EcoBuilder.UI
 
             realisedScore = newScore;
             scoreText.text = realisedScore.ToString();
-            NumStars = newNumStars;
-
 
             if (newNumStars < 2)
             {
@@ -263,6 +271,7 @@ namespace EcoBuilder.UI
             {
                 Playing.ShowThumbnail();
             }
+            NumStars = newNumStars;
 		}
         void FixedUpdate()
         {

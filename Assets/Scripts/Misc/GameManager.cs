@@ -91,10 +91,20 @@ namespace EcoBuilder
         [SerializeField] RectTransform overlayParent;
         public RectTransform Overlay { get { return overlayParent; } }
 
-        [SerializeField] UI.Level LevelPrefab;
-        public UI.Level GetDefaultLevel()
+        [SerializeField] UI.Level levelPrefab;
+        public UI.Level LoadLevel(string path=null)
         {
-           return Instantiate(LevelPrefab);
+            var nextLevel = Instantiate(levelPrefab);
+            bool successful = nextLevel.LoadFromFile(path);
+            if (successful)
+            {
+                return nextLevel;
+            }
+            else
+            {
+                Destroy(nextLevel);
+                return null;
+            }
         }
 
         public UI.Level PlayedLevel { get; private set; }

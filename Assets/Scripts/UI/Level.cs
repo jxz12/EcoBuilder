@@ -85,9 +85,6 @@ namespace EcoBuilder.UI
         [SerializeField] Button finishFlag;
         // navigation
         [SerializeField] RectTransform nextLevelParent;
-
-        [SerializeField] Tutorial tutorial;
-        public Tutorial Tutorial { get; private set; }
         [SerializeField] GameObject landscape; // TODO:
 
         void Start()
@@ -100,7 +97,7 @@ namespace EcoBuilder.UI
             if (m != Details.consumers.Count)
                 throw new Exception("num edge sources and targets do not match");
 
-            numberText.text = Details.idx.ToString();
+            numberText.text = (Details.idx+1).ToString();
             title.text = Details.title;
             description.text = Details.description;
 
@@ -137,8 +134,10 @@ namespace EcoBuilder.UI
 
         public bool LoadFromFile(string loadPath)
         {
-            Details.savefilePath = loadPath;
+            if (loadPath == null)
+                return false;
 
+            Details.savefilePath = loadPath;
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
@@ -150,7 +149,6 @@ namespace EcoBuilder.UI
                 playButton.gameObject.SetActive(true);
                 quitButton.gameObject.SetActive(false);
                 replayButton.gameObject.SetActive(false);
-
 
                 return true;
             }
@@ -191,7 +189,7 @@ namespace EcoBuilder.UI
             }
             catch (ArgumentException ae)
             {
-                print("file not found " + ae.Message);
+                print("file not found: " + ae.Message);
             }
         }
 
@@ -223,7 +221,6 @@ namespace EcoBuilder.UI
             quitButton.gameObject.SetActive(true);
             replayButton.gameObject.SetActive(true);
         }
-        public Level NextLevel { get; private set; }
         public void StartGame()
         {
             GameManager.Instance.PlayLevel(this);
@@ -235,20 +232,19 @@ namespace EcoBuilder.UI
             Destroy(gameObject);
             GameManager.Instance.ReturnToMenu();
         }
+        public Level NextLevel { get; private set; }
         public void FinishLevel()
         {
-            NextLevel = Instantiate(this);
-            bool successful = NextLevel.LoadFromFile(Details.nextLevelPath);
-            if (successful)
+            var next = GameManager.Instance.LoadLevel(Details.nextLevelPath);
+            if (next != null)
             {
-                NextLevel.transform.SetParent(nextLevelParent, false);
+                next.transform.SetParent(nextLevelParent, false);
+                NextLevel = next;
             }
             else
             {
-                Destroy(NextLevel);
                 print("TODO: credits?");
             }
-
             ShowNavigation();
         }
 
