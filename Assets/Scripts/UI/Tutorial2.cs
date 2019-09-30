@@ -38,7 +38,7 @@ namespace EcoBuilder.UI
             help.SetText("You can change the body size of your species by moving this slider. Try moving the slider to see the effects on your ecosystem.");
             help.Show(true);
             help.SetSide(true);
-            help.SetDistFromTop(.1f);
+            help.SetDistFromTop(.05f);
 
             shuffle = true;
             StartCoroutine(ShuffleOnSlider(3));
@@ -73,7 +73,7 @@ namespace EcoBuilder.UI
         {
             help.Show(false);
 
-            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal cannot be sustained by the plant. The other trait you can change is a species' interference, which determines the maximum population a species can reach. Try changing both sliders, and see how it affects each species!"); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3)); }));
+            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal cannot be sustained by the plant. The other trait you can change is a species' interference, which determines strength that individuals within a species compete with each other. The higher the interference, the lower its maximum population."); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3)); }));
 
             Detach();
             Action<int,float,float> foo = (i,x,y)=> ExplainScore();
@@ -83,7 +83,10 @@ namespace EcoBuilder.UI
         void ExplainScore()
         {
             help.Show(false);
-            targetSize = Vector2.zero;
+            targetSize = new Vector2(100,100);
+            targetAnchor = new Vector2(.5f,1);
+            targetPos = new Vector2(0, 30);
+            targetZRot = 45;
 
             StartCoroutine(WaitThenDo(3, ()=> { help.SetSide(false); help.SetDistFromTop(.13f); help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of these interactions, which is indicated by the flow along its link. Getting enough points will earn you more stars – good luck!"); help.Show(true); }));
 
@@ -91,6 +94,9 @@ namespace EcoBuilder.UI
 
             status.HideScore(false);
             status.PauseScoreCalculation(false);
+
+
+            Detach();
         }
         bool shuffle = false;
         IEnumerator ShuffleOnSlider(float time)
