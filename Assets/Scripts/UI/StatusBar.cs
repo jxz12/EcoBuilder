@@ -12,6 +12,7 @@ namespace EcoBuilder.UI
         public event Action OnLevelCompleted;
 
         [SerializeField] Animator star1, star2, star3;
+        [SerializeField] Animator score, constraints;
         [SerializeField] Constraint shield, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
         [SerializeField] RectTransform levelParent;
@@ -24,7 +25,11 @@ namespace EcoBuilder.UI
             var level = GameManager.Instance.PlayedLevel;
             if (level == null || level.Details.title == "Sandbox") // FIXME:
             {
-                Playing = GameManager.Instance.LoadLevel();
+                if (level == null)
+                {
+                    // note: only for testing
+                    level = GameManager.Instance.GetDefaultLevel();
+                }
                 leaf.Unconstrain();
                 paw.Unconstrain();
                 edge.Unconstrain();
@@ -34,29 +39,30 @@ namespace EcoBuilder.UI
             }
             else
             {
-                Playing = level;
-                leaf.Constrain(Playing.Details.numProducers);
-                paw.Constrain(Playing.Details.numConsumers);
+                leaf.Constrain(level.Details.numProducers);
+                paw.Constrain(level.Details.numConsumers);
 
-                edge.Constrain(Playing.Details.minEdges);
-                chain.Constrain(Playing.Details.minChain);
-                loop.Constrain(Playing.Details.minLoop);
-            }
-            if (level.Details.idx < tutorials.Length)
-            {
-                Instantiate(tutorials[level.Details.idx], transform.parent, false);
+                edge.Constrain(level.Details.minEdges);
+                chain.Constrain(level.Details.minChain);
+                loop.Constrain(level.Details.minLoop);
+                if (level.Details.idx < tutorials.Length)
+                {
+                    Instantiate(tutorials[level.Details.idx], transform.parent, false);
+                }
             }
 
+            Playing = level;
             help.SetText(Playing.Details.introduction);
             Playing.ShowThumbnailNewParent(levelParent, Vector2.zero);
             Playing.OnFinishClicked += CompleteLevel;
 
             target1 = Playing.Details.targetScore1;
             target2 = Playing.Details.targetScore2;
-            defaultScoreCol = scoreText.color;
+            feasibleScoreCol = scoreText.color;
+            infeasibleScoreCol = Color.grey;
         }
         int target1, target2;
-        Color defaultScoreCol;
+        Color feasibleScoreCol, infeasibleScoreCol;
 
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
@@ -101,14 +107,15 @@ namespace EcoBuilder.UI
         {
             help.Show(showing);
         }
-        [SerializeField] GameObject scoreParent, constraintsParent;
         public void HideScore(bool hidden=true) // TODO: make these separate animators and smooth
         {
-            scoreParent.gameObject.SetActive(!hidden);
+            // score.SetBool("Visible", !hidden);
+            score.gameObject.SetActive(!hidden);
         }
         public void HideConstraints(bool hidden=true)
         {
-            constraintsParent.gameObject.SetActive(!hidden);
+            // constraints.SetBool("Visible", !hidden);
+            constraints.gameObject.SetActive(!hidden);
         }
         bool scorePaused = false;
         public void PauseScoreCalculation(bool paused=true)
@@ -181,7 +188,6 @@ namespace EcoBuilder.UI
         }
 
 		bool feasible, stable;
-        bool starsNeedUpdate = false;
         // float targetAbundance, abundance;
         int modelScore, realisedScore;
 
@@ -194,7 +200,6 @@ namespace EcoBuilder.UI
         public void DisplayScore(float score)
         {
             modelScore = ((int)Math.Truncate(score * 1000));
-            starsNeedUpdate = true;
         }
 
 		//////////////////////
@@ -212,9 +217,15 @@ namespace EcoBuilder.UI
                 return;
 
             Playing.SetFinishable(CanUpdate());
+            
+            if (modelScore > realisedScore)
+                scoreText.color = Color.green;
+            else if (modelScore < realisedScore)
+                scoreText.color = Color.red;
 
+            realisedScore = modelScore;
+            scoreText.text = realisedScore.ToString();
             int newNumStars = 0;
-            int newScore = 0;
 
             star1.SetBool("Filled", false);
             star2.SetBool("Filled", false);
@@ -224,16 +235,16 @@ namespace EcoBuilder.UI
                 leaf.IsSatisfied && paw.IsSatisfied &&
                 edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
             {
-                newScore = modelScore;
                 newNumStars += 1;
                 star1.SetBool("Filled", true);
+                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .05f);
 
-                if (newScore >= target1)
+                if (modelScore >= target1)
                 {
                     newNumStars += 1;
                     star2.SetBool("Filled", true);
 
-                    if (newScore >= target2)
+                    if (modelScore >= target2)
                     {
                         newNumStars += 1;
                         star3.SetBool("Filled", true);
@@ -242,16 +253,8 @@ namespace EcoBuilder.UI
             }
             else
             {
-                newScore = 0;
+                scoreText.color = infeasibleScoreCol;
             }
-            
-            if (newScore > realisedScore)
-                scoreText.color = Color.green;
-            else if (newScore < realisedScore)
-                scoreText.color = Color.red;
-
-            realisedScore = newScore;
-            scoreText.text = realisedScore.ToString();
 
             if (newNumStars < 2)
             {
@@ -273,12 +276,6 @@ namespace EcoBuilder.UI
             }
             NumStars = newNumStars;
 		}
-        void FixedUpdate()
-        {
-            // showingScore = Mathf.Lerp(showingScore, currentScore, .2f);
-            if (CanUpdate())
-                scoreText.color = Color.Lerp(scoreText.color, defaultScoreCol, .05f);
-        }
 
         public void Confetti()
         {
@@ -286,7 +283,8 @@ namespace EcoBuilder.UI
             help.SetText(Playing.Details.congratulation);
             help.DelayThenShow(2);
 
-            GetComponent<Animator>().SetTrigger("Confetti");
+            score.SetBool("Visible", false);
+            constraints.SetBool("Visible", false);
             star1.SetTrigger("Confetti");
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");

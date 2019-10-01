@@ -94,17 +94,21 @@ namespace EcoBuilder
         [SerializeField] UI.Level levelPrefab;
         public UI.Level LoadLevel(string path=null)
         {
-            var nextLevel = Instantiate(levelPrefab);
-            bool successful = nextLevel.LoadFromFile(path);
+            var level = Instantiate(levelPrefab);
+            bool successful = level.LoadFromFile(path);
             if (successful)
             {
-                return nextLevel;
+                return level;
             }
             else
             {
-                Destroy(nextLevel);
+                Destroy(level);
                 return null;
             }
+        }
+        public UI.Level GetDefaultLevel() // only for testing
+        {
+            return Instantiate(levelPrefab);
         }
 
         public UI.Level PlayedLevel { get; private set; }
