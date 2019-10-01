@@ -211,21 +211,17 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        // public void SetIfNodeRemovable(int idx, bool removable)
-        // {
-        //     // nodes[idx].Removable = removable;
-        //     // if (removable)
-        //     //     nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
-        //     // else
-        //     //     nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
-        // }
+        public void SetIfNodeRemovable(int idx, bool removable)
+        {
+            nodes[idx].Removable = removable;
+            if (!removable)
+                nodes[idx].Outline(2);
+        }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            // if (removable)
-            //     links[i,j].GetComponent<LineRenderer>().material = linkRemovable;
-            // else
-            //     links[i,j].GetComponent<LineRenderer>().material = linkFixed;
+            if (!removable)
+                links[i,j].Outline(2);
         }
 
         public IEnumerable<int> GetTargets(int source)

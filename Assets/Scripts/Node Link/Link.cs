@@ -35,12 +35,19 @@ namespace EcoBuilder.NodeLink
             {
                 outline = gameObject.AddComponent<cakeslice.Outline>();
             }
-            outline.color = colourIdx;
+
+            if (Removable)
+                outline.color = colourIdx;
+            else
+                outline.color = 2;
         }
         public void Unoutline()
         {
-            if (GetComponent<cakeslice.Outline>() != null)
-                Destroy(GetComponent<cakeslice.Outline>());
+            if (Removable)
+            {
+                if (GetComponent<cakeslice.Outline>() != null)
+                    Destroy(GetComponent<cakeslice.Outline>());
+            }
         }
         float targetAlpha = 1;
         public void Show(bool showing = true)

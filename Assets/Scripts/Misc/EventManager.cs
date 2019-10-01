@@ -96,6 +96,7 @@ namespace EcoBuilder
                     level.Details.greedEditable);
 
                 inspector.SetSpeciesRemovable(i, false);
+                nodelink.SetIfNodeRemovable(i, false);
             }
             for (int ij=0; ij<level.Details.numInteractions; ij++)
             {

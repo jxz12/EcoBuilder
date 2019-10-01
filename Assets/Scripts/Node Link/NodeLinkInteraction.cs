@@ -65,7 +65,7 @@ namespace EcoBuilder.NodeLink
             }
 
             focusedNode = nodes[idx];
-            nodes[idx].Outline();
+            nodes[idx].Outline(0);
         }
         public void SwitchFocus(int idx) // urgh
         {

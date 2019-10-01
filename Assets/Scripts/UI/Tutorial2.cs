@@ -6,6 +6,7 @@ namespace EcoBuilder.UI
 {
     public class Tutorial2 : Tutorial
     {
+        GameObject plant;
         protected override void StartLesson()
         {
             inspector.HideSizeSlider(false);
@@ -15,6 +16,8 @@ namespace EcoBuilder.UI
             status.HideScore(true);
             status.HideConstraints(true);
             status.PauseScoreCalculation(true);
+
+            plant = FindObjectsOfType<NodeLink.Node>()[1].gameObject;
 
             ExplainIntro();
         }
@@ -27,6 +30,10 @@ namespace EcoBuilder.UI
 
             if (Detach != null)
                 Detach();
+            
+            track = true;
+            StartCoroutine(Track(plant.transform));
+            shuffle = false;
 
             Action<int> foo = (i)=> ExplainSize();
             nodelink.OnNodeFocused += foo;
@@ -41,14 +48,15 @@ namespace EcoBuilder.UI
             help.SetDistFromTop(.05f);
 
             shuffle = true;
-            StartCoroutine(ShuffleOnSlider(3));
+            StartCoroutine(ShuffleOnSlider(3, 40));
+            track = false;
 
             Detach();
             Action<int,float,float> foo = (i,x,y)=> ExplainMetabolism(i);
             Action fooo = ()=> ExplainIntro();
             inspector.OnUserSizeSet += foo;
-            nodelink.OnEmptyPressed += fooo;
-            Detach = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnEmptyPressed -= fooo; };
+            nodelink.OnUnfocused += fooo;
+            Detach = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnUnfocused -= fooo; };
         }
         int firstSized = -1;
         void ExplainMetabolism(int firstIdx)
@@ -64,58 +72,66 @@ namespace EcoBuilder.UI
             Detach();
             Action<int,float,float> foo = (i,x,y)=> {if (i != firstSized) ExplainInterference(i);};
             Action<int> fooo = (i)=> help.Show(false);
+            Action foooo = ()=> help.Show(true);
             inspector.OnUserSizeSet += foo;
             nodelink.OnNodeFocused += fooo;
-            Detach = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnNodeFocused -= fooo; };
+            nodelink.OnUnfocused += foooo;
+            Detach = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnNodeFocused -= fooo; nodelink.OnUnfocused -= foooo; };
         }
         int secondSized = -1;
         void ExplainInterference(int secondIdx)
         {
             help.Show(false);
 
-            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal cannot be sustained by the plant. The other trait you can change is a species' interference, which determines strength that individuals within a species compete with each other. The higher the interference, the lower its maximum population."); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3)); }));
+            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal cannot be sustained by the plant. The other trait you can change is a species' interference. The higher the interference, the lower its maximum population. Try changing it to see the effects."); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3, 90)); }));
 
             Detach();
             Action<int,float,float> foo = (i,x,y)=> ExplainScore();
             inspector.OnUserGreedSet += foo;
-            Detach = ()=> inspector.OnUserGreedSet -= foo;
+            Action fooo = ()=> help.Show(false);
+            nodelink.OnUnfocused += fooo;
+            Detach = ()=> { inspector.OnUserGreedSet -= foo; nodelink.OnUnfocused -= fooo; };
         }
         void ExplainScore()
         {
             help.Show(false);
-            targetSize = new Vector2(100,100);
-            targetAnchor = new Vector2(.5f,1);
-            targetPos = new Vector2(0, 30);
-            targetZRot = 45;
-
-            StartCoroutine(WaitThenDo(3, ()=> { help.SetSide(false); help.SetDistFromTop(.13f); help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of these interactions, which is indicated by the flow along its link. Getting enough points will earn you more stars – good luck!"); help.Show(true); }));
-
+            targetSize = new Vector2(0,0);
+            // targetSize = new Vector2(100,100);
+            // targetAnchor = new Vector2(.5f,1);
+            // targetPos = new Vector2(100, -50);
+            // targetZRot = 45;
+            // Point();
             shuffle = false;
 
-            status.HideScore(false);
-            status.PauseScoreCalculation(false);
-
+            StartCoroutine(WaitThenDo(3, ()=> { help.SetSide(false,false); help.SetDistFromTop(.13f); help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of interaction, indicated by the flow along the links. Getting enough points will earn you more stars – good luck!"); help.Show(true); status.HideScore(false); status.PauseScoreCalculation(false); }));
 
             Detach();
+            Action foo = ()=> Finish();
+            status.OnLevelCompleted += foo;
+        }
+        void Finish()
+        {
+            help.SetDistFromTop(.2f);
         }
         bool shuffle = false;
-        IEnumerator ShuffleOnSlider(float time)
+        IEnumerator ShuffleOnSlider(float time, float yPos)
         {
             float start = Time.time;
             targetAnchor = new Vector2(.5f, 0);
             targetSize = new Vector2(50,50);
+            // rt.anchoredPosition = new Vector2(130,yPos);
             float prevSmooth = smoothTime;
-            smoothTime = .9f;
             Grab();
             while (shuffle)
             {
                 if (((Time.time - start) % time) < (time/2f))
                 {
-                    targetPos = new Vector2(-60,40);
+                    targetPos = new Vector2(-60,yPos);
                 }
                 else
                 {
-                    targetPos = new Vector2(130,40);
+                    targetPos = new Vector2(130,yPos);
+                    smoothTime = 1f;
                 }
                 yield return null;
             }
@@ -125,6 +141,18 @@ namespace EcoBuilder.UI
         {
             yield return new WaitForSeconds(seconds);
             Todo();
+        }
+        bool track = false;
+        IEnumerator Track(Transform tracked)
+        {
+            targetAnchor = new Vector2(0,0);
+            targetSize = new Vector2(100,100);
+            Point();
+            while (track)
+            {
+                targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                yield return null;
+            }
         }
     }
 }

@@ -237,11 +237,19 @@ namespace EcoBuilder.Model
             // same as above commented
             return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
         }
-        static float NormaliseOnLogScale(float input, float min, float max)
+        static float NormaliseOnLog10Scale(float input, float min, float max)
         {
             float logIn = Mathf.Log10(input);
             float logMin = Mathf.Log10(min);
             float logMax = Mathf.Log10(max);
+
+            return (logIn - logMin) / (logMax - logMin);
+        }
+        static float NormaliseOnLnScale(float input, float min, float max)
+        {
+            float logIn = Mathf.Log(input);
+            float logMin = Mathf.Log(min);
+            float logMax = Mathf.Log(max);
 
             return (logIn - logMin) / (logMax - logMin);
         }
@@ -262,7 +270,7 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return NormaliseOnLogScale(abundance, minScaledAbundance, maxScaledAbundance);
+                return NormaliseOnLnScale(abundance, minScaledAbundance, maxScaledAbundance);
             }
         }
 
@@ -279,14 +287,14 @@ namespace EcoBuilder.Model
             else
             {
                 // TODO: this might be slow
-                return NormaliseOnLogScale(flux, minScaledFlux, maxScaledFlux);
+                return NormaliseOnLog10Scale(flux, minScaledFlux, maxScaledFlux);
             }
         }
         float NormaliseFluxScore(float input)
         {
             // for flux
             float normalised = input < maxScaledFlux ?
-                               NormaliseOnLogScale(input, minScaledFlux, maxScaledFlux)
+                               NormaliseOnLog10Scale(input, minScaledFlux, maxScaledFlux)
                              : input/maxScaledFlux;
 
             // print("flux: " + input);
@@ -299,7 +307,7 @@ namespace EcoBuilder.Model
         {
             // for complexity
             float normalised = input < maxScaledComplexity ?
-                               NormaliseOnLogScale(input, minScaledComplexity, maxScaledComplexity)
+                               NormaliseOnLog10Scale(input, minScaledComplexity, maxScaledComplexity)
                              : input/maxScaledComplexity;
             
             // print("complexity: " + input);
