@@ -16,6 +16,7 @@ namespace EcoBuilder.NodeLink
         public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
+        public bool Removable { get; set; } = true;
 
         GameObject shape;
 
@@ -42,23 +43,26 @@ namespace EcoBuilder.NodeLink
             shape.transform.localRotation = Quaternion.identity;
             shape.transform.localScale = Vector3.one;
         }
-        public void Outline(int colourIdx=0)
+        public void Outline(int colourIdx)
         {
-            // var outline = GetComponent<cakeslice.Outline>();
             var outline = shape.GetComponent<cakeslice.Outline>();
             if (outline == null)
             {
-                // outline = gameObject.AddComponent<cakeslice.Outline>();
                 outline = shape.AddComponent<cakeslice.Outline>();
             }
             outline.color = colourIdx;
         }
         public void Unoutline()
         {
-            // if (GetComponent<cakeslice.Outline>() != null)
-            //     Destroy(GetComponent<cakeslice.Outline>());
-            if (shape.GetComponent<cakeslice.Outline>() != null)
-                Destroy(shape.GetComponent<cakeslice.Outline>());
+            if (Removable)
+            {
+                if (shape.GetComponent<cakeslice.Outline>() != null)
+                    Destroy(shape.GetComponent<cakeslice.Outline>());
+            }
+            else
+            {
+                shape.GetComponent<cakeslice.Outline>().color = 2;
+            }
         }
         bool flashing = false;
         public void Flash(bool isFlashing)

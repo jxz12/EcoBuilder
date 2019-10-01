@@ -102,7 +102,7 @@ namespace EcoBuilder.UI
             help.Show(showing);
         }
         [SerializeField] GameObject scoreParent, constraintsParent;
-        public void HideScore(bool hidden=true)
+        public void HideScore(bool hidden=true) // TODO: make these separate animators and smooth
         {
             scoreParent.gameObject.SetActive(!hidden);
         }
