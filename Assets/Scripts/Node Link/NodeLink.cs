@@ -70,7 +70,6 @@ namespace EcoBuilder.NodeLink
 
         public void AddNode(int idx)
         {
-            // TODO: mystery bug?!
             if (nodes[idx] != null)
                 throw new Exception("index " + idx + " already added");
 
@@ -215,13 +214,13 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Removable = removable;
             if (!removable)
-                nodes[idx].Outline(2);
+                nodes[idx].Outline(0);
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
             if (!removable)
-                links[i,j].Outline(2);
+                links[i,j].Outline(0);
         }
 
         public IEnumerable<int> GetTargets(int source)

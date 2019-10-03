@@ -127,6 +127,9 @@ namespace EcoBuilder.UI
                 incubator.Unincubate();
                 incubated = null;
             }
+            while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx))
+                nextIdx += 1;
+
             Species s = new Species(nextIdx, isProducer);
             if (sizeIfFixed >= 0)
                 s.BodySize = sizeIfFixed;
@@ -190,8 +193,6 @@ namespace EcoBuilder.UI
             SpawnWithEvents(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
-            while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx))
-                nextIdx += 1;
 
             OnUnincubated.Invoke();
             OnUserSpawned.Invoke(spawnedIdx);

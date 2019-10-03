@@ -65,7 +65,7 @@ namespace EcoBuilder.NodeLink
             }
 
             focusedNode = nodes[idx];
-            nodes[idx].Outline(0);
+            nodes[idx].Outline(3);
         }
         public void SwitchFocus(int idx) // urgh
         {
@@ -392,7 +392,7 @@ namespace EcoBuilder.NodeLink
                         OnNodeFocused.Invoke(pressedNode.Idx);
 
                         if (pressedNode == focusedNode)
-                            pressedNode.Outline(0);
+                            pressedNode.Outline(3);
                         else
                             pressedNode.Unoutline();
 
@@ -437,6 +437,7 @@ namespace EcoBuilder.NodeLink
                         dummyLink = Instantiate(linkPrefab, linksParent);
                         dummyLink.Target = pressedNode;
                         dummyLink.Source = dummySource;
+                        dummyLink.TileSpeed = minLinkFlow;
 
                         potentialLink = dummyLink;
                     }
@@ -516,7 +517,7 @@ namespace EcoBuilder.NodeLink
                     if (potentialSource != null)
                     {
                         if (potentialSource == focusedNode)
-                            potentialSource.Outline(0);
+                            potentialSource.Outline(3);
                         else
                             potentialSource.Unoutline();
 
@@ -578,7 +579,7 @@ namespace EcoBuilder.NodeLink
                 if (pressedNode != null)
                 {
                     if (pressedNode == focusedNode)
-                        pressedNode.Outline(0);
+                        pressedNode.Outline(3);
                     else
                         pressedNode.Unoutline();
 
@@ -592,7 +593,7 @@ namespace EcoBuilder.NodeLink
                     if (potentialSource != null)
                     {
                         if (potentialSource == focusedNode)
-                            potentialSource.Outline(0);
+                            potentialSource.Outline(3);
                         else
                             potentialSource.Unoutline();
 

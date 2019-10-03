@@ -83,7 +83,7 @@ namespace EcoBuilder.UI
         {
             help.Show(false);
 
-            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal cannot be sustained by the plant. The other trait you can change is a species' interference. The higher the interference, the lower its maximum population. Try changing it to see the effects."); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3, 90)); }));
+            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal goes extinct! This is marked by it flashing. The other trait you can change is a species' interference. The higher the interference, the lower its maximum population. Try changing it to see the effects."); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3, 90)); }));
 
             Detach();
             Action<int,float,float> foo = (i,x,y)=> ExplainScore();

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4190556154803004}
   - component: {fileID: 114609019565973728}
-  - component: {fileID: 95726910650056610}
   - component: {fileID: -903821243978865509}
   m_Layer: 10
   m_Name: Node
@@ -48,25 +47,6 @@ MonoBehaviour:
   focusState: 0
   layoutSmoothTime: 0.5
   sizeTween: 0.05
---- !u!95 &95726910650056610
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259222370056588}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 46984f7330aec5c429723b5869647d48, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!135 &-903821243978865509
 SphereCollider:
   m_ObjectHideFlags: 0
