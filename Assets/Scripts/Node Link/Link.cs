@@ -20,7 +20,6 @@ namespace EcoBuilder.NodeLink
                 target = value;
             }
         }
-
         public void Init(Node source, Node target)
         {
             Source = source;
@@ -28,26 +27,26 @@ namespace EcoBuilder.NodeLink
             name = Source.Idx + " " + Target.Idx;
         }
 
+        cakeslice.Outline outline;
+        void Awake()
+        {
+            outline = gameObject.AddComponent<cakeslice.Outline>();
+            outline.eraseRenderer = true;
+        }
+
         public void Outline(int colourIdx=0)
         {
-            var outline = GetComponent<cakeslice.Outline>();
-            if (outline == null)
-            {
-                outline = gameObject.AddComponent<cakeslice.Outline>();
-            }
+            outline.eraseRenderer = false;
 
             if (Removable)
                 outline.color = colourIdx;
             else
-                outline.color = 2;
+                outline.color = 0;
         }
         public void Unoutline()
         {
             if (Removable)
-            {
-                if (GetComponent<cakeslice.Outline>() != null)
-                    Destroy(GetComponent<cakeslice.Outline>());
-            }
+                outline.eraseRenderer = true;
         }
         float targetAlpha = 1;
         public void Show(bool showing = true)

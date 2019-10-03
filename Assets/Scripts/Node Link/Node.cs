@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace EcoBuilder.NodeLink
 {
-    [RequireComponent(typeof(Animator))]
+    // [RequireComponent(typeof(Animator))]
     public class Node : MonoBehaviour
     {
         public int Idx { get; private set; }
@@ -19,6 +20,7 @@ namespace EcoBuilder.NodeLink
         public bool Removable { get; set; } = true;
 
         GameObject shape;
+        cakeslice.Outline outline;
 
         public void Init(int idx, float size)
         {
@@ -33,11 +35,13 @@ namespace EcoBuilder.NodeLink
             // drop it in at the point at shapeObject's position, but at z=-1
             // TODO: this may be buggy
             // StressPos = transform.parent.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
-            StressPos = new Vector3(1,0,-1);
-            StressPos += UnityEngine.Random.insideUnitSphere * .2f; // prevent divide by zero
+            StressPos = new Vector3(1,0,-1); // prevent divide by zero
+            StressPos += UnityEngine.Random.insideUnitSphere; // prevent divide by zero
             transform.position = shapeObject.transform.position;
 
             shape = shapeObject;
+            outline = shape.AddComponent<cakeslice.Outline>();
+
             shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
@@ -45,51 +49,50 @@ namespace EcoBuilder.NodeLink
         }
         public void Outline(int colourIdx)
         {
-            var outline = shape.GetComponent<cakeslice.Outline>();
-            if (outline == null)
-            {
-                outline = shape.AddComponent<cakeslice.Outline>();
-            }
+            outline.eraseRenderer = false;
             outline.color = colourIdx;
         }
         public void Unoutline()
         {
             if (Removable)
-            {
-                if (shape.GetComponent<cakeslice.Outline>() != null)
-                    Destroy(shape.GetComponent<cakeslice.Outline>());
-            }
+                outline.eraseRenderer = true;
             else
-            {
-                shape.GetComponent<cakeslice.Outline>().color = 2;
-            }
+                outline.color = 0;
         }
         bool flashing = false;
         public void Flash(bool isFlashing)
         {
             flashing = isFlashing;
-            GetComponent<Animator>().SetBool("Flashing", isFlashing);
+            // GetComponent<Animator>().SetBool("Flashing", isFlashing);
+            StartCoroutine(Flash(1f));
         }
-        void Update()
+        IEnumerator Flash(float time)
         {
-            if ((Time.time*60) % 60 < 30 && flashing)
+            bool enabled = true;
+            float start = Time.time;
+            while (flashing)
             {
-                // GetComponent<MeshRenderer>().material.color = new Color(1,.01f,.01f,1);
-                // GetComponent<MeshRenderer>().enabled = false;
-                // shape.SetActive(false);
-                // shape.SetActive(false);
-                shape.GetComponent<MeshRenderer>().enabled = false;
+                if ((Time.time-start) % time < time/2)
+                {
+                    if (enabled)
+                    {
+                        shape.GetComponent<MeshRenderer>().enabled = false;
+                        enabled = false;
+                    }
+                }
+                else
+                {
+                    if (!enabled)
+                    {
+                        shape.GetComponent<MeshRenderer>().enabled = true;
+                        enabled = true;
+                    }
+                }
+                yield return null;
             }
-            else
-            {
-                // GetComponent<MeshRenderer>().material.color = new Color(.01f,.3f,1,.3f);
-                // GetComponent<MeshRenderer>().enabled = true;
-                // shape.SetActive(true);
-                if (shape != null)
-                    shape.GetComponent<MeshRenderer>().enabled = true;
-            }
+            shape.GetComponent<MeshRenderer>().enabled = true;
         }
-        Vector3 velocity; // for public use with Vector3.SmoothDamp
+        Vector3 velocity; // for use with smoothdamp
         [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
         void FixedUpdate()
         {
