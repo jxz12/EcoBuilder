@@ -27,7 +27,7 @@ namespace EcoBuilder.UI
         Action Detach;
         void ExplainIntro()
         {
-            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Please start by focusing on a species, by pressing either of them.");
+            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Start by focusing on a species, by pressing either of them.");
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
@@ -67,7 +67,7 @@ namespace EcoBuilder.UI
             inspector.Uninspect();
             nodelink.FullUnfocus();
 
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or the plant lighter, because lighter species grow faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing a species again."); help.SetWidth(.8f); help.Show(true); help.SetDistFromTop(.03f); }));
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or its food source lighter, because lighter species grow and eat faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing a species again."); help.SetWidth(.8f); help.Show(true); help.SetDistFromTop(.03f); }));
 
             shuffle = false;
             targetSize = Vector2.zero;

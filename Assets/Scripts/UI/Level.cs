@@ -119,8 +119,8 @@ namespace EcoBuilder.UI
                 Unlock();
             }
             finishFlag.onClick.AddListener(()=> OnFinishClicked.Invoke());
-            if (thumbnailedParent == null)
-                thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+            // if (thumbnailedParent == null)
+            //     thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             targetSize = GetComponent<RectTransform>().sizeDelta;
         }
         public event Action OnFinishClicked;

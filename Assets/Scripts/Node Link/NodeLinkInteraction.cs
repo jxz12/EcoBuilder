@@ -68,7 +68,7 @@ namespace EcoBuilder.NodeLink
             focusedNode = nodes[idx];
             nodes[idx].Outline(3);
         }
-        public void SwitchFocus(int idx) // urgh
+        public void SwitchFocus(int idx) // urgh, this is needed because of undoing
         {
             if (focusedNode != nodes[idx] && nodes[idx] != null)
             {
@@ -195,7 +195,7 @@ namespace EcoBuilder.NodeLink
                               + nodes[focusIdx].FocusPos;
             }
         }
-        public void SuperAntifocus(int focusIdx) // TODO: perhaps a bad name if we ever want to include clustering
+        public void SuperAntifocus(int focusIdx)
         {
             var related = new List<Node>();
             var unrelated = new HashSet<Node>();
@@ -236,12 +236,6 @@ namespace EcoBuilder.NodeLink
                 angle += 1f / (unrelated.Count) * 2 * Mathf.PI;
             }
         }
-
-
-
-
-
-
 
 
         Vector3 graphParentUnfocused;
@@ -361,6 +355,11 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////
         // eventsystems
 
+        [SerializeField] UI.Tooltip tooltip;
+        Node dummySource;
+        Link dummyLink;
+        Node potentialSource;
+        Link potentialLink;
         Node pressedNode;
         public void OnPointerDown(PointerEventData ped)
         {
@@ -416,11 +415,6 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        [SerializeField] UI.Tooltip tooltip;
-        Node dummySource;
-        Link dummyLink;
-        Node potentialSource;
-        Link potentialLink;
         public void OnBeginDrag(PointerEventData ped)
         {
             if (ped.pointerId==-1 || ped.pointerId==0)
