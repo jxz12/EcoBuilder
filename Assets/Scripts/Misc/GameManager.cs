@@ -89,7 +89,8 @@ namespace EcoBuilder
 
 
         [SerializeField] Canvas canvas;
-        [SerializeField] RectTransform cardParent, navParent;
+        // TODO: move this back into two
+        [SerializeField] RectTransform cardParent, navParent, playParent;
         public RectTransform CardParent { get { return cardParent; } }
         public RectTransform NavParent { get { return navParent; } }
 
@@ -140,6 +141,8 @@ namespace EcoBuilder
                 PlayedLevel = level;
                 UnloadScene("Menu");
             }
+            level.SetNewThumbnailParent(playParent, Vector2.zero);
+            level.ShowThumbnail();
             LoadScene("Play");
 
             if (level.Details.idx < tutorials.Length)

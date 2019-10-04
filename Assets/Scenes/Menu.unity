@@ -2907,6 +2907,11 @@ PrefabInstance:
       propertyPath: details.sizeEditable
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.numStars
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3298662015470128372, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_FontData.m_Alignment

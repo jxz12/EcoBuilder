@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
@@ -11,6 +12,8 @@ namespace EcoBuilder.UI
         [SerializeField] ContentSizeFitter panelFitter;
         [SerializeField] Text message;
         [SerializeField] Button hideButton, showButton;
+
+        public event Action OnUserShown;
 
         RectTransform rt;
         Vector2 targetPos, targetAnchor;
@@ -45,6 +48,7 @@ namespace EcoBuilder.UI
         public void SetDistFromTop(float height, bool damp=true) // 0-1 range
         {
             targetPos.y = canvasRefRes.y * -height;
+            // rt.anchorMin = rt.anchorMax = 
             if (!damp)
             {
                 rt.anchoredPosition = targetPos;
@@ -93,9 +97,14 @@ namespace EcoBuilder.UI
         {
             // GetComponent<Animator>().SetBool("Show", showing);
             if (showing)
+            {
                 targetPos.x = 0;
+                OnUserShown?.Invoke();
+            }
             else
+            {
                 targetPos.x = isLeft? -rt.rect.width : rt.rect.width;
+            }
         }
         void FixedUpdate()
         {
