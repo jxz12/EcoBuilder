@@ -6,7 +6,7 @@ namespace EcoBuilder.UI
 {
     public class Tutorial2 : Tutorial
     {
-        GameObject plant;
+        GameObject plant, animal;
         protected override void StartLesson()
         {
             inspector.HideSizeSlider(false);
@@ -15,17 +15,19 @@ namespace EcoBuilder.UI
             inspector.HideRemoveButton(true);
             status.HideScore(true);
             status.HideConstraints(true);
-            status.PauseScoreCalculation(true);
+            status.DisableFinish(true);
             targetSize = new Vector2(100,100);
 
-            plant = FindObjectsOfType<NodeLink.Node>()[1].gameObject;
+            var nodes = FindObjectsOfType<NodeLink.Node>();
+            animal = nodes[0].gameObject;
+            plant = nodes[1].gameObject;
 
             ExplainIntro();
         }
         Action Detach;
         void ExplainIntro()
         {
-            help.SetText("Let's edit your species! Please start by focusing on a species, by pressing either of them.");
+            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Please start by focusing on a species, by pressing either of them.");
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
@@ -43,53 +45,52 @@ namespace EcoBuilder.UI
 
         void ExplainSize()
         {
-            help.SetText("You can change the body size of your species by moving this slider. Try moving the slider to see the effects on your ecosystem.");
+            help.SetText("You can change the weight of your species by moving this slider. Here, your animal is going extinct because it is not getting enough food. See if you can save it!");
             help.Show(true);
-            help.SetSide(true);
-            help.SetDistFromTop(.05f);
+            help.SetSide(true, false);
+            help.SetDistFromTop(.01f);
 
             shuffle = true;
             StartCoroutine(ShuffleOnSlider(3, 40));
             track = false;
 
             Detach();
-            Action<int,float,float> foo = (i,x,y)=> ExplainMetabolism(i);
-            Action fooo = ()=> ExplainIntro();
-            inspector.OnUserSizeSet += foo;
-            nodelink.OnUnfocused += fooo;
-            Detach = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnUnfocused -= fooo; };
+            Action<int> fooo = (i)=> ExplainMetabolism(2);
+            Action foooo = ()=> ExplainIntro();
+            model.OnRescued += fooo;
+            nodelink.OnUnfocused += foooo;
+            Detach = ()=> { model.OnRescued -= fooo; nodelink.OnUnfocused -= foooo; };
         }
-        int firstSized = -1;
-        void ExplainMetabolism(int firstIdx)
+        void ExplainMetabolism(float delay)
         {
             help.Show(false);
+            inspector.Uninspect();
+            nodelink.FullUnfocus();
 
-            StartCoroutine(WaitThenDo(3, ()=>{ help.SetText("The size of its node indicates the size of a species' population. You should notice that smaller species have bigger populations. This is exactly what happens in the real world! Grass spreads much faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try changing the weight of the other species as well."); help.SetWidth(.8f); help.Show(true); help.SetDistFromTop(.03f); }));
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or the plant lighter, because lighter species grow faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing a species again."); help.SetWidth(.8f); help.Show(true); help.SetDistFromTop(.03f); }));
 
-            firstSized = firstIdx;
             shuffle = false;
             targetSize = Vector2.zero;
 
             Detach();
-            Action<int,float,float> foo = (i,x,y)=> {if (i != firstSized) ExplainInterference(i);};
-            Action<int> fooo = (i)=> help.Show(false);
-            Action foooo = ()=> help.Show(true);
-            inspector.OnUserSizeSet += foo;
-            nodelink.OnNodeFocused += fooo;
-            nodelink.OnUnfocused += foooo;
-            Detach = ()=> { inspector.OnUserSizeSet -= foo; nodelink.OnNodeFocused -= fooo; nodelink.OnUnfocused -= foooo; };
+            Action<int> foo = (i)=> ExplainInterference();
+            nodelink.OnNodeFocused += foo;
+            Detach = ()=> nodelink.OnNodeFocused -= foo;
         }
-        int secondSized = -1;
-        void ExplainInterference(int secondIdx)
+        void ExplainInterference()
         {
             help.Show(false);
 
-            StartCoroutine(WaitThenDo(3, ()=> { help.SetText("If you choose the correct values, you should notice that sometimes the animal goes extinct! This is marked by it flashing. The other trait you can change is a species' interference. The higher the interference, the lower its maximum population. Try changing it to see the effects."); help.Show(true); inspector.HideGreedSlider(false); shuffle = true; StartCoroutine(ShuffleOnSlider(3, 90)); }));
+            help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with itself, and so the lower its maximum population. Try changing it to see the effects.");
+            help.Show(true);
+            inspector.HideGreedSlider(false);
+            shuffle = true;
+            StartCoroutine(ShuffleOnSlider(3, 90));
 
             Detach();
             Action<int,float,float> foo = (i,x,y)=> ExplainScore();
             inspector.OnUserGreedSet += foo;
-            Action fooo = ()=> help.Show(false);
+            Action fooo = ()=> ExplainMetabolism(0);
             nodelink.OnUnfocused += fooo;
             Detach = ()=> { inspector.OnUserGreedSet -= foo; nodelink.OnUnfocused -= fooo; };
         }
@@ -104,7 +105,7 @@ namespace EcoBuilder.UI
             // Point();
             shuffle = false;
 
-            StartCoroutine(WaitThenDo(3, ()=> { help.SetSide(false,false); help.SetDistFromTop(.13f); help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of interaction, indicated by the flow along the links. Getting enough points will earn you more stars – good luck!"); help.Show(true); status.HideScore(false); status.PauseScoreCalculation(false); }));
+            StartCoroutine(WaitThenDo(3, ()=> { inspector.Uninspect(); nodelink.FullUnfocus(); help.SetSide(false,false); help.SetDistFromTop(.13f); StartCoroutine(WaitThenDo(2, ()=>{help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of interaction, indicated by the flow along the links. Getting enough points will earn you more stars – good luck!"); help.Show(true);})); status.HideScore(false); status.DisableFinish(false); }));
 
             Detach();
             Action foo = ()=> Finish();
@@ -140,7 +141,8 @@ namespace EcoBuilder.UI
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
-            yield return new WaitForSeconds(seconds);
+            if (seconds > 0)
+                yield return new WaitForSeconds(seconds);
             Todo();
         }
         bool track = false;

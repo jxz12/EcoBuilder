@@ -11,6 +11,7 @@ namespace EcoBuilder
         protected UI.StatusBar status;
         protected UI.MoveRecorder recorder;
         protected NodeLink.NodeLink nodelink;
+        protected Model.Model model;
 
         protected Image pointer;
         // [SerializeField] protected Sprite point, grab, pan;
@@ -65,6 +66,11 @@ namespace EcoBuilder
             while (nodelink == null)
             {
                 nodelink = FindObjectOfType<NodeLink.NodeLink>();
+                yield return null;
+            }
+            while(model == null)
+            {
+                model = FindObjectOfType<Model.Model>();
                 yield return null;
             }
             StartLesson();

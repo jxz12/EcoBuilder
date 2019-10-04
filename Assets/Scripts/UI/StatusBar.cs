@@ -126,10 +126,10 @@ namespace EcoBuilder.UI
             // constraints.SetBool("Visible", !hidden);
             constraints.gameObject.SetActive(!hidden);
         }
-        bool scorePaused = false;
-        public void PauseScoreCalculation(bool paused=true)
+        bool finishDisabled = false;
+        public void DisableFinish(bool disabled=true)
         {
-            scorePaused = paused;
+            finishDisabled = disabled;
         }
 
 
@@ -222,9 +222,6 @@ namespace EcoBuilder.UI
         int NumStars { get; set; }
 		void Update()
 		{
-            if (scorePaused)
-                return;
-
             Playing.SetFinishable(CanUpdate());
             
             if (modelScore > realisedScore)
@@ -276,6 +273,11 @@ namespace EcoBuilder.UI
                 scoreTargetText.text = target2.ToString();
                 scoreTargetImage.sprite = targetSprite2;
             }
+
+            // don't calculate 
+            if (finishDisabled)
+                return;
+
             if (NumStars == 0 && newNumStars > 0)
             {
                 Playing.ShowFinishFlag();

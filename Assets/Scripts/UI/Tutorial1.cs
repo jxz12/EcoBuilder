@@ -15,7 +15,7 @@ namespace EcoBuilder.UI
             inspector.HideRemoveButton();
             status.HideScore(true);
             status.HideConstraints(true);
-            status.PauseScoreCalculation(true);
+            status.DisableFinish(true);
             recorder.gameObject.SetActive(false);
 
             ExplainIntro();
@@ -187,7 +187,7 @@ namespace EcoBuilder.UI
             help.SetDistFromTop(.05f);
             help.Show(false);
             // help.SetSide(false, false);
-            status.PauseScoreCalculation(false);
+            status.DisableFinish(false);
 
             StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by pressing this button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem and finish the level!"); }));
 
