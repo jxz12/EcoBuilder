@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,26 +13,19 @@ namespace EcoBuilder
         protected NodeLink.NodeLink nodelink;
 
         protected Image pointer;
-        [SerializeField] protected Sprite point, grab, pan;
+        // [SerializeField] protected Sprite point, grab, pan;
         
         protected Vector2 targetPos, targetSize, targetAnchor;
         private Vector2 velocity, sizocity, anchosity;
         protected float targetZRot;
         private float zRotation, rotocity;
-        [SerializeField] protected float smoothTime;
+        [SerializeField] protected float smoothTime=.2f;
 
         protected RectTransform rt;
         protected Vector2 canvasRefRes { get; private set; }
 
         void Start()
         {
-            // ugly as HECK
-            help = FindObjectOfType<UI.Help>();
-            inspector = FindObjectOfType<UI.Inspector>();
-            status = FindObjectOfType<UI.StatusBar>();
-            recorder = FindObjectOfType<UI.MoveRecorder>();
-            nodelink = FindObjectOfType<NodeLink.NodeLink>();
-
             pointer = GetComponent<Image>();
             rt = GetComponent<RectTransform>();
 
@@ -42,10 +35,42 @@ namespace EcoBuilder
             targetPos = rt.anchoredPosition;
             targetSize = rt.sizeDelta;
             targetAnchor = rt.anchorMin;
-            targetZRot = rt.rotation.eulerAngles.z;
+            targetZRot = zRotation = rt.rotation.eulerAngles.z;
 
+            StartCoroutine(WaitToStart());
+        }
+        IEnumerator WaitToStart()
+        {
+            // ugly as HECK
+            while (help == null)
+            {
+                help = FindObjectOfType<UI.Help>();
+                yield return null;
+            }
+            while (inspector == null)
+            {
+                inspector = FindObjectOfType<UI.Inspector>();
+                yield return null;
+            }
+            while (status == null)
+            {
+                status = FindObjectOfType<UI.StatusBar>();
+                yield return null;
+            }
+            while (recorder == null)
+            {
+                recorder = FindObjectOfType<UI.MoveRecorder>();
+                yield return null;
+            }
+            while (nodelink == null)
+            {
+                nodelink = FindObjectOfType<NodeLink.NodeLink>();
+                yield return null;
+            }
             StartLesson();
         }
+        protected abstract void StartLesson();
+
         void FixedUpdate()
         {
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, smoothTime);
@@ -54,7 +79,6 @@ namespace EcoBuilder
             zRotation = Mathf.SmoothDamp(zRotation, targetZRot, ref rotocity, smoothTime);
             rt.rotation = Quaternion.Euler(0, 0, zRotation);
         }
-        protected abstract void StartLesson();
 
         protected void Point()
         {

@@ -31,12 +31,14 @@ namespace EcoBuilder.NodeLink
         void Awake()
         {
             outline = gameObject.AddComponent<cakeslice.Outline>();
-            outline.eraseRenderer = true;
+            // outline.eraseRenderer = true;
+            outline.enabled = false;
         }
 
         public void Outline(int colourIdx=0)
         {
-            outline.eraseRenderer = false;
+            // outline.eraseRenderer = false;
+            outline.enabled = true;
 
             if (Removable)
                 outline.color = colourIdx;
@@ -46,7 +48,8 @@ namespace EcoBuilder.NodeLink
         public void Unoutline()
         {
             if (Removable)
-                outline.eraseRenderer = true;
+                // outline.eraseRenderer = true;
+                outline.enabled = false;
         }
         float targetAlpha = 1;
         public void Show(bool showing = true)

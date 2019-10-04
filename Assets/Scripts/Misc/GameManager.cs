@@ -65,8 +65,8 @@ namespace EcoBuilder
                 //progressEvent.Invoke(loading.progress);
                 yield return null;
             }
-            var scene = SceneManager.GetSceneByName(sceneName);
-            SceneManager.SetActiveScene(scene);
+            // var scene = SceneManager.GetSceneByName(sceneName);
+            // SceneManager.SetActiveScene(scene);
             //endLoadEvent.Invoke();
         }
 
@@ -88,8 +88,10 @@ namespace EcoBuilder
         }
 
 
-        [SerializeField] RectTransform overlayParent;
-        public RectTransform Overlay { get { return overlayParent; } }
+        [SerializeField] Canvas canvas;
+        [SerializeField] RectTransform cardParent, navParent;
+        public RectTransform CardParent { get { return cardParent; } }
+        public RectTransform NavParent { get { return navParent; } }
 
         [SerializeField] UI.Level levelPrefab;
         public UI.Level LoadLevel(string path=null)
@@ -112,6 +114,7 @@ namespace EcoBuilder
         }
 
         public UI.Level PlayedLevel { get; private set; }
+        [SerializeField] Tutorial[] tutorials;
         public void PlayLevel(UI.Level level)
         {
             if (PlayedLevel != null)
@@ -123,17 +126,26 @@ namespace EcoBuilder
                 }
                 else
                 {
-                    // to make sure it stays alive
-                    PlayedLevel.transform.SetParent(Overlay.transform, true);
+                    // replay level
                 }
+                if (canvas.GetComponentInChildren<Tutorial>() != null)
+                {
+                    Destroy(canvas.GetComponentInChildren<Tutorial>().gameObject);
+                }
+                UnloadScene("Play");
             }
             else
             {
+                // play from menu
                 PlayedLevel = level;
+                UnloadScene("Menu");
             }
-
-            UnloadScene(SceneManager.GetActiveScene().name);
             LoadScene("Play");
+
+            if (level.Details.idx < tutorials.Length)
+            {
+                Instantiate(tutorials[level.Details.idx], canvas.transform, false);
+            }
         }
 
 
@@ -160,8 +172,12 @@ namespace EcoBuilder
                 Destroy(PlayedLevel.gameObject);
                 PlayedLevel = null;
             }
-            GameManager.Instance.UnloadScene("Play");
-            GameManager.Instance.LoadScene("Menu");
+            if (canvas.GetComponentInChildren<Tutorial>() != null)
+            {
+                Destroy(canvas.GetComponentInChildren<Tutorial>().gameObject);
+            }
+            UnloadScene("Play");
+            LoadScene("Menu");
         }
     }
 }

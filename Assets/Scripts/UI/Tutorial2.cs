@@ -16,6 +16,7 @@ namespace EcoBuilder.UI
             status.HideScore(true);
             status.HideConstraints(true);
             status.PauseScoreCalculation(true);
+            targetSize = new Vector2(100,100);
 
             plant = FindObjectsOfType<NodeLink.Node>()[1].gameObject;
 

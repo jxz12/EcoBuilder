@@ -45,6 +45,7 @@ namespace EcoBuilder.NodeLink
                 {
                     // SuperAntifocus(idx);
                     // focusState = FocusState.SuperAntifocus;
+                    focusState = FocusState.Focus;
                 }
                 else // switch superfocus
                 {
