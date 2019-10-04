@@ -6,8 +6,8 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float parentsSmoothTime=.5f;
         [SerializeField] float maxHeight=3f;
+        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
 
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
@@ -29,10 +29,10 @@ namespace EcoBuilder.NodeLink
 
                     nodesParent.localPosition =
                         Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero,
-                                        ref nodesVelocity, parentsSmoothTime);
+                                        ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused,
-                                        ref graphVelocity, parentsSmoothTime);
+                                        ref graphVelocity, layoutSmoothTime);
                 }
                 else // if (focusState == FocusState.Focus)
                 {
@@ -40,10 +40,10 @@ namespace EcoBuilder.NodeLink
 
                     nodesParent.localPosition =
                         Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y,
-                                        ref nodesVelocity, parentsSmoothTime);
+                                        ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
-                                        ref graphVelocity, parentsSmoothTime);
+                                        ref graphVelocity, layoutSmoothTime);
                 }
 
                 if (constrainTrophic)
@@ -70,11 +70,14 @@ namespace EcoBuilder.NodeLink
             {
                 nodesParent.localPosition =
                     Vector3.SmoothDamp(nodesParent.localPosition, -focusedNode.FocusPos,
-                                       ref nodesVelocity, parentsSmoothTime);
+                                       ref nodesVelocity, layoutSmoothTime);
                 graphParent.localPosition =
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
-                                    ref graphVelocity, parentsSmoothTime);
+                                    ref graphVelocity, layoutSmoothTime);
             }
+
+            foreach (Node no in nodes)
+                no.Tween(layoutSmoothTime, sizeTween);
         }
 
 

@@ -36,7 +36,7 @@ namespace EcoBuilder.NodeLink
             // TODO: this may be buggy
             // StressPos = transform.parent.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
             StressPos = new Vector3(1,0,-1); // prevent divide by zero
-            StressPos += UnityEngine.Random.insideUnitSphere; // prevent divide by zero
+            StressPos += .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
             transform.position = shapeObject.transform.position;
 
             shape = shapeObject;
@@ -49,13 +49,15 @@ namespace EcoBuilder.NodeLink
         }
         public void Outline(int colourIdx)
         {
-            outline.eraseRenderer = false;
+            // outline.eraseRenderer = false;
+            outline.enabled = true;
             outline.color = colourIdx;
         }
         public void Unoutline()
         {
             if (Removable)
-                outline.eraseRenderer = true;
+                // outline.eraseRenderer = true;
+                outline.enabled = false;
             else
                 outline.color = 0;
         }
@@ -92,9 +94,9 @@ namespace EcoBuilder.NodeLink
             }
             shape.GetComponent<MeshRenderer>().enabled = true;
         }
+        // [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
         Vector3 velocity; // for use with smoothdamp
-        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
-        void FixedUpdate()
+        public void Tween(float smoothTime, float sizeTween)
         {
             if (focusState == FocusState.Normal)
             {
@@ -102,7 +104,7 @@ namespace EcoBuilder.NodeLink
                     Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, StressPos,
-                                        ref velocity, layoutSmoothTime);
+                                        ref velocity, smoothTime);
             }
             else if (focusState == FocusState.Focus)
             {
@@ -110,7 +112,7 @@ namespace EcoBuilder.NodeLink
                     Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, FocusPos,
-                                        ref velocity, layoutSmoothTime);
+                                        ref velocity, smoothTime);
             }
             else if (focusState == FocusState.Hidden)
             {
@@ -118,7 +120,7 @@ namespace EcoBuilder.NodeLink
                     Vector3.Lerp(transform.localScale, Vector3.zero, sizeTween);
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,2),
-                                        ref velocity, layoutSmoothTime);
+                                        ref velocity, smoothTime);
             }
         }
     }

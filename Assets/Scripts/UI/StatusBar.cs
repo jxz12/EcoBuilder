@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ namespace EcoBuilder.UI
     {
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
+        public event Action OnLevelCompletable;
         public event Action OnLevelCompleted;
 
         [SerializeField] Animator star1, star2, star3;
@@ -16,8 +18,6 @@ namespace EcoBuilder.UI
         [SerializeField] Constraint shield, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
         [SerializeField] RectTransform levelParent;
-
-        [SerializeField] Tutorial[] tutorials;
 
         public Level Playing { get; private set; }
         void Awake()
@@ -35,7 +35,6 @@ namespace EcoBuilder.UI
                 edge.Unconstrain();
                 chain.Unconstrain();
                 loop.Unconstrain();
-                shield.Display(false);
             }
             else
             {
@@ -45,15 +44,13 @@ namespace EcoBuilder.UI
                 edge.Constrain(level.Details.minEdges);
                 chain.Constrain(level.Details.minChain);
                 loop.Constrain(level.Details.minLoop);
-                if (level.Details.idx < tutorials.Length)
-                {
-                    Instantiate(tutorials[level.Details.idx], transform.parent, false);
-                }
             }
+            shield.Constrain(-1); // do not show stability
 
             Playing = level;
             help.SetText(Playing.Details.introduction);
-            Playing.ShowThumbnailNewParent(levelParent, Vector2.zero);
+            Playing.SetNewThumbnailParent(levelParent, Vector2.zero);
+            Playing.ShowThumbnail();
             Playing.OnFinishClicked += CompleteLevel;
 
             target1 = Playing.Details.targetScore1;
@@ -82,7 +79,8 @@ namespace EcoBuilder.UI
                 Playing.Details.highScore = realisedScore;
 
             // unlock next level if not unlocked
-            if (Playing.NextLevel.Details.numStars == -1)
+            if (Playing.NextLevel != null &&
+                Playing.NextLevel.Details.numStars == -1)
             {
                 print("TODO: animation here!");
                 Playing.NextLevel.Details.numStars = 0;
@@ -91,8 +89,19 @@ namespace EcoBuilder.UI
             }
             Playing.SaveToFile();
 
+            help.Show(false);
+            help.SetText(Playing.Details.congratulation);
+            help.SetDistFromTop(.25f);
+            help.SetWidth(.7f);
+            help.DelayThenShow(2);
+
+            score.SetBool("Visible", false);
+            constraints.SetBool("Visible", false);
+            star1.SetTrigger("Confetti");
+            star2.SetTrigger("Confetti");
+            star3.SetTrigger("Confetti");
+
             OnLevelCompleted.Invoke();
-            Confetti();
         }
         void OnDestroy()
         {
@@ -231,7 +240,8 @@ namespace EcoBuilder.UI
             star2.SetBool("Filled", false);
             star3.SetBool("Filled", false);
 
-            if (!disjoint && feasible && stable &&
+            if (!disjoint && feasible &&
+                // stable &&
                 leaf.IsSatisfied && paw.IsSatisfied &&
                 edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
             {
@@ -269,6 +279,7 @@ namespace EcoBuilder.UI
             if (NumStars == 0 && newNumStars > 0)
             {
                 Playing.ShowFinishFlag();
+                OnLevelCompletable?.Invoke();
             }
             else if (NumStars > 0 && newNumStars == 0)
             {
@@ -276,18 +287,51 @@ namespace EcoBuilder.UI
             }
             NumStars = newNumStars;
 		}
-
-        public void Confetti()
+        public string Error()
         {
-            help.Show(false);
-            help.SetText(Playing.Details.congratulation);
-            help.DelayThenShow(2);
-
-            score.SetBool("Visible", false);
-            constraints.SetBool("Visible", false);
-            star1.SetTrigger("Confetti");
-            star2.SetTrigger("Confetti");
-            star3.SetTrigger("Confetti");
+            // var sb = new StringBuilder();
+            // if (!leaf.IsSatisfied || !paw.IsSatisfied)
+            // {
+            //     if (!leaf.IsSatisfied)
+            //         sb.Append("You have not added enough plants.\n");
+            //     if (!paw.IsSatisfied)
+            //         sb.Append("You have not added enough animals.\n");
+            // }
+            // else
+            // {
+            //     if (disjoint)
+            //         sb.Append("Your network is not connected.\n");
+            //     if (!feasible)
+            //         sb.Append("At least one species is going extinct.\n");
+            //     if (!stable)
+            //         sb.Append("Your ecosystem is not stable.\n");
+            //     if (!edge.IsSatisfied)
+            //         sb.Append("You have not added enough links.\n");
+            //     if (!chain.IsSatisfied)
+            //         sb.Append("Your web is not tall enough.\n");
+            //     if (!loop.IsSatisfied)
+            //         sb.Append("You do not have a long enough loop.\n");
+            // }
+            if (consumers.Count==0 && producers.Count==0)
+                return "Your ecosystem is empty.";
+            if (!leaf.IsSatisfied)
+                return "You have not added enough plants.";
+            if (!paw.IsSatisfied)
+                return "You have not added enough animals.";
+            if (disjoint)
+                return "Your network is not connected.";
+            if (!feasible)
+                return "At least one species is going extinct.";
+            // if (!stable)
+            //     return "Your ecosystem is not stable.";
+            if (!edge.IsSatisfied)
+                return "You have not added enough links.";
+            if (!chain.IsSatisfied)
+                return "Your web is not tall enough.";
+            if (!loop.IsSatisfied)
+                return "You do not have a long enough loop.";
+            else
+                return "Your ecosystem has no errors!";
         }
     }
 }

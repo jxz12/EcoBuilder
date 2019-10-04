@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace EcoBuilder
+namespace EcoBuilder.UI
 {
     public class Tutorial1 : Tutorial
     {
@@ -27,7 +27,7 @@ namespace EcoBuilder
             targetSize = new Vector2(100,100);
             targetPos = new Vector2(-61,115);
             targetAnchor = new Vector2(1,0);
-            targetZRot = -45;
+            targetZRot = 315;
 
             help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the leaf in the bottom right.");
             help.SetSide(false);
@@ -44,7 +44,7 @@ namespace EcoBuilder
         {
             targetPos = new Vector2(160, 50);
             targetAnchor = new Vector2(.5f, 0);
-            targetZRot = 90;
+            targetZRot = 450;
 
             help.SetText("Here you can choose a new name for your species. You can then introduce it by dragging it into the world.");
             help.Show(true);
@@ -64,7 +64,7 @@ namespace EcoBuilder
         {
             targetAnchor = new Vector2(1,0);
             targetPos = new Vector2(-61, 60);
-            targetZRot = -90;
+            targetZRot = 270;
 
             firstSpecies = first;
             firstIdx = idx;
@@ -98,7 +98,7 @@ namespace EcoBuilder
             shuffle = true;
             targetSize = new Vector3(100,100);
             targetAnchor = new Vector3(0f,0f);
-            targetZRot = 0;
+            targetZRot = 360;
             StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
             inspector.HidePlantPawButton();
 
@@ -113,7 +113,7 @@ namespace EcoBuilder
             targetSize = new Vector2(0,0);
             help.Show(false);
             inspector.Uninspect();
-            // nodelink.FullUnfocus();
+            nodelink.FullUnfocus();
 
             StartCoroutine(WaitThenDo(wait?2:0, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the exact same dragging action, from the animal to the plant."); }));
             // TODO: add a help here if they get stuck on what to do
@@ -131,7 +131,7 @@ namespace EcoBuilder
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
 
-            StartCoroutine(WaitThenDo(wait?1:0, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try clicking on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 0; }));
+            StartCoroutine(WaitThenDo(wait?1:0, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try clicking on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
 
             track = true;
             StartCoroutine(Track(secondSpecies.transform));
@@ -145,7 +145,7 @@ namespace EcoBuilder
         {
             targetAnchor = new Vector2(.5f, 0);
             targetPos = new Vector2(160, 50);
-            targetZRot = 90;
+            targetZRot = 450;
             track = false;
 
             help.Show(true);
@@ -162,7 +162,7 @@ namespace EcoBuilder
         void ExplainUndo(bool wait)
         {
             targetAnchor = new Vector2(0, 0);
-            targetZRot = 45;
+            targetZRot = 405;
 
             help.Show(false);
             help.SetDistFromTop(.2f);
@@ -180,7 +180,7 @@ namespace EcoBuilder
         void ExplainFinishCondition(float waitSeconds)
         {
             targetSize = new Vector2(100,100);
-            targetZRot = -45;
+            targetZRot = 315;
             targetAnchor = new Vector2(1,1);
             targetPos = new Vector2(-90,-90);
 
@@ -195,15 +195,16 @@ namespace EcoBuilder
             Detach();
             // Action foo = ()=> targetSize = new Vector2(100,100);
             // Action fooo = ()=> targetSize = new Vector2(0,0);
-            // TODO: make this appear only when finishable
+            // TODO: make this appear only when finishable, and disappear when showcard
 
             status.OnLevelCompleted += ()=>Finish();
         }
         void Finish()
         {
             targetAnchor = new Vector2(.5f,0);
-            targetZRot = 45;
+            targetZRot = 405;
             targetPos = new Vector2(140, 70);
+            smoothTime = .6f;
 
             help.SetText("Well done! You have built your first ecosystem. In the next level you will learn how to edit the traits of your species, changing the way they interact with each other. Press this button at the bottom to select the next level.");
 

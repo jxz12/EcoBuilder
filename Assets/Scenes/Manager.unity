@@ -212,6 +212,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 2087513295}
+  - {fileID: 1368957747}
   - {fileID: 1623094543}
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -287,6 +288,41 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1368957746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1368957747}
+  m_Layer: 0
+  m_Name: Level Navigation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!224 &1368957747
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368957746}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 147788358}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1623094542
 GameObject:
   m_ObjectHideFlags: 0
@@ -297,7 +333,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1623094543}
   m_Layer: 0
-  m_Name: Level Parent
+  m_Name: Level Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -315,7 +351,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 147788358}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -366,9 +402,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fpsText: {fileID: 2087513293}
-  overlayParent: {fileID: 1623094543}
+  canvas: {fileID: 147788357}
+  cardParent: {fileID: 1623094543}
+  navParent: {fileID: 1368957747}
   levelPrefab: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
     type: 3}
+  tutorials:
+  - {fileID: 7475465975059687730, guid: 68698f0bee522da489ff4a4f681c6d10, type: 3}
+  - {fileID: 1618521458442755393, guid: 0c71bfd1965ec0d49bfca989401e8c9e, type: 3}
+  - {fileID: 3285994653947870601, guid: 3ba9ffc3dd84bc04096c27b763ea3569, type: 3}
 --- !u!1 &2087513292
 GameObject:
   m_ObjectHideFlags: 0

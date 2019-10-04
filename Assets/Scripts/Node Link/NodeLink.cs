@@ -30,7 +30,8 @@ namespace EcoBuilder.NodeLink
             // do stress SGD
             if (nodes.Count > 0)
             {
-                if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperAntifocus)
+                if (focusState != FocusState.SuperFocus &&
+                    focusState != FocusState.SuperAntifocus)
                 {
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);

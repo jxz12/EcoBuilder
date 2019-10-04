@@ -37,17 +37,15 @@ namespace EcoBuilder.UI
         List<Level> levels;
         void Start()
         {
-            levels = new List<Level>();
-
-            SaveSceneLevels();
-            // if (!PlayerPrefs.HasKey("Has Played"))
-            // {
-            //     SaveSceneLevels();
-            //     GoToSurvey();
-            //     PlayerPrefs.SetString("Has Played", "yes");
-            //     PlayerPrefs.Save();
-            // }
-            // LoadFileLevels();
+            // PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
+            if (!PlayerPrefs.HasKey("Has Played"))
+            {
+                SaveSceneLevels();
+                // GoToSurvey();
+                PlayerPrefs.SetString("Has Played", "yes");
+                PlayerPrefs.Save();
+            }
+            LoadFileLevels();
 
             // let the grid do the layout first
             StartCoroutine(EnableGridOneFrame());
@@ -63,7 +61,7 @@ namespace EcoBuilder.UI
             foreach (Level level in levels)
             {
                 // print(level.transform.position);
-                level.ShowThumbnailNewParent(levelGrid.GetComponent<RectTransform>(), level.transform.localPosition);
+                level.SetNewThumbnailParent(levelGrid.GetComponent<RectTransform>(), level.transform.localPosition);
                 level.enabled = true;
             }
             levelGrid.enabled = false;
@@ -101,6 +99,7 @@ namespace EcoBuilder.UI
                 }
             }
 
+            levels = new List<Level>();
             foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
                                                  .Where(s=> s.EndsWith(".gd", StringComparison.OrdinalIgnoreCase)))
             {

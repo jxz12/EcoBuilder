@@ -1591,7 +1591,7 @@ MonoBehaviour:
     targetScore1: 0
     targetScore2: 0
     highScore: 0
-    numStars: 0
+    numStars: -1
     savefilePath: 
     nextLevelPath: 
   numberText: {fileID: 3298662015470128372}
@@ -1614,7 +1614,6 @@ MonoBehaviour:
   replayButton: {fileID: 5138229676841934199}
   finishFlag: {fileID: 7411520785661143741}
   nextLevelParent: {fileID: 8854619268690296483}
-  tutorial: {fileID: 0}
   landscape: {fileID: 0}
 --- !u!222 &5385012899396507751
 CanvasRenderer:
