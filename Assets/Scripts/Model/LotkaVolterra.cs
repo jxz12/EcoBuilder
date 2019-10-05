@@ -83,18 +83,18 @@ namespace EcoBuilder.Model
             }
         }
 
+        int richness { get { return internToExtern.Count; } }
         int connectance;
         public void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
         {
-            // create Matrix and Vector that MathNet understands
-            int n = internToExtern.Count;
-            if (n == 0)
+            if (richness == 0)
                 return;
 
             interaction.Clear();
             negGrowth.Clear();
 
             connectance = 0;
+            int n = richness;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -117,12 +117,12 @@ namespace EcoBuilder.Model
         // Depends on A and b being correct
         void BuildCommunityMatrix()
         {
-            // calculates every element of the Jacobian, evaluated at equilibrium point
-            int n = internToExtern.Count;
-            if (n == 0)
+            if (richness == 0)
                 return;
 
+            // calculates every element of the Jacobian, evaluated at equilibrium point
             community.Clear();
+            int n = richness;
             for (int i=0; i<n; i++)
             {
                 // for (int j=0; j<n; j++)
@@ -166,8 +166,7 @@ namespace EcoBuilder.Model
         // O(n^3)
         public bool SolveFeasibility(Func<T, IEnumerable<T>> Consumers)
         {
-            int n = internToExtern.Count;
-            if (n == 0)
+            if (richness == 0)
             {
                 TotalAbundance = TotalFlux = 0;
                 return true;
@@ -183,6 +182,7 @@ namespace EcoBuilder.Model
 
             // solve flux values
             TotalFlux = 0;
+            int n = richness;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -227,6 +227,9 @@ namespace EcoBuilder.Model
         // also O(n^3)
         public bool SolveStability()
         {
+            if (richness == 0)
+                return false;
+
             BuildCommunityMatrix();
             // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
@@ -238,7 +241,6 @@ namespace EcoBuilder.Model
         }
         public double CalculateMayComplexity()
         {
-            int richness = community.RowCount;
             if (richness == 0 || connectance == 0)
                 return 0;
 

@@ -9,19 +9,16 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite inspectSprite;
         [SerializeField] Sprite linkSprite, addlinkSprite, unlinkSprite, bannedSprite;
         [SerializeField] Sprite trashSprite, notrashSprite;
+        [SerializeField] Text text;
 
 		[SerializeField] float scaleLerp;
 
-		void FixedUpdate()
+		void Update()
 		{
 			if (visible)
-			{
 				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, scaleLerp);
-			}
 			else
-			{
 				transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, scaleLerp);
-			}
 		}
 		public void SetPos(Vector2 screenPos)
 		{
@@ -40,33 +37,44 @@ namespace EcoBuilder.UI
 		{
 			visible = false;
 		}
+        Sprite Sprite {
+            set { tip.enabled = true; tip.sprite = value; text.text = ""; }
+        }
 		public void ShowInspect()
 		{
-			tip.sprite = inspectSprite;
+			Sprite = inspectSprite;
 		}
 		public void ShowLink()
 		{
-			tip.sprite = linkSprite;
+			Sprite = linkSprite;
 		}
 		public void ShowUnlink()
 		{
-			tip.sprite = unlinkSprite;
+			Sprite = unlinkSprite;
 		}
 		public void ShowAddLink()
 		{
-			tip.sprite = addlinkSprite;
+			Sprite = addlinkSprite;
 		}
 		public void ShowBanned()
 		{
-			tip.sprite = bannedSprite;
+			Sprite = bannedSprite;
 		}
 		public void ShowTrash()
 		{
-			tip.sprite = trashSprite;
+			Sprite = trashSprite;
 		}
 		public void ShowNoTrash()
 		{
-			tip.sprite = notrashSprite;
+			Sprite = notrashSprite;
 		}
+
+        string Text {
+            set { text.text = value; tip.enabled = false; }
+        }
+        public void ShowText(string message)
+        {
+            Text = message;
+        }
 	}
 }

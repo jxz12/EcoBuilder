@@ -39,7 +39,7 @@ namespace cakeslice
         {
             get
             {
-                if(Equals(m_instance, null))
+                if (Equals(m_instance, null))
                 {
                     return m_instance = FindObjectOfType(typeof(OutlineEffect)) as OutlineEffect;
                 }
@@ -61,6 +61,10 @@ namespace cakeslice
         public Color lineColor0 = Color.red;
         public Color lineColor1 = Color.green;
         public Color lineColor2 = Color.blue;
+        public Color lineColor3 = Color.yellow;
+        public Color lineColor4 = Color.cyan;
+        public Color lineColor5 = Color.magenta;
+        public Color lineColor6 = Color.gray;
 
         public bool additiveRendering = false;
 
@@ -82,6 +86,10 @@ namespace cakeslice
         Material outline1Material;
         Material outline2Material;
         Material outline3Material;
+        Material outline4Material;
+        Material outline5Material;
+        Material outline6Material;
+        Material outline7Material;
         Material outlineEraseMaterial;
         Shader outlineShader;
         Shader outlineBufferShader;
@@ -96,12 +104,25 @@ namespace cakeslice
 
         Material GetMaterialFromID(int ID)
         {
-            if(ID == 0)
-                return outline1Material;
-            else if(ID == 1)
-                return outline2Material;
-            else
-                return outline3Material;
+            switch (ID)
+            {
+                case 0:
+                    return outline1Material;
+                case 1:
+                    return outline2Material;
+                case 2:
+                    return outline3Material;
+                case 3:
+                    return outline4Material;
+                case 4:
+                    return outline5Material;
+                case 5:
+                    return outline6Material;
+                case 6:
+                    return outline7Material;
+                default:
+                    return outline1Material;
+            }
         }
         List<Material> materialBuffer = new List<Material>();
         Material CreateMaterial(Color emissionColor)
@@ -128,15 +149,15 @@ namespace cakeslice
             CreateMaterialsIfNeeded();
             UpdateMaterialsPublicProperties();
 
-            if(sourceCamera == null)
+            if (sourceCamera == null)
             {
                 sourceCamera = GetComponent<Camera>();
 
-                if(sourceCamera == null)
+                if (sourceCamera == null)
                     sourceCamera = Camera.main;
             }
 
-            if(outlineCamera == null)
+            if (outlineCamera == null)
             {
                 GameObject cameraGameObject = new GameObject("Outline Camera");
                 cameraGameObject.transform.parent = sourceCamera.transform;
@@ -154,12 +175,12 @@ namespace cakeslice
 
         public void OnPreRender()
         {
-            if(commandBuffer == null)
+            if (commandBuffer == null)
                 return;
 
             CreateMaterialsIfNeeded();
 
-            if(renderTexture == null || renderTexture.width != sourceCamera.pixelWidth || renderTexture.height != sourceCamera.pixelHeight)
+            if (renderTexture == null || renderTexture.width != sourceCamera.pixelWidth || renderTexture.height != sourceCamera.pixelHeight)
             {
                 renderTexture = new RenderTexture(sourceCamera.pixelWidth, sourceCamera.pixelHeight, 16, RenderTextureFormat.Default);
                 extraRenderTexture = new RenderTexture(sourceCamera.pixelWidth, sourceCamera.pixelHeight, 16, RenderTextureFormat.Default);
@@ -171,34 +192,34 @@ namespace cakeslice
             commandBuffer.SetRenderTarget(renderTexture);
 
             commandBuffer.Clear();
-            if(outlines != null)
+            if (outlines != null)
             {
-                foreach(Outline outline in outlines)
+                foreach (Outline outline in outlines)
                 {
                     LayerMask l = sourceCamera.cullingMask;
 
-                    if(outline != null && l == (l | (1 << outline.originalLayer)))
+                    if (outline != null && l == (l | (1 << outline.originalLayer)))
                     {
-                        for(int v = 0; v < outline.Renderer.sharedMaterials.Length; v++)
+                        for (int v = 0; v < outline.Renderer.sharedMaterials.Length; v++)
                         {
                             Material m = null;
 
-                            if(outline.Renderer.sharedMaterials[v].mainTexture != null && outline.Renderer.sharedMaterials[v])
+                            if (outline.Renderer.sharedMaterials[v].mainTexture != null && outline.Renderer.sharedMaterials[v])
                             {
-                                foreach(Material g in materialBuffer)
+                                foreach (Material g in materialBuffer)
                                 {
-                                    if(g.mainTexture == outline.Renderer.sharedMaterials[v].mainTexture)
+                                    if (g.mainTexture == outline.Renderer.sharedMaterials[v].mainTexture)
                                     {
-                                        if(outline.eraseRenderer && g.color == outlineEraseMaterial.color)
+                                        if (outline.eraseRenderer && g.color == outlineEraseMaterial.color)
                                             m = g;
-                                        else if(g.color == GetMaterialFromID(outline.color).color)
+                                        else if (g.color == GetMaterialFromID(outline.color).color)
                                             m = g;
                                     }
                                 }
 
-                                if(m == null)
+                                if (m == null)
                                 {
-                                    if(outline.eraseRenderer)
+                                    if (outline.eraseRenderer)
                                         m = new Material(outlineEraseMaterial);
                                     else
                                         m = new Material(GetMaterialFromID(outline.color));
@@ -208,28 +229,28 @@ namespace cakeslice
                             }
                             else
                             {
-                                if(outline.eraseRenderer)
+                                if (outline.eraseRenderer)
                                     m = outlineEraseMaterial;
                                 else
                                     m = GetMaterialFromID(outline.color);
                             }
 
-                            if(backfaceCulling)
+                            if (backfaceCulling)
                                 m.SetInt("_Culling", (int)UnityEngine.Rendering.CullMode.Back);
                             else
                                 m.SetInt("_Culling", (int)UnityEngine.Rendering.CullMode.Off);
 
                             commandBuffer.DrawRenderer(outline.GetComponent<Renderer>(), m, 0, 0);
                             MeshFilter mL = outline.GetComponent<MeshFilter>();
-                            if(mL)
+                            if (mL)
                             {
-                                for(int i = 1; i < mL.sharedMesh.subMeshCount; i++)
+                                for (int i = 1; i < mL.sharedMesh.subMeshCount; i++)
                                     commandBuffer.DrawRenderer(outline.GetComponent<Renderer>(), m, i, 0);
                             }
                             SkinnedMeshRenderer sMR = outline.GetComponent<SkinnedMeshRenderer>();
-                            if(sMR)
+                            if (sMR)
                             {
-                                for(int i = 1; i < sMR.sharedMesh.subMeshCount; i++)
+                                for (int i = 1; i < sMR.sharedMesh.subMeshCount; i++)
                                     commandBuffer.DrawRenderer(outline.GetComponent<Renderer>(), m, i, 0);
                             }
                         }
@@ -244,7 +265,7 @@ namespace cakeslice
         {
             Outline[] o = FindObjectsOfType<Outline>();
 
-            foreach(Outline oL in o)
+            foreach (Outline oL in o)
             {
                 oL.enabled = false;
                 oL.enabled = true;
@@ -253,9 +274,9 @@ namespace cakeslice
 
         void OnDestroy()
         {
-            if(renderTexture != null)
+            if (renderTexture != null)
                 renderTexture.Release();
-            if(extraRenderTexture != null)
+            if (extraRenderTexture != null)
                 extraRenderTexture.Release();
             DestroyMaterials();
         }
@@ -264,7 +285,7 @@ namespace cakeslice
         {
             outlineShaderMaterial.SetTexture("_OutlineSource", renderTexture);
 
-            if(addLinesBetweenColors)
+            if (addLinesBetweenColors)
             {
                 Graphics.Blit(source, extraRenderTexture, outlineShaderMaterial, 0);
                 outlineShaderMaterial.SetTexture("_OutlineSource", extraRenderTexture);
@@ -274,31 +295,40 @@ namespace cakeslice
 
         private void CreateMaterialsIfNeeded()
         {
-            if(outlineShader == null)
+            if (outlineShader == null)
                 outlineShader = Resources.Load<Shader>("OutlineShader");
-            if(outlineBufferShader == null)
+            if (outlineBufferShader == null)
             {
                 outlineBufferShader = Resources.Load<Shader>("OutlineBufferShader");
             }
-            if(outlineShaderMaterial == null)
+            if (outlineShaderMaterial == null)
             {
                 outlineShaderMaterial = new Material(outlineShader);
                 outlineShaderMaterial.hideFlags = HideFlags.HideAndDontSave;
                 UpdateMaterialsPublicProperties();
             }
-            if(outlineEraseMaterial == null)
+            if (outlineEraseMaterial == null)
                 outlineEraseMaterial = CreateMaterial(new Color(0, 0, 0, 0));
-            if(outline1Material == null)
+            if (outline1Material == null)
                 outline1Material = CreateMaterial(new Color(1, 0, 0, 0));
-            if(outline2Material == null)
+            if (outline2Material == null)
                 outline2Material = CreateMaterial(new Color(0, 1, 0, 0));
-            if(outline3Material == null)
+            if (outline3Material == null)
                 outline3Material = CreateMaterial(new Color(0, 0, 1, 0));
+            if (outline4Material == null)
+                outline4Material = CreateMaterial(new Color(1, 1, 0, 0));
+            if (outline5Material == null)
+                outline5Material = CreateMaterial(new Color(0, 1, 1, 0));
+            if (outline6Material == null)
+                outline6Material = CreateMaterial(new Color(1, 0, 1, 0));
+            if (outline7Material == null)
+                outline7Material = CreateMaterial(new Color(1, 1, 1, 0));
+
         }
 
         private void DestroyMaterials()
         {
-            foreach(Material m in materialBuffer)
+            foreach (Material m in materialBuffer)
                 DestroyImmediate(m);
             materialBuffer.Clear();
             DestroyImmediate(outlineShaderMaterial);
@@ -306,6 +336,10 @@ namespace cakeslice
             DestroyImmediate(outline1Material);
             DestroyImmediate(outline2Material);
             DestroyImmediate(outline3Material);
+            DestroyImmediate(outline4Material);
+            DestroyImmediate(outline5Material);
+            DestroyImmediate(outline6Material);
+            DestroyImmediate(outline7Material);
             outlineShader = null;
             outlineBufferShader = null;
             outlineShaderMaterial = null;
@@ -313,23 +347,27 @@ namespace cakeslice
             outline1Material = null;
             outline2Material = null;
             outline3Material = null;
+            outline4Material = null;
+            outline5Material = null;
+            outline6Material = null;
+            outline7Material = null;
         }
 
         public void UpdateMaterialsPublicProperties()
         {
-            if(outlineShaderMaterial)
+            if (outlineShaderMaterial)
             {
                 float scalingFactor = 1;
-                if(scaleWithScreenSize)
+                if (scaleWithScreenSize)
                 {
                     // If Screen.height gets bigger, outlines gets thicker
                     scalingFactor = Screen.height / 360.0f;
                 }
 
                 // If scaling is too small (height less than 360 pixels), make sure you still render the outlines, but render them with 1 thickness
-                if(scaleWithScreenSize && scalingFactor < 1)
+                if (scaleWithScreenSize && scalingFactor < 1)
                 {
-                    if(UnityEngine.XR.XRSettings.isDeviceActive && sourceCamera.stereoTargetEye != StereoTargetEyeMask.None)
+                    if (UnityEngine.XR.XRSettings.isDeviceActive && sourceCamera.stereoTargetEye != StereoTargetEyeMask.None)
                     {
                         outlineShaderMaterial.SetFloat("_LineThicknessX", (1 / 1000.0f) * (1.0f / UnityEngine.XR.XRSettings.eyeTextureWidth) * 1000.0f);
                         outlineShaderMaterial.SetFloat("_LineThicknessY", (1 / 1000.0f) * (1.0f / UnityEngine.XR.XRSettings.eyeTextureHeight) * 1000.0f);
@@ -342,7 +380,7 @@ namespace cakeslice
                 }
                 else
                 {
-                    if(UnityEngine.XR.XRSettings.isDeviceActive && sourceCamera.stereoTargetEye != StereoTargetEyeMask.None)
+                    if (UnityEngine.XR.XRSettings.isDeviceActive && sourceCamera.stereoTargetEye != StereoTargetEyeMask.None)
                     {
                         outlineShaderMaterial.SetFloat("_LineThicknessX", scalingFactor * (lineThickness / 1000.0f) * (1.0f / UnityEngine.XR.XRSettings.eyeTextureWidth) * 1000.0f);
                         outlineShaderMaterial.SetFloat("_LineThicknessY", scalingFactor * (lineThickness / 1000.0f) * (1.0f / UnityEngine.XR.XRSettings.eyeTextureHeight) * 1000.0f);
@@ -358,15 +396,21 @@ namespace cakeslice
                 outlineShaderMaterial.SetColor("_LineColor1", lineColor0 * lineColor0);
                 outlineShaderMaterial.SetColor("_LineColor2", lineColor1 * lineColor1);
                 outlineShaderMaterial.SetColor("_LineColor3", lineColor2 * lineColor2);
-                if(flipY)
+                outlineShaderMaterial.SetColor("_LineColor4", lineColor3 * lineColor3);
+                outlineShaderMaterial.SetColor("_LineColor5", lineColor4 * lineColor4);
+                outlineShaderMaterial.SetColor("_LineColor6", lineColor5 * lineColor5);
+                outlineShaderMaterial.SetColor("_LineColor7", lineColor6 * lineColor6);
+
+
+                if (flipY)
                     outlineShaderMaterial.SetInt("_FlipY", 1);
                 else
                     outlineShaderMaterial.SetInt("_FlipY", 0);
-                if(!additiveRendering)
+                if (!additiveRendering)
                     outlineShaderMaterial.SetInt("_Dark", 1);
                 else
                     outlineShaderMaterial.SetInt("_Dark", 0);
-                if(cornerOutlines)
+                if (cornerOutlines)
                     outlineShaderMaterial.SetInt("_CornerOutlines", 1);
                 else
                     outlineShaderMaterial.SetInt("_CornerOutlines", 0);
@@ -394,13 +438,13 @@ namespace cakeslice
 
         public void AddOutline(Outline outline)
         {
-            if(!outlines.Contains(outline))
+            if (!outlines.Contains(outline))
                 outlines.Add(outline);
         }
 
         public void RemoveOutline(Outline outline)
         {
-            if(outlines.Contains(outline))
+            if (outlines.Contains(outline))
                 outlines.Remove(outline);
         }
     }
