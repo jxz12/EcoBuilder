@@ -84,7 +84,7 @@ namespace EcoBuilder
                                         graphSolved &&
                                         !nodelink.IsCalculating); 
 
-            var level = status.Playing;
+            var level = GameManager.Instance.PlayedLevel;
             for (int i=0; i<level.Details.numSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,
@@ -105,6 +105,7 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
+            GameManager.Instance.LoadTutorialIfNeeded(); // UGLY
         }
 
         bool atEquilibrium = true, graphSolved = true;

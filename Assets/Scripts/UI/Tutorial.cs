@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EcoBuilder
+namespace EcoBuilder.Tutorials
 {
     public abstract class Tutorial : MonoBehaviour
     {
@@ -43,39 +44,27 @@ namespace EcoBuilder
         IEnumerator WaitToStart()
         {
             // ugly as HECK
-            while (help == null)
-            {
-                help = FindObjectOfType<UI.Help>();
+            while ((help = FindObjectOfType<UI.Help>()) == null)
                 yield return null;
-            }
-            while (inspector == null)
-            {
-                inspector = FindObjectOfType<UI.Inspector>();
+            while ((inspector = FindObjectOfType<UI.Inspector>()) == null)
                 yield return null;
-            }
-            while (status == null)
-            {
-                status = FindObjectOfType<UI.StatusBar>();
+            while ((status = FindObjectOfType<UI.StatusBar>()) == null)
                 yield return null;
-            }
-            while (recorder == null)
-            {
-                recorder = FindObjectOfType<UI.MoveRecorder>();
+            while ((recorder = FindObjectOfType<UI.MoveRecorder>()) == null)
                 yield return null;
-            }
-            while (nodelink == null)
-            {
-                nodelink = FindObjectOfType<NodeLink.NodeLink>();
+            while ((nodelink = FindObjectOfType<NodeLink.NodeLink>()) == null)
                 yield return null;
-            }
-            while(model == null)
-            {
-                model = FindObjectOfType<Model.Model>();
+            while ((model = FindObjectOfType<Model.Model>()) == null)
                 yield return null;
-            }
+
             StartLesson();
         }
         protected abstract void StartLesson();
+        protected Action Detach;
+        void OnDestroy()
+        {
+            Detach?.Invoke();
+        }
 
         void FixedUpdate()
         {

@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -41,33 +41,27 @@ namespace EcoBuilder
             // #endif
 
             if (SceneManager.sceneCount == 1)
-                LoadScene("Menu");
+                SceneManager.LoadSceneAsync("Menu");
         }
         
-
-        public void LoadScene(string sceneName) {
-            StartCoroutine(LoadSceneThenSetActive(sceneName));
-        }
-        public void UnloadScene(string sceneName) {
-            SceneManager.UnloadSceneAsync(sceneName);
-        }
-
-        // TODO: loading bars with these
-        //[SerializeField] UnityEvent startLoadEvent, endLoadEvent;
-        //[Serializable] public class FloatEvent : UnityEvent<float>{}
-        //[SerializeField] FloatEvent progressEvent;
-        private IEnumerator LoadSceneThenSetActive(string sceneName)
+        public void UnloadSceneThenLoadAnother(string toUnload, string another)
         {
-            //startLoadEvent.Invoke();
-            var loading = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-            while (!loading.isDone)
+            StartCoroutine(UnloadSceneThenLoad(toUnload, another));
+        }
+        event Action OnNewSceneLoaded;
+        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
+        {
+            var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
+            while (!unloading.isDone)
             {
-                //progressEvent.Invoke(loading.progress);
                 yield return null;
             }
-            // var scene = SceneManager.GetSceneByName(sceneName);
-            // SceneManager.SetActiveScene(scene);
-            //endLoadEvent.Invoke();
+            var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
+            while (!loading.isDone)
+            {
+                yield return null;
+            }
+            OnNewSceneLoaded?.Invoke();
         }
 
 
@@ -89,13 +83,14 @@ namespace EcoBuilder
 
 
         [SerializeField] Canvas canvas;
+
         // TODO: move this back into two
         [SerializeField] RectTransform cardParent, navParent, playParent;
         public RectTransform CardParent { get { return cardParent; } }
         public RectTransform NavParent { get { return navParent; } }
 
-        [SerializeField] UI.Level levelPrefab;
-        public UI.Level LoadLevel(string path=null)
+        [SerializeField] Level levelPrefab;
+        public Level LoadLevel(string path=null)
         {
             var level = Instantiate(levelPrefab);
             bool successful = level.LoadFromFile(path);
@@ -109,15 +104,15 @@ namespace EcoBuilder
                 return null;
             }
         }
-        public UI.Level GetDefaultLevel() // only for testing
+        public Level GetDefaultLevel() // only for testing
         {
             return Instantiate(levelPrefab);
         }
 
-        public UI.Level PlayedLevel { get; private set; }
-        [SerializeField] Tutorial[] tutorials;
-        public void PlayLevel(UI.Level level)
+        public Level PlayedLevel { get; private set; }
+        public void PlayLevel(Level level)
         {
+            string toUnload = "";
             if (PlayedLevel != null)
             {
                 if (PlayedLevel != level)
@@ -129,26 +124,52 @@ namespace EcoBuilder
                 {
                     // replay level
                 }
-                if (canvas.GetComponentInChildren<Tutorial>() != null)
+                if (teaching != null)
                 {
-                    Destroy(canvas.GetComponentInChildren<Tutorial>().gameObject);
+                    Destroy(teaching.gameObject);
                 }
-                UnloadScene("Play");
+                toUnload = "Play";
             }
             else
             {
                 // play from menu
                 PlayedLevel = level;
-                UnloadScene("Menu");
+                toUnload = "Menu";
             }
             level.SetNewThumbnailParent(playParent, Vector2.zero);
             level.ShowThumbnail();
-            LoadScene("Play");
+            UnloadSceneThenLoadAnother(toUnload, "Play");
 
-            if (level.Details.idx < tutorials.Length)
+        }
+        // TODO: make this not so horrible
+        [SerializeField] Tutorials.Tutorial[] tutorials;
+        Tutorials.Tutorial teaching;
+        public void LoadTutorialIfNeeded()
+        {
+            if (PlayedLevel.Details.idx < tutorials.Length)
             {
-                Instantiate(tutorials[level.Details.idx], canvas.transform, false);
+                teaching = Instantiate(tutorials[PlayedLevel.Details.idx], canvas.transform, false);
             }
+        }
+
+        public void SavePlayedLevel(int numStars, int score)
+        {
+            if (numStars > PlayedLevel.Details.numStars)
+                PlayedLevel.Details.numStars = numStars;
+
+            if (score > PlayedLevel.Details.highScore)
+                PlayedLevel.Details.highScore = score; // TODO: animation
+
+            // unlock next level if not unlocked
+            if (PlayedLevel.NextLevel != null &&
+                PlayedLevel.NextLevel.Details.numStars == -1)
+            {
+                // TODO: animation
+                PlayedLevel.NextLevel.Details.numStars = 0;
+                PlayedLevel.NextLevel.SaveToFile();
+                PlayedLevel.NextLevel.Unlock();
+            }
+            PlayedLevel.SaveToFile();
         }
 
 
@@ -170,17 +191,16 @@ namespace EcoBuilder
 
         public void ReturnToMenu()
         {
+            if (teaching != null)
+            {
+                Destroy(teaching.gameObject);
+            }
             if (PlayedLevel != null)
             {
                 Destroy(PlayedLevel.gameObject);
                 PlayedLevel = null;
             }
-            if (canvas.GetComponentInChildren<Tutorial>() != null)
-            {
-                Destroy(canvas.GetComponentInChildren<Tutorial>().gameObject);
-            }
-            UnloadScene("Play");
-            LoadScene("Menu");
+            UnloadSceneThenLoadAnother("Play", "Menu");
         }
     }
 }

@@ -37,7 +37,7 @@ namespace EcoBuilder.UI
         List<Level> levels;
         void Start()
         {
-            PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
+            // PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
             if (!PlayerPrefs.HasKey("Has Played"))
             {
                 SaveSceneLevels();
@@ -70,8 +70,7 @@ namespace EcoBuilder.UI
         public void ResetSaveData()
         {
             PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
-            GameManager.Instance.UnloadScene("Menu");
-            GameManager.Instance.LoadScene("Menu");
+            GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
         }
         public void UnlockAllLevels()
         {
@@ -83,8 +82,7 @@ namespace EcoBuilder.UI
                     l.SaveToFile();
                 }
             }
-            GameManager.Instance.UnloadScene("Menu");
-            GameManager.Instance.LoadScene("Menu");
+            GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
         }
 
 

@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace EcoBuilder.UI
+namespace EcoBuilder.Tutorials
 {
     public class Tutorial2 : Tutorial
     {
@@ -18,21 +18,19 @@ namespace EcoBuilder.UI
             status.DisableFinish(true);
             targetSize = new Vector2(100,100);
 
-            var nodes = FindObjectsOfType<NodeLink.Node>();
-            animal = nodes[0].gameObject;
-            plant = nodes[1].gameObject;
+            var nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
+            animal = nodes[1].gameObject;
+            plant = nodes[0].gameObject;
 
             ExplainIntro();
         }
-        Action Detach;
         void ExplainIntro()
         {
-            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Start by focusing on a species, by pressing either of them.");
+            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Start by focusing on a species, by pressing it.");
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
-            if (Detach != null)
-                Detach();
+            Detach?.Invoke();
             
             track = true;
             StartCoroutine(Track(plant.transform));
@@ -67,10 +65,12 @@ namespace EcoBuilder.UI
             inspector.Uninspect();
             nodelink.FullUnfocus();
 
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or its food source lighter, because lighter species grow and eat faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing a species again."); help.SetWidth(.8f); help.Show(true); help.SetDistFromTop(.03f); }));
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or its food source lighter, as lighter species grow and eat faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing a species again."); help.SetWidth(.8f); help.Show(true); help.SetDistFromTop(.03f); }));
 
-            shuffle = false;
             targetSize = Vector2.zero;
+            shuffle = false;
+            // track = true;
+            // StartCoroutine(Track(animal.transform));
 
             Detach();
             Action<int> foo = (i)=> ExplainInterference();
@@ -84,6 +84,8 @@ namespace EcoBuilder.UI
             help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with itself, and so the lower its maximum population. Try changing it to see the effects.");
             help.Show(true);
             inspector.HideGreedSlider(false);
+
+            // track = false;
             shuffle = true;
             StartCoroutine(ShuffleOnSlider(3, 90));
 
@@ -113,7 +115,8 @@ namespace EcoBuilder.UI
         }
         void Finish()
         {
-            help.SetDistFromTop(.2f);
+            help.SetWidth(.7f);
+            help.SetDistFromTop(.25f);
         }
         bool shuffle = false;
         IEnumerator ShuffleOnSlider(float time, float yPos)
