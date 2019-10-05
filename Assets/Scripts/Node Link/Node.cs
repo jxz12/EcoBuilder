@@ -35,7 +35,7 @@ namespace EcoBuilder.NodeLink
             // drop it in at the point at shapeObject's position, but at z=-1
             // TODO: this may be buggy
             // StressPos = transform.parent.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
-            StressPos = new Vector3(1,0,-1); // prevent divide by zero
+            StressPos = new Vector3(1,0,-.5f); // prevent divide by zero
             StressPos += .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
             transform.position = shapeObject.transform.position;
 

@@ -416,14 +416,13 @@ namespace EcoBuilder.UI
                 typesAnim.SetBool("Visible", false);
             }
         }
-        [SerializeField] GameObject sizeParent, greedParent;
         public void HideSizeSlider(bool hidden=true)
         {
-            sizeParent.SetActive(!hidden);
+            sizeSlider.transform.parent.gameObject.SetActive(!hidden);
         }
         public void HideGreedSlider(bool hidden=true)
         {
-            greedParent.SetActive(!hidden);
+            greedSlider.transform.parent.gameObject.SetActive(!hidden);
         }
         bool removeEnabled = true;
         public void HideRemoveButton(bool hidden=true)

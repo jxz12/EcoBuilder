@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace EcoBuilder.UI
+namespace EcoBuilder.Tutorials
 {
     public class Tutorial1 : Tutorial
     {
@@ -21,7 +21,6 @@ namespace EcoBuilder.UI
             ExplainIntro();
         }
 
-        Action Detach;
         void ExplainIntro()
         {
             targetSize = new Vector2(100,100);
@@ -35,8 +34,7 @@ namespace EcoBuilder.UI
             help.SetWidth(.6f);
             inspector.SetConsumerAvailability(false);
 
-            if (Detach != null)
-                Detach();
+            Detach?.Invoke();
             inspector.OnIncubated += ExplainInspector;
             Detach = ()=> { inspector.OnIncubated -= ExplainInspector; };
         }
@@ -116,14 +114,13 @@ namespace EcoBuilder.UI
             nodelink.FullUnfocus();
 
             StartCoroutine(WaitThenDo(wait?2:0, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the exact same dragging action, from the animal to the plant."); }));
-            // TODO: add a help here if they get stuck on what to do
 
             Detach();
-            Action<int,int> foo = (i,j)=> ExplainRemove1(true);
+            Action<int,int> foo = (i,j)=> ExplainRemove1(1);
             nodelink.OnUserUnlinked += foo;
             Detach = ()=> nodelink.OnUserUnlinked -= foo;
         }
-        void ExplainRemove1(bool wait)
+        void ExplainRemove1(float wait)
         {
             help.Show(false);
             inspector.Uninspect();
@@ -131,7 +128,7 @@ namespace EcoBuilder.UI
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
 
-            StartCoroutine(WaitThenDo(wait?1:0, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try clicking on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
+            StartCoroutine(WaitThenDo(wait, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try clicking on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
 
             track = true;
             StartCoroutine(Track(secondSpecies.transform));
@@ -153,13 +150,13 @@ namespace EcoBuilder.UI
             help.SetText("And click this skull button to remove the species.");
 
             Detach();
-            Action foo = ()=> ExplainRemove1(false);
+            Action foo = ()=> ExplainRemove1(0);
             nodelink.OnUnfocused += foo;
-            Action<int> fooo = (i)=> ExplainUndo(true);
+            Action<int> fooo = (i)=> ExplainUndo(1.5f);
             inspector.OnUserDespawned += fooo;
             Detach = ()=> { nodelink.OnUnfocused -= foo; inspector.OnUserDespawned -= fooo; };
         }
-        void ExplainUndo(bool wait)
+        void ExplainUndo(float wait)
         {
             targetAnchor = new Vector2(0, 0);
             targetZRot = 405;
@@ -170,35 +167,48 @@ namespace EcoBuilder.UI
             targetPos = new Vector2(40, 85);
             recorder.gameObject.SetActive(true); 
 
-            StartCoroutine(WaitThenDo(wait?1.5f:0, ()=> { help.Show(true); help.SetText("And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."); }));
+            StartCoroutine(WaitThenDo(wait, ()=> { help.Show(true); help.SetText("And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."); }));
 
             Detach();
-            Action<int> foo = (i)=> ExplainFinishCondition(2);
+            Action<int> foo = (i)=> ExplainFinishCondition(1.5f);
             recorder.OnSpeciesUndone += foo;
             Detach = ()=> recorder.OnSpeciesUndone -= foo;
         }
         void ExplainFinishCondition(float waitSeconds)
         {
-            targetSize = new Vector2(100,100);
+            targetSize = new Vector2(0,0);
             targetZRot = 315;
-            targetAnchor = new Vector2(1,1);
-            targetPos = new Vector2(-90,-90);
 
             help.SetDistFromTop(.05f);
             help.Show(false);
             // help.SetSide(false, false);
-            status.DisableFinish(false);
 
-            StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by pressing this button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem and finish the level!"); }));
+            StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by pressing the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); status.DisableFinish(false); }));
+            // TODO: this breaks if they add the link back before removing species
 
             // status.HideConstraints(false);
             Detach();
-            // Action foo = ()=> targetSize = new Vector2(100,100);
-            // Action fooo = ()=> targetSize = new Vector2(0,0);
-            // TODO: make this appear only when finishable, and disappear when showcard
-
-            status.OnLevelCompleted += ()=>Finish();
+            Action foo = ()=> ExplainFinish();
+            status.OnLevelCompletabled += foo;
+            Detach = ()=> status.OnLevelCompletabled -= foo;
         }
+        void ExplainFinish()
+        {
+            targetSize = new Vector2(100,100);
+            targetAnchor = rt.anchorMin = rt.anchorMax = new Vector2(1,1);
+            targetPos = rt.anchoredPosition = new Vector2(-90,-90);
+
+            help.SetText("Well done! Press this button to finish the level.");
+            help.Show(true);
+
+            Detach();
+            Action foo = ()=> Finish();
+            Action fooo = ()=> ExplainFinishCondition(0);
+            status.OnLevelCompleted += foo;
+            status.OnLevelIncompletabled += fooo;
+            Detach = ()=>{ status.OnLevelCompleted -= foo; status.OnLevelIncompletabled -= fooo; };
+        }
+        Level nextLevel = null;
         void Finish()
         {
             targetAnchor = new Vector2(.5f,0);
@@ -206,15 +216,36 @@ namespace EcoBuilder.UI
             targetPos = new Vector2(140, 70);
             smoothTime = .6f;
 
-            help.SetText("Well done! You have built your first ecosystem. In the next level you will learn how to edit the traits of your species, changing the way they interact with each other. Press this button at the bottom to select the next level.");
+            help.SetSide(false, false);
+            help.SetDistFromTop(.1f);
+            help.SetWidth(.7f);
+            // help.SetText("Well done! You have built your first ecosystem. In the next level you will learn how to edit the traits of your species, changing the way they interact with each other. Press this button at the bottom to select the next level.");
+
+            if (nextLevel == null)
+                nextLevel = GameManager.Instance.PlayedLevel.NextLevel;
 
             Detach();
+            Action foo = ()=>ExplainNextLevel();
+            nextLevel.OnCarded += foo;
+            Detach = ()=>nextLevel.OnCarded -= foo;
+        }
+        void ExplainNextLevel()
+        {
+            targetSize = new Vector2(140, 140);
+            targetPos = new Vector2(150, 150);
+            smoothTime = .4f;
+
+            Detach();
+            Action foo = ()=>Finish();
+            nextLevel.OnThumbnailed += foo;
+            Detach = ()=>nextLevel.OnThumbnailed -= foo;
         }
 
         // bool waiting = false;
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
-            yield return new WaitForSeconds(seconds);
+            if (seconds > 0)
+                yield return new WaitForSeconds(seconds);
             Todo();
         }
         bool shuffle = false;

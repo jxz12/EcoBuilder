@@ -13,15 +13,14 @@ namespace EcoBuilder.UI
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
         public event Action OnErrorShown;
-        public event Action OnLevelCompletable;
         public event Action OnLevelCompleted;
+        public event Action OnLevelCompletabled, OnLevelIncompletabled;
 
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Animator score, constraints;
         [SerializeField] Constraint shield, leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
 
-        public Level Playing { get; private set; }
         void Awake()
         {
             var level = GameManager.Instance.PlayedLevel;
@@ -49,12 +48,11 @@ namespace EcoBuilder.UI
             }
             shield.Constrain(-1); // do not show stability
 
-            Playing = level;
-            help.SetText(Playing.Details.introduction);
-            Playing.OnFinishClicked += CompleteLevel;
+            help.SetText(level.Details.introduction);
+            level.OnFinished += CompleteLevel;
 
-            target1 = Playing.Details.targetScore1;
-            target2 = Playing.Details.targetScore2;
+            target1 = level.Details.targetScore1;
+            target2 = level.Details.targetScore2;
             feasibleScoreCol = scoreText.color;
             infeasibleScoreCol = Color.grey;
         }
@@ -64,10 +62,10 @@ namespace EcoBuilder.UI
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
 
-        void OnDestroy()
-        {
-            Playing.OnFinishClicked -= CompleteLevel; // not sure if necessary
-        }
+        // void OnDestroy()
+        // {
+        //     Playing.OnFinished -= CompleteLevel; // not sure if necessary
+        // }
         Func<bool> CanUpdate;
         public void AllowUpdateWhen(Func<bool> Allowed)
         {
@@ -183,8 +181,6 @@ namespace EcoBuilder.UI
         int NumStars { get; set; }
 		void Update()
 		{
-            Playing.SetFinishable(CanUpdate());
-            
             if (modelScore > realisedScore)
                 scoreText.color = Color.green;
             else if (modelScore < realisedScore)
@@ -235,50 +231,32 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
 
+            // GameManager.Instance.PlayedLevel.SetFinishable(CanUpdate());
             // don't calculate 
-            if (finishDisabled)
+            if (finishDisabled || !CanUpdate())
                 return;
 
             if (NumStars == 0 && newNumStars > 0)
             {
-                Playing.ShowFinishFlag();
-                OnLevelCompletable?.Invoke();
+                GameManager.Instance.PlayedLevel.ShowFinishFlag();
+                OnLevelCompletabled?.Invoke();
             }
             else if (NumStars > 0 && newNumStars == 0)
             {
-                Playing.ShowThumbnail();
+                GameManager.Instance.PlayedLevel.ShowThumbnail();
+                OnLevelIncompletabled?.Invoke();
             }
             NumStars = newNumStars;
 		}
         void CompleteLevel()
         {
-            help.SetDistFromTop(.05f);
-            help.SetSide(false, false);
-
             if (NumStars < 1 || NumStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            if (NumStars > Playing.Details.numStars)
-                Playing.Details.numStars = NumStars;
-
-            if (realisedScore > Playing.Details.highScore)
-                Playing.Details.highScore = realisedScore;
-
-            // unlock next level if not unlocked
-            if (Playing.NextLevel != null &&
-                Playing.NextLevel.Details.numStars == -1)
-            {
-                print("TODO: animation here!");
-                Playing.NextLevel.Details.numStars = 0;
-                Playing.NextLevel.SaveToFile();
-                Playing.NextLevel.Unlock();
-            }
-            Playing.SaveToFile();
+            GameManager.Instance.SavePlayedLevel(NumStars, realisedScore);
 
             help.Show(false);
-            help.SetText(Playing.Details.congratulation);
-            help.SetDistFromTop(.27f);
-            help.SetWidth(.7f);
+            help.SetText(GameManager.Instance.PlayedLevel.Details.congratulation);
             help.DelayThenShow(2);
 
             score.SetBool("Visible", false);
@@ -319,10 +297,10 @@ namespace EcoBuilder.UI
                 return "You have not added enough plants.";
             if (!paw.IsSatisfied)
                 return "You have not added enough animals.";
-            if (disjoint)
-                return "Your network is not connected.";
             if (!feasible)
                 return "At least one species is going extinct.";
+            if (disjoint)
+                return "Your network is not connected.";
             // if (!stable)
             //     return "Your ecosystem is not stable.";
             if (!edge.IsSatisfied)

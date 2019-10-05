@@ -10,7 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 
-namespace EcoBuilder.UI
+namespace EcoBuilder
 {
     public class Level : MonoBehaviour
     {
@@ -61,7 +61,7 @@ namespace EcoBuilder.UI
         public LevelDetails Details {
             get { return details; }
             private set { details = value; }
-        } // stupid unity serializable grumble
+        } // stupid unity serializable grumble grumble
 
         // thumbnail
         [SerializeField] Text numberText;
@@ -118,12 +118,10 @@ namespace EcoBuilder.UI
                 starsImage.sprite = starImages[Details.numStars];
                 Unlock();
             }
-            finishFlag.onClick.AddListener(()=> OnFinishClicked.Invoke());
             // if (thumbnailedParent == null)
             //     thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             targetSize = GetComponent<RectTransform>().sizeDelta;
         }
-        public event Action OnFinishClicked;
         public void SetFinishable(bool finishable)
         {
             finishFlag.interactable = finishable;
@@ -206,9 +204,11 @@ namespace EcoBuilder.UI
         // {
             
         // }
+        public event Action OnFinished;
+        public event Action OnCarded, OnThumbnailed;
+
         public void Unlock()
         {
-            // TODO: pretty animation
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
         IEnumerator WaitThenEnableQuitReplay()
@@ -226,7 +226,6 @@ namespace EcoBuilder.UI
         public void BackToMenu()
         {
             // TODO: 'are you sure' option
-            Destroy(gameObject);
             GameManager.Instance.ReturnToMenu();
         }
         public Level NextLevel { get; private set; }
@@ -235,7 +234,7 @@ namespace EcoBuilder.UI
             var next = GameManager.Instance.LoadLevel(Details.nextLevelPath);
             if (next != null)
             {
-                next.transform.SetParent(nextLevelParent, false);
+                next.SetNewThumbnailParent(nextLevelParent, Vector2.zero, false);
                 NextLevel = next;
             }
             else
@@ -243,13 +242,13 @@ namespace EcoBuilder.UI
                 print("TODO: credits?");
             }
             ShowNavigation();
+            OnFinished?.Invoke();
         }
 
 
         public void Replay()
         {
             GameManager.Instance.PlayLevel(this);
-            // TODO:
         }
 
         Vector2 velocity, targetPos;
@@ -274,14 +273,19 @@ namespace EcoBuilder.UI
             targetPos = thumbnailedPos;
             targetSize = new Vector2(100,100);
             smoothTime = .2f;
+
+            OnThumbnailed?.Invoke();
         }
-        public void SetNewThumbnailParent(RectTransform newParent, Vector2 newPos)
+        public void SetNewThumbnailParent(RectTransform newParent, Vector2 newPos, bool tween=true)
         {
             thumbnailedParent = newParent;
             transform.SetParent(thumbnailedParent, true);
             transform.localScale = Vector3.one;
 
             thumbnailedPos = newPos;
+            if (!tween)
+                transform.localPosition = newPos;
+
             targetPos = thumbnailedPos;
         }
         public void ShowCard()
@@ -299,6 +303,8 @@ namespace EcoBuilder.UI
             targetPos = Vector3.zero;
             targetSize = new Vector2(450, 850);
             smoothTime = .2f;
+
+            OnCarded?.Invoke();
         }
         public void ShowFinishFlag()
         {
