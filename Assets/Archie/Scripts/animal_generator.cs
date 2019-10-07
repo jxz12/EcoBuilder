@@ -43,44 +43,44 @@ namespace EcoBuilder.Archie{
             UnityEngine.Random.InitState(randomSeed);
             if (generated_consumers.Contains(species))
             {
-                Form_Animal(species, size, greed, randomSeed);
+                Form_Animal(species, size, greed, randomSeed, false);
             }
             else
             {
-                Form_Plant(species, size, greed, randomSeed);
+                Form_Plant(species, size, greed, randomSeed, false);
                 //re-generate tree
             }
         }
 
-        private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed)
+        private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed, bool doFace=true)
         {
             // give appropriate name
-            animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)(bodySize * (float)(nounsConsumer.GetLength(0))), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
+            animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)((bodySize-float.Epsilon) * (float)(nounsConsumer.GetLength(0))), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
             // assign mesh
             animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize * (float)(Consumer_Meshs.Length))];
             // generate texture and material
             var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
 
             // animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates);
+            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
         }
 
 
-        private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed)
+        private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed, bool doFace=true)
         {
             // give appropriate name
-            plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)(bodySize * (float)(nounsConsumer.GetLength(0))), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
+            plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsProducer[(int)((bodySize-float.Epsilon) * (float)(nounsProducer.GetLength(0))), UnityEngine.Random.Range(0, nounsProducer.GetLength(1))];
             // assign mesh
             plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize * (float)(Consumer_Meshs.Length))];
             // generate texture and material
             var yuv_coordinates = new Vector3(1-bodySize, -.4f, greediness-.5f);
 
             // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates);
+            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
         }
 
         public static string[] adjectives = new string[]
-{
+        {
             // "Doc",
             "Grumpy",
             "Happy",
@@ -89,7 +89,6 @@ namespace EcoBuilder.Archie{
             "Bashful",
             "Sneezy",
 
-            "Tiny",
             "Hungry",
             "Flirtatious",
             "Fire-Breathing",
@@ -101,7 +100,7 @@ namespace EcoBuilder.Archie{
             "Invisible",
             "Average",
             "Shy",
-};
+        };
         public static string[,] nounsConsumer = new string[,]
         {
             {"Rat",
@@ -153,6 +152,14 @@ namespace EcoBuilder.Archie{
             "Sloth",
             "Tyrannosaurus Rex",
             "Tyrannosaurus Rex"}
+        };
+        public static string[,] nounsProducer = new string[,]
+        {
+            {"Grass","Weed"},
+            {"Mushroom","Fern"},
+            {"Bush","Shrub"},
+            {"Willow","Sycamore"},
+            {"Oak","Beech"}
         };
     }
 }

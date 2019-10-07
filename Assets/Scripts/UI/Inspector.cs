@@ -161,7 +161,8 @@ namespace EcoBuilder.UI
                     incubated.Greediness = greedIfFixed;
 
                 SetSlidersWithoutEventCallbacks(incubated.BodySize, incubated.Greediness);
-                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                incubator.Replace(incubated.GObject);
                 nameText.text = incubated.GObject.name;
             }
             else if (inspected != null)

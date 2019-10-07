@@ -522,12 +522,12 @@ PrefabInstance:
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 38
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1408770983656339525, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
@@ -6243,6 +6243,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2075217385111946365, guid: 936548de6ee50422892e006738b406d9,
+        type: 3}
+      propertyPath: MouthTextures.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075217385111946365, guid: 936548de6ee50422892e006738b406d9,
+        type: 3}
+      propertyPath: MouthTextures.Array.data[8]
+      value: 
+      objectReference: {fileID: 2800000, guid: 44334a7e125ad402f931da8cec1de483, type: 3}
+    - target: {fileID: 2075217385111946365, guid: 936548de6ee50422892e006738b406d9,
+        type: 3}
+      propertyPath: MouthTextures.Array.data[6]
+      value: 
+      objectReference: {fileID: 2800000, guid: 44334a7e125ad402f931da8cec1de483, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 936548de6ee50422892e006738b406d9, type: 3}
 --- !u!114 &416833258 stripped
@@ -8390,7 +8405,7 @@ MonoBehaviour:
   linksParent: {fileID: 260843400}
   etaMax: 1
   etaDecay: 0.1
-  minNodeSize: 0.3
+  minNodeSize: 0.4
   maxNodeSize: 0.9
   minLinkFlow: 0.005
   maxLinkFlow: 0.05
@@ -11598,12 +11613,12 @@ PrefabInstance:
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 38
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1408770983656339525, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
