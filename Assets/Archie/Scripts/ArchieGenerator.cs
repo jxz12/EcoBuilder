@@ -7,8 +7,7 @@ using UnityEngine;
 using System.Diagnostics; // TIME TESTING
 
 namespace EcoBuilder.Archie{
-    using JohnnysInterface;
-    public class ArchieGenerator : MonoBehaviour, ISpeciesGenerator
+    public class ArchieGenerator : ProceduralMeshGenerator
     {
         public GameObject producer;
         public GameObject consumer;
@@ -40,7 +39,7 @@ namespace EcoBuilder.Archie{
                 RegenerateSpecies(set_of_organisms[set_of_organisms.Count - 1], UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0, int.MaxValue));
             }    
         }
-        public GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
+        public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
         {
             UnityEngine.Random.InitState(randomSeed);
 
@@ -72,7 +71,7 @@ namespace EcoBuilder.Archie{
             return species;
         }
 
-        public void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population = -1) 
+        public override void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population = -1) 
         {
             UnityEngine.Random.InitState(randomSeed);
 

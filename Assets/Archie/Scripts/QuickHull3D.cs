@@ -5,8 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 
-using System.Diagnostics; // TIME TESTING
-
 namespace EcoBuilder.Archie
 {
     public class QuickHull3D : MonoBehaviour
@@ -148,20 +146,6 @@ namespace EcoBuilder.Archie
             return base_of_triangle * height_of_triangle * 0.5f;
         }
 
-        // public struct conflict_point
-        // {
-        //     public Vector3 position;
-        //     public float distance_from_plane;
-        //     public conflict_point(Vector3 point, float distance)
-        //     {
-        //         if ( distance < 0 || distance > float.PositiveInfinity )
-        //         {
-        //             return;
-        //         }
-        //         position = point;
-        //         distance_from_plane = distance_from_plane;
-        //     }
-        // }
         public class face
         {
             public Vector3[] corners;
@@ -172,18 +156,14 @@ namespace EcoBuilder.Archie
 
                 }
             }
-            // public SortedList<float, Vector3> Conflict_List;
             public List<Vector3> Conflict_List;
-            // public List<conflict_point> Conflict_List;
             public bool hidden;
             public bool complete;
             public List<edge> edges;
 
             public face(Vector3 corner1, Vector3 corner2, Vector3 corner3)
             {
-                // Conflict_List = new SortedList<float, Vector3>();
                 Conflict_List = new List<Vector3>();
-                // Conflict_List = new List<conflict_point>();
                 corners = (new Vector3[]{corner1, corner2, corner3});
                 complete = false;
                 hidden = false;
@@ -256,22 +236,7 @@ namespace EcoBuilder.Archie
         {
             foreach (Vector3 p in points)
             {
-
-                // SortedList<float, face> distances = new SortedList<float, face>();
-                // foreach (face f in face_list)
-                // {
-                //     var distance = Distance_from_Plane(f.corners[0], f.corners[1] - f.corners[0], f.corners[2] - f.corners[0], p, false);
-                //     if ( distance > 0 && distance < float.PositiveInfinity)
-                //     {
-                //         distances.Add(distance, f);
-                //     }
-                // }
-                // if (distances.Count > 0)
-                // {
-                //     distances.Values[0].Conflict_List.Add(distances.Keys[0], p);
-                // }
                 face_list.OrderBy(f => Distance_from_Plane(f.corners[0], f.corners[2] - f.corners[0], f.corners[1] - f.corners[0], p, false)).First().Conflict_List.Add(p);
-                // face_list.MinBy(f => Distance_from_Plane(f.corners[0], f.corners[1] - f.corners[0], f.corners[2] - f.corners[0], p, false)).Conflict_List.Add(p);
             }
         }
 
@@ -355,7 +320,6 @@ namespace EcoBuilder.Archie
                     horizon_edge_list.Push(horizon_edge);
                     List<Vector3> new_face_corners = new List<Vector3>(horizon_edge.vertices);
                     new_face_corners.Add(furthest_from_face);
-                    // var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
                     //new stuff - generate and filter
 
                     var possible_faces = from c1 in new_face_corners
@@ -431,7 +395,6 @@ namespace EcoBuilder.Archie
             if (face_element.Conflict_List.Count >= 1)
             {
                 // We select the furthest point from the face (found by accessing the face's sorted List)
-                // Vector3 furthest_from_face = face_element.Conflict_List.Values[face_element.Conflict_List.Count - 1];
                 Vector3 furthest_from_face = face_element.Conflict_List.OrderByDescending(element => Distance_from_Plane(face_element.corners[0], face_element.corners[2] - face_element.corners[0], face_element.corners[1] - face_element.corners[0], element, false)).First();
                 // Flood search based off what this furthest point can see
                 var horizon_edge_list = new Stack<edge>();
@@ -440,7 +403,6 @@ namespace EcoBuilder.Archie
                 string path = "";
                 List<face> daughter_faces = new List<face>();
                 // Use a Flood Fill algorithm to search for horizon edges
-                // path = Flood_Fill(furthest_from_face, current_face, horizon_edge_list, visited_faces);
                 path = Flood_Fill_and_Make(furthest_from_face, current_face, horizon_edge_list, visited_faces, daughter_faces);
                 // Check for any obvious error in the results of the flood search
                 UnityEngine.Debug.Log("Flooded, entering main debugging area");
@@ -460,23 +422,6 @@ namespace EcoBuilder.Archie
                     face_element.hidden = true;
                     return face_list;
                 }
-
-                // foreach (edge e in horizon_edge_list)
-                // {
-                //     // Make triangles between furthest point and horizon edges
-                //     List<Vector3> new_face_corners = new List<Vector3>(e.vertices);
-                //     new_face_corners.Add(furthest_from_face);
-                //     var new_face = new face(new_face_corners[0], new_face_corners[1], new_face_corners[2]);
-
-                //     // Modify horizon edges so they point to new face
-                //     UnityEngine.Debug.Log("F: " + e.connected_faces.Exists(element => visited_faces.Contains(element)));
-                //     e.connected_faces.Remove(e.connected_faces.Find(element => visited_faces.Contains(element)));
-                //     UnityEngine.Debug.Log("P: " + e.connected_faces.Count);
-                //     e.Connect_to_Face(new_face);
-
-                //     daughter_faces.Add(new_face);
-                //     UnityEngine.Debug.Log("daughter first link count: " + new_face.edges.Count);
-                // }
 
                 // Make and link edges that exsist inbetween the newly formed faces
                 var new_edges = new List<edge>();
@@ -541,7 +486,6 @@ namespace EcoBuilder.Archie
                 }
 
                 // Combine the conflict list of obsolete hidden faces
-                // Vector3[] compound_conflict_list = (from face in hidden_faces from point in face.Conflict_List.Values select point).ToArray();
                 Vector3[] compound_conflict_list = (from face in hidden_faces from point in face.Conflict_List select point).ToArray();
                 UnityEngine.Debug.Log(compound_conflict_list.Length);
 
@@ -579,76 +523,73 @@ namespace EcoBuilder.Archie
             // the function returns a triangle list for a mesh
             List<int> triangle_list = new List<int>();
             //find maximal 3D simplex (tetrahedron)
-            Vector3[] base_line = new Vector3[]{new Vector3(),new Vector3()};
-            Vector3 third = new Vector3();
-            foreach ( Vector3 p1 in points)
-            {
-                foreach ( Vector3 p2 in points)
-                {
-                    if (( p1 - p2).magnitude > (base_line[0] - base_line[1]).magnitude)
-                    {
-                        base_line[0] = p1;
-                        base_line[1] = p2;
-                    }
-                }
-            }
-            Vector3 direction = base_line[1] - base_line[0];
-            Vector3 max_distance = base_line[0];
-            float testing = 0;
-            foreach ( Vector3 p in points )
-            {
-                float current = Distance_from_Line(base_line[0], direction, max_distance, false);
-                testing = Distance_from_Line(base_line[0], direction, p, false);
-                if ( testing > current )
-                {
-                    max_distance = p;
-                }
-            }
-            Vector3[] triangle_corners = new Vector3[]{ base_line[0], base_line[1], max_distance };
-            // OLD END
+            // Vector3[] base_line = new Vector3[]{new Vector3(),new Vector3()};
+            // Vector3 third = new Vector3();
+            // foreach ( Vector3 p1 in points)
+            // {
+            //     foreach ( Vector3 p2 in points)
+            //     {
+            //         if (( p1 - p2).magnitude > (base_line[0] - base_line[1]).magnitude)
+            //         {
+            //             base_line[0] = p1;
+            //             base_line[1] = p2;
+            //         }
+            //     }
+            // }
+            // Vector3 direction = base_line[1] - base_line[0];
+            // Vector3 max_distance = base_line[0];
+            // float testing = 0;
+            // foreach ( Vector3 p in points )
+            // {
+            //     float current = Distance_from_Line(base_line[0], direction, max_distance, false);
+            //     testing = Distance_from_Line(base_line[0], direction, p, false);
+            //     if ( testing > current )
+            //     {
+            //         max_distance = p;
+            //     }
+            // }
+            // Vector3[] triangle_corners = new Vector3[]{ base_line[0], base_line[1], max_distance };
+            // // OLD END
 
-            foreach (Vector3 p in points)
+            // foreach (Vector3 p in points)
+            // {
+            //     float current = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], max_distance, false);
+            //     testing = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], p, false);
+            //     if (System.Math.Abs(testing) > System.Math.Abs(current))
+            //     {
+            //         max_distance = p;
+            //     }
+            // }
+            // Vector3[] tetrahedron_corners = new Vector3[]{triangle_corners[0], triangle_corners[1], triangle_corners[2], max_distance};
+
+            // New
+            Vector3 largest_x = new Vector3(), largest_y = new Vector3(), largest_z = new Vector3(), other_point = new Vector3();
+            foreach ( Vector3 point in points )
             {
-                float current = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], max_distance, false);
-                testing = Distance_from_Plane(triangle_corners[0], triangle_corners[1] - triangle_corners[0], triangle_corners[2] - triangle_corners[0], p, false);
-                if (System.Math.Abs(testing) > System.Math.Abs(current))
+                if ( point.x > largest_x.x )
                 {
-                    max_distance = p;
+                    largest_x = point;
+                }
+                else if ( point.y > largest_y.y && largest_x != point )
+                {
+                    largest_y = point;
+                }
+                else if (point.z > largest_z.z && largest_x != point && largest_y != point)
+                {
+                    largest_z = point;
+                }
+                else if (largest_x != point && largest_y != point && largest_z != point)
+                {
+                    other_point = point;
                 }
             }
-            Vector3[] tetrahedron_corners = new Vector3[]{triangle_corners[0], triangle_corners[1], triangle_corners[2], max_distance};
+            Vector3[] tetrahedron_corners = new Vector3[]{largest_x, largest_y, largest_z, other_point};
+
             //clearsimplex
             var conflict_points = Clear_Simplex_Volume(points, tetrahedron_corners).ToArray();
             UnityEngine.Debug.Log("number of conflicts: " + conflict_points.Length);
             // construct faces
             List<face> face_list = new List<face>();
-            //...
-            // if (testing >= 0)
-            // {
-            //     UnityEngine.Debug.Log("Scenario A, test value is: " + testing);
-
-            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[2], tetrahedron_corners[1]));
-            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[1], tetrahedron_corners[3]));
-            //     face_list.Add(new face(tetrahedron_corners[1], tetrahedron_corners[2], tetrahedron_corners[3]));
-            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[3], tetrahedron_corners[2]));
-            // }
-            // else
-            // {
-            //     UnityEngine.Debug.Log("Scenario B, test value is: " + testing);
-            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[1], tetrahedron_corners[2]));
-            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[3], tetrahedron_corners[1]));
-            //     face_list.Add(new face(tetrahedron_corners[1], tetrahedron_corners[3], tetrahedron_corners[2]));
-            //     face_list.Add(new face(tetrahedron_corners[0], tetrahedron_corners[2], tetrahedron_corners[3]));
-
-            // }
-
-            // var orientated_faces = from c1 in tetrahedron_corners
-            // from c2 in tetrahedron_corners
-            // from c3 in tetrahedron_corners
-            // from c4 in tetrahedron_corners
-            // where c1 != c2 && c1 != c3 && c2 != c3 && c1 != c4 && c2 != c4 && c3 != c4
-            // where Distance_from_Plane(c1, c2 - c1, c3 - c1, c4) < 0
-            // select new face(c1, c2, c3);
 
             var faces = from c1 in tetrahedron_corners
                         from c2 in tetrahedron_corners
@@ -659,11 +600,6 @@ namespace EcoBuilder.Archie
             var front_facing_faces = from t in faces
             where Distance_from_Plane(t.corners[0], t.corners[1] - t.corners[0], t.corners[2] - t.corners[0], Array.Find(tetrahedron_corners, corner => !Array.Exists(t.corners, c => c == corner)), false) < 0
             select t;
-
-            // var unique_faces = front_facing_faces.DistinctBy(f => new HashSet(f.corners));
-            // var unique_faces = front_facing_faces.GroupBy(f => new HashSet<Vector3>(f.corners)).Select(group => group.First());
-            // var unique_faces = front_facing_faces.GroupBy(f => f.ordered_corners).Select(group => group.First());
-            // face_list = unique_faces.ToList<face>();
 
             List<Vector3[]> repitision = new List<Vector3[]>();
             foreach (face t in front_facing_faces)

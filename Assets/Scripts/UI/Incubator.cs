@@ -33,6 +33,12 @@ namespace EcoBuilder.UI
             incubated = null;
             GetComponent<Animator>().SetTrigger("Unincubate");
         }
+        public void Replace(GameObject replacement)
+        {
+            Destroy(incubated);
+            incubated = replacement;
+            incubated.transform.SetParent(incubatedParent, false);
+        }
 
 
         bool dragging;
