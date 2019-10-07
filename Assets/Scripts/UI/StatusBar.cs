@@ -42,6 +42,8 @@ namespace EcoBuilder.UI
                 loop.Constrain(level.Details.minLoop);
             }
             shield.Constrain(-1); // do not show stability
+            feasibleScoreCol = scoreText.color;
+            infeasibleScoreCol = Color.grey;
 
             if (level == null) // only for test
             {
@@ -54,8 +56,6 @@ namespace EcoBuilder.UI
 
             target1 = level.Details.targetScore1;
             target2 = level.Details.targetScore2;
-            feasibleScoreCol = scoreText.color;
-            infeasibleScoreCol = Color.grey;
         }
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;

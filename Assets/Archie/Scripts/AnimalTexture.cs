@@ -58,13 +58,40 @@ namespace EcoBuilder.Archie
             ));
         }
 
-        public void Generate_and_Apply(int seed, MeshRenderer speciesMesh, Vector3 yuv)
+        public void Generate_and_Apply(int seed, MeshRenderer speciesMesh, Vector3 yuv, bool doFace)
         {
             // seed random number
             UnityEngine.Random.InitState(seed);
 
             // convert yuv to rgb
             Color rgb_background_colour = (Vector4)(yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1); // MultiplyVector takes a Vector3 as its argument
+
+            speciesMesh.materials[0].SetColor("_Color", rgb_background_colour);
+            if (!doFace)
+                return;
+
+            var eyes = pick_random(EyeTextures);
+            var nose = pick_random(NoseTextures);
+            var mouth = pick_random(MouthTextures);
+            var cheek = pick_random(CheeckTextures);
+
+            // size of output texture is same as chosen face texture
+            var texture = new Texture2D(eyes.width, eyes.height);
+            for (int i=0; i<texture.width; i++)
+            {
+                for (int j=0; j<texture.height; j++)
+                {
+                    var col = Color.Lerp(Color.clear, mouth.GetPixel(i,j), mouth.GetPixel(i,j).a);
+                    col = Color.Lerp(col, cheek.GetPixel(i,j), nose.GetPixel(i,j).a);
+                    col = Color.Lerp(col, eyes.GetPixel(i,j), eyes.GetPixel(i,j).a);
+                    col = Color.Lerp(col, nose.GetPixel(i,j), nose.GetPixel(i,j).a);
+                    texture.SetPixel(i,j, col);
+                }
+            }
+
+            texture.wrapMode = TextureWrapMode.Mirror; // avoids stupid seam
+            texture.Apply();
+            speciesMesh.materials[1].SetTexture("_MainTex", texture);
 
             // // loading face texture
             // var chosen_face = Face_Textures[0];
@@ -92,29 +119,8 @@ namespace EcoBuilder.Archie
             // var background_colour_values = (from pixel in face_texture_colours select rgb_background_colour);
             // var colour_values = face_texture_colours.Zip(background_colour_values, (face_pixel, background_pixel) => (face_pixel * face_pixel.a +  background_pixel * background_pixel.a * (1 - face_pixel.a))/(face_pixel.a + background_pixel.a * (1 - face_pixel.a)) ).ToArray();
 
-            var eyes = pick_random(EyeTextures);
-            var nose = pick_random(NoseTextures);
-            var mouth = pick_random(MouthTextures);
-
-            // size of output texture is same as chosen face texture
-            var texture = new Texture2D(eyes.width, eyes.height);
-            for (int i=0; i<texture.width; i++)
-            {
-                for (int j=0; j<texture.height; j++)
-                {
-                    var col = Color.Lerp(Color.clear, eyes.GetPixel(i,j), eyes.GetPixel(i,j).a);
-                    col = Color.Lerp(col, mouth.GetPixel(i,j), mouth.GetPixel(i,j).a);
-                    col = Color.Lerp(col, nose.GetPixel(i,j), nose.GetPixel(i,j).a);
-                    texture.SetPixel(i,j, col);
-                }
-            }
-
             // // applying  texture
             // texture.SetPixels(colour_values);
-
-            texture.Apply();
-            speciesMesh.materials[0].SetColor("_Color", rgb_background_colour);
-            speciesMesh.materials[1].SetTexture("_MainTex", texture);
 
             // var returning_material = new Material(Base_Animal_Material);
             // returning_material.SetTexture("_MainTex", texture); // alternative for the one above
