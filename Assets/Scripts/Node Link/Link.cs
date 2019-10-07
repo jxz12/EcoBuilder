@@ -20,7 +20,6 @@ namespace EcoBuilder.NodeLink
                 target = value;
             }
         }
-
         public void Init(Node source, Node target)
         {
             Source = source;
@@ -28,19 +27,29 @@ namespace EcoBuilder.NodeLink
             name = Source.Idx + " " + Target.Idx;
         }
 
+        cakeslice.Outline outline;
+        void Awake()
+        {
+            outline = gameObject.AddComponent<cakeslice.Outline>();
+            // outline.eraseRenderer = true;
+            outline.enabled = false;
+        }
+
         public void Outline(int colourIdx=0)
         {
-            var outline = GetComponent<cakeslice.Outline>();
-            if (outline == null)
-            {
-                outline = gameObject.AddComponent<cakeslice.Outline>();
-            }
-            outline.color = colourIdx;
+            // outline.eraseRenderer = false;
+            outline.enabled = true;
+
+            if (Removable)
+                outline.color = colourIdx;
+            else
+                outline.color = 0;
         }
         public void Unoutline()
         {
-            if (GetComponent<cakeslice.Outline>() != null)
-                Destroy(GetComponent<cakeslice.Outline>());
+            if (Removable)
+                // outline.eraseRenderer = true;
+                outline.enabled = false;
         }
         float targetAlpha = 1;
         public void Show(bool showing = true)
@@ -108,7 +117,7 @@ namespace EcoBuilder.NodeLink
         {
             tileOffset -= TileSpeed;
             lr.material.SetFloat("_Offset", tileOffset);
-            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .05f));
+            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .1f));
         }
     }
 }

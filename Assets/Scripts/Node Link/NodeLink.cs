@@ -30,7 +30,8 @@ namespace EcoBuilder.NodeLink
             // do stress SGD
             if (nodes.Count > 0)
             {
-                if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperUnfocus)
+                if (focusState != FocusState.SuperFocus &&
+                    focusState != FocusState.SuperAntifocus)
                 {
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);
@@ -70,7 +71,6 @@ namespace EcoBuilder.NodeLink
 
         public void AddNode(int idx)
         {
-            // TODO: mystery bug?!
             if (nodes[idx] != null)
                 throw new Exception("index " + idx + " already added");
 
@@ -109,7 +109,6 @@ namespace EcoBuilder.NodeLink
                 foreach (int row in links.GetRowIndicesInColumn(idx))
                     linkGrave.RemoveAt(row, idx);
             }
-            nodes[idx].StressPos += UnityEngine.Random.insideUnitSphere * .2f; // prevent divide by zero
             toBFS.Enqueue(idx);
         }
 
@@ -212,21 +211,17 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        // public void SetIfNodeRemovable(int idx, bool removable)
-        // {
-        //     // nodes[idx].Removable = removable;
-        //     // if (removable)
-        //     //     nodes[idx].GetComponent<MeshRenderer>().material = nodeRemovable;
-        //     // else
-        //     //     nodes[idx].GetComponent<MeshRenderer>().material = nodeFixed;
-        // }
+        public void SetIfNodeRemovable(int idx, bool removable)
+        {
+            nodes[idx].Removable = removable;
+            if (!removable)
+                nodes[idx].Outline(0);
+        }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            // if (removable)
-            //     links[i,j].GetComponent<LineRenderer>().material = linkRemovable;
-            // else
-            //     links[i,j].GetComponent<LineRenderer>().material = linkFixed;
+            if (!removable)
+                links[i,j].Outline(0);
         }
 
         public IEnumerable<int> GetTargets(int source)

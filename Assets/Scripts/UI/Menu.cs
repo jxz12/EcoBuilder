@@ -37,12 +37,11 @@ namespace EcoBuilder.UI
         List<Level> levels;
         void Start()
         {
-            levels = new List<Level>();
-
+            // PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
             if (!PlayerPrefs.HasKey("Has Played"))
             {
                 SaveSceneLevels();
-                GetComponent<Animator>().SetInteger("Menu Choice", 3);
+                // GoToSurvey();
                 PlayerPrefs.SetString("Has Played", "yes");
                 PlayerPrefs.Save();
             }
@@ -54,15 +53,24 @@ namespace EcoBuilder.UI
         IEnumerator EnableGridOneFrame()
         {
             levelGrid.enabled = true;
+            foreach (Level level in levels)
+            {
+                level.enabled = false;
+            }
             yield return null;
+            foreach (Level level in levels)
+            {
+                // print(level.transform.position);
+                level.SetNewThumbnailParent(levelGrid.GetComponent<RectTransform>(), level.transform.localPosition);
+                level.enabled = true;
+            }
             levelGrid.enabled = false;
         }
 
         public void ResetSaveData()
         {
             PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
-            GameManager.Instance.UnloadScene("Menu");
-            GameManager.Instance.LoadScene("Menu");
+            GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
         }
         public void UnlockAllLevels()
         {
@@ -74,27 +82,23 @@ namespace EcoBuilder.UI
                     l.SaveToFile();
                 }
             }
-            GameManager.Instance.UnloadScene("Menu");
-            GameManager.Instance.LoadScene("Menu");
-        }
-        public void StartTutorial()
-        {
-            levelPrefab.Details.nextLevelPath = levels[0].Details.savefilePath;
-            GameManager.Instance.UnloadScene("Menu");
-            GameManager.Instance.LoadScene("Play");
+            GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
         }
 
 
         // destroys scene levels
-        void LoadFileLevels()
+        void LoadFileLevels(bool destroyLoaded=true)
         {
-            foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
+            if (destroyLoaded)
             {
-                Destroy(level.gameObject);
+                foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
+                {
+                    Destroy(level.gameObject);
+                }
             }
 
+            levels = new List<Level>();
             foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
-                                                //  .Where(s=> s.Length < 3? false : s.Substring(s.Length-3) == ".gd"))
                                                  .Where(s=> s.EndsWith(".gd", StringComparison.OrdinalIgnoreCase)))
             {
                 Level newLevel = Instantiate(levelPrefab);
@@ -112,13 +116,13 @@ namespace EcoBuilder.UI
             for (int i=0; i<levels.Count-1; i++)
             {
                 levels[i].transform.SetParent(levelGrid.transform, false);
+                levels[i].transform.SetAsLastSibling();
                 // levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
             }
             levels[levels.Count-1].transform.SetParent(levelGrid.transform, false);
         }
         void SaveSceneLevels()
         {
-            // first load scene levels
             levels = new List<Level>(levelGrid.transform.GetComponentsInChildren<Level>().OrderBy(x=>x.Details.idx));
             for (int i=0; i<levels.Count; i++)
             {

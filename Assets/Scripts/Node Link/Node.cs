@@ -1,23 +1,26 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace EcoBuilder.NodeLink
 {
-    [RequireComponent(typeof(Animator))]
+    // [RequireComponent(typeof(Animator))]
     public class Node : MonoBehaviour
     {
         public int Idx { get; private set; }
         public Color Col {
             get { return shape!=null? shape.GetComponent<MeshRenderer>().material.color : Color.black; }
         }
+        public enum FocusState { Normal, Focus, Hidden }
+        public FocusState focusState = FocusState.Normal;
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
         public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
-
-        public Vector3 velocity;  // for public use with Vector3.SmoothDamp
+        public bool Removable { get; set; } = true;
 
         GameObject shape;
+        cakeslice.Outline outline;
 
         public void Init(int idx, float size)
         {
@@ -30,56 +33,94 @@ namespace EcoBuilder.NodeLink
         public void Shape(GameObject shapeObject)
         {
             // drop it in at the point at shapeObject's position, but at z=-1
-            StressPos = transform.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
+            // TODO: this may be buggy
+            // StressPos = transform.parent.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
+            StressPos = new Vector3(1,0,-.5f); // prevent divide by zero
+            StressPos += .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
             transform.position = shapeObject.transform.position;
 
             shape = shapeObject;
+            outline = shape.AddComponent<cakeslice.Outline>();
+
             shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
             shape.transform.localScale = Vector3.one;
         }
-        public void Outline(int colourIdx=0)
+        public void Outline(int colourIdx)
         {
-            // var outline = GetComponent<cakeslice.Outline>();
-            var outline = shape.GetComponent<cakeslice.Outline>();
-            if (outline == null)
-            {
-                // outline = gameObject.AddComponent<cakeslice.Outline>();
-                outline = shape.AddComponent<cakeslice.Outline>();
-            }
+            // outline.eraseRenderer = false;
+            outline.enabled = true;
             outline.color = colourIdx;
         }
         public void Unoutline()
         {
-            // if (GetComponent<cakeslice.Outline>() != null)
-            //     Destroy(GetComponent<cakeslice.Outline>());
-            if (shape.GetComponent<cakeslice.Outline>() != null)
-                Destroy(shape.GetComponent<cakeslice.Outline>());
+            if (Removable)
+                // outline.eraseRenderer = true;
+                outline.enabled = false;
+            else
+                outline.color = 0;
         }
         bool flashing = false;
         public void Flash(bool isFlashing)
         {
             flashing = isFlashing;
-            GetComponent<Animator>().SetBool("Flashing", isFlashing);
+            // GetComponent<Animator>().SetBool("Flashing", isFlashing);
+            StartCoroutine(Flash(1f));
         }
-        void Update()
+        IEnumerator Flash(float time)
         {
-            if ((Time.time*60) % 60 < 30 && flashing)
+            bool enabled = true;
+            float start = Time.time;
+            while (flashing)
             {
-                // GetComponent<MeshRenderer>().material.color = new Color(1,.01f,.01f,1);
-                // GetComponent<MeshRenderer>().enabled = false;
-                // shape.SetActive(false);
-                // shape.SetActive(false);
-                shape.GetComponent<MeshRenderer>().enabled = false;
+                if ((Time.time-start) % time < time/2)
+                {
+                    if (enabled)
+                    {
+                        shape.GetComponent<MeshRenderer>().enabled = false;
+                        enabled = false;
+                    }
+                }
+                else
+                {
+                    if (!enabled)
+                    {
+                        shape.GetComponent<MeshRenderer>().enabled = true;
+                        enabled = true;
+                    }
+                }
+                yield return null;
             }
-            else
+            shape.GetComponent<MeshRenderer>().enabled = true;
+        }
+        // [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
+        Vector3 velocity; // for use with smoothdamp
+        public void Tween(float smoothTime, float sizeTween)
+        {
+            if (focusState == FocusState.Normal)
             {
-                // GetComponent<MeshRenderer>().material.color = new Color(.01f,.3f,1,.3f);
-                // GetComponent<MeshRenderer>().enabled = true;
-                // shape.SetActive(true);
-                if (shape != null)
-                    shape.GetComponent<MeshRenderer>().enabled = true;
+                transform.localScale =
+                    Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
+                transform.localPosition =
+                    Vector3.SmoothDamp(transform.localPosition, StressPos,
+                                        ref velocity, smoothTime);
+            }
+            else if (focusState == FocusState.Focus)
+            {
+                transform.localScale =
+                    Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
+                transform.localPosition =
+                    Vector3.SmoothDamp(transform.localPosition, FocusPos,
+                                        ref velocity, smoothTime);
+            }
+            else if (focusState == FocusState.Hidden)
+            {
+                transform.localScale =
+                    Vector3.Lerp(transform.localScale, Vector3.zero, sizeTween);
+                transform.localPosition =
+                    Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,2),
+                                        ref velocity, smoothTime);
             }
         }
     }
