@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2075217385111946362
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2075217385111946363}
+  - component: {fileID: 2075217385111946364}
+  - component: {fileID: 2075217385111946365}
+  m_Layer: 0
+  m_Name: Animal_Generator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2075217385111946363
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2075217385111946362}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2075217385111946364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2075217385111946362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1fb97e0947fd49f3842e9ce5f06eee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Animal_Prefab: {fileID: 8620083413230679600, guid: 1f2994656656b4fcdaccf128fdfadbee,
+    type: 3}
+  Consumer_Meshs:
+  - {fileID: -516739513825897564, guid: 552be06625ca0438cbfa3171f1f8877a, type: 3}
+  - {fileID: -3592776260745777201, guid: aae75ccb0d90043bca5ec9b9b01e4e44, type: 3}
+  - {fileID: 9138436511008389774, guid: 6484ef9b2dae34ea498631a18443007d, type: 3}
+--- !u!114 &2075217385111946365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2075217385111946362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63640e5353d3845f982385aaa6a3332d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EyeTextures:
+  - {fileID: 2800000, guid: 1197f90b1e3ca42558b658ed2d76b149, type: 3}
+  - {fileID: 2800000, guid: 4d55ef837b84a4a3480a86707c18c3c1, type: 3}
+  - {fileID: 2800000, guid: ac8a85510ea9e41c0b08a82f68a363cd, type: 3}
+  - {fileID: 2800000, guid: 14b770542ac834cbeadfc6dc8e0f14d2, type: 3}
+  - {fileID: 2800000, guid: 85abd32f6c2ee4ab6b122f8a98c1b457, type: 3}
+  - {fileID: 2800000, guid: 9461eca521b48468385e7821de253c22, type: 3}
+  - {fileID: 2800000, guid: 97c89b32349c84f3bb8a2e13b425b34f, type: 3}
+  - {fileID: 2800000, guid: 2afa9230980714a97bec84e55f0c567a, type: 3}
+  - {fileID: 2800000, guid: 13881bf5d864042efae2e61a8191f6d2, type: 3}
+  - {fileID: 2800000, guid: 629354f28addb4f3f935f13fdb71636a, type: 3}
+  MouthTextures:
+  - {fileID: 2800000, guid: e5c5834ec0c9b4e7ca444cfa3a2f22ed, type: 3}
+  - {fileID: 2800000, guid: 06bcdf080e608426aa1ea780b2a4a038, type: 3}
+  - {fileID: 2800000, guid: e0418f6f76b454ef4ba2465203cfa0f6, type: 3}
+  - {fileID: 2800000, guid: 8b9235b157b24498489e923540904503, type: 3}
+  - {fileID: 2800000, guid: 853ba6cb419a3407381f1c4c282990ec, type: 3}
+  - {fileID: 2800000, guid: 4c670d76532bf45dba251ad05e4597eb, type: 3}
+  - {fileID: 2800000, guid: eca6d910c880441e0895842ca74f2579, type: 3}
+  - {fileID: 2800000, guid: c751e071c9b3f4a8db2c6cd4de76da83, type: 3}
+  - {fileID: 2800000, guid: 1a85b91c3079e4317a2237b92a6cf91b, type: 3}
+  - {fileID: 2800000, guid: 44334a7e125ad402f931da8cec1de483, type: 3}
+  CheeckTextures:
+  - {fileID: 2800000, guid: 9703a4be7f74a4fd8947e4bd2b7d7c50, type: 3}
+  NoseTextures:
+  - {fileID: 2800000, guid: de41a2dcab7f1436e8d4710b7e82d7ed, type: 3}
+  Base_Animal_Material: {fileID: 2100000, guid: dc16e37dbe3d35b45bac52fecacfb4b7,
+    type: 2}
