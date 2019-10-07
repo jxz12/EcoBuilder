@@ -35,9 +35,9 @@ namespace EcoBuilder.UI
         [SerializeField] Button refroveButton;
         [SerializeField] Animator traitsAnim, typesAnim;
         
-        // [SerializeField] JonnyGenerator.JonnyGenerator factory;
+        [SerializeField] JonnyGenerator.JonnyGenerator factory;
         // [SerializeField] Archie.ArchieGenerator factory;
-        [SerializeField] Archie.animal_generator factory;
+        // [SerializeField] Archie.animal_generator factory;
         [SerializeField] Incubator incubator;
 
         public class Species
@@ -127,6 +127,9 @@ namespace EcoBuilder.UI
                 incubator.Unincubate();
                 incubated = null;
             }
+            while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx))
+                nextIdx += 1;
+
             Species s = new Species(nextIdx, isProducer);
             if (sizeIfFixed >= 0)
                 s.BodySize = sizeIfFixed;
@@ -190,8 +193,6 @@ namespace EcoBuilder.UI
             SpawnWithEvents(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
-            while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx))
-                nextIdx += 1;
 
             OnUnincubated.Invoke();
             OnUserSpawned.Invoke(spawnedIdx);
@@ -415,14 +416,13 @@ namespace EcoBuilder.UI
                 typesAnim.SetBool("Visible", false);
             }
         }
-        [SerializeField] GameObject sizeParent, greedParent;
         public void HideSizeSlider(bool hidden=true)
         {
-            sizeParent.SetActive(!hidden);
+            sizeSlider.transform.parent.gameObject.SetActive(!hidden);
         }
         public void HideGreedSlider(bool hidden=true)
         {
-            greedParent.SetActive(!hidden);
+            greedSlider.transform.parent.gameObject.SetActive(!hidden);
         }
         bool removeEnabled = true;
         public void HideRemoveButton(bool hidden=true)
@@ -437,6 +437,10 @@ namespace EcoBuilder.UI
         public void FixInitialGreed(float fixedGreed)
         {
             greedIfFixed = fixedGreed;
+        }
+        public void HidePlantPawButton(bool hidden=true)
+        {
+            typesAnim.gameObject.SetActive(!hidden);
         }
     }
 }

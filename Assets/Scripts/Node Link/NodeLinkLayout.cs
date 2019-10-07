@@ -6,18 +6,18 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
         [SerializeField] float maxHeight=3f;
+        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
 
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-            if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperUnfocus)
+            if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperAntifocus)
             {
                 // get average of all positions, and center
                 Vector3 centroid;
 
-                if (focusedNode == null)
+                if (focusState == FocusState.Unfocus)
                 {
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
@@ -34,12 +34,12 @@ namespace EcoBuilder.NodeLink
                         Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused,
                                         ref graphVelocity, layoutSmoothTime);
                 }
-                else
+                else // if (focusState == FocusState.Focus)
                 {
                     centroid = focusedNode.StressPos;
 
                     nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up * centroid.y,
+                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y,
                                         ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
@@ -48,12 +48,13 @@ namespace EcoBuilder.NodeLink
 
                 if (constrainTrophic)
                 {
+                    // centroid = Vector3.zero;
                     float height = Mathf.Min(MaxChain, maxHeight);
                     float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
                     foreach (Node no in nodes)
                     {
-                        float targetY = trophicScaling * (trophicLevels[no.Idx]-1);
-                        no.StressPos -= new Vector3(centroid.x, no.StressPos.y-targetY, centroid.z);
+                        centroid.y = no.StressPos.y - (trophicScaling * (trophicLevels[no.Idx]-1));
+                        no.StressPos -= centroid;
                     }
                 }
                 else
@@ -64,17 +65,8 @@ namespace EcoBuilder.NodeLink
                     foreach (Node no in nodes)
                         no.StressPos -= centroid;
                 }
-                foreach (Node no in nodes)
-                {
-
-                    no.transform.localPosition =
-                        Vector3.SmoothDamp(no.transform.localPosition, no.StressPos,
-                                           ref no.velocity, layoutSmoothTime);
-                    no.transform.localScale =
-                        Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
-                }
             }
-            else
+            else // superfocused
             {
                 nodesParent.localPosition =
                     Vector3.SmoothDamp(nodesParent.localPosition, -focusedNode.FocusPos,
@@ -82,17 +74,10 @@ namespace EcoBuilder.NodeLink
                 graphParent.localPosition =
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
                                     ref graphVelocity, layoutSmoothTime);
-
-                foreach (Node no in nodes)
-                {
-                    no.transform.localPosition =
-                        Vector3.SmoothDamp(no.transform.localPosition, no.FocusPos,
-                                           ref no.velocity, layoutSmoothTime);
-
-                    no.transform.localScale =
-                        Vector3.Lerp(no.transform.localScale, no.Size*Vector3.one, sizeTween);
-                }
             }
+
+            foreach (Node no in nodes)
+                no.Tween(layoutSmoothTime, sizeTween);
         }
 
 

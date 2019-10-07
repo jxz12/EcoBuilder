@@ -13,6 +13,11 @@ namespace EcoBuilder.UI
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
 
+        void Awake()
+        {
+            GetComponent<Canvas>().worldCamera = Camera.main;
+        }
+
         GameObject incubated;
         public void Incubate(GameObject toIncubate)
         {

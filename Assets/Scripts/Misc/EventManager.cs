@@ -11,7 +11,6 @@ namespace EcoBuilder
 
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.StatusBar status;
-        [SerializeField] UI.Tutorial tutorial;
         [SerializeField] UI.MoveRecorder recorder;
 
         void Start()
@@ -38,7 +37,7 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
+            // nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
@@ -72,17 +71,20 @@ namespace EcoBuilder
             inspector.OnUserDespawned +=         (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
             nodelink.OnUserLinked +=           (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=         (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            // inspector.OnUserIsProducerSet += (i,x,y)=> recorder.TypeSet(i, x, y, inspector.SetIsProducer);
             inspector.OnUserSizeSet +=       (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet +=      (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
 
             recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
+            // recorder.OnSpeciesMemoryLeak +=      (i)=> model.RemoveSpecies(i);
 
-            status.AllowUpdateWhen(()=> atEquilibrium && !model.IsCalculating && graphSolved && !nodelink.IsCalculating && !tutorial.Teaching); 
+            status.AllowUpdateWhen(()=> atEquilibrium &&
+                                        !model.IsCalculating &&
+                                        graphSolved &&
+                                        !nodelink.IsCalculating); 
 
-            var level = status.Playing;
+            var level = GameManager.Instance.PlayedLevel;
             for (int i=0; i<level.Details.numSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,
@@ -94,6 +96,7 @@ namespace EcoBuilder
                     level.Details.greedEditable);
 
                 inspector.SetSpeciesRemovable(i, false);
+                nodelink.SetIfNodeRemovable(i, false);
             }
             for (int ij=0; ij<level.Details.numInteractions; ij++)
             {
@@ -102,6 +105,7 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
+            GameManager.Instance.LoadTutorialIfNeeded(); // UGLY
         }
 
         bool atEquilibrium = true, graphSolved = true;

@@ -1,141 +1,95 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
-namespace EcoBuilder.UI
+namespace EcoBuilder.Tutorials
 {
-    public partial class Tutorial : MonoBehaviour
+    public abstract class Tutorial : MonoBehaviour
     {
-        [SerializeField] Help help;
-        [SerializeField] Inspector inspector;
-        [SerializeField] StatusBar status;
-        [SerializeField] NodeLink.NodeLink nodelink;
-        [SerializeField] MoveRecorder recorder;
+        protected UI.Help help;
+        protected UI.Inspector inspector;
+        protected UI.StatusBar status;
+        protected UI.MoveRecorder recorder;
+        protected NodeLink.NodeLink nodelink;
+        protected Model.Model model;
 
-        Action bar;
-        public bool Teaching { get; private set; } = false;
-        public void StartStructureLesson()
+        protected Image pointer;
+        // [SerializeField] protected Sprite point, grab, pan;
+        
+        protected Vector2 targetPos, targetSize, targetAnchor;
+        private Vector2 velocity, sizocity, anchosity;
+        protected float targetZRot;
+        private float zRotation, rotocity;
+        [SerializeField] protected float smoothTime=.2f;
+
+        protected RectTransform rt;
+        protected Vector2 canvasRefRes { get; private set; }
+
+        void Start()
         {
-            inspector.HideSizeSlider(true);
-            inspector.HideGreedSlider(true);
-            inspector.FixInitialSize(.5f);
-            inspector.FixInitialGreed(.3f);
-            inspector.HideRemoveButton();
-            status.HideScore(true);
-            status.HideConstraints(true);
-            recorder.gameObject.SetActive(false);
-            Teaching = true;
+            pointer = GetComponent<Image>();
+            rt = GetComponent<RectTransform>();
 
-            ExplainIntro();
+            var rtCanvas  = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
+            canvasRefRes = new Vector2(rtCanvas.sizeDelta.x, rtCanvas.sizeDelta.y);
+
+            targetPos = rt.anchoredPosition;
+            targetSize = rt.sizeDelta;
+            targetAnchor = rt.anchorMin;
+            targetZRot = zRotation = rt.rotation.eulerAngles.z;
+
+            StartCoroutine(WaitToStart());
         }
-        void ExplainIntro()
+        IEnumerator WaitToStart()
         {
-            if (bar != null)
-                bar();
+            // ugly as HECK
+            while ((help = FindObjectOfType<UI.Help>()) == null)
+                yield return null;
+            while ((inspector = FindObjectOfType<UI.Inspector>()) == null)
+                yield return null;
+            while ((status = FindObjectOfType<UI.StatusBar>()) == null)
+                yield return null;
+            while ((recorder = FindObjectOfType<UI.MoveRecorder>()) == null)
+                yield return null;
+            while ((nodelink = FindObjectOfType<NodeLink.NodeLink>()) == null)
+                yield return null;
+            while ((model = FindObjectOfType<Model.Model>()) == null)
+                yield return null;
 
-            help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning the world around by dragging it, or add your first species by pressing the leaf in the bottom right.");
-            help.SetSide(false);
-            help.SetDistFromTop(.2f);
-
-            inspector.SetConsumerAvailability(false);
-            inspector.OnIncubated += ExplainInspector;
-
-            bar = ()=> { inspector.OnIncubated -= ExplainInspector; };
-            GetComponent<Animator>().SetInteger("Progress", 0);
+            StartLesson();
         }
-
-        void ExplainInspector()
+        protected abstract void StartLesson();
+        protected Action Detach;
+        void OnDestroy()
         {
-            help.SetText("Here you can choose a new name for your species. You can then introduce it by dragging it into the world.");
-            help.Show(true);
-            help.SetSide(true);
-            help.SetDistFromTop(.1f);
-
-            bar();
-            Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g,x);
-            Action fooo = ()=> ExplainIntro();
-            inspector.OnShaped += foo;
-            nodelink.OnEmptyPressed += fooo;
-
-            bar = ()=> { inspector.OnShaped -= foo; nodelink.OnEmptyPressed -= fooo; };
-            GetComponent<Animator>().SetInteger("Progress", 1);
-        }
-        GameObject firstSpecies;
-        int firstIdx;
-        void ExplainSpawn(GameObject first, int idx)
-        {
-            firstSpecies = first;
-            firstIdx = idx;
-            inspector.SetConsumerAvailability(true);
-            inspector.SetProducerAvailability(false);
-
-            // help.SetDistFromTop(.05f);
-            help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by pressing the paw button.");
-            help.SetDistFromTop(.02f);
-            help.Show(true);
-
-            bar();
-            Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g,x);
-            Action fooo = ()=> help.Show(false);
-            Action foooo = ()=> help.Show(true);
-            inspector.OnShaped += foo;
-            inspector.OnIncubated += fooo;
-            inspector.OnUnincubated += foooo;
-            bar = ()=> { inspector.OnShaped -= foo; inspector.OnIncubated -= fooo; inspector.OnUnincubated -= foooo; };
-            GetComponent<Animator>().SetInteger("Progress", 2);
-        }
-        void WaitForAnimal()
-        {
-            // TODO: make this the state after spawn
+            Detach?.Invoke();
         }
 
-        // TODO: get references to both species, and map the drag cursor to them
-        GameObject secondSpecies;
-        int secondIdx;
-        void ExplainInteraction(GameObject second, int idx)
+        void FixedUpdate()
         {
-            secondSpecies = second;
-            secondIdx = idx;
-            inspector.SetConsumerAvailability(false);
-            help.SetText("Your " + secondSpecies.name + " is hungry! Drag from it to the " + firstSpecies.name + " to give it some food.");
-            help.Show(true);
+            rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, smoothTime);
+            rt.sizeDelta = Vector2.SmoothDamp(rt.sizeDelta, targetSize, ref sizocity, smoothTime);
+            rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
+            zRotation = Mathf.SmoothDamp(zRotation, targetZRot, ref rotocity, smoothTime);
+            rt.rotation = Quaternion.Euler(0, 0, zRotation);
+        }
 
-            bar();
-            Action<int, int> foo = (i,j)=> { ExplainFirstEcosystem(); help.Show(false); StartCoroutine(WaitThenDo(2, ()=>help.Show(true))); };
-            nodelink.OnUserLinked += foo;
-            bar = ()=> nodelink.OnUserLinked -= foo;
-            GetComponent<Animator>().SetInteger("Progress", 3);
-        }
-        void ExplainFirstEcosystem()
+        protected void Point()
         {
-            help.SetText("Well done! You have built your first ecosystem. Now let's edit your species. Click on your " + firstSpecies.name + " to examine it again.");
-
-            bar();
-            Action<int> foo = (i)=> { if (i==0) ExplainRemove(); };
-            nodelink.OnNodeFocused += foo;
-            bar = ()=> nodelink.OnNodeFocused -= foo;
-            GetComponent<Animator>().SetInteger("Progress", 4);
+            GetComponent<Animator>().SetInteger("State", 0);
         }
-        void ExplainRemove()
+        protected void Grab()
         {
-            // TODO: remove link (oh no! don't worry if you make mistakes, you can undo)
+            GetComponent<Animator>().SetInteger("State", 1);
         }
-        void ExplainUndo()
+        protected void Pan()
         {
-            // TODO: explain undoing and removing species
-            recorder.gameObject.SetActive(true);
+            GetComponent<Animator>().SetInteger("State", 2);
         }
-        IEnumerator WaitThenDo(float seconds, Action Todo)
+        protected Vector2 ScreenPos(Vector2 viewportPos)
         {
-            yield return new WaitForSeconds(seconds);
-            Todo();
-        }
-        void SetFinishMessage()
-        {
-            help.SetText("Congratulations on finishing the first tutorial! The next few levels will introduce more concepts that you will need to know to play the game.");
-
-            bar();
-            GetComponent<Animator>().SetInteger("Progress", 7);
+            return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
     }
 }
