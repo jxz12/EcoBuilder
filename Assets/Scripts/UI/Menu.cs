@@ -37,7 +37,9 @@ namespace EcoBuilder.UI
         List<Level> levels;
         void Start()
         {
-            // PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
+            // DeleteDirectoryLevels();
+            // PlayerPrefs.DeleteKey("Has Played");
+
             if (!PlayerPrefs.HasKey("Has Played"))
             {
                 SaveSceneLevels();
@@ -134,6 +136,21 @@ namespace EcoBuilder.UI
                 levels[i].SaveToFile();
             }
             levels[levels.Count-1].SaveToFile();
+        }
+        void DeleteDirectoryLevels()
+        {
+            foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
+                                                 .Where(s=> s.EndsWith(".gd", StringComparison.OrdinalIgnoreCase)))
+            {
+                try
+                {
+                    File.Delete(filepath);
+                }
+                catch (Exception e)
+                {
+                    print("could not delete save file " + e);
+                }
+            }
         }
 
 

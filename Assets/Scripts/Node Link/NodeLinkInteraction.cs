@@ -279,10 +279,6 @@ namespace EcoBuilder.NodeLink
         void Zoom(float amount)
         {
             float zoom = amount * zoomMultiplier;
-            if (Input.touchCount == 2) // TODO: remove when DPI included
-            {
-                zoom *= zoomMultiplier;
-            }
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
@@ -307,10 +303,9 @@ namespace EcoBuilder.NodeLink
         }
 
         float yRotation = 0, yRotationMomentum = 0;
-        void Rotate(Vector2 amount)
+        void Rotate(Vector2 delta)
         {
-            // TODO: include Screen.dpi
-            // TODO: also make the jumps smoother, for this and zoom
+            var amount = delta / (Screen.dpi==0? 72:Screen.dpi);
             float ySpin = -amount.x * rotationMultiplier;
             yRotationMomentum = ySpin;
             yMinRotationMomentum = Mathf.Abs(yMinRotationMomentum) * Mathf.Sign(ySpin);
@@ -550,7 +545,7 @@ namespace EcoBuilder.NodeLink
                 if (ped.pointerId == -1)
                     Rotate(ped.delta);
                 else if (Input.touchCount == 1)
-                    Rotate(ped.delta * rotationMultiplier);
+                    Rotate(ped.delta);
             }
             if (Input.touchCount == 2) // if pinch/pan
             {
@@ -658,6 +653,7 @@ namespace EcoBuilder.NodeLink
                 Node closest = null;
                 float closestDist = float.MaxValue;
                 float radius = snapRadius * snapRadius;
+                radius /= Screen.dpi==0? 72:Screen.dpi;
                 foreach (Node no in nodes)
                 {
                     if (no.focusState == Node.FocusState.Hidden)
