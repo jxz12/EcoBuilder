@@ -5,8 +5,7 @@ using UnityEngine;
 using System.Diagnostics; // TIME TESTING
 
 namespace EcoBuilder.Archie{
-    using JohnnysInterface;
-    public class animal_generator : MonoBehaviour, ISpeciesGenerator
+    public class animal_generator : ProceduralMeshGenerator
     {
         [SerializeField] GameObject Animal_Prefab;
         [SerializeField] Mesh[] Consumer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
@@ -22,7 +21,7 @@ namespace EcoBuilder.Archie{
 
         }
 
-        public GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
+        public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
         {
             UnityEngine.Random.InitState(randomSeed);
             var created_species = Instantiate(Animal_Prefab);
@@ -39,7 +38,7 @@ namespace EcoBuilder.Archie{
             return created_species;
         }
 
-        public void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population = -1) 
+        public override void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population = -1) 
         {
             UnityEngine.Random.InitState(randomSeed);
             if (generated_consumers.Contains(species))
@@ -60,8 +59,10 @@ namespace EcoBuilder.Archie{
             // assign mesh
             animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize * (float)(Consumer_Meshs.Length))];
             // generate texture and material
-            var yuv_coordinates = new Vector3(bodySize, .4f, greediness);
-            animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
+            var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
+
+            // animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
+            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates);
         }
 
 
@@ -72,8 +73,10 @@ namespace EcoBuilder.Archie{
             // assign mesh
             plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize * (float)(Consumer_Meshs.Length))];
             // generate texture and material
-            var yuv_coordinates = new Vector3(bodySize, -.4f, greediness);
-            plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
+            var yuv_coordinates = new Vector3(1-bodySize, -.4f, greediness-.5f);
+
+            // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
+            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates);
         }
 
         public static string[] adjectives = new string[]

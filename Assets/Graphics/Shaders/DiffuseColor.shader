@@ -25,7 +25,7 @@ Shader "Mobile/Diffuse Color"
         {
             // fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = _Color.rgb;
-            o.Alpha = _Color.a;
+            // o.Alpha = _Color.a;
         }
         ENDCG
     }
