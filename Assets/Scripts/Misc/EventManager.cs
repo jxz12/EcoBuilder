@@ -85,6 +85,9 @@ namespace EcoBuilder
                                         !nodelink.IsCalculating); 
 
             var level = GameManager.Instance.PlayedLevel;
+            if (level == null)
+                return; // only for testing, should never happen in build
+
             for (int i=0; i<level.Details.numSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,

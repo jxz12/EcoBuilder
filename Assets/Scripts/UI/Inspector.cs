@@ -35,10 +35,8 @@ namespace EcoBuilder.UI
         [SerializeField] Button refroveButton;
         [SerializeField] Animator traitsAnim, typesAnim;
         
-        [SerializeField] JonnyGenerator.JonnyGenerator factory;
-        // [SerializeField] Archie.ArchieGenerator factory;
-        // [SerializeField] Archie.animal_generator factory;
         [SerializeField] Incubator incubator;
+        [SerializeField] ProceduralMeshGenerator factory;
 
         public class Species
         {
@@ -207,6 +205,7 @@ namespace EcoBuilder.UI
             {
                 incubated.BodySize = sizeSlider.normalizedValue;
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                nameText.text = incubated.GObject.name;
             }
             else if (inspected != null)
             {
@@ -215,6 +214,7 @@ namespace EcoBuilder.UI
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
                 OnUserSizeSet.Invoke(inspected.Idx, prevSize, inspected.BodySize);
                 factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+                nameText.text = inspected.GObject.name;
             }
         }
         void SetGreedFromSlider()
@@ -223,6 +223,7 @@ namespace EcoBuilder.UI
             {
                 incubated.Greediness = greedSlider.normalizedValue;
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                nameText.text = incubated.GObject.name;
             }
             else if (inspected != null)
             {
@@ -231,6 +232,7 @@ namespace EcoBuilder.UI
                 OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
                 OnUserGreedSet.Invoke(inspected.Idx, prevGreed, inspected.Greediness);
                 factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
+                nameText.text = inspected.GObject.name;
             }
         }
 

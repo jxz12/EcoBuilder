@@ -26,11 +26,6 @@ namespace EcoBuilder.UI
             var level = GameManager.Instance.PlayedLevel;
             if (level == null || level.Details.title == "Sandbox") // FIXME:
             {
-                if (level == null)
-                {
-                    // note: only for testing
-                    level = GameManager.Instance.GetDefaultLevel();
-                }
                 leaf.Unconstrain();
                 paw.Unconstrain();
                 edge.Unconstrain();
@@ -47,6 +42,12 @@ namespace EcoBuilder.UI
                 loop.Constrain(level.Details.minLoop);
             }
             shield.Constrain(-1); // do not show stability
+
+            if (level == null) // only for test
+            {
+                DisableFinish();
+                return;
+            }
 
             help.SetText(level.Details.introduction);
             level.OnFinished += CompleteLevel;

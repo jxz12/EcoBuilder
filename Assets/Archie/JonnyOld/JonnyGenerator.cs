@@ -5,12 +5,7 @@ using UnityEngine;
 
 namespace EcoBuilder.JonnyGenerator
 {
-    public interface ISpeciesGenerator
-    {
-        GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population=-1);
-        void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population=-1);
-    }
-    public class JonnyGenerator : MonoBehaviour, ISpeciesGenerator
+    public class JonnyGenerator : ProceduralMeshGenerator
     {
         [SerializeField] JonnySpecies speciesPrefab;
         [SerializeField] Mesh producerMesh, consumerMesh;
@@ -54,13 +49,13 @@ namespace EcoBuilder.JonnyGenerator
         }
 
 
-        public GameObject GenerateSpecies(bool isProducer, float size, float greed, int randomSeed, float population=-1)
+        public override GameObject GenerateSpecies(bool isProducer, float size, float greed, int randomSeed, float population=-1)
         {
             JonnySpecies toSpawn = Instantiate(speciesPrefab);
             ShapeSpecies(toSpawn, isProducer, size, greed, randomSeed);
             return toSpawn.gameObject;
         }
-        public void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population=-1)
+        public override void RegenerateSpecies(GameObject species, float size, float greed, int randomSeed, float population=-1)
         {
             JonnySpecies toRegen = species.GetComponent<JonnySpecies>();
             if (toRegen == null)
