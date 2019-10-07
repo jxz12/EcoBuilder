@@ -172,6 +172,12 @@ namespace EcoBuilder
             PlayedLevel.SaveToFile();
         }
 
+        [SerializeField] GameObject[] landscapes;
+        public GameObject RandomLandscape()
+        {
+            return landscapes[UnityEngine.Random.Range(0, landscapes.Length)];
+        }
+
 
 
         int age, gender, education;
