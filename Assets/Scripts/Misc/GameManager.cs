@@ -175,7 +175,7 @@ namespace EcoBuilder
         [SerializeField] GameObject[] landscapes;
         public GameObject RandomLandscape()
         {
-            return landscapes[UnityEngine.Random.Range(0, landscapes.Length)];
+            return Instantiate(landscapes[UnityEngine.Random.Range(0, landscapes.Length)]);
         }
 
 

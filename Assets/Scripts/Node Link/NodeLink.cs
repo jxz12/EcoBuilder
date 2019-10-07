@@ -264,5 +264,9 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        public void AddLandscape(GameObject landscape)
+        {
+            landscape.transform.SetParent(nodesParent, false);
+        }
     }
 }

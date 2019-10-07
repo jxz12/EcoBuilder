@@ -26,7 +26,7 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainIntro()
         {
-            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Start by focusing on a species, by pressing it.");
+            help.SetText("The animal below is going extinct! Let's fix that. Start by focusing on a species, by pressing it. A blue outline means that a species or link cannot be removed.");
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
