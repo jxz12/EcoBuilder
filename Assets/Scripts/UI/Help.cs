@@ -18,7 +18,7 @@ namespace EcoBuilder.UI
         RectTransform rt;
         Vector2 targetPos, targetAnchor;
         Vector2 velocity, anchosity;
-        Vector2 canvasRefRes;
+        Vector2 canvasRefRes; // TODO: move this back into pixels lol
         void Awake()
         {
             rt = GetComponent<RectTransform>();
