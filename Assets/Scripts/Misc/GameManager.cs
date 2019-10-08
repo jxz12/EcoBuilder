@@ -41,7 +41,7 @@ namespace EcoBuilder
             // #endif
 
             if (SceneManager.sceneCount == 1)
-                SceneManager.LoadSceneAsync("Menu");
+                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
         }
         
         public void UnloadSceneThenLoadAnother(string toUnload, string another)

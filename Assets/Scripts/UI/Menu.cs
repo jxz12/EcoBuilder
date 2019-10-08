@@ -37,11 +37,10 @@ namespace EcoBuilder.UI
         List<Level> levels;
         void Start()
         {
-            // DeleteDirectoryLevels();
             // PlayerPrefs.DeleteKey("Has Played");
-
             if (!PlayerPrefs.HasKey("Has Played"))
             {
+                DeleteDirectoryLevels();
                 SaveSceneLevels();
                 // GoToSurvey();
                 PlayerPrefs.SetString("Has Played", "yes");

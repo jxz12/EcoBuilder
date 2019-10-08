@@ -324,8 +324,10 @@ namespace EcoBuilder.Archie
 		}
 
 		public void save_mesh() {
+			#if UNITY_EDITOR
             AssetDatabase.CreateAsset( animal_mesh, "Assets/saved_animal" ); //saves to root of project file, NB: it does this by creating a text file with the details of the unity gameobject (can't open in blender)
 			AssetDatabase.SaveAssets();
+			#endif
 		}
 
 		public organism() {

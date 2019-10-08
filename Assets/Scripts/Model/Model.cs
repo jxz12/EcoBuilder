@@ -331,6 +331,7 @@ namespace EcoBuilder.Model
     //     }
     // }
     // #endif
+    #if UNITY_EDITOR
     public class ReadOnlyAttribute : PropertyAttribute {}
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
     public class ShowOnlyDrawer : PropertyDrawer
@@ -361,4 +362,8 @@ namespace EcoBuilder.Model
             EditorGUI.LabelField(position,label.text, valueStr);
         }
     }
+    #else
+    // [AttributeUsage(AttributeTargets.Property)]
+    public class ReadOnlyAttribute : PropertyAttribute {}
+    #endif
 }
