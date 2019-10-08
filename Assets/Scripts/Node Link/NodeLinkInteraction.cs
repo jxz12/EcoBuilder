@@ -173,14 +173,14 @@ namespace EcoBuilder.NodeLink
 
             float range = Mathf.PI * ((float)(right) / (right+left));
             float angle = 0;
-            foreach (Node no in consumers)//.OrderBy(x=>-trophicLevels[x.Idx]))
+            foreach (Node no in consumers.OrderBy(c=>-c.StressPos.x))
             {
                 angle += 1f / (consumers.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
                               + nodes[focusIdx].FocusPos;
             }
             angle = 0;
-            foreach (Node no in resources)//.OrderBy(x=>trophicLevels[x.Idx]))
+            foreach (Node no in resources.OrderBy(r=>-r.StressPos.x))
             {
                 angle -= 1f / (resources.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
@@ -188,7 +188,7 @@ namespace EcoBuilder.NodeLink
             }
             angle -= 1f / (resources.Count+1) * range;
             range = 2 * Mathf.PI * ((float)(left) / (right+left));
-            foreach (Node no in both)//.OrderBy(x=>trophicLevels[x.Idx]))
+            foreach (Node no in both.OrderBy(b=>b.StressPos.y))
             {
                 angle -= 1f / (both.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
@@ -307,6 +307,7 @@ namespace EcoBuilder.NodeLink
         {
             var amount = delta / (Screen.dpi==0? 72:Screen.dpi);
             float ySpin = -amount.x * rotationMultiplier;
+            float xSpin = amount.y * rotationMultiplier;
             yRotationMomentum = ySpin;
             yMinRotationMomentum = Mathf.Abs(yMinRotationMomentum) * Mathf.Sign(ySpin);
 
@@ -314,14 +315,34 @@ namespace EcoBuilder.NodeLink
             {
                 yRotation += ySpin;
                 nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+
+                if (constrainTrophic)
+                {
+                    graphParent.Rotate(Vector3.right, xSpin);
+                }
+                else
+                {
+                    Quaternion rotator = 
+                        Quaternion.AngleAxis(-yRotation, Vector3.up) * Quaternion.AngleAxis(xSpin, Vector3.right) * Quaternion.AngleAxis(yRotation, Vector3.up);
+                    // Quaternion rotator = 
+                    //     Quaternion.AngleAxis(-90, Vector3.up) * Quaternion.AngleAxis(xSpin, Vector3.right) * Quaternion.AngleAxis(90, Vector3.up);
+                    foreach (Node no in nodes)
+                    {
+                        no.StressPos -= rotationCenter;
+                        no.StressPos = rotator * no.StressPos;
+                        no.StressPos += rotationCenter;
+
+                        no.transform.localPosition -= rotationCenter;
+                        no.transform.localPosition = rotator * no.transform.localPosition;
+                        no.transform.localPosition += rotationCenter;
+                    }
+                }
             }
             else
             {
                 nodesParent.transform.Rotate(Vector3.up, ySpin);
             }
 
-            float xSpin = amount.y * rotationMultiplier;
-            graphParent.Rotate(Vector3.right, xSpin);
         }
         private void RotateWithMomentum()
         {
@@ -333,9 +354,12 @@ namespace EcoBuilder.NodeLink
 
                 nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
 
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
+                if (constrainTrophic)
+                {
+                    var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                    var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
+                    graphParent.transform.localRotation = lerped;
+                }
             }
             else
             {

@@ -111,6 +111,7 @@ namespace EcoBuilder.Model
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
+            InitScales();
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
         Dictionary<Species, int> speciesToIdx = new Dictionary<Species, int>();
@@ -237,30 +238,28 @@ namespace EcoBuilder.Model
             // same as above commented
             return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
         }
-        static float NormaliseOnLog10Scale(float input, float min, float max)
-        {
-            float logIn = Mathf.Log10(input);
-            float logMin = Mathf.Log10(min);
-            float logMax = Mathf.Log10(max);
-
-            return (logIn - logMin) / (logMax - logMin);
-        }
-        static float NormaliseOnLnScale(float input, float min, float max)
-        {
-            float logIn = Mathf.Log(input);
-            float logMin = Mathf.Log(min);
-            float logMax = Mathf.Log(max);
-
-            return (logIn - logMin) / (logMax - logMin);
-        }
-        static float NormaliseOnLoggedScale(float input, float logMin, float logMax)
-        {
-            return (Mathf.Log10(input) - logMin) / (logMax - logMin);
-        }
 
         [ReadOnly] [SerializeField]
         float minScaledAbundance = 6e-8f,
-              maxScaledAbundance = 2f;
+              maxScaledAbundance = 2f,
+              minScaledFlux = 1e-18f,
+              maxScaledFlux = 9.2e-7f,
+              minScaledComplexity = 1e-10f,
+              maxScaledComplexity = 7e-3f;
+
+        private float minLogAbund, maxLogAbund,
+                      minLogFlux, maxLogFlux,
+                      minLogPlex, maxLogPlex;
+        void InitScales()
+        {
+            minLogAbund = Mathf.Log10(minScaledAbundance);
+            maxLogAbund = Mathf.Log10(maxScaledAbundance);
+            minLogFlux = Mathf.Log10(minScaledFlux);
+            maxLogFlux = Mathf.Log10(maxScaledFlux);
+            minLogPlex = Mathf.Log10(minScaledComplexity);
+            maxLogPlex = Mathf.Log10(maxScaledComplexity);
+        }
+        
         public float GetScaledAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
@@ -270,13 +269,9 @@ namespace EcoBuilder.Model
             }
             else
             {
-                return NormaliseOnLnScale(abundance, minScaledAbundance, maxScaledAbundance);
+                return (Mathf.Log10(abundance)-minLogAbund) / (maxLogAbund-minLogAbund);
             }
         }
-
-        [ReadOnly] [SerializeField]
-        float minScaledFlux = 1e-18f,
-              maxScaledFlux = 9.2e-7f;
         public float GetScaledFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
@@ -286,51 +281,46 @@ namespace EcoBuilder.Model
             }
             else
             {
-                // TODO: this might be slow
-                return NormaliseOnLog10Scale(flux, minScaledFlux, maxScaledFlux);
+                return (Mathf.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
             }
         }
         float NormaliseFluxScore(float input)
         {
             // for flux
             float normalised = input < maxScaledFlux ?
-                               NormaliseOnLog10Scale(input, minScaledFlux, maxScaledFlux)
+                               (Mathf.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
                              : input/maxScaledFlux;
 
-            // print("flux: " + input);
             return Mathf.Max(normalised, 0);
         }
-        [ReadOnly] [SerializeField]
-        float minScaledComplexity = 1e-10f,
-              maxScaledComplexity = 7e-3f;
         float NormaliseComplexityScore(float input)
         {
             // for complexity
             float normalised = input < maxScaledComplexity ?
-                               NormaliseOnLog10Scale(input, minScaledComplexity, maxScaledComplexity)
+                               (Mathf.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
                              : input/maxScaledComplexity;
             
-            // print("complexity: " + input);
             return Mathf.Max(normalised, 0);
+        }
+
+        public Tuple<int, float> GetMostComplexSpecies()
+        {
+            return null;
+        }
+        public Tuple<int, float> GetLeastComplexSpecies()
+        {
+            return null;
+        }
+        public Tuple<int, int, float> GetMostComplexLink()
+        {
+            return null;
+        }
+        public Tuple<int, int, float> GetLeastComplexLink()
+        {
+            return null;
         }
     }
 
-    // to make fields readonly
-    // [AttributeUsage(AttributeTargets.Field, Inherited = true)]
-    // public class ReadOnlyAttribute : PropertyAttribute { }
-    // #if UNITY_EDITOR
-    // [UnityEditor.CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-    // public class ReadOnlyAttributeDrawer : UnityEditor.PropertyDrawer
-    // {
-    //     public override void OnGUI(Rect rect, UnityEditor.SerializedProperty prop, GUIContent label)
-    //     {
-    //         bool wasEnabled = GUI.enabled;
-    //         GUI.enabled = false;
-    //         UnityEditor.EditorGUI.PropertyField(rect, prop);
-    //         GUI.enabled = wasEnabled;
-    //     }
-    // }
-    // #endif
     #if UNITY_EDITOR
     public class ReadOnlyAttribute : PropertyAttribute {}
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
@@ -363,7 +353,7 @@ namespace EcoBuilder.Model
         }
     }
     #else
-    // [AttributeUsage(AttributeTargets.Property)]
+    // empty attribute
     public class ReadOnlyAttribute : PropertyAttribute {}
     #endif
 }
