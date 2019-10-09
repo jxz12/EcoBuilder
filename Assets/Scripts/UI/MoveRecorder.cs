@@ -15,8 +15,8 @@ namespace EcoBuilder.UI
 
         class Move
         {
-            public enum Type { Spawn, Despawn, Interaction, Production, Size, Greed };
             public int idx;
+            public enum Type { Spawn, Despawn, Interaction, Production, Size, Greed };
             public Type type;
             public Action Undo;
             public Action Redo;

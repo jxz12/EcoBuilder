@@ -313,19 +313,23 @@ namespace EcoBuilder.NodeLink
 
             if (focusState != FocusState.SuperFocus || focusState != FocusState.SuperAntifocus)
             {
-                yRotation += ySpin;
-                nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
-
                 if (constrainTrophic)
                 {
+                    yRotation += ySpin;
+                    nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
                     graphParent.Rotate(Vector3.right, xSpin);
                 }
                 else
                 {
-                    Quaternion rotator = 
-                        Quaternion.AngleAxis(-yRotation, Vector3.up) * Quaternion.AngleAxis(xSpin, Vector3.right) * Quaternion.AngleAxis(yRotation, Vector3.up);
-                    // Quaternion rotator = 
-                    //     Quaternion.AngleAxis(-90, Vector3.up) * Quaternion.AngleAxis(xSpin, Vector3.right) * Quaternion.AngleAxis(90, Vector3.up);
+                    yRotation += ySpin;
+                    nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+                    Quaternion rotator =
+                        Quaternion.AngleAxis(-yRotation, Vector3.up) *
+                        Quaternion.AngleAxis(xSpin, Vector3.right) *
+                        Quaternion.AngleAxis(yRotation, Vector3.up);
+                    // Quaternion rotator =
+                    //     Quaternion.AngleAxis(ySpin, Vector3.up) * 
+                    //     Quaternion.AngleAxis(xSpin, Vector3.right);
                     foreach (Node no in nodes)
                     {
                         no.StressPos -= rotationCenter;
@@ -348,14 +352,14 @@ namespace EcoBuilder.NodeLink
         {
             if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperAntifocus)
             {
-                yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
-                yRotation += yRotationMomentum;
-
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
-
                 if (constrainTrophic)
                 {
+                    yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
+                    nodesParent.Rotate(Vector3.up, yRotationMomentum);
+                    yRotation += yRotationMomentum;
+
+                    nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
+
                     var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
                     var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
                     graphParent.transform.localRotation = lerped;
@@ -364,10 +368,7 @@ namespace EcoBuilder.NodeLink
             else
             {
                 nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, rotationTween);
-
-                var graphParentGoal = Quaternion.identity;
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
+                graphParent.transform.localRotation = Quaternion.Slerp(graphParent.transform.localRotation, Quaternion.identity, rotationTween);
             }
         }
 
