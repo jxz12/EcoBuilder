@@ -59,7 +59,8 @@ namespace EcoBuilder.UI
         }
         void OnDestroy()
         {
-            GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
+            if (GameManager.Instance.PlayedLevel != null)
+                GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
         }
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;

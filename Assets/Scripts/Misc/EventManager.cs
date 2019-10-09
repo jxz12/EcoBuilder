@@ -72,9 +72,9 @@ namespace EcoBuilder
             inspector.OnUserSizeSet +=  (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet += (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
 
-            recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
-            recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
-            recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
+            recorder.OnSpeciesUndone +=     (i)=> nodelink.SwitchFocus(i);
+            recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
+            recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
             nodelink.AddLandscape(GameManager.Instance.RandomLandscape());
             status.AllowUpdateWhen(()=> atEquilibrium &&

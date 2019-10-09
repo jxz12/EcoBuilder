@@ -261,17 +261,10 @@ namespace EcoBuilder.Model
                         meanOffDiag += community[i,j];
                         numOffDiagEntries += 1;
                     }
-
                     // if (i<j)
                     //     meanOffDiagPairs += community[i,j] * community[j,i];
                 }
             }
-
-            // if (richness > 0)
-            // {
-            //     mean /= richness*richness;
-            //     meanDiag /= richness;
-            // }
 
             // only account for non zeros
             double variance = 0;
@@ -343,7 +336,7 @@ namespace EcoBuilder.Model
             return sb.ToString();
         }
         
-        public static string MathNetVecStr(Vector<double> vec, string formatter="e1")
+        public static string MathNetVecStr(Vector<double> vec, string formatter="e2")
         {
             var sb = new System.Text.StringBuilder();
             int n = vec.Count;

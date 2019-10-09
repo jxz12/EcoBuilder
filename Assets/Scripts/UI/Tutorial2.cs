@@ -81,7 +81,7 @@ namespace EcoBuilder.Tutorials
         {
             help.Show(false);
 
-            help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with itself, and so the lower its maximum population. Try changing it to see the effects.");
+            help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with others of its own species, and so the lower its maximum population. Try changing it to see the effects.");
             help.Show(true);
             inspector.HideGreedSlider(false);
 
