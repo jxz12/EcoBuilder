@@ -26,7 +26,7 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainIntro()
         {
-            help.SetText("The animal below is flashing, which means it is going extinct! Let's fix that. Start by focusing on a species, by pressing it.");
+            help.SetText("The animal below is going extinct, even though it has food! Let's fix that. Start by focusing on a species, by pressing it. A blue outline means that a species or link cannot be removed.");
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
@@ -81,7 +81,7 @@ namespace EcoBuilder.Tutorials
         {
             help.Show(false);
 
-            help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with itself, and so the lower its maximum population. Try changing it to see the effects.");
+            help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with others of its own species, and so the lower its maximum population. Try changing it to see the effects.");
             help.Show(true);
             inspector.HideGreedSlider(false);
 

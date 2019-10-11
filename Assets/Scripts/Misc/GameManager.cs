@@ -41,7 +41,7 @@ namespace EcoBuilder
             // #endif
 
             if (SceneManager.sceneCount == 1)
-                SceneManager.LoadSceneAsync("Menu");
+                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
         }
         
         public void UnloadSceneThenLoadAnother(string toUnload, string another)
@@ -170,6 +170,12 @@ namespace EcoBuilder
                 PlayedLevel.NextLevel.Unlock();
             }
             PlayedLevel.SaveToFile();
+        }
+
+        [SerializeField] GameObject[] landscapes;
+        public GameObject RandomLandscape()
+        {
+            return Instantiate(landscapes[UnityEngine.Random.Range(0, landscapes.Length)]);
         }
 
 

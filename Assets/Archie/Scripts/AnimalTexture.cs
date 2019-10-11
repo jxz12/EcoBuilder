@@ -75,23 +75,31 @@ namespace EcoBuilder.Archie
             var mouth = pick_random(MouthTextures);
             var cheek = pick_random(CheeckTextures);
 
-            // size of output texture is same as chosen face texture
-            var texture = new Texture2D(eyes.width, eyes.height);
-            for (int i=0; i<texture.width; i++)
-            {
-                for (int j=0; j<texture.height; j++)
-                {
-                    var col = Color.Lerp(Color.clear, mouth.GetPixel(i,j), mouth.GetPixel(i,j).a);
-                    col = Color.Lerp(col, cheek.GetPixel(i,j), nose.GetPixel(i,j).a);
-                    col = Color.Lerp(col, eyes.GetPixel(i,j), eyes.GetPixel(i,j).a);
-                    col = Color.Lerp(col, nose.GetPixel(i,j), nose.GetPixel(i,j).a);
-                    texture.SetPixel(i,j, col);
-                }
-            }
+            speciesMesh.materials[1].SetTexture("_MainTex", eyes);
+            speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
+            speciesMesh.materials[1].SetTexture("_MainTex3", nose);
+            // speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
 
-            texture.wrapMode = TextureWrapMode.Mirror; // avoids stupid seam
-            texture.Apply();
-            speciesMesh.materials[1].SetTexture("_MainTex", texture);
+            // speciesMesh.materials[2].SetTexture("_MainTex", mouth);
+            // speciesMesh.materials[3].SetTexture("_MainTex", nose);
+
+            // size of output texture is same as chosen face texture
+            // var texture = new Texture2D(eyes.width, eyes.height);
+            // for (int i=0; i<texture.width; i++)
+            // {
+            //     for (int j=0; j<texture.height; j++)
+            //     {
+            //         var col = Color.Lerp(Color.clear, mouth.GetPixel(i,j), mouth.GetPixel(i,j).a);
+            //         // col = Color.Lerp(col, cheek.GetPixel(i,j), nose.GetPixel(i,j).a);
+            //         col = Color.Lerp(col, eyes.GetPixel(i,j), eyes.GetPixel(i,j).a);
+            //         // col = Color.Lerp(col, nose.GetPixel(i,j), nose.GetPixel(i,j).a);
+            //         texture.SetPixel(i,j, col);
+            //     }
+            // }
+
+            // texture.wrapMode = TextureWrapMode.Mirror; // avoids stupid seam
+            // texture.Apply();
+            // speciesMesh.materials[1].SetTexture("_MainTex", texture);
 
             // // loading face texture
             // var chosen_face = Face_Textures[0];

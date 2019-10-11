@@ -37,7 +37,6 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            // nodelink.OnEmptyPressed += ()=> status.ShowHelp(false);
             nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
@@ -47,7 +46,6 @@ namespace EcoBuilder
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
             model.OnEquilibrium += ()=> nodelink.ResizeNodes(i=> model.GetScaledAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetScaledFlux(i,j));
-            // model.OnEquilibrium += ()=> status.DisplayScore(model.NormalisedFlux);
             model.OnEquilibrium += ()=> status.DisplayScore(model.NormalisedComplexity);
             model.OnEquilibrium += ()=> status.DisplayFeastability(model.Feasible, model.Stable);
 
@@ -67,18 +65,18 @@ namespace EcoBuilder
             nodelink.OnLinked +=            ()=> atEquilibrium = false;
             nodelink.OnLinked +=            ()=> graphSolved = false;
 
-            inspector.OnUserSpawned +=           (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
-            inspector.OnUserDespawned +=         (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
-            nodelink.OnUserLinked +=           (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            nodelink.OnUserUnlinked +=         (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            inspector.OnUserSizeSet +=       (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
-            inspector.OnUserGreedSet +=      (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
+            inspector.OnUserSpawned +=      (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
+            inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
+            nodelink.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
+            nodelink.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
+            inspector.OnUserSizeSet +=  (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
+            inspector.OnUserGreedSet += (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
 
-            recorder.OnSpeciesUndone +=          (i)=> nodelink.SwitchFocus(i);
-            recorder.OnSpeciesMemoryLeak +=      (i)=> nodelink.RemoveNodeCompletely(i);
-            recorder.OnSpeciesMemoryLeak +=      (i)=> inspector.DespawnCompletely(i);
-            // recorder.OnSpeciesMemoryLeak +=      (i)=> model.RemoveSpecies(i);
+            recorder.OnSpeciesUndone +=     (i)=> nodelink.SwitchFocus(i);
+            recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
+            recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
+            nodelink.AddLandscape(GameManager.Instance.RandomLandscape());
             status.AllowUpdateWhen(()=> atEquilibrium &&
                                         !model.IsCalculating &&
                                         graphSolved &&
@@ -86,7 +84,7 @@ namespace EcoBuilder
 
             var level = GameManager.Instance.PlayedLevel;
             if (level == null)
-                return; // only for testing, should never happen in build
+                return; // only for testing, should never happen in the wild
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {

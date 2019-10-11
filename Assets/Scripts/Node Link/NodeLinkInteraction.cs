@@ -173,14 +173,14 @@ namespace EcoBuilder.NodeLink
 
             float range = Mathf.PI * ((float)(right) / (right+left));
             float angle = 0;
-            foreach (Node no in consumers)//.OrderBy(x=>-trophicLevels[x.Idx]))
+            foreach (Node no in consumers.OrderBy(c=>-c.StressPos.x))
             {
                 angle += 1f / (consumers.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
                               + nodes[focusIdx].FocusPos;
             }
             angle = 0;
-            foreach (Node no in resources)//.OrderBy(x=>trophicLevels[x.Idx]))
+            foreach (Node no in resources.OrderBy(r=>-r.StressPos.x))
             {
                 angle -= 1f / (resources.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
@@ -188,7 +188,7 @@ namespace EcoBuilder.NodeLink
             }
             angle -= 1f / (resources.Count+1) * range;
             range = 2 * Mathf.PI * ((float)(left) / (right+left));
-            foreach (Node no in both)//.OrderBy(x=>trophicLevels[x.Idx]))
+            foreach (Node no in both.OrderBy(b=>b.StressPos.y))
             {
                 angle -= 1f / (both.Count+1) * range;
                 no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
@@ -279,10 +279,6 @@ namespace EcoBuilder.NodeLink
         void Zoom(float amount)
         {
             float zoom = amount * zoomMultiplier;
-            if (Input.touchCount == 2) // TODO: remove when DPI included
-            {
-                zoom *= zoomMultiplier;
-            }
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
@@ -307,48 +303,72 @@ namespace EcoBuilder.NodeLink
         }
 
         float yRotation = 0, yRotationMomentum = 0;
-        void Rotate(Vector2 amount)
+        void Rotate(Vector2 delta)
         {
-            // TODO: include Screen.dpi
-            // TODO: also make the jumps smoother, for this and zoom
+            var amount = delta / (Screen.dpi==0? 72:Screen.dpi);
             float ySpin = -amount.x * rotationMultiplier;
+            float xSpin = amount.y * rotationMultiplier;
             yRotationMomentum = ySpin;
             yMinRotationMomentum = Mathf.Abs(yMinRotationMomentum) * Mathf.Sign(ySpin);
 
             if (focusState != FocusState.SuperFocus || focusState != FocusState.SuperAntifocus)
             {
-                yRotation += ySpin;
-                nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+                if (constrainTrophic)
+                {
+                    yRotation += ySpin;
+                    nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+                    graphParent.Rotate(Vector3.right, xSpin);
+                }
+                else
+                {
+                    yRotation += ySpin;
+                    nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+                    Quaternion rotator =
+                        Quaternion.AngleAxis(-yRotation, Vector3.up) *
+                        Quaternion.AngleAxis(xSpin, Vector3.right) *
+                        Quaternion.AngleAxis(yRotation, Vector3.up);
+                    // Quaternion rotator =
+                    //     Quaternion.AngleAxis(ySpin, Vector3.up) * 
+                    //     Quaternion.AngleAxis(xSpin, Vector3.right);
+                    foreach (Node no in nodes)
+                    {
+                        no.StressPos -= rotationCenter;
+                        no.StressPos = rotator * no.StressPos;
+                        no.StressPos += rotationCenter;
+
+                        no.transform.localPosition -= rotationCenter;
+                        no.transform.localPosition = rotator * no.transform.localPosition;
+                        no.transform.localPosition += rotationCenter;
+                    }
+                }
             }
             else
             {
                 nodesParent.transform.Rotate(Vector3.up, ySpin);
             }
 
-            float xSpin = amount.y * rotationMultiplier;
-            graphParent.Rotate(Vector3.right, xSpin);
         }
         private void RotateWithMomentum()
         {
             if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperAntifocus)
             {
-                yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
-                nodesParent.Rotate(Vector3.up, yRotationMomentum);
-                yRotation += yRotationMomentum;
+                if (constrainTrophic)
+                {
+                    yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
+                    nodesParent.Rotate(Vector3.up, yRotationMomentum);
+                    yRotation += yRotationMomentum;
 
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
+                    nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
 
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
+                    var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                    var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
+                    graphParent.transform.localRotation = lerped;
+                }
             }
             else
             {
                 nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, rotationTween);
-
-                var graphParentGoal = Quaternion.identity;
-                var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                graphParent.transform.localRotation = lerped;
+                graphParent.transform.localRotation = Quaternion.Slerp(graphParent.transform.localRotation, Quaternion.identity, rotationTween);
             }
         }
 
@@ -550,7 +570,7 @@ namespace EcoBuilder.NodeLink
                 if (ped.pointerId == -1)
                     Rotate(ped.delta);
                 else if (Input.touchCount == 1)
-                    Rotate(ped.delta * rotationMultiplier);
+                    Rotate(ped.delta);
             }
             if (Input.touchCount == 2) // if pinch/pan
             {
@@ -658,6 +678,7 @@ namespace EcoBuilder.NodeLink
                 Node closest = null;
                 float closestDist = float.MaxValue;
                 float radius = snapRadius * snapRadius;
+                radius /= Screen.dpi==0? 72:Screen.dpi;
                 foreach (Node no in nodes)
                 {
                     if (no.focusState == Node.FocusState.Hidden)

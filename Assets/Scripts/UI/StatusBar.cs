@@ -18,7 +18,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Animator score, constraints;
-        [SerializeField] Constraint shield, leaf, paw, edge, chain, loop;
+        [SerializeField] Constraint leaf, paw, edge, chain, loop;
         [SerializeField] Help help;
 
         void Awake()
@@ -41,21 +41,26 @@ namespace EcoBuilder.UI
                 chain.Constrain(level.Details.minChain);
                 loop.Constrain(level.Details.minLoop);
             }
-            shield.Constrain(-1); // do not show stability
+            // shield.Constrain(-1);
             feasibleScoreCol = scoreText.color;
-            infeasibleScoreCol = Color.grey;
+            infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic number
+            scoreText.color = infeasibleScoreCol;
 
             if (level == null) // only for test
             {
                 DisableFinish();
                 return;
             }
-
             help.SetText(level.Details.introduction);
-            level.OnFinished += CompleteLevel;
-
             target1 = level.Details.targetScore1;
             target2 = level.Details.targetScore2;
+
+            GameManager.Instance.PlayedLevel.OnFinished += CompleteLevel;
+        }
+        void OnDestroy()
+        {
+            if (GameManager.Instance.PlayedLevel != null)
+                GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
         }
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;
@@ -63,10 +68,6 @@ namespace EcoBuilder.UI
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
 
-        // void OnDestroy()
-        // {
-        //     Playing.OnFinished -= CompleteLevel; // not sure if necessary
-        // }
         Func<bool> CanUpdate;
         public void AllowUpdateWhen(Func<bool> Allowed)
         {
@@ -76,7 +77,7 @@ namespace EcoBuilder.UI
         {
             help.Show(showing);
         }
-        public void HideScore(bool hidden=true) // TODO: make these separate animators and smooth
+        public void HideScore(bool hidden=true)
         {
             // score.SetBool("Visible", !hidden);
             score.gameObject.SetActive(!hidden);
@@ -164,7 +165,7 @@ namespace EcoBuilder.UI
         {
             feasible = isFeasible;
 			stable = isStable;
-            shield.Display(stable);
+            // shield.Display(stable);
         }
         public void DisplayScore(float score)
         {
@@ -202,7 +203,7 @@ namespace EcoBuilder.UI
             {
                 newNumStars += 1;
                 star1.SetBool("Filled", true);
-                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .05f);
+                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .01f);
 
                 if (modelScore >= target1)
                 {
@@ -218,7 +219,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                scoreText.color = infeasibleScoreCol;
+                // scoreText.color = infeasibleScoreCol;
             }
 
             if (newNumStars < 2)
@@ -232,20 +233,23 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
 
-            // GameManager.Instance.PlayedLevel.SetFinishable(CanUpdate());
             // don't calculate 
-            if (finishDisabled || !CanUpdate())
+            if (!CanUpdate())
                 return;
 
             if (NumStars == 0 && newNumStars > 0)
             {
-                GameManager.Instance.PlayedLevel.ShowFinishFlag();
+                scoreText.color = Color.green;
                 OnLevelCompletabled?.Invoke();
+                if (!finishDisabled)
+                    GameManager.Instance.PlayedLevel.ShowFinishFlag();
             }
             else if (NumStars > 0 && newNumStars == 0)
             {
-                GameManager.Instance.PlayedLevel.ShowThumbnail();
+                scoreText.color = infeasibleScoreCol;
                 OnLevelIncompletabled?.Invoke();
+                if (!finishDisabled)
+                    GameManager.Instance.PlayedLevel.ShowThumbnail();
             }
             NumStars = newNumStars;
 		}
