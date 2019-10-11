@@ -18,7 +18,7 @@ namespace EcoBuilder.UI
         RectTransform rt;
         Vector2 targetPos, targetAnchor;
         Vector2 velocity, anchosity;
-        Vector2 canvasRefRes;
+        Vector2 canvasRefRes; // TODO: move this back into pixels lol
         void Awake()
         {
             rt = GetComponent<RectTransform>();
@@ -28,8 +28,8 @@ namespace EcoBuilder.UI
         }
         void Start()
         {
-            hideButton.onClick.AddListener(()=>Show(false));
-            showButton.onClick.AddListener(()=>Show(true));
+            hideButton.onClick.AddListener(()=>UserShow(false));
+            showButton.onClick.AddListener(()=>UserShow(true));
 
             DelayThenShow(2);
         }
@@ -99,12 +99,16 @@ namespace EcoBuilder.UI
             if (showing)
             {
                 targetPos.x = 0;
-                OnUserShown?.Invoke();
             }
             else
             {
                 targetPos.x = isLeft? -rt.rect.width : rt.rect.width;
             }
+        }
+        void UserShow(bool showing) // to attach to button
+        {
+            Show(showing);
+            OnUserShown?.Invoke();
         }
         void FixedUpdate()
         {

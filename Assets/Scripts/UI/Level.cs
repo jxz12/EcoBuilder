@@ -298,7 +298,10 @@ namespace EcoBuilder
             thumbnailedPos = transform.localPosition;
             transform.SetParent(GameManager.Instance.CardParent, true);
             transform.localScale = Vector3.one;
+
+            #if UNITY_EDITOR
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
+            #endif
 
             targetPos = Vector3.zero;
             targetSize = new Vector2(450, 850);
@@ -320,7 +323,10 @@ namespace EcoBuilder
             thumbnailedPos = transform.localPosition;
             transform.SetParent(GameManager.Instance.NavParent.transform, true);
             transform.localScale = Vector3.one;
+
+            #if UNITY_EDITOR
             UnityEditor.EditorApplication.RepaintHierarchyWindow();
+            #endif
 
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
             targetSize = new Vector2(350, 100);

@@ -55,9 +55,9 @@ namespace EcoBuilder.Archie{
         private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed, bool doFace=true)
         {
             // give appropriate name
-            animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)((bodySize-float.Epsilon) * (float)(nounsConsumer.GetLength(0))), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
+            animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)(bodySize*.99f * nounsConsumer.GetLength(0)), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
             // assign mesh
-            animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize * (float)(Consumer_Meshs.Length))];
+            animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
             // generate texture and material
             var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
 
@@ -69,11 +69,11 @@ namespace EcoBuilder.Archie{
         private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed, bool doFace=true)
         {
             // give appropriate name
-            plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsProducer[(int)((bodySize-float.Epsilon) * (float)(nounsProducer.GetLength(0))), UnityEngine.Random.Range(0, nounsProducer.GetLength(1))];
+            plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsProducer[(int)(bodySize*.99f * nounsProducer.GetLength(0)), UnityEngine.Random.Range(0, nounsProducer.GetLength(1))];
             // assign mesh
-            plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize * (float)(Consumer_Meshs.Length))];
+            plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
             // generate texture and material
-            var yuv_coordinates = new Vector3(1-bodySize, -.4f, greediness-.5f);
+            var yuv_coordinates = new Vector3(.8f-.5f*bodySize, -.4f, .8f*greediness-.4f);
 
             // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
             Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);

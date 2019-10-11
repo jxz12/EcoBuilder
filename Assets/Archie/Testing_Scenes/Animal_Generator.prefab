@@ -47,9 +47,9 @@ MonoBehaviour:
   Animal_Prefab: {fileID: 8620083413230679600, guid: 1f2994656656b4fcdaccf128fdfadbee,
     type: 3}
   Consumer_Meshs:
-  - {fileID: -516739513825897564, guid: 552be06625ca0438cbfa3171f1f8877a, type: 3}
-  - {fileID: -3592776260745777201, guid: aae75ccb0d90043bca5ec9b9b01e4e44, type: 3}
-  - {fileID: 9138436511008389774, guid: 6484ef9b2dae34ea498631a18443007d, type: 3}
+  - {fileID: -516739513825897564, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
+  - {fileID: 6095894394530886856, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
+  - {fileID: -3592776260745777201, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
 --- !u!114 &2075217385111946365
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,5 +88,3 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 9703a4be7f74a4fd8947e4bd2b7d7c50, type: 3}
   NoseTextures:
   - {fileID: 2800000, guid: de41a2dcab7f1436e8d4710b7e82d7ed, type: 3}
-  Base_Animal_Material: {fileID: 2100000, guid: dc16e37dbe3d35b45bac52fecacfb4b7,
-    type: 2}
