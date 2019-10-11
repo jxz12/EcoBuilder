@@ -76,7 +76,12 @@ namespace EcoBuilder.Archie
             var cheek = pick_random(CheeckTextures);
 
             speciesMesh.materials[1].SetTexture("_MainTex", eyes);
-            speciesMesh.materials[2].SetTexture("_MainTex", mouth);
+            speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
+            speciesMesh.materials[1].SetTexture("_MainTex3", nose);
+            // speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
+
+            // speciesMesh.materials[2].SetTexture("_MainTex", mouth);
+            // speciesMesh.materials[3].SetTexture("_MainTex", nose);
 
             // size of output texture is same as chosen face texture
             // var texture = new Texture2D(eyes.width, eyes.height);
