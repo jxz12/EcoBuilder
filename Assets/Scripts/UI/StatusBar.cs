@@ -59,7 +59,7 @@ namespace EcoBuilder.UI
         }
         void OnDestroy()
         {
-            if (GameManager.Instance.PlayedLevel != null)
+            if (GameManager.Instance != null && GameManager.Instance.PlayedLevel != null)
                 GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
         }
         int target1, target2;

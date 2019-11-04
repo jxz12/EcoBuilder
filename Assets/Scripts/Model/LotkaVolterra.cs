@@ -241,6 +241,14 @@ namespace EcoBuilder.Model
         }
         public double CalculateMayComplexity()
         {
+            // TODO: TODO: FIXME: CONNECTANCE IS WRONG, SHOULD BE BOUNDED BETWEEN 0-1
+            // TODO: Don't allow bidirectional links
+            // TODO: force breaking links first (disallow other direction when link already there)
+            // TODO: report card
+            // TODO: add super animations for stars 
+            // TODO: separate the competitive exclusion level into two levels - one where you edit the traits, one were you add another species
+            // TODO: last example is a straight line: over-exploitation
+            // TODO: print all parameters
             if (richness == 0 || connectance == 0)
                 return 0;
 
