@@ -22,8 +22,9 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
 
-        [SerializeField] float etaMax, etaDecay;
+        [SerializeField] float etaMax, etaDecay; // TODO: FIX WOBBLING, problem is the node queue
         int etaIteration = 0;
+        [ReadOnly] [SerializeField] float eta;
         private void FixedUpdate()
         {
             //////////////////////
@@ -36,7 +37,7 @@ namespace EcoBuilder.NodeLink
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);
 
-                    float eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
+                    eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
                     if (constrainTrophic)
                         LayoutSGDHorizontal(dq, d_j, eta);
                     else
