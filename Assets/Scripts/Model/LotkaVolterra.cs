@@ -83,18 +83,18 @@ namespace EcoBuilder.Model
             }
         }
 
-        int richness { get { return internToExtern.Count; } }
-        int connectance;
+        int numSpecies { get { return internToExtern.Count; } }
+        int numInteractions;
         public void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
         {
-            if (richness == 0)
+            if (numSpecies == 0)
                 return;
 
             interaction.Clear();
             negGrowth.Clear();
 
-            connectance = 0;
-            int n = richness;
+            numInteractions = 0;
+            int n = numSpecies;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -109,7 +109,7 @@ namespace EcoBuilder.Model
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
                     flux[i,j] = e * a; // init flux here, multiply by abundances later
-                    connectance += 1;
+                    numInteractions += 1;
                 }
             }
         }
@@ -117,12 +117,12 @@ namespace EcoBuilder.Model
         // Depends on A and b being correct
         void BuildCommunityMatrix()
         {
-            if (richness == 0)
+            if (numSpecies == 0)
                 return;
 
             // calculates every element of the Jacobian, evaluated at equilibrium point
             community.Clear();
-            int n = richness;
+            int n = numSpecies;
             for (int i=0; i<n; i++)
             {
                 // for (int j=0; j<n; j++)
@@ -166,7 +166,7 @@ namespace EcoBuilder.Model
         // O(n^3)
         public bool SolveFeasibility(Func<T, IEnumerable<T>> Consumers)
         {
-            if (richness == 0)
+            if (numSpecies == 0)
             {
                 TotalAbundance = TotalFlux = 0;
                 return true;
@@ -182,7 +182,7 @@ namespace EcoBuilder.Model
 
             // solve flux values
             TotalFlux = 0;
-            int n = richness;
+            int n = numSpecies;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -227,7 +227,7 @@ namespace EcoBuilder.Model
         // also O(n^3)
         public bool SolveStability()
         {
-            if (richness == 0)
+            if (numSpecies == 0)
                 return false;
 
             BuildCommunityMatrix();
@@ -241,27 +241,31 @@ namespace EcoBuilder.Model
         }
         public double CalculateMayComplexity()
         {
-            // TODO: TODO: FIXME: CONNECTANCE IS WRONG, SHOULD BE BOUNDED BETWEEN 0-1
+            // TODO: score function... AGAIN :(
             // TODO: Don't allow bidirectional links
             // TODO: force breaking links first (disallow other direction when link already there)
+
+            // TODO: grass shrub tree
+
+            // TODO: make size not equal population (health bar instead? outline?)
             // TODO: report card
             // TODO: add super animations for stars 
             // TODO: separate the competitive exclusion level into two levels - one where you edit the traits, one were you add another species
-            // TODO: last example is a straight line: over-exploitation
-            // TODO: print all parameters
-            if (richness == 0 || connectance == 0)
+            // TODO: last example is a straight line: over-exploitation (nah)
+            // TODO: print all parameters to file
+            if (numSpecies == 0 || numInteractions == 0)
                 return 0;
-
+            
             // 'complexity' = rho * sqrt(R*C)
             // double mean = 0;
             // double meanDiag = 0;
             double meanOffDiag = 0;
             int numOffDiagEntries = 0;
             // double meanOffDiagPairs = 0;
-            for (int i=0; i<richness; i++)
+            for (int i=0; i<numSpecies; i++)
             {
                 // meanDiag += community[i,i];
-                for (int j=0; j<richness; j++)
+                for (int j=0; j<numSpecies; j++)
                 {
                     // mean += community[i,j];
                     if (i!=j && community[i,j]!=0)
@@ -279,9 +283,9 @@ namespace EcoBuilder.Model
             double standardDev = 0;
             meanOffDiag /= numOffDiagEntries;
 
-            for (int i=0; i<richness; i++)
+            for (int i=0; i<numSpecies; i++)
             {
-                for (int j=0; j<richness; j++)
+                for (int j=0; j<numSpecies; j++)
                 {
                     if (i!=j && community[i,j]!=0)
                     {
@@ -294,6 +298,9 @@ namespace EcoBuilder.Model
             standardDev = Math.Sqrt(variance);
 
             // double mayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
+            double richness = numSpecies;
+            double connectance = (double)numInteractions / ((numSpecies*(numSpecies-1))/2);
+            UnityEngine.Debug.Log(richness + " " + connectance);
             double mayComplexity = standardDev * Math.Sqrt(richness*connectance);
             return mayComplexity;
 
