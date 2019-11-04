@@ -55,6 +55,7 @@ namespace EcoBuilder.NodeLink
         public void Show(bool showing = true)
         {
             targetAlpha = showing? 1 : 0;
+            outline.enabled = showing;
         }
 
         [SerializeField] float lineWidth;

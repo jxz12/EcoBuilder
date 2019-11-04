@@ -477,8 +477,11 @@ namespace EcoBuilder.NodeLink
                 Node snappedNode = ClosestSnappedNode(ped);
                 if (snappedNode!=null && snappedNode!=pressedNode
                     && snappedNode.CanBeSource
-                    && (links[snappedNode.Idx, pressedNode.Idx]==null
-                        || links[snappedNode.Idx, pressedNode.Idx].Removable))
+                    && ((   links[snappedNode.Idx, pressedNode.Idx]==null
+                         && links[pressedNode.Idx, snappedNode.Idx]==null)
+                        ||
+                        (   links[snappedNode.Idx, pressedNode.Idx]!=null
+                         && links[snappedNode.Idx, pressedNode.Idx].Removable)))
                 {
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(snappedNode.transform.position));
                     if (potentialSource != snappedNode) // if not same as previous
@@ -494,7 +497,7 @@ namespace EcoBuilder.NodeLink
                     }
 
                     Link snappedLink = links[snappedNode.Idx, pressedNode.Idx];
-                    if (snappedLink == null) // link can be added
+                    if (snappedLink == null) // link to be added
                     {
                         dummyLink.Source = snappedNode;
                         if (potentialLink != dummyLink)
@@ -512,7 +515,7 @@ namespace EcoBuilder.NodeLink
 
                         tooltip.ShowAddLink();
                     }
-                    else // link can be deleted
+                    else // link to be deleted
                     {
                         if (potentialLink != snappedLink)
                         {

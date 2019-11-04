@@ -242,11 +242,8 @@ namespace EcoBuilder.Model
         public double CalculateMayComplexity()
         {
             // TODO: score function... AGAIN :(
-            // TODO: Don't allow bidirectional links
-            // TODO: force breaking links first (disallow other direction when link already there)
 
             // TODO: grass shrub tree
-
             // TODO: make size not equal population (health bar instead? outline?)
             // TODO: report card
             // TODO: add super animations for stars 
@@ -300,7 +297,6 @@ namespace EcoBuilder.Model
             // double mayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
             double richness = numSpecies;
             double connectance = (double)numInteractions / ((numSpecies*(numSpecies-1))/2);
-            UnityEngine.Debug.Log(richness + " " + connectance);
             double mayComplexity = standardDev * Math.Sqrt(richness*connectance);
             return mayComplexity;
 
