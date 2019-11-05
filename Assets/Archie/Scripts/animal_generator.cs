@@ -60,6 +60,8 @@ namespace EcoBuilder.Archie{
             animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
             // generate texture and material
             var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
+            // scale mesh
+            animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
 
             // animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
             Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
@@ -74,6 +76,8 @@ namespace EcoBuilder.Archie{
             plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
             // generate texture and material
             var yuv_coordinates = new Vector3(.8f-.5f*bodySize, -.4f, .8f*greediness-.4f);
+            // scale mesh
+            plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
 
             // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
             Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);

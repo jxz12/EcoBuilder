@@ -94,7 +94,6 @@ namespace EcoBuilder.UI
 
             incubator.OnDropped += ()=> SpawnIncubated();
         }
-        UnityAction<float> SizeSliderCallback, GreedSliderCallback;
 
         void SpawnWithEvents(Species toSpawn)
         {
@@ -205,6 +204,7 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubated.BodySize = sizeSlider.normalizedValue;
+
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
             }
@@ -212,6 +212,7 @@ namespace EcoBuilder.UI
             {
                 float prevSize = inspected.BodySize;
                 inspected.BodySize = sizeSlider.normalizedValue;
+
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
                 OnUserSizeSet.Invoke(inspected.Idx, prevSize, inspected.BodySize);
                 factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
@@ -237,6 +238,7 @@ namespace EcoBuilder.UI
             }
         }
 
+        UnityAction<float> SizeSliderCallback, GreedSliderCallback;
         void SetSlidersWithoutEventCallbacks(float size, float greed)
         {
             // this is ugly as heck, but sliders are stupid

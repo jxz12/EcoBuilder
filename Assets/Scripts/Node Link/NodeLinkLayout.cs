@@ -83,7 +83,10 @@ namespace EcoBuilder.NodeLink
             }
 
             foreach (Node no in nodes)
-                no.Tween(layoutSmoothTime, sizeTween);
+            {
+                no.TweenPos(layoutSmoothTime);
+                no.GetComponent<HealthBar>().TweenHealth(.1f);
+            }
         }
 
 

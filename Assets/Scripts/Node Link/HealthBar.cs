@@ -5,34 +5,35 @@ namespace EcoBuilder.NodeLink
 {
     public class HealthBar : MonoBehaviour
     {
-        [SerializeField] Material green, red;
-        [SerializeField] float health;
-        MeshRenderer mr;
+        [SerializeField] Vector3 offset;
+        [SerializeField] float width, height, depth;
         MeshFilter mf;
 
         List<Vector3> verts;
         void Awake()
         {
-            mf = gameObject.AddComponent<MeshFilter>();
-            mr = gameObject.AddComponent<MeshRenderer>();
+            mf = GetComponent<MeshFilter>();
 
             verts = new List<Vector3>()
             {
-                new Vector3(-1,-1,-1),
-                new Vector3(-1,-1, 1),
-                new Vector3(-1, 1, 1),
-                new Vector3(-1, 1,-1),
+                new Vector3(-width,-height,-depth),
+                new Vector3(-width,-height, depth),
+                new Vector3(-width, height, depth),
+                new Vector3(-width, height,-depth),
 
-                new Vector3( 0,-1,-1),
-                new Vector3( 0,-1, 1),
-                new Vector3( 0, 1, 1),
-                new Vector3( 0, 1,-1),
+                new Vector3( 0,-height,-depth),
+                new Vector3( 0,-height, depth),
+                new Vector3( 0, height, depth),
+                new Vector3( 0, height,-depth),
 
-                new Vector3( 1,-1,-1),
-                new Vector3( 1,-1, 1),
-                new Vector3( 1, 1, 1),
-                new Vector3( 1, 1,-1),
+                new Vector3( width,-height,-depth),
+                new Vector3( width,-height, depth),
+                new Vector3( width, height, depth),
+                new Vector3( width, height,-depth),
             };
+            for (int i=0; i<verts.Count; i++)
+                verts[i] += offset;
+
             mf.mesh.SetVertices(verts);
 
             mf.mesh.subMeshCount = 2;
@@ -49,6 +50,9 @@ namespace EcoBuilder.NodeLink
                 6,7,3,
                 0,3,7,
                 7,4,0,
+
+                4,5,6,
+                6,7,4,
             }, 0);
             mf.mesh.SetTriangles(new int[]
             {
@@ -66,15 +70,18 @@ namespace EcoBuilder.NodeLink
             }, 1);
 
             mf.mesh.RecalculateNormals();
-            mr.materials = new Material[]{ green, red };
         }
-        void Update()
+        public float TargetHealth { get; set; }
+        float health = .5f;
+        public void TweenHealth(float healthTween)
         {
-            float x = -1 + 2*health;
-            verts[4] = new Vector3( x,-1,-1);
-            verts[5] = new Vector3( x,-1, 1);
-            verts[6] = new Vector3( x, 1, 1);
-            verts[7] = new Vector3( x, 1,-1);
+            health = Mathf.Lerp(health, TargetHealth, healthTween);
+
+            float mid = Mathf.Min(-1 + 2*health, 1) * width;
+            verts[4] = new Vector3( mid,-height,-depth) + offset;
+            verts[5] = new Vector3( mid,-height, depth) + offset;
+            verts[6] = new Vector3( mid, height, depth) + offset;
+            verts[7] = new Vector3( mid, height,-depth) + offset;
 
             mf.mesh.SetVertices(verts);
         }
