@@ -26,19 +26,16 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
-            StressPos = Random.insideUnitSphere;
+            // StressPos = Random.insideUnitSphere;
+            StressPos = new Vector3(1,0,-.5f); // prevent divide by zero
+            StressPos += .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
             Size = size;
         }
 
         public void Shape(GameObject shapeObject)
         {
-            // drop it in at the point at shapeObject's position, but at z=-1
-            // TODO: this may be buggy
-            // StressPos = transform.parent.InverseTransformPoint(new Vector3(shapeObject.transform.position.x, shapeObject.transform.position.y, -1));
-            StressPos = new Vector3(1,0,-.5f); // prevent divide by zero
-            StressPos += .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
+            // drop it in at the point at shapeObject's position
             transform.position = shapeObject.transform.position;
-
             shape = shapeObject;
             outline = shape.AddComponent<cakeslice.Outline>();
 
