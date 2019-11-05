@@ -78,9 +78,7 @@ namespace EcoBuilder.NodeLink
             if (nodes[idx] == null && nodeGrave[idx] == null) // entirely new
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
-
-                // newNode.Init(idx, (minNodeSize+maxNodeSize)/2);
-                newNode.Init(idx, 1);
+                // newNode.Init(idx, minNodeSize);
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
@@ -231,21 +229,30 @@ namespace EcoBuilder.NodeLink
             return links.GetColumnIndicesInRow(source);
         }
 
-        [SerializeField] float minNodeSize, maxNodeSize;
-        public void ResizeNodes(Func<int, float> sizes)
+        // [SerializeField] float minNodeSize, maxNodeSize;
+        // public void ResizeNodes(Func<int, float> sizes)
+        // {
+        //     float sizeRange = maxNodeSize - minNodeSize;
+        //     foreach (Node no in nodes)
+        //     {
+        //         float size = sizes(no.Idx);
+        //         if (size > 0)
+        //         {
+        //             no.Size = minNodeSize + sizeRange*size;
+        //         }
+        //         else
+        //         {
+        //             no.Size = minNodeSize;
+        //         }
+        //     }
+        // }
+        public void RehealthBars(Func<int, float> healths)
         {
-            float sizeRange = maxNodeSize - minNodeSize;
             foreach (Node no in nodes)
             {
-                float size = sizes(no.Idx);
-                if (size > 0)
-                {
-                    no.Size = minNodeSize + sizeRange*size;
-                }
-                else
-                {
-                    no.Size = minNodeSize;
-                }
+                float health = healths(no.Idx);
+                health = Mathf.Max(Mathf.Min(health, 1), 0);
+                no.GetComponent<HealthBar>().TargetHealth = health;
             }
         }
         [SerializeField] float minLinkFlow, maxLinkFlow;

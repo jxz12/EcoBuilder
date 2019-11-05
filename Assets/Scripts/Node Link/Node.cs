@@ -8,13 +8,13 @@ namespace EcoBuilder.NodeLink
     {
         public int Idx { get; private set; }
         public Color Col {
-            get { return shape!=null? shape.GetComponent<MeshRenderer>().material.color : Color.black; }
+            get { return shape!=null&&shape.GetComponent<MeshRenderer>()!=null? shape.GetComponent<MeshRenderer>().material.color : Color.black; }
         }
         public enum FocusState { Normal, Focus, Hidden }
-        public FocusState focusState = FocusState.Normal;
+        public FocusState focusState { get; set; } = FocusState.Normal;
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
-        public float Size { get; set; }
+        // public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
@@ -27,9 +27,9 @@ namespace EcoBuilder.NodeLink
             Idx = idx;
             name = idx.ToString();
             // StressPos = Random.insideUnitSphere;
-            StressPos = new Vector3(1,0,-.5f); // prevent divide by zero
-            StressPos += .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
-            Size = size;
+            StressPos = new Vector3(1,0,-.5f) + .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
+            transform.localScale = size * Vector3.one;
+            // Size = size;
         }
 
         public void Shape(GameObject shapeObject)
@@ -42,7 +42,6 @@ namespace EcoBuilder.NodeLink
             shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
-            shape.transform.localScale = Vector3.one;
         }
         public void Outline(int colourIdx)
         {
@@ -62,7 +61,6 @@ namespace EcoBuilder.NodeLink
         public void Flash(bool isFlashing)
         {
             flashing = isFlashing;
-            // GetComponent<Animator>().SetBool("Flashing", isFlashing);
             StartCoroutine(Flash(1f));
         }
         IEnumerator Flash(float time)
@@ -91,34 +89,40 @@ namespace EcoBuilder.NodeLink
             }
             shape.GetComponent<MeshRenderer>().enabled = true;
         }
-        // [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
         Vector3 velocity; // for use with smoothdamp
-        public void Tween(float smoothTime, float sizeTween)
+        public void TweenPos(float smoothTime)
         {
             if (focusState == FocusState.Normal)
             {
-                transform.localScale =
-                    Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, StressPos,
                                         ref velocity, smoothTime);
             }
             else if (focusState == FocusState.Focus)
             {
-                transform.localScale =
-                    Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, FocusPos,
                                         ref velocity, smoothTime);
             }
             else if (focusState == FocusState.Hidden)
             {
-                transform.localScale =
-                    Vector3.Lerp(transform.localScale, Vector3.zero, sizeTween);
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,2),
                                         ref velocity, smoothTime);
             }
         }
+        // public void TweenSize(float sizeTween)
+        // {
+        //     if (focusState != FocusState.Hidden)
+        //     {
+        //         transform.localScale =
+        //             Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
+        //     }
+        //     else
+        //     {
+        //         transform.localScale =
+        //             Vector3.Lerp(transform.localScale, Vector3.zero, sizeTween);
+        //     }
+        // }
     }
 }
