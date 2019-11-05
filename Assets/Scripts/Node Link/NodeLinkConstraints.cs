@@ -40,7 +40,7 @@ namespace EcoBuilder.NodeLink
         }
         void RefreshTrophic()
         {
-            etaIteration = 0; // reset SGD
+            // etaIteration = 0; // reset SGD (wobbles)
 
             Disjoint = CheckDisjoint();
             NumEdges = links.Count();
