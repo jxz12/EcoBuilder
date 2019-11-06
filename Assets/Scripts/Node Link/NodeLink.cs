@@ -78,7 +78,8 @@ namespace EcoBuilder.NodeLink
             if (nodes[idx] == null && nodeGrave[idx] == null) // entirely new
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
-                // newNode.Init(idx, minNodeSize);
+                newNode.Init(idx);
+                newNode.StressPos = new Vector3(1,0,-.5f) + .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }

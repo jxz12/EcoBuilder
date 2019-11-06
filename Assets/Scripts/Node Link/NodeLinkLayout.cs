@@ -7,7 +7,7 @@ namespace EcoBuilder.NodeLink
     public partial class NodeLink
     { 
         [SerializeField] float maxHeight=3f;
-        [SerializeField] float layoutSmoothTime=.5f, sizeTween=.05f;
+        [SerializeField] float layoutSmoothTime=.5f;//, sizeTween=.05f;
 
         Vector3 nodesVelocity, graphVelocity;
         Vector3 rotationCenter;
@@ -138,14 +138,14 @@ namespace EcoBuilder.NodeLink
                         float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
 
                         Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
-                        r.y = 0; // use to keep y position
+                        r.y = 0; // constrain y position
                         nodes[i].StressPos -= mu * r;
                         nodes[j].StressPos += mu * r;
                     }
                     else if (mag < 1) // otherwise push away if too close (jakobsen)
                     {
                         Vector3 r = ((mag-1)/2) * (X_ij/mag);
-                        r.y = 0; // use to keep y position
+                        r.y = 0; // constrain y position
                         nodes[i].StressPos -= r;
                         nodes[j].StressPos += r;
                     }

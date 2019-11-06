@@ -8,7 +8,7 @@ namespace EcoBuilder.Archie{
     public class animal_generator : ProceduralMeshGenerator
     {
         [SerializeField] GameObject Animal_Prefab;
-        [SerializeField] Mesh[] Consumer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
+        [SerializeField] Mesh[] Consumer_Meshs, Producer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
         static public List<GameObject> generated_consumers = new List<GameObject>();
         static public List<GameObject> generated_producers = new List<GameObject>();
 
@@ -18,7 +18,6 @@ namespace EcoBuilder.Archie{
         void Awake()
         {
             Texy = GetComponent<AnimalTexture>();
-
         }
 
         public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
@@ -55,9 +54,12 @@ namespace EcoBuilder.Archie{
         private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed)
         {
             // give appropriate name
-            animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)(bodySize*.99f * nounsConsumer.GetLength(0)), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
+            int d0 = UnityEngine.Random.Range(0, adjectives.Length);
+            int d1 = (int)(bodySize*.999f * nounsConsumer.Length);
+            int d2 = UnityEngine.Random.Range(0, nounsConsumer[d1].Length);
+            animal.name = adjectives[d0] + " " + nounsConsumer[d1][d2];
             // assign mesh
-            animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
+            animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.999f * Consumer_Meshs.Length)];
             // generate texture and material
             var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
             // scale mesh
@@ -71,9 +73,12 @@ namespace EcoBuilder.Archie{
         private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed)
         {
             // give appropriate name
-            plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsProducer[(int)(bodySize*.99f * nounsProducer.GetLength(0)), UnityEngine.Random.Range(0, nounsProducer.GetLength(1))];
+            int d0 = UnityEngine.Random.Range(0, adjectives.Length);
+            int d1 = (int)(bodySize*.999f * nounsProducer.Length);
+            int d2 = UnityEngine.Random.Range(0, nounsProducer[d1].Length);
+            plant.name = adjectives[d0] + " " + nounsProducer[d1][d2];
             // assign mesh
-            plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
+            plant.GetComponent<MeshFilter>().mesh = Producer_Meshs[(int)(bodySize*.999f * Producer_Meshs.Length)];
             // generate texture and material
             var yuv_coordinates = new Vector3(.8f-.5f*bodySize, -.4f, .8f*greediness-.4f);
             // scale mesh
@@ -105,65 +110,77 @@ namespace EcoBuilder.Archie{
             "Average",
             "Shy",
         };
-        public static string[,] nounsConsumer = new string[,]
+        public static string[][] nounsConsumer = new string[][]
         {
-            {"Rat",
+            new string[]{
+            "Rat",
             "Aardvark",
             "Caterpillar",
-            "Chameleon",
             "Ant",
             "Spider",
             "Wasp",
             "Bumblebee",
             "Beetle"},
 
-            {"Koala",
+            new string[]{
+            "Koala",
             "Chihuahua",
+            "Chameleon",
             "Platypus",
             "Raccoon",
             "Rabbit",
             "Snake",
-            "Rooster",
             "Snake",
             "Rooster"},
 
-            {"Sheep",
+            new string[]{
+            "Sheep",
             "Monkey",
             "Wolverine",
             "Dog",
             "Pig",
-            "Alpaca",
             "Dog",
             "Pig",
             "Alpaca"},
 
-            {"Tiger",
-            "Horse",
-            "Ox",
-            "Velociraptor",
+            new string[]{
             "Tiger",
             "Horse",
             "Ox",
-            "Velociraptor",
+            "Tiger",
+            "Horse",
+            "Ox",
             "Velociraptor"},
 
-            {"Dragon",
+            new string[]{
+            "Dragon",
             "Elephant",
             "Polar Bear",
             "Crocodile",
             "Panda",
             "Bear",
             "Sloth",
-            "Tyrannosaurus Rex",
             "Tyrannosaurus Rex"}
         };
-        public static string[,] nounsProducer = new string[,]
+        public static string[][] nounsProducer = new string[][]
         {
-            {"Grass","Weed"},
-            {"Mushroom","Fern"},
-            {"Bush","Shrub"},
-            {"Willow","Sycamore"},
-            {"Oak","Beech"}
+            new string[]{
+            "Grass",
+            "Weed",
+            "Mushroom",
+            "Fern"},
+
+            new string[]{
+            "Bush",
+            "Shrub",
+            "Berries",
+            "Ivy"},
+
+            new string[]{
+            "Willow",
+            "Sycamore",
+            "Oak",
+            "Beech"}
         };
     }
 }

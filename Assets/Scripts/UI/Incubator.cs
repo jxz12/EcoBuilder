@@ -42,7 +42,7 @@ namespace EcoBuilder.UI
 
 
         bool dragging;
-        Vector2 originalPos;
+        Vector3 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
             if (incubated != null && ped.rawPointerPress == pickupZone.gameObject)

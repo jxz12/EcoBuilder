@@ -14,7 +14,6 @@ namespace EcoBuilder.NodeLink
         public FocusState focusState { get; set; } = FocusState.Normal;
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
-        // public float Size { get; set; }
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
@@ -22,14 +21,10 @@ namespace EcoBuilder.NodeLink
         GameObject shape;
         cakeslice.Outline outline;
 
-        public void Init(int idx, float size)
+        public void Init(int idx)
         {
             Idx = idx;
             name = idx.ToString();
-            // StressPos = Random.insideUnitSphere;
-            StressPos = new Vector3(1,0,-.5f) + .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
-            transform.localScale = size * Vector3.one;
-            // Size = size;
         }
 
         public void Shape(GameObject shapeObject)
