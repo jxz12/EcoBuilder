@@ -58,7 +58,7 @@ namespace EcoBuilder.Archie
             ));
         }
 
-        public void Generate_and_Apply(int seed, MeshRenderer speciesMesh, Vector3 yuv, bool doFace)
+        public void Generate_and_Apply(int seed, MeshRenderer speciesMesh, Vector3 yuv)
         {
             // seed random number
             UnityEngine.Random.InitState(seed);
@@ -67,8 +67,6 @@ namespace EcoBuilder.Archie
             Color rgb_background_colour = (Vector4)(yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1); // MultiplyVector takes a Vector3 as its argument
 
             speciesMesh.materials[0].SetColor("_Color", rgb_background_colour);
-            if (!doFace)
-                return;
 
             var eyes = pick_random(EyeTextures);
             var nose = pick_random(NoseTextures);
@@ -78,7 +76,7 @@ namespace EcoBuilder.Archie
             speciesMesh.materials[1].SetTexture("_MainTex", eyes);
             speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
             speciesMesh.materials[1].SetTexture("_MainTex3", nose);
-            // speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
+            speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
 
             // speciesMesh.materials[2].SetTexture("_MainTex", mouth);
             // speciesMesh.materials[3].SetTexture("_MainTex", nose);

@@ -43,16 +43,16 @@ namespace EcoBuilder.Archie{
             UnityEngine.Random.InitState(randomSeed);
             if (generated_consumers.Contains(species))
             {
-                Form_Animal(species, size, greed, randomSeed, false);
+                Form_Animal(species, size, greed, randomSeed);
             }
             else
             {
-                Form_Plant(species, size, greed, randomSeed, false);
+                Form_Plant(species, size, greed, randomSeed);
                 //re-generate tree
             }
         }
 
-        private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed, bool doFace=true)
+        private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed)
         {
             // give appropriate name
             animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)(bodySize*.99f * nounsConsumer.GetLength(0)), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
@@ -64,11 +64,11 @@ namespace EcoBuilder.Archie{
             animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
 
             // animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
+            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates);
         }
 
 
-        private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed, bool doFace=true)
+        private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed)
         {
             // give appropriate name
             plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsProducer[(int)(bodySize*.99f * nounsProducer.GetLength(0)), UnityEngine.Random.Range(0, nounsProducer.GetLength(1))];
@@ -80,7 +80,7 @@ namespace EcoBuilder.Archie{
             plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
 
             // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
+            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates);
         }
 
         public static string[] adjectives = new string[]
