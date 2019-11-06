@@ -51,11 +51,14 @@ namespace EcoBuilder.NodeLink
                 0,3,7,
                 7,4,0,
 
-                4,5,6,
-                6,7,4,
+                6,5,4,
+                4,7,6,
             }, 0);
             mf.mesh.SetTriangles(new int[]
             {
+                4,5,6,
+                6,7,4,
+
                 5,4,8,
                 8,9,5,
                 6,5,9,
@@ -77,7 +80,7 @@ namespace EcoBuilder.NodeLink
         {
             health = Mathf.Lerp(health, TargetHealth, healthTween);
 
-            float mid = Mathf.Min(-1 + 2*health, 1) * width;
+            float mid = Mathf.Min(-1.01f + 2.02f*health, 1.01f) * width;
             verts[4] = new Vector3( mid,-height,-depth) + offset;
             verts[5] = new Vector3( mid,-height, depth) + offset;
             verts[6] = new Vector3( mid, height, depth) + offset;
