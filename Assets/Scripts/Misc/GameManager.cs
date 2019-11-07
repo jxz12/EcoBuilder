@@ -15,9 +15,8 @@ namespace EcoBuilder
             get {
                 if (gameManager == null)
                 {
-                    Debug.LogError("No active GameManager");
-                    // gameManager = new GameObject("Game Manager").AddComponent<GameManager>();
-                    // remove for build
+                    // Debug.LogError("No active GameManager");
+                    Debug.LogWarning("No active GameManager");
                 }
                 return gameManager;
             }

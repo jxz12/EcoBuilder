@@ -1,24 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
 {
-    public class StatusBar : MonoBehaviour,
-        IPointerEnterHandler, IPointerExitHandler
+    public class Score : MonoBehaviour
     {
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
-        public event Action OnErrorShown;
         public event Action OnLevelCompleted;
         public event Action OnLevelCompletabled, OnLevelIncompletabled;
 
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] Animator score, constraints;
-        [SerializeField] Constraint leaf, paw, edge, chain, loop;
+        [SerializeField] Constraints constraints;
         [SerializeField] Help help;
 
         void Awake()
@@ -26,20 +21,19 @@ namespace EcoBuilder.UI
             var level = GameManager.Instance.PlayedLevel;
             if (level == null || level.Details.title == "Sandbox") // FIXME:
             {
-                leaf.Unconstrain();
-                paw.Unconstrain();
-                edge.Unconstrain();
-                chain.Unconstrain();
-                loop.Unconstrain();
+                constraints.Unconstrain("Leaf");
+                constraints.Unconstrain("Paw");
+                constraints.Unconstrain("Count");
+                constraints.Unconstrain("Chain");
+                constraints.Unconstrain("Loop");
             }
             else
             {
-                leaf.Constrain(level.Details.numProducers);
-                paw.Constrain(level.Details.numConsumers);
-
-                edge.Constrain(level.Details.minEdges);
-                chain.Constrain(level.Details.minChain);
-                loop.Constrain(level.Details.minLoop);
+                constraints.Constrain("Leaf", level.Details.numProducers);
+                constraints.Constrain("Paw", level.Details.numConsumers);
+                constraints.Constrain("Count", level.Details.minEdges);
+                constraints.Constrain("Chain", level.Details.minChain);
+                constraints.Constrain("Loop", level.Details.minLoop);
             }
             // shield.Constrain(-1);
             feasibleScoreCol = scoreText.color;
@@ -65,9 +59,6 @@ namespace EcoBuilder.UI
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;
 
-        HashSet<int> producers = new HashSet<int>();
-        HashSet<int> consumers = new HashSet<int>();
-
         Func<bool> CanUpdate;
         public void AllowUpdateWhen(Func<bool> Allowed)
         {
@@ -79,12 +70,10 @@ namespace EcoBuilder.UI
         }
         public void HideScore(bool hidden=true)
         {
-            // score.SetBool("Visible", !hidden);
-            score.gameObject.SetActive(!hidden);
+            gameObject.SetActive(!hidden);
         }
         public void HideConstraints(bool hidden=true)
         {
-            // constraints.SetBool("Visible", !hidden);
             constraints.gameObject.SetActive(!hidden);
         }
         bool finishDisabled = false;
@@ -93,79 +82,72 @@ namespace EcoBuilder.UI
             finishDisabled = disabled;
         }
 
-
-
-
-        bool disjoint;
-        public void DisplayDisjoint(bool isDisjoint)
-        {
-			disjoint = isDisjoint;
-        }
+        HashSet<int> producers = new HashSet<int>();
+        HashSet<int> consumers = new HashSet<int>();
         public void AddType(int idx, bool isProducer)
         {
             if (isProducer)
             {
                 // this will have to be changed if we want to let species switch type
                 producers.Add(idx);
-                if (producers.Count >= leaf.ConstraintLimit && leaf.ConstraintLimit > 0) // TODO: better constraint class instead
-                    OnProducersAvailable.Invoke(false);
 
-                leaf.Display(producers.Count);
-                // producerCount.text = (maxProducers-producers.Count).ToString();
+                constraints.Display("Leaf", producers.Count);
+                if (constraints.GetThreshold("Leaf") > 0 && constraints.IsSatisfied("Leaf"))
+                    OnProducersAvailable.Invoke(false);
             }
             else
             {
                 consumers.Add(idx);
-                if (consumers.Count >= paw.ConstraintLimit && paw.ConstraintLimit > 0)
-                    OnConsumersAvailable.Invoke(false);
 
-                paw.Display(consumers.Count);
-                // consumerCount.text = (maxConsumers-producers.Count).ToString();
+                constraints.Display("Paw", consumers.Count);
+                if (constraints.GetThreshold("Paw") > 0 && constraints.IsSatisfied("Paw"))
+                    OnConsumersAvailable.Invoke(false);
             }
         }
         public void RemoveIdx(int idx)
         {
             if (producers.Contains(idx))
             {
-                if (producers.Count == leaf.ConstraintLimit)
-                    OnProducersAvailable.Invoke(true);
-
                 producers.Remove(idx);
-                leaf.Display(producers.Count);
-                // producerCount.text = (maxProducers-producers.Count).ToString();
+
+                if (constraints.GetThreshold("Leaf") > 0 && constraints.IsSatisfied("Leaf"))
+                    OnProducersAvailable.Invoke(true);
+                constraints.Display("Leaf", producers.Count);
             }
             else
             {
-                if (consumers.Count == paw.ConstraintLimit)
-                    OnConsumersAvailable.Invoke(true);
-
                 consumers.Remove(idx);
-                paw.Display(consumers.Count);
-                // consumerCount.text = (maxConsumers-consumers.Count).ToString();
+
+                if (constraints.GetThreshold("Paw") > 0 && constraints.IsSatisfied("Paw"))
+                    OnConsumersAvailable.Invoke(true);
+                constraints.Display("Paw", consumers.Count);
+
             }
+        }
+        public void DisplayDisjoint(bool isDisjoint)
+        {
+			constraints.Disjoint = isDisjoint;
         }
         public void DisplayNumEdges(int numEdges)
         {
-            edge.Display(numEdges);
+            constraints.Display("Count", numEdges);
         }
         public void DisplayMaxChain(int lenChain)
         {
-            chain.Display(lenChain);
+            constraints.Display("Chain", lenChain);
         }
         public void DisplayMaxLoop(int lenLoop)
         {
-            loop.Display(lenLoop);
+            constraints.Display("Loop", lenLoop);
         }
 
-		bool feasible, stable;
         // float targetAbundance, abundance;
         int modelScore, realisedScore;
 
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
-            feasible = isFeasible;
-			stable = isStable;
-            // shield.Display(stable);
+            constraints.Feasible = isFeasible;
+			constraints.Stable = isStable;
         }
         public void DisplayScore(float score)
         {
@@ -190,20 +172,21 @@ namespace EcoBuilder.UI
 
             realisedScore = modelScore;
             scoreText.text = realisedScore.ToString();
-            int newNumStars = 0;
 
             star1.SetBool("Filled", false);
             star2.SetBool("Filled", false);
             star3.SetBool("Filled", false);
 
-            if (!disjoint && feasible &&
-                // stable &&
-                leaf.IsSatisfied && paw.IsSatisfied &&
-                edge.IsSatisfied && chain.IsSatisfied && loop.IsSatisfied)
+            int newNumStars = 0;
+            if (!constraints.Disjoint && constraints.Feasible && // stable &&
+                constraints.IsSatisfied("Leaf") &&
+                constraints.IsSatisfied("Paw") &&
+                constraints.IsSatisfied("Count") &&
+                constraints.IsSatisfied("Chain") &&
+                constraints.IsSatisfied("Loop"))
             {
                 newNumStars += 1;
                 star1.SetBool("Filled", true);
-                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .01f);
 
                 if (modelScore >= target1)
                 {
@@ -216,10 +199,11 @@ namespace EcoBuilder.UI
                         star3.SetBool("Filled", true);
                     }
                 }
+                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .01f);
             }
             else
             {
-                // scoreText.color = infeasibleScoreCol;
+                scoreText.color = infeasibleScoreCol;
             }
 
             if (newNumStars < 2)
@@ -264,58 +248,12 @@ namespace EcoBuilder.UI
             help.SetText(GameManager.Instance.PlayedLevel.Details.congratulation);
             help.DelayThenShow(2);
 
-            score.SetBool("Visible", false);
-            constraints.SetBool("Visible", false);
+            GetComponent<Animator>().SetBool("Visible", false);
             star1.SetTrigger("Confetti");
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");
 
             OnLevelCompleted.Invoke();
-        }
-
-        [SerializeField] Tooltip tooltip;
-        public void OnPointerEnter(PointerEventData ped)
-        {
-            tooltip.Enable();
-            tooltip.ShowText(Error());
-            StartCoroutine(FollowCursor());
-            OnErrorShown?.Invoke();
-        }
-        IEnumerator FollowCursor()
-        {
-            while (true)
-            {
-                tooltip.SetPos(Input.mousePosition);
-                yield return null;
-            }
-        }
-        public void OnPointerExit(PointerEventData ped)
-        {
-            tooltip.Disable();
-            StopCoroutine(FollowCursor());
-        }
-        string Error()
-        {
-            if (consumers.Count==0 && producers.Count==0)
-                return "Your ecosystem is empty.";
-            if (!leaf.IsSatisfied)
-                return "You have not added enough plants.";
-            if (!paw.IsSatisfied)
-                return "You have not added enough animals.";
-            if (!feasible)
-                return "At least one species is going extinct.";
-            if (disjoint)
-                return "Your network is not connected.";
-            // if (!stable)
-            //     return "Your ecosystem is not stable.";
-            if (!edge.IsSatisfied)
-                return "You have not added enough links.";
-            if (!chain.IsSatisfied)
-                return "Your web is not tall enough.";
-            if (!loop.IsSatisfied)
-                return "You do not have a long enough loop.";
-            else
-                return "Your ecosystem has no errors!";
         }
     }
 }

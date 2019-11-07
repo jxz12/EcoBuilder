@@ -33,7 +33,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Text nameText;
         [SerializeField] Button refroveButton;
-        [SerializeField] Animator traitsAnim, typesAnim;
+        [SerializeField] Animator typesAnim;
         
         [SerializeField] Incubator incubator;
         [SerializeField] ProceduralMeshGenerator factory;
@@ -145,7 +145,7 @@ namespace EcoBuilder.UI
             refroveButton.gameObject.SetActive(true);
 
             incubated = s;
-            traitsAnim.SetTrigger("Incubate");
+            GetComponent<Animator>().SetTrigger("Incubate");
             typesAnim.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
@@ -175,7 +175,7 @@ namespace EcoBuilder.UI
                     Bury(inspected);
                     OnUserDespawned.Invoke(inspected.Idx);
                     inspected = null;
-                    traitsAnim.SetTrigger("Uninspect");
+                    GetComponent<Animator>().SetTrigger("Uninspect");
                 }
             }
             else
@@ -261,7 +261,7 @@ namespace EcoBuilder.UI
         {
             if (inspected == null)
             {
-                traitsAnim.SetTrigger("Inspect");
+                GetComponent<Animator>().SetTrigger("Inspect");
             }
             if (incubated != null)
             {
@@ -287,7 +287,7 @@ namespace EcoBuilder.UI
             {
                 incubator.Unincubate();
                 incubated = null;
-                traitsAnim.SetTrigger("Unincubate");
+                GetComponent<Animator>().SetTrigger("Unincubate");
                 typesAnim.SetBool("Visible", true);
                 OnUnincubated.Invoke();
             }
@@ -297,7 +297,7 @@ namespace EcoBuilder.UI
             if (inspected != null)
             {
                 inspected = null;
-                traitsAnim.SetTrigger("Uninspect");
+                GetComponent<Animator>().SetTrigger("Uninspect");
             }
         }
         public void SetProducerAvailability(bool available)
@@ -341,7 +341,7 @@ namespace EcoBuilder.UI
 
             if (spawnedSpecies[idx] == inspected)
             {
-                traitsAnim.SetTrigger("Uninspect");
+                GetComponent<Animator>().SetTrigger("Uninspect");
                 inspected = null;
             }
             Bury(spawnedSpecies[idx]);
@@ -413,11 +413,11 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubator.Unincubate();
-                traitsAnim.SetTrigger("Unincubate");
+                GetComponent<Animator>().SetTrigger("Unincubate");
             }
             else if (inspected != null)
             {
-                traitsAnim.SetTrigger("Uninspect");
+                GetComponent<Animator>().SetTrigger("Uninspect");
                 typesAnim.SetBool("Visible", false);
             }
         }

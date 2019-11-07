@@ -10,7 +10,7 @@ namespace EcoBuilder
         [SerializeField] Model.Model model;
 
         [SerializeField] UI.Inspector inspector;
-        [SerializeField] UI.StatusBar status;
+        [SerializeField] UI.Score score;
         [SerializeField] UI.MoveRecorder recorder;
 
         void Start()
@@ -25,11 +25,11 @@ namespace EcoBuilder
             inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
-            inspector.OnDespawned +=       (i)=> status.RemoveIdx(i);
+            inspector.OnDespawned +=       (i)=> score.RemoveIdx(i);
             inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
             inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
             inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
-            inspector.OnIsProducerSet += (i,x)=> status.AddType(i,x);
+            inspector.OnIsProducerSet += (i,x)=> score.AddType(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
@@ -37,24 +37,24 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            nodelink.OnConstraints +=  ()=> status.DisplayDisjoint(nodelink.Disjoint);
-            nodelink.OnConstraints +=  ()=> status.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnConstraints +=  ()=> status.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnConstraints +=  ()=> status.DisplayMaxLoop(nodelink.MaxLoop);
+            nodelink.OnConstraints +=  ()=> score.DisplayDisjoint(nodelink.Disjoint);
+            nodelink.OnConstraints +=  ()=> score.DisplayNumEdges(nodelink.NumEdges);
+            nodelink.OnConstraints +=  ()=> score.DisplayMaxChain(nodelink.MaxChain);
+            nodelink.OnConstraints +=  ()=> score.DisplayMaxLoop(nodelink.MaxLoop);
 
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
             // model.OnEquilibrium += ()=> nodelink.ResizeNodes(i=> model.GetScaledAbundance(i));
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetScaledAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetScaledFlux(i,j));
-            model.OnEquilibrium += ()=> status.DisplayScore(model.NormalisedComplexity);
-            model.OnEquilibrium += ()=> status.DisplayFeastability(model.Feasible, model.Stable);
+            model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedComplexity);
+            model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
 
-            status.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
-            status.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            status.OnLevelCompleted +=      ()=> inspector.Hide();
-            status.OnLevelCompleted +=      ()=> nodelink.Freeze();
-            status.OnLevelCompleted +=      ()=> recorder.Record();
+            score.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
+            score.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
+            score.OnLevelCompleted +=      ()=> inspector.Hide();
+            score.OnLevelCompleted +=      ()=> nodelink.Freeze();
+            score.OnLevelCompleted +=      ()=> recorder.Record();
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
@@ -78,7 +78,7 @@ namespace EcoBuilder
             recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
             nodelink.AddLandscape(GameManager.Instance.RandomLandscape());
-            status.AllowUpdateWhen(()=> atEquilibrium &&
+            score.AllowUpdateWhen(()=> atEquilibrium &&
                                         !model.IsCalculating &&
                                         graphSolved &&
                                         !nodelink.IsCalculating); 

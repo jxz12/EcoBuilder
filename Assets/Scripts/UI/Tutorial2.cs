@@ -13,9 +13,9 @@ namespace EcoBuilder.Tutorials
             inspector.HideGreedSlider(true);
             inspector.HidePlantPawButton(true);
             inspector.HideRemoveButton(true);
-            status.HideScore(true);
-            status.HideConstraints(true);
-            status.DisableFinish(true);
+            score.HideScore(true);
+            score.HideConstraints(true);
+            score.DisableFinish(true);
             targetSize = new Vector2(100,100);
 
             var nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
@@ -107,11 +107,11 @@ namespace EcoBuilder.Tutorials
             // Point();
             shuffle = false;
 
-            StartCoroutine(WaitThenDo(3, ()=> { inspector.Uninspect(); nodelink.FullUnfocus(); help.SetSide(false,false); help.SetDistFromTop(.13f); StartCoroutine(WaitThenDo(2, ()=>{help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of interaction, indicated by the flow along the links. Getting enough points will earn you more stars – good luck!"); help.Show(true);})); status.HideScore(false); status.DisableFinish(false); }));
+            StartCoroutine(WaitThenDo(3, ()=> { inspector.Uninspect(); nodelink.FullUnfocus(); help.SetSide(false,false); help.SetDistFromTop(.13f); StartCoroutine(WaitThenDo(2, ()=>{help.SetText("This bar at the top displays your score. It measures the 'complexity' of your ecosystem, and is based on three things: the number of species, the number of links, and the strengths of interaction, indicated by the flow along the links. Getting enough points will earn you more stars – good luck!"); help.Show(true);})); score.HideScore(false); score.DisableFinish(false); }));
 
             Detach();
             Action foo = ()=> Finish();
-            status.OnLevelCompleted += foo;
+            score.OnLevelCompleted += foo;
         }
         void Finish()
         {

@@ -80,7 +80,7 @@ namespace EcoBuilder.Archie{
             // assign mesh
             plant.GetComponent<MeshFilter>().mesh = Producer_Meshs[(int)(bodySize*.999f * Producer_Meshs.Length)];
             // generate texture and material
-            var yuv_coordinates = new Vector3(.8f-.5f*bodySize, -.4f, .8f*greediness-.4f);
+            var yuv_coordinates = new Vector3(.7f-.5f*bodySize, -.4f, .8f*greediness-.4f);
             // scale mesh
             plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
 

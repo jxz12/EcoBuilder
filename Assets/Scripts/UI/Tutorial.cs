@@ -9,8 +9,9 @@ namespace EcoBuilder.Tutorials
     {
         protected UI.Help help;
         protected UI.Inspector inspector;
-        protected UI.StatusBar status;
+        protected UI.Score score;
         protected UI.MoveRecorder recorder;
+        protected UI.Constraints constraints;
         protected NodeLink.NodeLink nodelink;
         protected Model.Model model;
 
@@ -48,7 +49,9 @@ namespace EcoBuilder.Tutorials
                 yield return null;
             while ((inspector = FindObjectOfType<UI.Inspector>()) == null)
                 yield return null;
-            while ((status = FindObjectOfType<UI.StatusBar>()) == null)
+            while ((score = FindObjectOfType<UI.Score>()) == null)
+                yield return null;
+            while ((constraints = FindObjectOfType<UI.Constraints>()) == null)
                 yield return null;
             while ((recorder = FindObjectOfType<UI.MoveRecorder>()) == null)
                 yield return null;

@@ -12,9 +12,9 @@ namespace EcoBuilder.Tutorials
             // inspector.HideGreedSlider(false);
             // inspector.HidePlantPawButton(true);
             // inspector.HideRemoveButton(true);
-            // status.HideScore(true);
-            // status.HideConstraints(true);
-            // status.PauseScoreCalculation(true);
+            // score.HideScore(true);
+            // score.HideConstraints(true);
+            // score.PauseScoreCalculation(true);
             targetSize = new Vector2(100,100);
 
             ExplainIntro();
@@ -33,10 +33,10 @@ namespace EcoBuilder.Tutorials
             Action foo = ()=> ExplainFocus();
             Action fooo = ()=> { targetSize = Vector2.zero; help.Show(false); };
             Action foooo = ()=> { targetSize = new Vector2(100,100); };
-            status.OnLevelCompletabled += foo;
-            status.OnErrorShown += fooo;
+            score.OnLevelCompletabled += foo;
+            constraints.OnErrorShown += fooo;
             help.OnUserShown += foooo;
-            Detach = ()=> { status.OnLevelCompletabled -= foo; status.OnErrorShown -= fooo; help.OnUserShown -= foooo; };
+            Detach = ()=> { score.OnLevelCompletabled -= foo; constraints.OnErrorShown -= fooo; help.OnUserShown -= foooo; };
         }
         void ExplainFocus()
         {
