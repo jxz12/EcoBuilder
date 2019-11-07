@@ -79,7 +79,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = new Vector3(1,0,-.5f) + .2f * UnityEngine.Random.insideUnitSphere; // prevent divide by zero
+                newNode.StressPos = new Vector3(1,0,-.5f) + .2f*UnityEngine.Random.insideUnitSphere; // prevent divide by zero
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
@@ -87,22 +87,30 @@ namespace EcoBuilder.NodeLink
             {
                 nodes[idx] = nodeGrave[idx];
                 nodeGrave.RemoveAt(idx);
+
                 nodes[idx].gameObject.SetActive(true);
+                nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
                 {
-                    links[idx, col] = linkGrave[idx, col];
-                    links[idx, col].gameObject.SetActive(true);
-                    adjacency[idx].Add(col);
-                    adjacency[col].Add(idx);
+                    if (nodes[col] != null)
+                    {
+                        links[idx, col] = linkGrave[idx, col];
+                        links[idx, col].gameObject.SetActive(true);
+                        adjacency[idx].Add(col);
+                        adjacency[col].Add(idx);
+                    }
                 }
                 foreach (int row in linkGrave.GetRowIndicesInColumn(idx))
                 {
-                    links[row, idx] = linkGrave[row, idx];
-                    links[row, idx].gameObject.SetActive(true);
-                    adjacency[idx].Add(row);
-                    adjacency[row].Add(idx);
+                    if (nodes[row] != null)
+                    {
+                        links[row, idx] = linkGrave[row, idx];
+                        links[row, idx].gameObject.SetActive(true);
+                        adjacency[idx].Add(row);
+                        adjacency[row].Add(idx);
+                    }
                 }
                 // clear linkGrave
                 foreach (int col in links.GetColumnIndicesInRow(idx))
@@ -172,7 +180,8 @@ namespace EcoBuilder.NodeLink
             links[i,j] = newLink;
             if (links[j,i] != null)
             {
-                links[i,j].Curved = links[j,i].Curved = true;
+                // links[i,j].Curved = links[j,i].Curved = true;
+                throw new Exception("no bidirectional links allowed");
             }
 
             adjacency[i].Add(j);
@@ -192,6 +201,7 @@ namespace EcoBuilder.NodeLink
             else
             {
                 links[j,i].Curved = false;
+                throw new Exception("no bidirectional links allowed");
             }
 
             OnLinked.Invoke();
