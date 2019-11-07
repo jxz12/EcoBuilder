@@ -13,9 +13,9 @@ namespace EcoBuilder.Tutorials
             inspector.FixInitialSize(.5f);
             inspector.FixInitialGreed(.5f);
             inspector.HideRemoveButton();
-            status.HideScore(true);
-            status.HideConstraints(true);
-            status.DisableFinish(true);
+            score.HideScore(true);
+            score.HideConstraints(true);
+            score.DisableFinish(true);
             recorder.gameObject.SetActive(false);
 
             ExplainIntro();
@@ -183,14 +183,14 @@ namespace EcoBuilder.Tutorials
             help.Show(false);
             // help.SetSide(false, false);
 
-            StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by pressing the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); status.DisableFinish(false); }));
+            StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by pressing the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); score.DisableFinish(false); }));
             // TODO: this breaks if they add the link back before removing species
 
-            // status.HideConstraints(false);
+            // score.HideConstraints(false);
             Detach();
             Action foo = ()=> ExplainFinish();
-            status.OnLevelCompletabled += foo;
-            Detach = ()=> status.OnLevelCompletabled -= foo;
+            score.OnLevelCompletabled += foo;
+            Detach = ()=> score.OnLevelCompletabled -= foo;
         }
         void ExplainFinish()
         {
@@ -204,9 +204,9 @@ namespace EcoBuilder.Tutorials
             Detach();
             Action foo = ()=> Finish();
             Action fooo = ()=> ExplainFinishCondition(0);
-            status.OnLevelCompleted += foo;
-            status.OnLevelIncompletabled += fooo;
-            Detach = ()=>{ status.OnLevelCompleted -= foo; status.OnLevelIncompletabled -= fooo; };
+            score.OnLevelCompleted += foo;
+            score.OnLevelIncompletabled += fooo;
+            Detach = ()=>{ score.OnLevelCompleted -= foo; score.OnLevelIncompletabled -= fooo; };
         }
         Level nextLevel = null;
         void Finish()

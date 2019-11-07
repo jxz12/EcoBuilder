@@ -35,10 +35,12 @@ namespace EcoBuilder.NodeLink
             outline.enabled = false;
         }
 
+        bool outlined = false;
         public void Outline(int colourIdx=0)
         {
             // outline.eraseRenderer = false;
             outline.enabled = true;
+            outlined = true;
 
             if (Removable)
                 outline.color = colourIdx;
@@ -47,6 +49,7 @@ namespace EcoBuilder.NodeLink
         }
         public void Unoutline()
         {
+            outlined = false;
             if (Removable)
                 // outline.eraseRenderer = true;
                 outline.enabled = false;
@@ -54,8 +57,17 @@ namespace EcoBuilder.NodeLink
         float targetAlpha = 1;
         public void Show(bool showing = true)
         {
-            targetAlpha = showing? 1 : 0;
-            outline.enabled = showing;
+            if (showing)
+            {
+                targetAlpha = 1;
+                if (outlined)
+                    outline.enabled = true;
+            }
+            else
+            {
+                targetAlpha = 0;
+                outline.enabled = false;
+            }
         }
 
         [SerializeField] float lineWidth;
