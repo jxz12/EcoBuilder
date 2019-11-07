@@ -89,12 +89,12 @@ Material:
     - _OcclusionStrength: 1
     - _Offset: 3.2
     - _Parallax: 0.02
-    - _RepeatCount: 3.91
+    - _RepeatCount: 2.01
     - _SmoothnessTextureChannel: 0
     - _SoftParticlesEnabled: 0
     - _SoftParticlesFarFadeDistance: 1
     - _SoftParticlesNearFadeDistance: 0
-    - _Spacing: 9.4
+    - _Spacing: -0.51
     - _SpecularHighlights: 1
     - _SrcBlend: 5
     - _UVSec: 0

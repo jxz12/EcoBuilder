@@ -110,9 +110,9 @@ namespace EcoBuilder.NodeLink
             float width = lineWidth * transform.lossyScale.x;
             lr.widthMultiplier = width;
 
-            // TODO: include length of line so that balls don't get ellipsed
-            // lr.material.SetFloat("_Spacing", (1-NumBalls*lineWidth) / (NumBalls*lineWidth));
-            lr.material.SetFloat("_Spacing", (1-numBalls*width) / (numBalls*width));
+            float height = (Source.transform.position - Target.transform.position).magnitude;
+            // lr.material.SetFloat("_Spacing", height/numBalls - width);
+            lr.material.SetFloat("_Spacing", height/(width*numBalls) - 1);
             lr.material.SetFloat("_RepeatCount", numBalls);
 
             Color c = Target.Col;
