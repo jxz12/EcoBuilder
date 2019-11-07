@@ -16,7 +16,7 @@ namespace EcoBuilder.UI
         [SerializeField] Constraints constraints;
         [SerializeField] Help help;
 
-        void Awake()
+        void Start()
         {
             var level = GameManager.Instance.PlayedLevel;
             if (level == null || level.Details.title == "Sandbox") // FIXME:
