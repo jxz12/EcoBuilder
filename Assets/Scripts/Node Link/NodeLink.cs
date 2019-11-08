@@ -287,6 +287,8 @@ namespace EcoBuilder.NodeLink
         public void AddLandscape(GameObject landscape)
         {
             landscape.transform.SetParent(nodesParent, false);
+            landscape.transform.localPosition = Vector3.down * 1f;
+            landscape.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
         }
     }
 }

@@ -94,8 +94,8 @@ namespace EcoBuilder
                     level.Details.sizes[i],
                     level.Details.greeds[i],
                     level.Details.randomSeeds[i],
-                    level.Details.sizeEditable,
-                    level.Details.greedEditable);
+                    level.Details.sizeEditables[i],
+                    level.Details.greedEditables[i]);
 
                 inspector.SetSpeciesRemovable(i, false);
                 nodelink.SetIfNodeRemovable(i, false);
