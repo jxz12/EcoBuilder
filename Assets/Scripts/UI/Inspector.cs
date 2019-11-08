@@ -17,7 +17,6 @@ namespace EcoBuilder.UI
         public event Action<int> OnSpawned;
         public event Action<int> OnDespawned;
 
-        // public event Action<int, bool, bool> OnUserIsProducerSet;
         public event Action<int, float, float> OnUserSizeSet;
         public event Action<int, float, float> OnUserGreedSet;
         public event Action<int> OnUserSpawned;
@@ -44,8 +43,8 @@ namespace EcoBuilder.UI
             public int RandomSeed { get; private set; } 
 
             public bool IsProducer { get; set; }
-            public float BodySize { get; set; }
-            public float Greediness { get; set; }
+            public float BodySize { get; set; } = -1;
+            public float Greediness { get; set; } = -1;
 
             public bool SizeEditable { get; set; } = true;
             public bool GreedEditable { get; set; } = true;
@@ -87,10 +86,11 @@ namespace EcoBuilder.UI
             consumerButton.onClick.AddListener(()=> IncubateNew(false));
             refroveButton.onClick.AddListener(()=> RefreshOrRemove());
 
-            SizeSliderCallback = x=> SetSizeFromSlider();
-            GreedSliderCallback = x=> SetGreedFromSlider();
-            sizeSlider.onValueChanged.AddListener(SizeSliderCallback);
-            greedSlider.onValueChanged.AddListener(GreedSliderCallback);
+            SizeSlidCallback = x=> SetSizeFromSlider();
+            GreedSlidCallback = x=> SetGreedFromSlider();
+            sizeSlider.onValueChanged.AddListener(SizeSlidCallback);
+            greedSlider.onValueChanged.AddListener(GreedSlidCallback);
+            sizeSlider.OnPointerUp += ()=>print("hi");
 
             incubator.OnDropped += ()=> SpawnIncubated();
         }
@@ -128,17 +128,21 @@ namespace EcoBuilder.UI
                 nextIdx += 1;
 
             Species s = new Species(nextIdx, isProducer);
-            if (sizeIfFixed >= 0)
-                s.BodySize = sizeIfFixed;
-            if (greedIfFixed >= 0)
-                s.Greediness = greedIfFixed;
+            if (initialSizeIfFixed >= 0)
+                s.BodySize = initialSizeIfFixed;
+            if (initialGreedIfFixed >= 0)
+                s.Greediness = initialGreedIfFixed;
 
+            // this is to match the whole numbers in slider
+            SetSlidersWithoutCallbacks(s.BodySize, s.Greediness);
+            s.BodySize = sizeSlider.normalizedValue;
+            s.Greediness = greedSlider.normalizedValue; 
+
+            // grab gameobject from factory
             s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-
             incubator.Incubate(s.GObject);
             nameText.text = s.GObject.name;
 
-            SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
             sizeSlider.interactable = true;
             greedSlider.interactable = true;
             refroveButton.interactable = true;
@@ -154,14 +158,19 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubated.RerollSeed();
-                if (sizeIfFixed >= 0)
-                    incubated.BodySize = sizeIfFixed;
-                if (greedIfFixed >= 0)
-                    incubated.Greediness = greedIfFixed;
+                if (initialSizeIfFixed >= 0)
+                    incubated.BodySize = initialSizeIfFixed;
+                if (initialGreedIfFixed >= 0)
+                    incubated.Greediness = initialGreedIfFixed;
 
-                SetSlidersWithoutEventCallbacks(incubated.BodySize, incubated.Greediness);
-                incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
-                incubator.Replace(incubated.GObject);
+                // this is to match the whole numbers in slider
+                SetSlidersWithoutCallbacks(incubated.BodySize, incubated.Greediness);
+                incubated.BodySize = sizeSlider.normalizedValue;
+                incubated.Greediness = greedSlider.normalizedValue; 
+
+                // incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+                // incubator.Replace(incubated.GObject);
+                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
             }
             else if (inspected != null)
@@ -199,55 +208,78 @@ namespace EcoBuilder.UI
             typesAnim.SetBool("Visible", true);
         }
 
+        private bool CheckConflict(Species toCheck)
+        {
+            foreach (Species s in spawnedSpecies.Values)
+            {
+                if (s != toCheck &&
+                    s.Greediness == inspected.Greediness &&
+                    s.BodySize == inspected.BodySize)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         void SetSizeFromSlider()
         {
+            float prevSize = inspected.BodySize;
+            inspected.BodySize = sizeSlider.normalizedValue;
             if (incubated != null)
             {
-                incubated.BodySize = sizeSlider.normalizedValue;
+                if (CheckConflict(incubated))
+                    print("BOO");
 
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
             }
             else if (inspected != null)
             {
-                float prevSize = inspected.BodySize;
-                inspected.BodySize = sizeSlider.normalizedValue;
+                if (CheckConflict(inspected))
+                    print("BOO");
 
                 OnSizeSet.Invoke(inspected.Idx, inspected.BodySize);
                 OnUserSizeSet.Invoke(inspected.Idx, prevSize, inspected.BodySize);
+
                 factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
                 nameText.text = inspected.GObject.name;
             }
         }
         void SetGreedFromSlider()
         {
+            float prevGreed = inspected.Greediness;
+            incubated.Greediness = greedSlider.normalizedValue;
             if (incubated != null)
             {
-                incubated.Greediness = greedSlider.normalizedValue;
+                if (CheckConflict(incubated))
+                    print("BOO");
+
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
             }
             else if (inspected != null)
             {
-                float prevGreed = inspected.Greediness;
-                inspected.Greediness = greedSlider.normalizedValue;
+                if (CheckConflict(inspected))
+                    print("BOO");
+
                 OnGreedSet.Invoke(inspected.Idx, inspected.Greediness);
                 OnUserGreedSet.Invoke(inspected.Idx, prevGreed, inspected.Greediness);
+
                 factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
                 nameText.text = inspected.GObject.name;
             }
         }
 
-        UnityAction<float> SizeSliderCallback, GreedSliderCallback;
-        void SetSlidersWithoutEventCallbacks(float size, float greed)
+        UnityAction<float> SizeSlidCallback, GreedSlidCallback;
+        void SetSlidersWithoutCallbacks(float size, float greed)
         {
             // this is ugly as heck, but sliders are stupid
-            sizeSlider.onValueChanged.RemoveListener(SizeSliderCallback);
+            sizeSlider.onValueChanged.RemoveListener(SizeSlidCallback);
             sizeSlider.normalizedValue = size;
-            sizeSlider.onValueChanged.AddListener(SizeSliderCallback);
-            greedSlider.onValueChanged.RemoveListener(GreedSliderCallback);
+            sizeSlider.onValueChanged.AddListener(SizeSlidCallback);
+            greedSlider.onValueChanged.RemoveListener(GreedSlidCallback);
             greedSlider.normalizedValue = greed;
-            greedSlider.onValueChanged.AddListener(GreedSliderCallback);
+            greedSlider.onValueChanged.AddListener(GreedSlidCallback);
         }
 
 
@@ -273,7 +305,7 @@ namespace EcoBuilder.UI
 
             inspected = spawnedSpecies[idx];
             nameText.text = inspected.GObject.name;
-            SetSlidersWithoutEventCallbacks(inspected.BodySize, inspected.Greediness);
+            SetSlidersWithoutCallbacks(inspected.BodySize, inspected.Greediness);
 
             sizeSlider.interactable  = inspected.SizeEditable;
             greedSlider.interactable = inspected.GreedEditable;
@@ -388,7 +420,7 @@ namespace EcoBuilder.UI
 
             if (inspected == s)
             {
-                SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
+                SetSlidersWithoutCallbacks(s.BodySize, s.Greediness);
             }
         }
         public void SetGreed(int idx, float greed)
@@ -404,7 +436,7 @@ namespace EcoBuilder.UI
 
             if (inspected == s)
             {
-                SetSlidersWithoutEventCallbacks(s.BodySize, s.Greediness);
+                SetSlidersWithoutCallbacks(s.BodySize, s.Greediness);
             }
         }
 
@@ -434,14 +466,14 @@ namespace EcoBuilder.UI
         {
             removeEnabled = !hidden;
         }
-        float sizeIfFixed = -1, greedIfFixed = -1;
+        float initialSizeIfFixed = -1, initialGreedIfFixed = -1;
         public void FixInitialSize(float fixedSize)
         {
-            sizeIfFixed = fixedSize;
+            initialSizeIfFixed = fixedSize;
         }
         public void FixInitialGreed(float fixedGreed)
         {
-            greedIfFixed = fixedGreed;
+            initialGreedIfFixed = fixedGreed;
         }
         public void HidePlantPawButton(bool hidden=true)
         {

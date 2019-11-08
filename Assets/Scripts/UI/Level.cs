@@ -26,8 +26,6 @@ namespace EcoBuilder
             // constraints
             public int numProducers;
             public int numConsumers;
-            public bool sizeEditable; // TODO: maybe change this back to list again!!!
-            public bool greedEditable;
 
             public int minEdges;
             public int maxEdges;
@@ -39,9 +37,12 @@ namespace EcoBuilder
             // vertices
             public int numSpecies;
             public List<bool> plants;
+            public List<int> randomSeeds;
             public List<float> sizes;
             public List<float> greeds;
-            public List<int> randomSeeds;
+
+            public List<bool> sizeEditables;
+            public List<bool> greedEditables;
             // edges
             public int numInteractions;
             public List<int> resources;
