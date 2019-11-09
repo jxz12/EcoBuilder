@@ -171,9 +171,9 @@ namespace EcoBuilder.Model
         public bool Stable { get; private set; } = false;
         // public bool Nonreactive { get; private set; } = false;
 
-        // public float TotalAbundance { get; private set; } = 0;
-        public float NormalisedFlux { get; private set; } = 0;
-        public float NormalisedComplexity { get; private set; } = 0;
+        public float ScaledAbundance { get; private set; } = 0;
+        public float ScaledFlux { get; private set; } = 0;
+        public float ScaledComplexity { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
 
@@ -185,12 +185,18 @@ namespace EcoBuilder.Model
             simulation.BuildInteractionMatrix(map); // not async, in order to keep state consistent
 
             Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
-            NormalisedFlux = NormaliseFluxScore((float)simulation.TotalFlux);
+            ScaledFlux = ScaleFluxScore((float)simulation.TotalFlux);
+            ScaledAbundance = ScaleBundScore((float)simulation.TotalAbundance);
+
             Stable = await Task.Run(()=> simulation.SolveStability());
-            NormalisedComplexity = NormaliseComplexityScore((float)simulation.CalculateMayComplexity());
+            double complexity = simulation.CalculateTangComplexity();
+            ScaledComplexity = ScalePlexScore((float)complexity);
+
+            print(simulation.TotalFlux + " " + simulation.TotalAbundance + " " + complexity);
+
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
 
-            ShowAbundanceWarnings();
+            TriggerAbundanceEvents();
             IsCalculating = false;
             OnEquilibrium.Invoke();
         }
@@ -200,16 +206,19 @@ namespace EcoBuilder.Model
             simulation.BuildInteractionMatrix(map);
 
             Feasible = simulation.SolveFeasibility(map);
-            NormalisedFlux = NormaliseFluxScore((float)simulation.TotalFlux);
+            ScaledFlux = ScaleFluxScore((float)simulation.TotalFlux);
+
             Stable = simulation.SolveStability();
-            NormalisedComplexity = NormaliseComplexityScore((float)simulation.CalculateMayComplexity());
+            double complexity = simulation.CalculateTangComplexity();
+            ScaledComplexity = ScalePlexScore((float)complexity);
+
             // Nonreactive = simulation.SolveReactivity();
 
-            ShowAbundanceWarnings();
+            TriggerAbundanceEvents();
             OnEquilibrium.Invoke();
         }
 
-        void ShowAbundanceWarnings()
+        void TriggerAbundanceEvents()
         {
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)
@@ -239,27 +248,29 @@ namespace EcoBuilder.Model
         }
 
         [ReadOnly] [SerializeField]
-        float minScaledAbundance = 6e-8f,
-              maxScaledAbundance = 2f,
+        float minScaledAbund = 6e-8f,
+              maxScaledAbund = 2f,
               minScaledFlux = 1e-18f,
               maxScaledFlux = 9.2e-7f,
-              minScaledComplexity = 1e-10f,
-              maxScaledComplexity = 7e-3f;
+            //   minScaledPlex = 1e-10f,
+            //   maxScaledPlex = 7e-3f;
+              minScaledPlex = 1e-11f,
+              maxScaledPlex = 8e-7f;
 
         private float minLogAbund, maxLogAbund,
                       minLogFlux, maxLogFlux,
                       minLogPlex, maxLogPlex;
         void InitScales()
         {
-            minLogAbund = Mathf.Log10(minScaledAbundance);
-            maxLogAbund = Mathf.Log10(maxScaledAbundance);
+            minLogAbund = Mathf.Log10(minScaledAbund);
+            maxLogAbund = Mathf.Log10(maxScaledAbund);
             minLogFlux = Mathf.Log10(minScaledFlux);
             maxLogFlux = Mathf.Log10(maxScaledFlux);
-            minLogPlex = Mathf.Log10(minScaledComplexity);
-            maxLogPlex = Mathf.Log10(maxScaledComplexity);
+            minLogPlex = Mathf.Log10(minScaledPlex);
+            maxLogPlex = Mathf.Log10(maxScaledPlex);
         }
         
-        public float GetScaledAbundance(int idx)
+        public float GetNormalisedAbundance(int idx)
         {
             float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
             if (abundance <= 0)
@@ -271,7 +282,7 @@ namespace EcoBuilder.Model
                 return (Mathf.Log10(abundance)-minLogAbund) / (maxLogAbund-minLogAbund);
             }
         }
-        public float GetScaledFlux(int res, int con)
+        public float GetNormalisedFlux(int res, int con)
         {
             float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
             if (flux <= 0)
@@ -283,7 +294,16 @@ namespace EcoBuilder.Model
                 return (Mathf.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
             }
         }
-        float NormaliseFluxScore(float input)
+        float ScaleBundScore(float input)
+        {
+            // for flux
+            float normalised = input < maxScaledAbund ?
+                               (Mathf.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
+                             : input/maxScaledFlux;
+
+            return Mathf.Max(normalised, 0);
+        }
+        float ScaleFluxScore(float input)
         {
             // for flux
             float normalised = input < maxScaledFlux ?
@@ -292,12 +312,13 @@ namespace EcoBuilder.Model
 
             return Mathf.Max(normalised, 0);
         }
-        float NormaliseComplexityScore(float input)
+        float ScalePlexScore(float input)
         {
+            return input;
             // for complexity
-            float normalised = input < maxScaledComplexity ?
+            float normalised = input < maxScaledPlex ?
                                (Mathf.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
-                             : input/maxScaledComplexity;
+                             : input/maxScaledPlex;
             
             return Mathf.Max(normalised, 0);
         }

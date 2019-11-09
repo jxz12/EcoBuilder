@@ -90,7 +90,7 @@ namespace EcoBuilder.UI
             GreedSlidCallback = x=> SetGreedFromSlider();
             sizeSlider.onValueChanged.AddListener(SizeSlidCallback);
             greedSlider.onValueChanged.AddListener(GreedSlidCallback);
-            sizeSlider.OnPointerUp += ()=>print("hi");
+            // sizeSlider.OnPointerUp += ()=>print("hi");
 
             incubator.OnDropped += ()=> SpawnIncubated();
         }
@@ -213,20 +213,20 @@ namespace EcoBuilder.UI
             foreach (Species s in spawnedSpecies.Values)
             {
                 if (s != toCheck &&
-                    s.Greediness == inspected.Greediness &&
-                    s.BodySize == inspected.BodySize)
+                    s.Greediness == toCheck.Greediness &&
+                    s.BodySize == toCheck.BodySize)
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
         void SetSizeFromSlider()
         {
-            float prevSize = inspected.BodySize;
-            inspected.BodySize = sizeSlider.normalizedValue;
             if (incubated != null)
             {
+                float prevSize = incubated.BodySize;
+                incubated.BodySize = sizeSlider.normalizedValue;
                 if (CheckConflict(incubated))
                     print("BOO");
 
@@ -235,6 +235,8 @@ namespace EcoBuilder.UI
             }
             else if (inspected != null)
             {
+                float prevSize = inspected.BodySize;
+                inspected.BodySize = sizeSlider.normalizedValue;
                 if (CheckConflict(inspected))
                     print("BOO");
 
@@ -247,10 +249,10 @@ namespace EcoBuilder.UI
         }
         void SetGreedFromSlider()
         {
-            float prevGreed = inspected.Greediness;
-            incubated.Greediness = greedSlider.normalizedValue;
             if (incubated != null)
             {
+                float prevGreed = incubated.Greediness;
+                incubated.Greediness = greedSlider.normalizedValue;
                 if (CheckConflict(incubated))
                     print("BOO");
 
@@ -259,6 +261,8 @@ namespace EcoBuilder.UI
             }
             else if (inspected != null)
             {
+                float prevGreed = inspected.Greediness;
+                inspected.Greediness = greedSlider.normalizedValue;
                 if (CheckConflict(inspected))
                     print("BOO");
 
