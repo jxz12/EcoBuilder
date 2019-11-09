@@ -20,7 +20,7 @@ namespace EcoBuilder.UI
             public int value=0;
         }
         Dictionary<string, Constraint> constraints;
-        string prefix = "     ";
+        string prefix = "    ";
 
         void Awake()
         {

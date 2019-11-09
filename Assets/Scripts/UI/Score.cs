@@ -151,7 +151,8 @@ namespace EcoBuilder.UI
         }
         public void DisplayScore(float score)
         {
-            modelScore = ((int)Math.Truncate(score * 1000));
+            // modelScore = (int)Math.Truncate(score * 100);
+            modelScore = (int)(score * 10);
         }
 
 		//////////////////////

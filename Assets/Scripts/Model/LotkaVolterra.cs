@@ -114,54 +114,6 @@ namespace EcoBuilder.Model
             }
         }
 
-        // Depends on A and b being correct
-        void BuildCommunityMatrix()
-        {
-            if (numSpecies == 0)
-                return;
-
-            // calculates every element of the Jacobian, evaluated at equilibrium point
-            community.Clear();
-            int n = numSpecies;
-            for (int i=0; i<n; i++)
-            {
-                // for (int j=0; j<n; j++)
-                // {
-                //     if (i==j)
-                //     {
-                //         community[i,i] += -b[i] + (2*A[i,i] * x[i]);
-                //     }
-                //     else
-                //     {
-                //         community[i,j] = A[i,j] * x[i];
-                //         community[i,i] += A[i,j] * x[j];
-                //     }
-                // }
-                
-                // Cramer's rule to simplify the above commented
-                community[i,i] = interaction[i,i] * abundance[i];
-                for (int j=0; j<i; j++)
-                    community[i,j] = interaction[i,j] * abundance[i];
-                for (int j=i+1; j<n; j++)
-                    community[i,j] = interaction[i,j] * abundance[i];
-            }
-        }
-
-        // // depends on community being correct, and also destroys it
-        // void BuildHermitianMatrix()
-        // {
-        //     int n = internToExtern.Count;
-
-        //     hermitian.Clear();
-        //     for (int i=0; i<n; i++)
-        //     {
-        //         for (int j=0; j<i; j++)
-        //         {
-        //             hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
-        //         }
-        //     }
-        // }
-
         ///////////
         // O(n^3)
         public bool SolveFeasibility(Func<T, IEnumerable<T>> Consumers)
@@ -222,6 +174,39 @@ namespace EcoBuilder.Model
             return flux[i,j];
         }
 
+        // Depends on A and b being correct
+        void BuildCommunityMatrix()
+        {
+            if (numSpecies == 0)
+                return;
+
+            // calculates every element of the Jacobian, evaluated at equilibrium point
+            community.Clear();
+            int n = numSpecies;
+            for (int i=0; i<n; i++)
+            {
+                // for (int j=0; j<n; j++)
+                // {
+                //     if (i==j)
+                //     {
+                //         community[i,i] += -b[i] + (2*A[i,i] * x[i]);
+                //     }
+                //     else
+                //     {
+                //         community[i,j] = A[i,j] * x[i];
+                //         community[i,i] += A[i,j] * x[j];
+                //     }
+                // }
+                
+                // Cramer's rule to simplify the above commented
+                community[i,i] = interaction[i,i] * abundance[i];
+                for (int j=0; j<i; j++)
+                    community[i,j] = interaction[i,j] * abundance[i];
+                for (int j=i+1; j<n; j++)
+                    community[i,j] = interaction[i,j] * abundance[i];
+            }
+        }
+
 
         ////////////////////
         // also O(n^3)
@@ -231,7 +216,7 @@ namespace EcoBuilder.Model
                 return false;
 
             BuildCommunityMatrix();
-            // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
+            UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
             // get largest real part of any eigenvalue of this community matrix
             // to measure the local asymptotic stability
@@ -241,45 +226,34 @@ namespace EcoBuilder.Model
         }
         public double CalculateMayComplexity()
         {
-            // TODO: score function... AGAIN :(
-
-            // TODO: grass shrub tree
-            // TODO: make size not equal population (health bar instead? outline?)
             // TODO: report card
             // TODO: add super animations for stars 
-            // TODO: separate the competitive exclusion level into two levels - one where you edit the traits, one were you add another species
-            // TODO: last example is a straight line: over-exploitation (nah)
             // TODO: print all parameters to file
+            // TODO: measure coherence
             if (numSpecies == 0 || numInteractions == 0)
                 return 0;
             
             // 'complexity' = rho * sqrt(R*C)
-            // double mean = 0;
-            // double meanDiag = 0;
+            double meanDiag = 0;
             double meanOffDiag = 0;
             int numOffDiagEntries = 0;
-            // double meanOffDiagPairs = 0;
             for (int i=0; i<numSpecies; i++)
             {
-                // meanDiag += community[i,i];
+                meanDiag += community[i,i];
                 for (int j=0; j<numSpecies; j++)
                 {
-                    // mean += community[i,j];
                     if (i!=j && community[i,j]!=0)
                     {
                         meanOffDiag += community[i,j];
                         numOffDiagEntries += 1;
                     }
-                    // if (i<j)
-                    //     meanOffDiagPairs += community[i,j] * community[j,i];
                 }
             }
-
+            meanDiag /= numSpecies;
             // only account for non zeros
-            double variance = 0;
-            double standardDev = 0;
             meanOffDiag /= numOffDiagEntries;
 
+            double variance = 0;
             for (int i=0; i<numSpecies; i++)
             {
                 for (int j=0; j<numSpecies; j++)
@@ -292,24 +266,76 @@ namespace EcoBuilder.Model
                 }
             }
             variance /= numOffDiagEntries;
-            standardDev = Math.Sqrt(variance);
 
-            // double mayComplexity = standardDev * Math.Sqrt(richness*connectance) - meanDiag;
             double richness = numSpecies;
             double connectance = (double)numInteractions / ((numSpecies*(numSpecies-1))/2);
-            double mayComplexity = standardDev * Math.Sqrt(richness*connectance);
-            return mayComplexity;
+            double standardDev = Math.Sqrt(variance);
+            if (connectance > 1)
+                throw new Exception("connectance cannot be above 1");
 
-            // if (variance > 0)
-            // {
-            //     double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
-            //     TangComplexity = MayComplexity * (1+correlation) - mean - meanDiag;
-            // }
-            // else
-            // {
-            //     TangComplexity = 0;
-            // }
+            double complexity = standardDev * Math.Sqrt(richness*connectance);
+            return complexity / -meanDiag;
         }
+        public double CalculateTangComplexity()
+        {
+            if (numSpecies == 0 || numInteractions == 0)
+                return 0;
+            
+            // double mean = 0;
+            double meanDiag = 0;
+            double meanOffDiag = 0;
+            double meanOffDiagPairs = 0;
+            for (int i=0; i<numSpecies; i++)
+            {
+                meanDiag += community[i,i];
+                for (int j=0; j<i; j++)
+                {
+                    meanOffDiag += community[i,j];
+                }
+                for (int j=i+1; j<numSpecies; j++)
+                {
+                    meanOffDiag += community[i,j];
+                    meanOffDiagPairs += community[i,j] * community[j,i];
+                }
+            }
+            meanDiag /= numSpecies;
+            meanOffDiag /= numSpecies*(numSpecies-1);
+            meanOffDiagPairs /= (numSpecies*(numSpecies-1)) / 2;
+
+            double variance = 0;
+            for (int i=0; i<numSpecies; i++)
+            {
+                for (int j=0; j<numSpecies; j++)
+                {
+                    if (i != j)
+                    {
+                        double deviation = community[i,j] - meanOffDiag;
+                        variance += deviation * deviation;
+                    }
+                }
+            }
+            variance /= numSpecies*(numSpecies-1);
+            UnityEngine.Debug.Log("S:"+numSpecies+" V:"+variance+" E:"+meanOffDiag+" E2:"+meanOffDiagPairs+" d:"+meanDiag);
+
+            double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
+            double complexity = Math.Sqrt(numSpecies*variance) * (1+correlation) - meanOffDiag;
+            return complexity / -meanDiag;
+        }
+
+        // // depends on community being correct, and also destroys it
+        // void BuildHermitianMatrix()
+        // {
+        //     int n = internToExtern.Count;
+
+        //     hermitian.Clear();
+        //     for (int i=0; i<n; i++)
+        //     {
+        //         for (int j=0; j<i; j++)
+        //         {
+        //             hermitian[i,j] = hermitian[j,i] = (community[i,j]+community[j,i]) / 2;
+        //         }
+        //     }
+        // }
 
         // public bool SolveReactivity()
         // {
