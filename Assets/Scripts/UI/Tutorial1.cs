@@ -10,8 +10,9 @@ namespace EcoBuilder.Tutorials
         {
             inspector.HideSizeSlider(true);
             inspector.HideGreedSlider(true);
-            inspector.FixInitialSize(.5f);
-            inspector.FixInitialGreed(.5f);
+            inspector.AllowConflicts(true);
+            inspector.FixIncubatedSize(.5f);
+            inspector.FixIncubatedGreed(.5f);
             inspector.HideRemoveButton();
             score.HideScore(true);
             score.HideConstraints(true);

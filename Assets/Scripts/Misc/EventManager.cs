@@ -49,7 +49,7 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledAbundance);
             // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledFlux);
-            model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledComplexity);
+            model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore);
             model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
 
             score.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);

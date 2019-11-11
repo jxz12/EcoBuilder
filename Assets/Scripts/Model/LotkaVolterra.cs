@@ -83,18 +83,22 @@ namespace EcoBuilder.Model
             }
         }
 
-        int numSpecies { get { return internToExtern.Count; } }
-        int numInteractions;
-        public void BuildInteractionMatrix(Func<T, IEnumerable<T>> Consumers)
-        {
-            if (numSpecies == 0)
-                return;
+        public int Richness { get { return internToExtern.Count; } }
 
+        ///////////
+        // O(n^3)
+        public bool SolveFeasibility(Func<T, IEnumerable<T>> Consumers)
+        {
+            if (Richness == 0)
+            {
+                TotalAbundance = TotalFlux = 0;
+                return true;
+            }
             interaction.Clear();
             negGrowth.Clear();
 
-            numInteractions = 0;
-            int n = numSpecies;
+            // numInteractions = 0;
+            int n = Richness;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -109,22 +113,10 @@ namespace EcoBuilder.Model
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
                     flux[i,j] = e * a; // init flux here, multiply by abundances later
-                    numInteractions += 1;
+                    // numInteractions += 1;
                 }
             }
-        }
 
-        ///////////
-        // O(n^3)
-        public bool SolveFeasibility(Func<T, IEnumerable<T>> Consumers)
-        {
-            if (numSpecies == 0)
-            {
-                TotalAbundance = TotalFlux = 0;
-                return true;
-            }
-
-            // BuildInteractionMatrix(Consumers);
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
@@ -132,9 +124,8 @@ namespace EcoBuilder.Model
             // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
             // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
-            // solve flux values
+            // complete flux values
             TotalFlux = 0;
-            int n = numSpecies;
             for (int i=0; i<n; i++)
             {
                 T res = internToExtern[i];
@@ -150,17 +141,18 @@ namespace EcoBuilder.Model
             bool feasible = true;
             for (int i=0; i<n; i++)
             {
-                TotalAbundance += abundance[i];
                 if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i]))
                     abundance[i] = 0;
+
+                TotalAbundance += abundance[i];
 
                 if (abundance[i] <= 0)
                     feasible = false;
             }
             return feasible;
         }
-        public double TotalAbundance { get; private set; }
-        public double TotalFlux { get; private set; }
+        public double TotalAbundance { get; private set; } = 0;
+        public double TotalFlux { get; private set; } = 0;
 
         public double GetSolvedAbundance(T species)
         {
@@ -177,12 +169,12 @@ namespace EcoBuilder.Model
         // Depends on A and b being correct
         void BuildCommunityMatrix()
         {
-            if (numSpecies == 0)
+            if (Richness == 0)
                 return;
 
             // calculates every element of the Jacobian, evaluated at equilibrium point
             community.Clear();
-            int n = numSpecies;
+            int n = Richness;
             for (int i=0; i<n; i++)
             {
                 // for (int j=0; j<n; j++)
@@ -212,11 +204,11 @@ namespace EcoBuilder.Model
         // also O(n^3)
         public bool SolveStability()
         {
-            if (numSpecies == 0)
+            if (Richness == 0)
                 return false;
 
             BuildCommunityMatrix();
-            UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
+            // UnityEngine.Debug.Log("C:\n" + MathNetMatStr(community));
 
             // get largest real part of any eigenvalue of this community matrix
             // to measure the local asymptotic stability
@@ -224,39 +216,42 @@ namespace EcoBuilder.Model
             double Lambda = eigenValues.Real().Maximum();
             return Lambda <= 0;
         }
-        public double CalculateMayComplexity()
+        public double MayComplexity { get { return CalculateMayComplexity(community); } }
+        public double TangComplexity { get { return CalculateTangComplexity(community); } }
+
+        static double CalculateMayComplexity(Matrix<double> community)
         {
-            // TODO: report card
-            // TODO: add super animations for stars 
-            // TODO: print all parameters to file
-            // TODO: measure coherence
-            if (numSpecies == 0 || numInteractions == 0)
+            if (community == null)
                 return 0;
-            
-            // 'complexity' = rho * sqrt(R*C)
+            if (community.RowCount != community.ColumnCount)
+                throw new Exception("community matrix malformed");
+
+            int n = community.RowCount;
             double meanDiag = 0;
             double meanOffDiag = 0;
-            int numOffDiagEntries = 0;
-            for (int i=0; i<numSpecies; i++)
+            int numOffDiag = 0;
+            for (int i=0; i<n; i++)
             {
                 meanDiag += community[i,i];
-                for (int j=0; j<numSpecies; j++)
+                for (int j=0; j<n; j++)
                 {
                     if (i!=j && community[i,j]!=0)
                     {
                         meanOffDiag += community[i,j];
-                        numOffDiagEntries += 1;
+                        numOffDiag += 1;
                     }
                 }
             }
-            meanDiag /= numSpecies;
-            // only account for non zeros
-            meanOffDiag /= numOffDiagEntries;
+            if (numOffDiag == 0)
+                return 0;
+
+            meanDiag /= n;
+            meanOffDiag /= numOffDiag; // only account for non zeros
 
             double variance = 0;
-            for (int i=0; i<numSpecies; i++)
+            for (int i=0; i<n; i++)
             {
-                for (int j=0; j<numSpecies; j++)
+                for (int j=0; j<n; j++)
                 {
                     if (i!=j && community[i,j]!=0)
                     {
@@ -265,47 +260,50 @@ namespace EcoBuilder.Model
                     }
                 }
             }
-            variance /= numOffDiagEntries;
+            variance /= numOffDiag;
 
-            double richness = numSpecies;
-            double connectance = (double)numInteractions / ((numSpecies*(numSpecies-1))/2);
+            // 'complexity' = rho * sqrt(R*C)
             double standardDev = Math.Sqrt(variance);
+            double richness = n;
+            double connectance = (double)numOffDiag / (richness*(richness-1));
             if (connectance > 1)
                 throw new Exception("connectance cannot be above 1");
 
             double complexity = standardDev * Math.Sqrt(richness*connectance);
             return complexity / -meanDiag;
         }
-        public double CalculateTangComplexity()
+        static double CalculateTangComplexity(Matrix<double> community)
         {
-            if (numSpecies == 0 || numInteractions == 0)
+            if (community == null)
                 return 0;
-            
-            // double mean = 0;
+            if (community.RowCount != community.ColumnCount)
+                throw new Exception("community matrix malformed");
+
+            int n = community.RowCount;
             double meanDiag = 0;
             double meanOffDiag = 0;
             double meanOffDiagPairs = 0;
-            for (int i=0; i<numSpecies; i++)
+            for (int i=0; i<n; i++)
             {
                 meanDiag += community[i,i];
                 for (int j=0; j<i; j++)
                 {
                     meanOffDiag += community[i,j];
+                    meanOffDiagPairs += community[i,j] * community[j,i]; // pairs
                 }
-                for (int j=i+1; j<numSpecies; j++)
+                for (int j=i+1; j<n; j++)
                 {
                     meanOffDiag += community[i,j];
-                    meanOffDiagPairs += community[i,j] * community[j,i];
                 }
             }
-            meanDiag /= numSpecies;
-            meanOffDiag /= numSpecies*(numSpecies-1);
-            meanOffDiagPairs /= (numSpecies*(numSpecies-1)) / 2;
+            meanDiag /= community.RowCount;
+            meanOffDiag /= n*(n-1);
+            meanOffDiagPairs /= (n*(n-1)) / 2;
 
             double variance = 0;
-            for (int i=0; i<numSpecies; i++)
+            for (int i=0; i<n; i++)
             {
-                for (int j=0; j<numSpecies; j++)
+                for (int j=0; j<n; j++)
                 {
                     if (i != j)
                     {
@@ -314,12 +312,36 @@ namespace EcoBuilder.Model
                     }
                 }
             }
-            variance /= numSpecies*(numSpecies-1);
-            UnityEngine.Debug.Log("S:"+numSpecies+" V:"+variance+" E:"+meanOffDiag+" E2:"+meanOffDiagPairs+" d:"+meanDiag);
+            if (variance == 0)
+                return 0;
 
+            variance /= n*(n-1);
+            // UnityEngine.Debug.Log("S:"+n+" V:"+variance+" E:"+meanOffDiag+" E2:"+meanOffDiagPairs+" d:"+meanDiag);
+
+            double richness = n;
             double correlation = (meanOffDiagPairs - meanOffDiag*meanOffDiag) / variance;
-            double complexity = Math.Sqrt(numSpecies*variance) * (1+correlation) - meanOffDiag;
+            double complexity = Math.Sqrt(richness*variance) * (1+correlation) - meanOffDiag;
             return complexity / -meanDiag;
+        }
+
+        public double Connectance {
+            get {
+                int numOffDiag = 0;
+                for (int i=0; i<Richness; i++)
+                {
+                    for (int j=0; j<Richness; j++)
+                    {
+                        if (i!=j && community[i,j]!=0)
+                        {
+                            numOffDiag += 1;
+                        }
+                    }
+                }
+                if (numOffDiag == 0)
+                    return 0;
+                else
+                    return (double)numOffDiag / (Richness*(Richness-1));
+            }
         }
 
         // // depends on community being correct, and also destroys it
