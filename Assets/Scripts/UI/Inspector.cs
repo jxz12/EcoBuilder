@@ -56,6 +56,7 @@ namespace EcoBuilder.UI
             {
                 Idx = idx;
                 IsProducer = isProducer;
+                RerollSeed();
             }
             // to set seed from file
             public Species(int idx, bool isProducer, float size, float greed, int seed)
@@ -133,7 +134,12 @@ namespace EcoBuilder.UI
             }
             else
             {
-                throw new Exception("TODO: if conflicts not allowed, iterate until you find a unique species");
+                bool success = MakeIncubatedUnconflicted();
+                if (!success)
+                    throw new Exception("somehow filled up all niches!");
+
+                sizeTrait.SetValueWithoutCallback(incubated.BodySize);
+                greedTrait.SetValueWithoutCallback(incubated.Greediness);
             }
 
             // grab gameobject from factory
@@ -150,6 +156,31 @@ namespace EcoBuilder.UI
             typesAnim.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
+        bool MakeIncubatedUnconflicted() // returns if successful
+        {
+            var traitPairs = new HashSet<Tuple<float,float>>();
+            foreach (Species spawned in spawnedSpecies.Values)
+            {
+                if (spawned.IsProducer == incubated.IsProducer) // no conflicts with other type
+                    traitPairs.Add(Tuple.Create(spawned.BodySize, spawned.Greediness));
+            }
+            // try all combinations until one does not conflict
+            // TODO: see what this is like with greed iterated first
+            foreach (float testSize in sizeTrait.PossibleValues)
+            {
+                foreach (float testGreed in greedTrait.PossibleValues)
+                {
+                    if (!traitPairs.Contains(Tuple.Create(testSize, testGreed)))
+                    {
+                        incubated.BodySize = testSize;
+                        incubated.Greediness = testGreed;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         void RefreshOrRemove() // only called on inspected or incubated
         {
             if (incubated != null)
@@ -160,10 +191,8 @@ namespace EcoBuilder.UI
                     incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
                     incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
                 }
-                else
-                {
-                    throw new Exception("TODO: if conflicts not allowed, iterate until you find a unique species");
-                }
+                // else do nothing as it _shouldn't_ have been spawned with one already
+
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
             }
