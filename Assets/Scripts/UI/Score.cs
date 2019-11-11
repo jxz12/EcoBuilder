@@ -149,18 +149,23 @@ namespace EcoBuilder.UI
             constraints.Feasible = isFeasible;
 			constraints.Stable = isStable;
         }
+
+		//////////////////////
+		// score calculation
+
+        [SerializeField] Image scoreCurrentImage, scoreTargetImage;
+        [SerializeField] Sprite targetSprite1, targetSprite2;
+        [SerializeField] Text scoreText, scoreTargetText; //, abundanceText;
+
         public void DisplayScore(float score)
         {
             // modelScore = (int)Math.Truncate(score * 100);
             modelScore = (int)(score * 10);
         }
-
-		//////////////////////
-		// score calculation
-
-        [SerializeField] Image scoreTargetImage;
-        [SerializeField] Sprite targetSprite1, targetSprite2;
-        [SerializeField] Text scoreText, scoreTargetText; //, abundanceText;
+        public void CycleScoreSprite()
+        {
+            scoreCurrentImage.transform.Rotate(new Vector3(0,0,-90));
+        }
 
         // public int NumStars { get; private set; }
         int NumStars { get; set; }

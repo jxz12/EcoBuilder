@@ -7,21 +7,23 @@ using UnityEngine.EventSystems;
 public class Trait : MonoBehaviour, IPointerUpHandler
 {
     public event Action<float, float> OnUserSlid; // from, to
-    [SerializeField] Slider slider;
     public bool Interactable { set { slider.interactable = value; } }
     public bool Active { set { gameObject.SetActive(value); } }
+
+    public int NumOptions { get { return (int)(slider.maxValue - slider.minValue); } }
     
     float currentValue = -1;
     UnityAction<float> ValueChangedCallback;
+    Slider slider;
     void Start()
     {
+        slider = GetComponent<Slider>();
         ValueChangedCallback = x=> SetValueWithCallback();
         slider.onValueChanged.AddListener(ValueChangedCallback);
     }
     public float SetValueFromRandomSeed(int randomSeed)
     {
         SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
-        // TODO: do Constraint check here too
         return slider.normalizedValue;
     }
     public void SetValueWithoutCallback(float normalizedValue)
@@ -34,28 +36,26 @@ public class Trait : MonoBehaviour, IPointerUpHandler
     public void SetValueWithCallback()
     {
         float newValue = slider.normalizedValue;
-        OnUserSlid.Invoke(currentValue, newValue);
-        if (Conflict())
+        if (Conflict(newValue))
         {
-            print("CONFLICT");
             SnapBackCallback = ()=> SnapBack(currentValue);
         }
         else
         {
+            OnUserSlid.Invoke(currentValue, newValue);
             SnapBackCallback = null;
+            currentValue = newValue;
         }
-        currentValue = newValue;
     }
     Action SnapBackCallback;
     void SnapBack(float prevValue) // value reference problem?
     {
-        OnUserSlid.Invoke(currentValue, prevValue);
+        SetValueWithoutCallback(prevValue);
         currentValue = prevValue;
         SnapBackCallback = null;
     }
     public void OnPointerUp(PointerEventData ped)
     {
-        print("hi"); // FIXME: this does not get called
         if (SnapBackCallback != null)
         {
             SnapBackCallback.Invoke();
@@ -64,8 +64,8 @@ public class Trait : MonoBehaviour, IPointerUpHandler
     }
 
     // if this function return false, the slider will 'snap' back
-    Func<bool> Conflict;
-    public void AddExternalConflict(Func<bool> Rule)
+    Func<float, bool> Conflict;
+    public void AddExternalConflict(Func<float, bool> Rule)
     {
         Conflict = Rule;
     }

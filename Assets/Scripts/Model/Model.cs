@@ -110,6 +110,7 @@ namespace EcoBuilder.Model
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
+
             InitScales();
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
@@ -171,30 +172,19 @@ namespace EcoBuilder.Model
         public bool Stable { get; private set; } = false;
         // public bool Nonreactive { get; private set; } = false;
 
-        public float ScaledAbundance { get; private set; } = 0;
-        public float ScaledFlux { get; private set; } = 0;
-        public float ScaledComplexity { get; private set; } = 0;
-
+        public float NormalisedScore { get { return CalculateScore(); } }
         public bool IsCalculating { get; private set; } = false;
 
         public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
             IsCalculating = true;
-
             Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
-            simulation.BuildInteractionMatrix(map); // not async, in order to keep state consistent
 
             Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
-            ScaledFlux = ScaleFluxScore((float)simulation.TotalFlux);
-            ScaledAbundance = ScaleBundScore((float)simulation.TotalAbundance);
-
             Stable = await Task.Run(()=> simulation.SolveStability());
-            double complexity = simulation.CalculateTangComplexity();
-            ScaledComplexity = ScalePlexScore((float)complexity);
-
-            print(simulation.TotalFlux + " " + simulation.TotalAbundance + " " + complexity);
-
             // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
+
+            print(simulation.TotalFlux + " " + simulation.TotalAbundance);
 
             TriggerAbundanceEvents();
             IsCalculating = false;
@@ -203,19 +193,46 @@ namespace EcoBuilder.Model
         public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
             Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
-            simulation.BuildInteractionMatrix(map);
 
             Feasible = simulation.SolveFeasibility(map);
-            ScaledFlux = ScaleFluxScore((float)simulation.TotalFlux);
-
             Stable = simulation.SolveStability();
-            double complexity = simulation.CalculateTangComplexity();
-            ScaledComplexity = ScalePlexScore((float)complexity);
-
             // Nonreactive = simulation.SolveReactivity();
 
             TriggerAbundanceEvents();
             OnEquilibrium.Invoke();
+        }
+
+        // TODO: this should eventually be the report card
+        int scoreType = 0;
+        public void CycleScoreMetric()
+        {
+            scoreType = (scoreType + 1) % 4;
+            OnEquilibrium.Invoke();
+        }
+        float CalculateScore()
+        {
+            if (scoreType == 0)
+            {
+                return (float)simulation.MayComplexity;
+            }
+            else if (scoreType == 1)
+            {
+                return (float)simulation.TangComplexity;
+            }
+            else if (scoreType == 2)
+            {
+                // print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalFlux);
+                return (float)(simulation.Richness *
+                               simulation.Connectance *
+                               ScaleBundScore(simulation.TotalAbundance));
+            }
+            else if (scoreType == 3)
+            {
+                return (float)(simulation.Richness *
+                               simulation.Connectance *
+                               ScaleFluxScore(simulation.TotalFlux));
+            }
+            else throw new Exception("you suck");
         }
 
         void TriggerAbundanceEvents()
@@ -251,76 +268,73 @@ namespace EcoBuilder.Model
         float minScaledAbund = 6e-8f,
               maxScaledAbund = 2f,
               minScaledFlux = 1e-18f,
-              maxScaledFlux = 9.2e-7f,
-            //   minScaledPlex = 1e-10f,
-            //   maxScaledPlex = 7e-3f;
-              minScaledPlex = 1e-11f,
-              maxScaledPlex = 8e-7f;
+              maxScaledFlux = 9.2e-7f;
+              // minScaledPlex = 
+              // maxScaledPlex = 
 
         private float minLogAbund, maxLogAbund,
-                      minLogFlux, maxLogFlux,
-                      minLogPlex, maxLogPlex;
+                      minLogFlux, maxLogFlux;
         void InitScales()
         {
             minLogAbund = Mathf.Log10(minScaledAbund);
             maxLogAbund = Mathf.Log10(maxScaledAbund);
             minLogFlux = Mathf.Log10(minScaledFlux);
             maxLogFlux = Mathf.Log10(maxScaledFlux);
-            minLogPlex = Mathf.Log10(minScaledPlex);
-            maxLogPlex = Mathf.Log10(maxScaledPlex);
+            // minLogPlex = 
+            // maxLogPlex = 
         }
         
         public float GetNormalisedAbundance(int idx)
         {
-            float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
+            double abundance = simulation.GetSolvedAbundance(idxToSpecies[idx]);
             if (abundance <= 0)
             {
                 return 0;
             }
             else
             {
-                return (Mathf.Log10(abundance)-minLogAbund) / (maxLogAbund-minLogAbund);
+                return (float)(Math.Log10(abundance)-minLogAbund) / (maxLogAbund-minLogAbund);
             }
         }
         public float GetNormalisedFlux(int res, int con)
         {
-            float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+            double flux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
             if (flux <= 0)
             {
                 return 0;
             }
             else
             {
-                return (Mathf.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
+                return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
             }
         }
-        float ScaleBundScore(float input)
+        float ScaleBundScore(double input)
         {
             // for flux
-            float normalised = input < maxScaledAbund ?
-                               (Mathf.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
+            double normalised = input < maxScaledAbund ?
+                               (Math.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
                              : input/maxScaledFlux;
 
-            return Mathf.Max(normalised, 0);
+            return Mathf.Max((float)normalised, 0);
         }
-        float ScaleFluxScore(float input)
+        float ScaleFluxScore(double input)
         {
             // for flux
-            float normalised = input < maxScaledFlux ?
-                               (Mathf.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
+            double normalised = input < maxScaledFlux ?
+                               (Math.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
                              : input/maxScaledFlux;
 
-            return Mathf.Max(normalised, 0);
+            return Mathf.Max((float)normalised, 0);
         }
-        float ScalePlexScore(float input)
+        float ScalePlexScore(double input)
         {
-            return input;
-            // for complexity
-            float normalised = input < maxScaledPlex ?
-                               (Mathf.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
-                             : input/maxScaledPlex;
+            return (float)input;
+            // // for complexity
+            // double normalised = input < maxScaledPlex ?
+            //                    (Math.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
+            //                  : input/maxScaledPlex;
             
-            return Mathf.Max(normalised, 0);
+            // return Mathf.Max((float)normalised, 0);
         }
 
         public Tuple<int, float> GetMostComplexSpecies()

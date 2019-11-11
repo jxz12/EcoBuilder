@@ -33,6 +33,7 @@ namespace EcoBuilder.UI
         [SerializeField] Button refroveButton;
         [SerializeField] Trait sizeTrait;
         [SerializeField] Trait greedTrait;
+        [SerializeField] bool allowConflicts;
         
         [SerializeField] Incubator incubator;
         [SerializeField] ProceduralMeshGenerator factory;
@@ -84,8 +85,8 @@ namespace EcoBuilder.UI
 
             sizeTrait.OnUserSlid += (x,y)=> SetSizeFromSlider(x, y);
             greedTrait.OnUserSlid += (x,y)=> SetGreedFromSlider(x, y);
-            sizeTrait.AddExternalConflict(()=> CheckConflict());
-            greedTrait.AddExternalConflict(()=> CheckConflict());
+            sizeTrait.AddExternalConflict(x=> CheckSizeConflict(x));
+            greedTrait.AddExternalConflict(x=> CheckGreedConflict(x));
 
             incubator.OnDropped += ()=> SpawnIncubated();
         }
@@ -124,31 +125,27 @@ namespace EcoBuilder.UI
             while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx))
                 nextIdx += 1;
 
-            Species s = new Species(nextIdx, isProducer);
-            if (initialSizeIfFixed >= 0)
+            incubated = new Species(nextIdx, isProducer);
+            if (allowConflicts)
             {
-                s.BodySize = initialSizeIfFixed;
-            } else {
-                s.BodySize = sizeTrait.SetValueFromRandomSeed(s.RandomSeed);
+                incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
+                incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
             }
-            if (initialGreedIfFixed >= 0)
+            else
             {
-                s.Greediness = initialGreedIfFixed;
-            } else {
-                s.Greediness = greedTrait.SetValueFromRandomSeed(s.RandomSeed);
+                throw new Exception("TODO: if conflicts not allowed, iterate until you find a unique species");
             }
 
             // grab gameobject from factory
-            s.GObject = factory.GenerateSpecies(s.IsProducer, s.BodySize, s.Greediness, s.RandomSeed);
-            incubator.Incubate(s.GObject);
-            nameText.text = s.GObject.name;
+            incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+            incubator.Incubate(incubated.GObject);
+            nameText.text = incubated.GObject.name;
 
             sizeTrait.Interactable = true;
             greedTrait.Interactable = true;
             refroveButton.interactable = true;
             refroveButton.gameObject.SetActive(true);
 
-            incubated = s;
             GetComponent<Animator>().SetTrigger("Incubate");
             typesAnim.SetBool("Visible", false);
             OnIncubated.Invoke();
@@ -158,17 +155,14 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubated.RerollSeed();
-                if (initialSizeIfFixed >= 0) // TODO: check if this check is necessary here
+                if (allowConflicts)
                 {
-                    incubated.BodySize = initialSizeIfFixed;
-                } else {
                     incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
-                }
-                if (initialGreedIfFixed >= 0)
-                {
-                    incubated.Greediness = initialGreedIfFixed;
-                } else {
                     incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
+                }
+                else
+                {
+                    throw new Exception("TODO: if conflicts not allowed, iterate until you find a unique species");
                 }
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
@@ -208,26 +202,40 @@ namespace EcoBuilder.UI
             typesAnim.SetBool("Visible", true);
         }
 
-        private bool CheckConflict()
+        public void AllowConflicts(bool allowed)
         {
-            Species toCheck;
-            if (incubated != null)
-            {
-                toCheck = incubated;
-            }
-            else if (inspected != null)
-            {
-                toCheck = inspected;
-            }
-            else
-            {
-                throw new Exception("nothing is inspected");
-            }
+            allowConflicts = allowed;
+        }
+        bool CheckSizeConflict(float newSize)
+        {
+            if (allowConflicts)
+                return false;
+
+            Species toCheck = incubated!=null? incubated : inspected;
             foreach (Species s in spawnedSpecies.Values)
             {
                 if (s != toCheck &&
-                    s.Greediness == toCheck.Greediness &&
-                    s.BodySize == toCheck.BodySize)
+                    s.IsProducer == toCheck.IsProducer &&
+                    s.BodySize == newSize &&
+                    s.Greediness == toCheck.Greediness)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        bool CheckGreedConflict(float newGreed)
+        {
+            if (allowConflicts)
+                return false;
+
+            Species toCheck = incubated!=null? incubated : inspected;
+            foreach (Species s in spawnedSpecies.Values)
+            {
+                if (s != toCheck &&
+                    s.IsProducer == toCheck.IsProducer &&
+                    s.BodySize == toCheck.BodySize && 
+                    s.Greediness == newGreed)
                 {
                     return true;
                 }
@@ -236,40 +244,28 @@ namespace EcoBuilder.UI
         }
         void SetSizeFromSlider(float prevValue, float newValue)
         {
-            if (incubated != null)
-            {
-                incubated.BodySize = newValue;
+            Species toSet = incubated!=null? incubated : inspected;
+            toSet.BodySize = newValue;
+            factory.RegenerateSpecies(toSet.GObject, toSet.BodySize, toSet.Greediness, toSet.RandomSeed);
+            nameText.text = toSet.GObject.name;
 
-                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
-                nameText.text = incubated.GObject.name;
-            }
-            else if (inspected != null)
+            if (inspected != null)
             {
-                inspected.BodySize = newValue;
                 OnSizeSet.Invoke(inspected.Idx, newValue);
                 OnUserSizeSet.Invoke(inspected.Idx, prevValue, newValue);
-
-                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-                nameText.text = inspected.GObject.name;
             }
         }
         void SetGreedFromSlider(float prevValue, float newValue)
         {
-            if (incubated != null)
-            {
-                incubated.Greediness = newValue;
+            Species toSet = incubated!=null? incubated : inspected;
+            toSet.Greediness = newValue;
+            factory.RegenerateSpecies(toSet.GObject, toSet.BodySize, toSet.Greediness, toSet.RandomSeed);
+            nameText.text = toSet.GObject.name;
 
-                factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
-                nameText.text = incubated.GObject.name;
-            }
-            else if (inspected != null)
+            if (inspected != null)
             {
-                inspected.Greediness = newValue;
                 OnGreedSet.Invoke(inspected.Idx, newValue);
                 OnUserGreedSet.Invoke(inspected.Idx, prevValue, newValue);
-
-                factory.RegenerateSpecies(inspected.GObject, inspected.BodySize, inspected.Greediness, inspected.RandomSeed);
-                nameText.text = inspected.GObject.name;
             }
         }
 
@@ -461,11 +457,11 @@ namespace EcoBuilder.UI
             removeEnabled = !hidden;
         }
         float initialSizeIfFixed = -1, initialGreedIfFixed = -1;
-        public void FixInitialSize(float fixedSize)
+        public void FixIncubatedSize(float fixedSize)
         {
             initialSizeIfFixed = fixedSize;
         }
-        public void FixInitialGreed(float fixedGreed)
+        public void FixIncubatedGreed(float fixedGreed)
         {
             initialGreedIfFixed = fixedGreed;
         }

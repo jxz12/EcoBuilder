@@ -239,24 +239,8 @@ namespace EcoBuilder.NodeLink
         {
             return links.GetColumnIndicesInRow(source);
         }
+        // public int LinkCount { get { return links.Count(); } }
 
-        // [SerializeField] float minNodeSize, maxNodeSize;
-        // public void ResizeNodes(Func<int, float> sizes)
-        // {
-        //     float sizeRange = maxNodeSize - minNodeSize;
-        //     foreach (Node no in nodes)
-        //     {
-        //         float size = sizes(no.Idx);
-        //         if (size > 0)
-        //         {
-        //             no.Size = minNodeSize + sizeRange*size;
-        //         }
-        //         else
-        //         {
-        //             no.Size = minNodeSize;
-        //         }
-        //     }
-        // }
         public void RehealthBars(Func<int, float> healths)
         {
             foreach (Node no in nodes)
