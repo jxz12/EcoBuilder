@@ -224,7 +224,7 @@ namespace EcoBuilder.Model
                 // print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalFlux);
                 return (float)(simulation.Richness *
                                simulation.Connectance *
-                               ScaleBundScore(simulation.TotalAbundance));
+                               ScaleAbundScore(simulation.TotalAbundance));
             }
             else if (scoreType == 3)
             {
@@ -308,12 +308,12 @@ namespace EcoBuilder.Model
                 return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
             }
         }
-        float ScaleBundScore(double input)
+        float ScaleAbundScore(double input)
         {
             // for flux
             double normalised = input < maxScaledAbund ?
                                (Math.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
-                             : input/maxScaledFlux;
+                             : input/maxScaledAbund;
 
             return Mathf.Max((float)normalised, 0);
         }
