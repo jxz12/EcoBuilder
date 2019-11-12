@@ -43,35 +43,47 @@ public class Trait : MonoBehaviour, IPointerUpHandler
         slider.onValueChanged.RemoveListener(ValueChangedCallback);
         slider.normalizedValue = normalizedValue;
         slider.onValueChanged.AddListener(ValueChangedCallback);
+        currentValue = normalizedValue;
     }
+    float toSnapBack = -1;
     public void SetValueWithCallback()
     {
         float newValue = slider.normalizedValue;
         if (Conflict(newValue))
         {
             print("TODO: show user conflict by throwing int event");
-            SnapBackCallback = ()=> SnapBack(currentValue);
+            // SnapBackCallback = ()=> SnapBack(currentValue);
+            toSnapBack = currentValue;
+            slider.targetGraphic.color = Color.red;
         }
         else
         {
             OnUserSlid.Invoke(currentValue, newValue);
-            SnapBackCallback = null;
+            // SnapBackCallback = null;
+            toSnapBack = -1;
             currentValue = newValue;
+            slider.targetGraphic.color = Color.white;
         }
     }
-    Action SnapBackCallback;
-    void SnapBack(float prevValue) // value reference problem?
-    {
-        SetValueWithoutCallback(prevValue);
-        currentValue = prevValue;
-        SnapBackCallback = null;
-    }
+    // Action SnapBackCallback;
+    // void SnapBack(prevValue) // value reference problem?
+    // {
+    //     SetValueWithoutCallback(prevValue);
+    //     currentValue = prevValue;
+    //     SnapBackCallback = null;
+    // }
     public void OnPointerUp(PointerEventData ped)
     {
-        if (SnapBackCallback != null)
+        // if (SnapBackCallback != null)
+        // {
+            // SnapBackCallback.Invoke();
+            // SnapBackCallback = null;
+        // }
+        if (toSnapBack >= 0)
         {
-            SnapBackCallback.Invoke();
-            SnapBackCallback = null;
+            SetValueWithoutCallback(toSnapBack);
+            toSnapBack = -1;
+            slider.targetGraphic.color = Color.white;
         }
     }
 

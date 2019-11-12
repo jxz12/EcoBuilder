@@ -79,7 +79,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = new Vector3(1,0,-.5f) + .2f*UnityEngine.Random.insideUnitSphere; // prevent divide by zero
+                newNode.StressPos = new Vector3(1,0,-.5f) + .5f*UnityEngine.Random.insideUnitSphere; // prevent divide by zero
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
@@ -239,7 +239,6 @@ namespace EcoBuilder.NodeLink
         {
             return links.GetColumnIndicesInRow(source);
         }
-        // public int LinkCount { get { return links.Count(); } }
 
         public void RehealthBars(Func<int, float> healths)
         {
