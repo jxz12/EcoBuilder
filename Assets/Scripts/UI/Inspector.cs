@@ -127,20 +127,7 @@ namespace EcoBuilder.UI
                 nextIdx += 1;
 
             incubated = new Species(nextIdx, isProducer);
-            if (allowConflicts)
-            {
-                incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
-                incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
-            }
-            else
-            {
-                bool success = MakeIncubatedUnconflicted();
-                if (!success)
-                    throw new Exception("somehow filled up all niches!");
-
-                sizeTrait.SetValueWithoutCallback(incubated.BodySize);
-                greedTrait.SetValueWithoutCallback(incubated.Greediness);
-            }
+            RandomiseIncubated();
 
             // grab gameobject from factory
             incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
@@ -156,43 +143,56 @@ namespace EcoBuilder.UI
             typesAnim.SetBool("Visible", false);
             OnIncubated.Invoke();
         }
-        bool MakeIncubatedUnconflicted() // returns if successful
+        void RandomiseIncubated()
         {
-            var traitPairs = new HashSet<Tuple<float,float>>();
-            foreach (Species spawned in spawnedSpecies.Values)
+            incubated.RerollSeed();
+            if (allowConflicts)
             {
-                if (spawned.IsProducer == incubated.IsProducer) // no conflicts with other type
-                    traitPairs.Add(Tuple.Create(spawned.BodySize, spawned.Greediness));
+                incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
+                incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
             }
-            // try all combinations until one does not conflict
-            // TODO: see what this is like with greed iterated first
-            foreach (float testSize in sizeTrait.PossibleValues)
+            else
             {
-                foreach (float testGreed in greedTrait.PossibleValues)
+                var traitPairs = new HashSet<Tuple<float,float>>();
+                foreach (Species spawned in spawnedSpecies.Values)
                 {
-                    if (!traitPairs.Contains(Tuple.Create(testSize, testGreed)))
+                    if (spawned.IsProducer == incubated.IsProducer) // no conflicts with other type
+                        traitPairs.Add(Tuple.Create(spawned.BodySize, spawned.Greediness));
+                }
+                // choose a random combination from the available niches
+                var availablePairs = new List<Tuple<float, float>>();
+                foreach (float testSize in sizeTrait.PossibleValues)
+                {
+                    foreach (float testGreed in greedTrait.PossibleValues)
                     {
-                        incubated.BodySize = testSize;
-                        incubated.Greediness = testGreed;
-                        return true;
+                        var testPair = Tuple.Create(testSize, testGreed);
+                        if (!traitPairs.Contains(testPair))
+                        {
+                            availablePairs.Add(testPair);
+                        }
                     }
                 }
+                if (availablePairs.Count > 0)
+                {
+                    UnityEngine.Random.InitState(incubated.RandomSeed);
+                    var chosenPair = availablePairs[UnityEngine.Random.Range(0, availablePairs.Count)];
+                    incubated.BodySize = chosenPair.Item1;
+                    incubated.Greediness = chosenPair.Item2;
+                }
+                else
+                {
+                    throw new Exception("somehow filled up all niches!");
+                }
+                sizeTrait.SetValueWithoutCallback(incubated.BodySize);
+                greedTrait.SetValueWithoutCallback(incubated.Greediness);
             }
-            return false;
         }
 
         void RefreshOrRemove() // only called on inspected or incubated
         {
             if (incubated != null)
             {
-                incubated.RerollSeed();
-                if (allowConflicts)
-                {
-                    incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
-                    incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
-                }
-                // else do nothing as it _shouldn't_ have been spawned with one already
-
+                RandomiseIncubated();
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
                 nameText.text = incubated.GObject.name;
             }

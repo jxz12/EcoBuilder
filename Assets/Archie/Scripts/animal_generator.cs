@@ -60,13 +60,17 @@ namespace EcoBuilder.Archie{
             animal.name = adjectives[d0] + " " + nounsConsumer[d1][d2];
             // assign mesh
             animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.999f * Consumer_Meshs.Length)];
-            // generate texture and material
-            var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
-            // scale mesh
-            animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
 
-            // animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates);
+            // generate texture and material
+            // var yuv = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
+            // // convert yuv to rgb
+            // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
+            // // scale mesh
+            // animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
+            var lab = new LABColor(70-50*bodySize, 80*greediness, -50);
+            Color rgb = lab.ToColor();
+
+            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), rgb);
         }
 
 
@@ -79,13 +83,16 @@ namespace EcoBuilder.Archie{
             plant.name = adjectives[d0] + " " + nounsProducer[d1][d2];
             // assign mesh
             plant.GetComponent<MeshFilter>().mesh = Producer_Meshs[(int)(bodySize*.999f * Producer_Meshs.Length)];
-            // generate texture and material
-            var yuv_coordinates = new Vector3(.7f-.5f*bodySize, -.4f, .8f*greediness-.4f);
-            // scale mesh
-            plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
 
-            // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates);
+            // generate texture and material
+            // var yuv = new Vector3(.7f-.7f*bodySize, -.4f, .8f*greediness-.4f);
+            // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
+            // // scale mesh
+            // plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
+            var lab = new LABColor(80-50*bodySize, -50+110*greediness, 50);
+            Color rgb = lab.ToColor();
+
+            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), rgb);
         }
 
         public static string[] adjectives = new string[]

@@ -122,7 +122,7 @@ namespace EcoBuilder.Model
 
             // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
             // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
-            // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
+            UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
             // complete flux values
             TotalFlux = 0;

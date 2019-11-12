@@ -68,6 +68,7 @@ namespace EcoBuilder.NodeLink
                     foreach (Node no in nodes)
                         no.StressPos -= centroid;
 
+                    // TODO: make the nodes bigger here
                 }
             }
             else // superfocused

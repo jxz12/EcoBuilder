@@ -221,16 +221,17 @@ namespace EcoBuilder.Model
             }
             else if (scoreType == 2)
             {
-                // print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalFlux);
+                print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalAbundance + " " + (simulation.Richness*simulation.Connectance*simulation.TotalAbundance));
                 return (float)(simulation.Richness *
                                simulation.Connectance *
-                               ScaleAbundScore(simulation.TotalAbundance));
+                               simulation.TotalAbundance);
             }
             else if (scoreType == 3)
             {
+                print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalFlux + " " + (simulation.Richness*simulation.Connectance*simulation.TotalFlux));
                 return (float)(simulation.Richness *
                                simulation.Connectance *
-                               ScaleFluxScore(simulation.TotalFlux));
+                               simulation.TotalFlux);
             }
             else throw new Exception("you suck");
         }

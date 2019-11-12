@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 namespace EcoBuilder
 {
@@ -35,14 +36,49 @@ namespace EcoBuilder
         }
         void Start()
         {
+            // TODO: set this to the size of the screen
             // Screen.SetResolution(576, 1024, false);
             // #if !UNITY_WEBGL
             //     Screen.fullScreen = true;
             // #endif
 
+            // StartCoroutine(Http());
+
             if (SceneManager.sceneCount == 1)
+            {
                 // SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
                 SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
+            }
+        }
+        IEnumerator Http()
+        {
+            using (var p = UnityWebRequest.Get("http://localhost/ecobuilder/bar.php"))
+            {
+                yield return p.SendWebRequest();
+                if (p.isNetworkError || p.isHttpError)
+                {
+                    print(p.error);
+                }
+                else
+                {
+                    print(p.downloadHandler.text);
+                }
+            }
+
+            var form = new WWWForm();
+            form.AddField("foo", "barr");
+            using (var p = UnityWebRequest.Post("http://localhost/ecobuilder/foo.php", form))
+            {
+                yield return p.SendWebRequest();
+                if (p.isNetworkError || p.isHttpError)
+                {
+                    print(p.error);
+                }
+                else
+                {
+                    print(p.downloadHandler.text);
+                }
+            }
         }
         
         public void UnloadSceneThenLoadAnother(string toUnload, string another)
@@ -125,9 +161,9 @@ namespace EcoBuilder
                 {
                     // replay level
                 }
-                if (teaching != null)
+                if (teacher != null)
                 {
-                    Destroy(teaching.gameObject);
+                    Destroy(teacher.gameObject);
                 }
                 toUnload = "Play";
             }
@@ -140,16 +176,15 @@ namespace EcoBuilder
             level.SetNewThumbnailParent(playParent, Vector2.zero);
             level.ShowThumbnail();
             UnloadSceneThenLoadAnother(toUnload, "Play");
-
         }
         // TODO: make this not so horrible
         [SerializeField] Tutorials.Tutorial[] tutorials;
-        Tutorials.Tutorial teaching;
+        Tutorials.Tutorial teacher;
         public void LoadTutorialIfNeeded()
         {
             if (PlayedLevel.Details.idx < tutorials.Length)
             {
-                teaching = Instantiate(tutorials[PlayedLevel.Details.idx], canvas.transform, false);
+                teacher = Instantiate(tutorials[PlayedLevel.Details.idx], canvas.transform, false);
             }
         }
 
@@ -194,13 +229,11 @@ namespace EcoBuilder
         {
             this.education = education;
         }
-        // TODO: username for leaderboards
-
         public void ReturnToMenu()
         {
-            if (teaching != null)
+            if (teacher != null)
             {
-                Destroy(teaching.gameObject);
+                Destroy(teacher.gameObject);
             }
             if (PlayedLevel != null)
             {
