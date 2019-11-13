@@ -109,7 +109,6 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
-            GameManager.Instance.LoadTutorialIfNeeded(); // UGLY
         }
 
         bool atEquilibrium = true, graphSolved = true;

@@ -2,22 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using UnityEngine.Networking;
 
 namespace EcoBuilder
 {
     public class GameManager : MonoBehaviour
     {
+        // singleton pattern
         private static GameManager gameManager;
         public static GameManager Instance {
             get {
                 if (gameManager == null)
                 {
-                    // Debug.LogError("No active GameManager");
-                    Debug.LogWarning("No active GameManager");
+                    throw new Exception("No active GameManager");
                 }
                 return gameManager;
             }
@@ -27,28 +25,38 @@ namespace EcoBuilder
             if (gameManager == null)
                 gameManager = this;
             else if (gameManager != this)
-            {
-                Debug.LogError("Multiple GameManagers, destroying this one");
-                Destroy(gameObject); // this means that there can only ever be one GameObject of this type
-            }
-            for (int i = 0; i < numFrames; i++)
-                timeDeltas.Enqueue(0);
+                throw new Exception("More than one GameManager in scene");
         }
-        void Start()
+
+
+
+
+        //////////////////////////////////////
+        // data collection for demographics //
+        //////////////////////////////////////
+
+        private string email, password;
+        public void SetEmailAndPassword(string email, string password)
         {
-            // TODO: set this to the size of the screen
-            // Screen.SetResolution(576, 1024, false);
-            // #if !UNITY_WEBGL
-            //     Screen.fullScreen = true;
-            // #endif
-
-            // StartCoroutine(Http());
-
-            if (SceneManager.sceneCount == 1)
-            {
-                // SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
-                SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
-            }
+            // TODO: send these to the server to store it 
+            //       check if it exists in the database,
+        }
+        // TODO: send these to a server with email as the key
+        public void SetTeam(int team)
+        {
+        }
+        public void SetAge(int age)
+        {
+        }
+        public void SetGender(int gender)
+        {
+        }
+        public void SetEducation(int education)
+        {
+        }
+        void DoWebThing()
+        {
+            StartCoroutine(Http());
         }
         IEnumerator Http()
         {
@@ -80,8 +88,50 @@ namespace EcoBuilder
                 }
             }
         }
+
+
+
+
+        ////////////////////////////////////
+        // storing information for levels //
+        ////////////////////////////////////
+
+        [SerializeField] List<Levels.Level> levels; // each level is a prefab
+        List<int> highScores; // TODO: store this locally and on server
+
+        void Start()
+        {
+            // TODO: set this to the size of the screen
+            // Screen.SetResolution(576, 1024, false);
+            // #if !UNITY_WEBGL
+            //     Screen.fullScreen = true;
+            // #endif
+
+            if (!PlayerPrefs.HasKey("Has Played"))
+            {
+                PlayerPrefs.SetString("Has Played", "yes");
+                PlayerPrefs.Save();
+
+                // TODO: teams and stuff here
+                // ShowSurvey();
+
+                // TODO: initialise levels
+                // InitHighScores();
+            }
+            if (SceneManager.sceneCount == 1)
+            {
+                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
+                // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
+            }
+        }
+        public void ResetSaveData()
+        {
+            PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
+            UnloadSceneThenLoadAnother("Menu", "Menu");
+        }
         
-        public void UnloadSceneThenLoadAnother(string toUnload, string another)
+
+        private void UnloadSceneThenLoadAnother(string toUnload, string another)
         {
             StartCoroutine(UnloadSceneThenLoad(toUnload, another));
         }
@@ -101,139 +151,75 @@ namespace EcoBuilder
             OnNewSceneLoaded?.Invoke();
         }
 
-
-        [SerializeField] Text fpsText;
-        readonly int numFrames = 10;        
-        Queue<float> timeDeltas = new Queue<float>();
-        float totalTime = 0;
-        private void Update()
-        {
-            float oldDelta = timeDeltas.Dequeue();
-            float newDelta = Time.deltaTime;
-
-            totalTime -= oldDelta;
-            totalTime += newDelta;
-            fpsText.text = (1 / (totalTime / numFrames)).ToString("0");
-
-            timeDeltas.Enqueue(newDelta);
-        }
-
-
         [SerializeField] Canvas canvas;
-
-        // TODO: move this back into two
-        [SerializeField] RectTransform cardParent, navParent, playParent;
+        [SerializeField] RectTransform cardParent, playParent, navParent;
         public RectTransform CardParent { get { return cardParent; } }
+        public RectTransform PlayParent { get { return playParent; } }
         public RectTransform NavParent { get { return navParent; } }
 
-        [SerializeField] Level levelPrefab;
-        public Level LoadLevel(string path=null)
+        public Levels.Level PlayedLevel { get; private set; }
+        public Levels.Tutorial Teacher { get; private set; }
+        public void PlayLevel(Levels.Level toPlay)
         {
-            var level = Instantiate(levelPrefab);
-            bool successful = level.LoadFromFile(path);
-            if (successful)
-            {
-                return level;
-            }
-            else
-            {
-                Destroy(level);
-                return null;
-            }
-        }
-        public Level GetDefaultLevel() // only for testing
-        {
-            return Instantiate(levelPrefab);
-        }
-
-        public Level PlayedLevel { get; private set; }
-        public void PlayLevel(Level level)
-        {
-            string toUnload = "";
             if (PlayedLevel != null)
             {
-                if (PlayedLevel != level)
+                if (PlayedLevel.Details.idx != toPlay.Details.idx)
                 {
                     Destroy(PlayedLevel.gameObject);
-                    PlayedLevel = level;
+                    PlayedLevel = toPlay;
                 }
                 else
                 {
                     // replay level
                 }
-                if (teacher != null)
+                if (Teacher != null)
                 {
-                    Destroy(teacher.gameObject);
+                    Destroy(Teacher.gameObject);
                 }
-                toUnload = "Play";
+                UnloadSceneThenLoadAnother("Play", "Play");
             }
             else
             {
                 // play from menu
-                PlayedLevel = level;
-                toUnload = "Menu";
+                PlayedLevel = toPlay;
+                UnloadSceneThenLoadAnother("Menu", "Play");
             }
-            level.SetNewThumbnailParent(playParent, Vector2.zero);
-            level.ShowThumbnail();
-            UnloadSceneThenLoadAnother(toUnload, "Play");
-        }
-        // TODO: make this not so horrible
-        [SerializeField] Tutorials.Tutorial[] tutorials;
-        Tutorials.Tutorial teacher;
-        public void LoadTutorialIfNeeded()
-        {
-            if (PlayedLevel.Details.idx < tutorials.Length)
+            if (toPlay.Tutorial != null)
             {
-                teacher = Instantiate(tutorials[PlayedLevel.Details.idx], canvas.transform, false);
+                Teacher = Instantiate(toPlay.Tutorial, canvas.transform);
             }
         }
 
-        public void SavePlayedLevel(int numStars, int score)
-        {
-            if (numStars > PlayedLevel.Details.numStars)
-                PlayedLevel.Details.numStars = numStars;
+        // public void SavePlayedLevel(int numStars, int score)
+        // {
+        //     if (numStars > PlayedLevel.Details.numStars)
+        //         PlayedLevel.Details.numStars = numStars;
 
-            if (score > PlayedLevel.Details.highScore)
-                PlayedLevel.Details.highScore = score; // TODO: animation
+        //     if (score > PlayedLevel.Details.highScore)
+        //         PlayedLevel.Details.highScore = score; // TODO: animation
 
-            // unlock next level if not unlocked
-            if (PlayedLevel.NextLevel != null &&
-                PlayedLevel.NextLevel.Details.numStars == -1)
-            {
-                // TODO: animation
-                PlayedLevel.NextLevel.Details.numStars = 0;
-                PlayedLevel.NextLevel.SaveToFile();
-                PlayedLevel.NextLevel.Unlock();
-            }
-            PlayedLevel.SaveToFile();
-        }
+        //     // unlock next level if not unlocked
+        //     if (PlayedLevel.NextLevel != null &&
+        //         PlayedLevel.NextLevel.Details.numStars == -1)
+        //     {
+        //         // TODO: animation
+        //         PlayedLevel.NextLevel.Details.numStars = 0;
+        //         PlayedLevel.NextLevel.SaveToFile();
+        //         PlayedLevel.NextLevel.Unlock();
+        //     }
+        //     PlayedLevel.SaveToFile();
+        // }
 
         [SerializeField] GameObject[] landscapes;
         public GameObject RandomLandscape()
         {
             return Instantiate(landscapes[UnityEngine.Random.Range(0, landscapes.Length)]);
         }
-
-
-
-        int age, gender, education;
-        public void SetAge(int age)
-        {
-            this.age = age;
-        }
-        public void SetGender(int gender)
-        {
-            this.gender = gender;
-        }
-        public void SetEducation(int education)
-        {
-            this.education = education;
-        }
         public void ReturnToMenu()
         {
-            if (teacher != null)
+            if (Teacher != null)
             {
-                Destroy(teacher.gameObject);
+                Destroy(Teacher.gameObject);
             }
             if (PlayedLevel != null)
             {
@@ -243,40 +229,4 @@ namespace EcoBuilder
             UnloadSceneThenLoadAnother("Play", "Menu");
         }
     }
-
-    #if UNITY_EDITOR
-    public class ReadOnlyAttribute : PropertyAttribute {}
-    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-    public class ShowOnlyDrawer : PropertyDrawer
-    {
-        public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
-        {
-            string valueStr;
-    
-            switch (prop.propertyType)
-            {
-                case SerializedPropertyType.Integer:
-                    valueStr = prop.intValue.ToString();
-                    break;
-                case SerializedPropertyType.Boolean:
-                    valueStr = prop.boolValue.ToString();
-                    break;
-                case SerializedPropertyType.Float:
-                    valueStr = prop.floatValue.ToString("e1");
-                    break;
-                case SerializedPropertyType.String:
-                    valueStr = prop.stringValue;
-                    break;
-                default:
-                    valueStr = "(not supported)";
-                    break;
-            }
-    
-            EditorGUI.LabelField(position,label.text, valueStr);
-        }
-    }
-    #else
-    // empty attribute
-    public class ReadOnlyAttribute : PropertyAttribute {}
-    #endif
 }

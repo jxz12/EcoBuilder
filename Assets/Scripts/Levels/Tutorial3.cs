@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace EcoBuilder.Tutorials
+namespace EcoBuilder.Levels
 {
     public class Tutorial3 : Tutorial
     {

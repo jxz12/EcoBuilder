@@ -248,7 +248,7 @@ namespace EcoBuilder.UI
             if (NumStars < 1 || NumStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            GameManager.Instance.SavePlayedLevel(NumStars, realisedScore);
+            // GameManager.Instance.SavePlayedLevel(NumStars, realisedScore);
 
             help.Show(false);
             help.SetText(GameManager.Instance.PlayedLevel.Details.congratulation);
