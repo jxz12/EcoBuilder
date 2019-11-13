@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace EcoBuilder.Tutorials
+namespace EcoBuilder.Levels
 {
     public abstract class Tutorial : MonoBehaviour
     {

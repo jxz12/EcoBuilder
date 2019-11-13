@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -355,4 +356,40 @@ namespace EcoBuilder.Model
             return null;
         }
     }
+
+    #if UNITY_EDITOR
+    public class ReadOnlyAttribute : PropertyAttribute {}
+    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+    public class ShowOnlyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
+        {
+            string valueStr;
+    
+            switch (prop.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    valueStr = prop.intValue.ToString();
+                    break;
+                case SerializedPropertyType.Boolean:
+                    valueStr = prop.boolValue.ToString();
+                    break;
+                case SerializedPropertyType.Float:
+                    valueStr = prop.floatValue.ToString("e1");
+                    break;
+                case SerializedPropertyType.String:
+                    valueStr = prop.stringValue;
+                    break;
+                default:
+                    valueStr = "(not supported)";
+                    break;
+            }
+    
+            EditorGUI.LabelField(position,label.text, valueStr);
+        }
+    }
+    #else
+    // empty attribute
+    public class ReadOnlyAttribute : PropertyAttribute {}
+    #endif
 }
