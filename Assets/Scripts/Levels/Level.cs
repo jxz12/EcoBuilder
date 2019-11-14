@@ -4,11 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-// for load/save progress
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-
 
 namespace EcoBuilder.Levels
 {
@@ -46,6 +41,7 @@ namespace EcoBuilder.Levels
             public List<int> resources;
             public List<int> consumers;
 
+            // public int highScore;
             public int targetScore1;
             public int targetScore2;
         }
@@ -53,6 +49,7 @@ namespace EcoBuilder.Levels
         [SerializeField] Tutorial tutorial;
         [SerializeField] GameObject landscape;
 
+        public event Action OnThumbnailed, OnCarded, OnFinished;
         public LevelDetails Details { get { return details; } }
         public Tutorial Tutorial { get { return tutorial; } }
         public GameObject Landscape { get { return landscape; } }
@@ -65,9 +62,6 @@ namespace EcoBuilder.Levels
         // card
         [SerializeField] Text title;
         [SerializeField] Text description;
-        [SerializeField] ScrollRect descriptionArea;
-        [SerializeField] Text producers;
-        [SerializeField] Text consumers;
         [SerializeField] Text target1;
         [SerializeField] Text target2;
         [SerializeField] Text highScore;
@@ -80,7 +74,7 @@ namespace EcoBuilder.Levels
         // navigation
         [SerializeField] RectTransform nextLevelParent;
 
-        void Awake()
+        void Start()
         {
             int n = Details.numSpecies;
             if (n != Details.randomSeeds.Count || n != Details.sizes.Count || n != Details.greeds.Count)
@@ -94,26 +88,32 @@ namespace EcoBuilder.Levels
             title.text = Details.title;
             description.text = Details.description;
 
-            producers.text = Details.numProducers.ToString();
-            consumers.text = Details.numConsumers.ToString();
+            // producers.text = Details.numProducers.ToString();
+            // consumers.text = Details.numConsumers.ToString();
 
             target1.text = Details.targetScore1.ToString();
             target2.text = Details.targetScore2.ToString();
+            SetHighScoreFromGM();
+
+            // targetSize = GetComponent<RectTransform>().sizeDelta;
             // if (thumbnailedParent == null)
             //     thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-            targetSize = GetComponent<RectTransform>().sizeDelta;
         }
 
         // -1 is locked, 0,1,2,3 unlocked plus number of stars
-        public void SetHighScore(int score)
+        void SetHighScoreFromGM()
         {
+            int score = GameManager.Instance.GetLevelHighScore(Details.idx);
             highScore.text = score.ToString();
 
+            if (score >= 0)
+            {
+                Unlock();
+            }
             int numStars = 0;
             if (score >= 1)
             {
                 numStars += 1;
-                Unlock();
             }
             if (score >= details.targetScore1)
             {
@@ -129,66 +129,7 @@ namespace EcoBuilder.Levels
             starsImage.sprite = starSprites[numStars];
         }
 
-        // public bool LoadFromFile(string loadPath)
-        // {
-        //     if (loadPath == null)
-        //         return false;
 
-        //     Details.savefilePath = loadPath;
-        //     BinaryFormatter bf = new BinaryFormatter();
-        //     try
-        //     {
-        //         FileStream file = File.Open(loadPath, FileMode.Open);
-        //         Details = (LevelDetails)bf.Deserialize(file);
-        //         name = Details.idx.ToString();
-        //         file.Close();
-
-        //         playButton.gameObject.SetActive(true);
-        //         quitButton.gameObject.SetActive(false);
-        //         replayButton.gameObject.SetActive(false);
-
-        //         return true;
-        //     }
-        //     catch (ArgumentException ae)
-        //     {
-        //         print("handled exception: " + ae.Message);
-        //         return false;
-        //     }
-        //     catch (SerializationException se)
-        //     {
-        //         print("handled exception: " + se.Message);
-        //         return false;
-        //     }
-        //     catch (InvalidCastException ice)
-        //     {
-        //         print("handled exception: " + ice.Message);
-        //         return false;
-        //     }
-        //     catch (IOException ioe)
-        //     {
-        //         print("handled exception: " + ioe.Message);
-        //         return false;
-        //     }
-        // }
-
-        // public void SaveToFile()
-        // {
-        //     BinaryFormatter bf = new BinaryFormatter();
-        //     try
-        //     {
-        //         FileStream file = File.Create(Details.savefilePath);
-        //         bf.Serialize(file, Details);
-        //         file.Close();
-        //     }
-        //     catch (DirectoryNotFoundException dnfe)
-        //     {
-        //         print("no directory: " + dnfe.Message);
-        //     }
-        //     catch (ArgumentException ae)
-        //     {
-        //         print("file not found: " + ae.Message);
-        //     }
-        // }
 
 
 
@@ -200,32 +141,108 @@ namespace EcoBuilder.Levels
 
 
         //////////////////////////////
-        // animations and supplements
+        // animations states
+
+        enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
 
         // public void Lock()
         // {
             
         // }
-        public event Action OnFinished;
-        public event Action OnCarded, OnThumbnailed;
-
+        // TODO: fun animation here to draw eye towards next level
         public void Unlock()
         {
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
+
+        Vector2 velocity;
+        float smoothTime = .15f;
+        //  TODO: change this into a coroutine 
+        void Update()
+        {
+            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, Vector3.zero, ref velocity, smoothTime);
+            // transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, smoothTime);
+            // GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, smoothTime);
+        }
+
+        Transform thumbnailedParent;
+        // Vector2 thumbnailedPos;
+        public void ShowThumbnail()
+        {
+            transform.SetParent(thumbnailedParent, true);
+            transform.localScale = Vector3.one;
+            smoothTime = .2f;
+            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+            OnThumbnailed?.Invoke();
+        }
+        void ShowThumbnail(RectTransform newParent)
+        {
+            thumbnailedParent = newParent;
+            ShowThumbnail();
+        }
+        public void ShowCard()
+        {
+            if (GameManager.Instance.CardParent.childCount > 1)
+                throw new Exception("more than one card?");
+            if (GameManager.Instance.CardParent.childCount == 1)
+                GameManager.Instance.CardParent.GetComponentInChildren<Level>().ShowThumbnail();
+
+            thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+            transform.SetParent(GameManager.Instance.CardParent, true);
+            transform.localScale = Vector3.one;
+            smoothTime = .2f;
+
+            // #if UNITY_EDITOR
+            // UnityEditor.EditorApplication.RepaintHierarchyWindow();
+            // #endif
+
+            GetComponent<Animator>().SetInteger("State", (int)State.Card);
+            OnCarded?.Invoke();
+        }
+        public void ShowFinishFlag()
+        {
+            // TODO: better animation here
+            GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+        }
+        // called when game is ended
+        public void ShowNavigation()
+        {
+            if (GameManager.Instance.NavParent.transform.childCount > 0)
+                throw new Exception("more than one navigation?");
+
+            transform.SetParent(GameManager.Instance.NavParent, true);
+            transform.localScale = Vector3.one;
+            smoothTime = .6f;
+
+            // #if UNITY_EDITOR
+            // UnityEditor.EditorApplication.RepaintHierarchyWindow();
+            // #endif
+
+            GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
+        }
+
+
+
+
+
+
+
+        // play
+
+        public void Play()
+        {
+            ShowThumbnail(GameManager.Instance.PlayParent);
+            GameManager.Instance.PlayLevel(this);
+            StartCoroutine(WaitThenEnableQuitReplay());
+        }
+        // necessary because there is no separate 'playing' state
+        // it is simply still a thumbnail
         IEnumerator WaitThenEnableQuitReplay()
         {
             playButton.gameObject.SetActive(false);
             yield return new WaitForSeconds(.5f);
             quitButton.gameObject.SetActive(true);
             replayButton.gameObject.SetActive(true);
-        }
-        public void StartGame()
-        {
-            SetNewThumbnailParent(GameManager.Instance.PlayParent, Vector2.zero);
-            ShowThumbnail();
-            GameManager.Instance.PlayLevel(this);
-            StartCoroutine(WaitThenEnableQuitReplay());
         }
         public void BackToMenu()
         {
@@ -249,91 +266,9 @@ namespace EcoBuilder.Levels
             OnFinished?.Invoke();
         }
 
-
         public void Replay()
         {
             GameManager.Instance.PlayLevel(this);
-        }
-
-        Vector2 velocity, targetPos;
-        Vector2 sizocity, targetSize;
-        float smoothTime = .15f;
-        void FixedUpdate()
-        {
-            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, smoothTime);
-            GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, smoothTime);
-        }
-
-        enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
-        RectTransform thumbnailedParent;
-        Vector2 thumbnailedPos;
-        public void ShowThumbnail()
-        {
-            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
-
-            transform.SetParent(thumbnailedParent, true);
-            transform.localScale = Vector3.one;
-
-            targetPos = thumbnailedPos;
-            targetSize = new Vector2(100,100);
-            smoothTime = .2f;
-
-            OnThumbnailed?.Invoke();
-        }
-        public void SetNewThumbnailParent(RectTransform newParent, Vector2 newPos, bool tween=true)
-        {
-            thumbnailedParent = newParent;
-            transform.SetParent(thumbnailedParent, true);
-            transform.localScale = Vector3.one;
-
-            thumbnailedPos = newPos;
-            if (!tween)
-                transform.localPosition = newPos;
-
-            targetPos = thumbnailedPos;
-        }
-        public void ShowCard()
-        {
-            if (GameManager.Instance.CardParent.childCount > 0)
-                return;
-
-            transform.SetParent(GameManager.Instance.CardParent, true);
-            GetComponent<Animator>().SetInteger("State", (int)State.Card);
-            thumbnailedPos = transform.localPosition;
-            transform.localScale = Vector3.one;
-
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.RepaintHierarchyWindow();
-            #endif
-
-            targetPos = Vector3.zero;
-            targetSize = new Vector2(450, 850);
-            smoothTime = .2f;
-
-            OnCarded?.Invoke();
-        }
-        public void ShowFinishFlag()
-        {
-            GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
-            targetSize = new Vector2(110, 110);
-        }
-        // called when game is ended
-        public void ShowNavigation()
-        {
-            if (GameManager.Instance.NavParent.transform.childCount > 0)
-                throw new Exception("more than one navigation?");
-
-            thumbnailedPos = transform.localPosition;
-            transform.SetParent(GameManager.Instance.NavParent.transform, true);
-            transform.localScale = Vector3.one;
-
-            #if UNITY_EDITOR
-            UnityEditor.EditorApplication.RepaintHierarchyWindow();
-            #endif
-
-            GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
-            targetSize = new Vector2(350, 100);
-            smoothTime = .6f;
         }
     }
 }

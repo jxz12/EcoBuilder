@@ -187,7 +187,7 @@ namespace EcoBuilder.NodeLink
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
-            OnLinked.Invoke();
+            OnLinked?.Invoke();
         }
         public void RemoveLink(int i, int j)
         {
@@ -204,7 +204,7 @@ namespace EcoBuilder.NodeLink
                 throw new Exception("no bidirectional links allowed");
             }
 
-            OnLinked.Invoke();
+            OnLinked?.Invoke();
         }
 
         public void ShapeNode(int idx, GameObject shape)
@@ -269,6 +269,9 @@ namespace EcoBuilder.NodeLink
         }
         public void AddLandscape(GameObject landscape)
         {
+            if (landscape == null)
+                return;
+
             landscape.transform.SetParent(nodesParent, false);
             landscape.transform.localPosition = Vector3.down * 1f;
             landscape.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);

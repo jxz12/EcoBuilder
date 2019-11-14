@@ -79,11 +79,10 @@ namespace EcoBuilder
             recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
-            nodelink.AddLandscape(GameManager.Instance.RandomLandscape());
             score.AllowUpdateWhen(()=> atEquilibrium &&
-                                        !model.IsCalculating &&
-                                        graphSolved &&
-                                        !nodelink.IsCalculating); 
+                                       !model.IsCalculating &&
+                                       graphSolved &&
+                                       !nodelink.IsCalculating); 
 
             var level = GameManager.Instance.PlayedLevel;
             if (level == null)
@@ -109,8 +108,10 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
+            nodelink.AddLandscape(level.Landscape);
         }
 
+        // perform calculations if necessary
         bool atEquilibrium = true, graphSolved = true;
         void LateUpdate()
         {

@@ -5,6 +5,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 
+// for load/save progress
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+
 namespace EcoBuilder
 {
     public class GameManager : MonoBehaviour
@@ -28,14 +33,70 @@ namespace EcoBuilder
                 throw new Exception("More than one GameManager in scene");
         }
 
+        void Start()
+        {
+            // TODO: set this to the size of the screen
+            // Screen.SetResolution(576, 1024, false);
+            // #if !UNITY_WEBGL
+            //     Screen.fullScreen = true;
+            // #endif
+
+            PlayerPrefs.DeleteAll();
+            if (!PlayerPrefs.HasKey("Has Played"))
+            {
+                PlayerPrefs.SetString("Has Played", "yes");
+                PlayerPrefs.Save();
+
+                // TODO: teams and stuff here
+                // ShowSurvey();
+
+                // TODO: initialise levels
+                // InitHighScores();
+                player.highScores = new List<int>();
+                player.highScores.Add(0);
+                for (int i=1; i<levelPrefabs.Count; i++)
+                {
+                    // player.highScores.Add(-1);
+                    player.highScores.Add(0);
+                }
+            }
+            if (SceneManager.sceneCount == 1)
+            {
+                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
+                // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
+            }
+            SavePlayerDetailsLocal();
+        }
 
 
+        /////////////////////
+        // data collection //
+        /////////////////////
 
-        //////////////////////////////////////
-        // data collection for demographics //
-        //////////////////////////////////////
+        [Serializable]
+        public class PlayerDetails
+        {
+            // TODO: store this locally and on server
+            public string email;
+            public string password;
+            public int team;
 
-        private string email, password;
+            public int age;
+            public int gender;
+            public int education;
+            
+            public List<int> highScores;
+        }
+        [SerializeField] PlayerDetails player;
+        public void Login(string email, string password)
+        {
+            StartCoroutine(Http());
+        }
+        public void Logout()
+        {
+            // TODO: keep track of playthroughs, and send if ever log in?
+        }
+
         public void SetEmailAndPassword(string email, string password)
         {
             // TODO: send these to the server to store it 
@@ -53,10 +114,6 @@ namespace EcoBuilder
         }
         public void SetEducation(int education)
         {
-        }
-        void DoWebThing()
-        {
-            StartCoroutine(Http());
         }
         IEnumerator Http()
         {
@@ -88,6 +145,48 @@ namespace EcoBuilder
                 }
             }
         }
+        public void Quit()
+        {
+            // TODO: send data if you can
+        }
+        public void ResetSaveData()
+        {
+            PlayerPrefs.DeleteKey("Has Played");
+            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        private bool SavePlayerDetailsLocal()
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            try
+            {
+                FileStream file = File.Create(Application.persistentDataPath+"/player.data");
+                bf.Serialize(file, player);
+                file.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("error: " + e.Message);
+                return false;
+            }
+        }
+        private bool LoadPlayerDetailsLocal()
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            try
+            {
+                FileStream file = File.Open(Application.persistentDataPath+"/player.data", FileMode.Open);
+                player = (PlayerDetails)bf.Deserialize(file);
+                file.Close();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                print("handled exception: " + e.Message);
+                return false;
+            }
+        }
 
 
 
@@ -96,59 +195,10 @@ namespace EcoBuilder
         // storing information for levels //
         ////////////////////////////////////
 
-        [SerializeField] List<Levels.Level> levels; // each level is a prefab
-        List<int> highScores; // TODO: store this locally and on server
-
-        void Start()
+        [SerializeField] List<Levels.Level> levelPrefabs; // each level is a prefab
+        public IEnumerable<Levels.Level> GetLevelPrefabs()
         {
-            // TODO: set this to the size of the screen
-            // Screen.SetResolution(576, 1024, false);
-            // #if !UNITY_WEBGL
-            //     Screen.fullScreen = true;
-            // #endif
-
-            if (!PlayerPrefs.HasKey("Has Played"))
-            {
-                PlayerPrefs.SetString("Has Played", "yes");
-                PlayerPrefs.Save();
-
-                // TODO: teams and stuff here
-                // ShowSurvey();
-
-                // TODO: initialise levels
-                // InitHighScores();
-            }
-            if (SceneManager.sceneCount == 1)
-            {
-                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
-                // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
-            }
-        }
-        public void ResetSaveData()
-        {
-            PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
-            UnloadSceneThenLoadAnother("Menu", "Menu");
-        }
-        
-
-        private void UnloadSceneThenLoadAnother(string toUnload, string another)
-        {
-            StartCoroutine(UnloadSceneThenLoad(toUnload, another));
-        }
-        event Action OnNewSceneLoaded;
-        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
-        {
-            var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
-            while (!unloading.isDone)
-            {
-                yield return null;
-            }
-            var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
-            while (!loading.isDone)
-            {
-                yield return null;
-            }
-            OnNewSceneLoaded?.Invoke();
+            return levelPrefabs;
         }
 
         [SerializeField] Canvas canvas;
@@ -176,18 +226,27 @@ namespace EcoBuilder
                 {
                     Destroy(Teacher.gameObject);
                 }
-                UnloadSceneThenLoadAnother("Play", "Play");
+                // UnloadSceneThenLoadAnother("Play", "Play");
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
             }
             else
             {
                 // play from menu
                 PlayedLevel = toPlay;
-                UnloadSceneThenLoadAnother("Menu", "Play");
+                // UnloadSceneThenLoadAnother("Menu", "Play");
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
+
             if (toPlay.Tutorial != null)
             {
                 Teacher = Instantiate(toPlay.Tutorial, canvas.transform);
             }
+        }
+        // This is necessary because you cannot change prefabs from script when compiled
+        // Ideally we would keep this inside Levels.Level, but that is not possible
+        public int GetLevelHighScore(int levelIdx)
+        {
+            return player.highScores[levelIdx];
         }
 
         // public void SavePlayedLevel(int numStars, int score)
@@ -210,11 +269,28 @@ namespace EcoBuilder
         //     PlayedLevel.SaveToFile();
         // }
 
-        [SerializeField] GameObject[] landscapes;
-        public GameObject RandomLandscape()
+
+        ///////////////////
+        // scene loading //
+        ///////////////////
+
+        // TODO: loading screen or loading events here
+        event Action OnNewSceneLoaded;
+        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
-            return Instantiate(landscapes[UnityEngine.Random.Range(0, landscapes.Length)]);
+            var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
+            while (!unloading.isDone)
+            {
+                yield return null;
+            }
+            var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
+            while (!loading.isDone)
+            {
+                yield return null;
+            }
+            OnNewSceneLoaded?.Invoke();
         }
+
         public void ReturnToMenu()
         {
             if (Teacher != null)
@@ -226,7 +302,8 @@ namespace EcoBuilder
                 Destroy(PlayedLevel.gameObject);
                 PlayedLevel = null;
             }
-            UnloadSceneThenLoadAnother("Play", "Menu");
+            // UnloadSceneThenLoadAnother("Play", "Menu");
+            StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
         }
     }
 }
