@@ -73,7 +73,7 @@ namespace EcoBuilder.NodeLink
             if (focusedNode != nodes[idx] && nodes[idx] != null)
             {
                 FocusNode(idx);
-                OnNodeFocused.Invoke(idx);
+                OnNodeFocused?.Invoke(idx);
             }
         }
         void Unfocus()
@@ -409,7 +409,7 @@ namespace EcoBuilder.NodeLink
                     if (pressedNode != null)
                     {
                         FocusNode(pressedNode.Idx);
-                        OnNodeFocused.Invoke(pressedNode.Idx);
+                        OnNodeFocused?.Invoke(pressedNode.Idx);
 
                         if (pressedNode == focusedNode)
                             pressedNode.Outline(3);
@@ -423,11 +423,11 @@ namespace EcoBuilder.NodeLink
                     {
                         if (focusState == FocusState.Unfocus)
                         {
-                            OnEmptyPressed.Invoke();
+                            OnEmptyPressed?.Invoke();
                         }
                         else if (focusState == FocusState.Focus)
                         {
-                            OnUnfocused.Invoke();
+                            OnUnfocused?.Invoke();
                         }
                         Unfocus();
                     }
@@ -644,12 +644,12 @@ namespace EcoBuilder.NodeLink
                     if (links[i,j] == null)
                     {
                         AddLink(i, j);
-                        OnUserLinked.Invoke(i, j);
+                        OnUserLinked?.Invoke(i, j);
                     }
                     else
                     {
                         RemoveLink(i, j);
-                        OnUserUnlinked.Invoke(i, j);
+                        OnUserUnlinked?.Invoke(i, j);
                     }
                 }
             }
