@@ -155,14 +155,21 @@ namespace EcoBuilder.Levels
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
 
-        Vector2 velocity;
-        float smoothTime = .15f;
-        //  TODO: change this into a coroutine 
-        void Update()
+        bool tweening =false;
+        IEnumerator TweenToZeroPos(float duration)
         {
-            transform.localPosition = Vector2.SmoothDamp(transform.localPosition, Vector3.zero, ref velocity, smoothTime);
-            // transform.localPosition = Vector2.SmoothDamp(transform.localPosition, targetPos, ref velocity, smoothTime);
-            // GetComponent<RectTransform>().sizeDelta = Vector2.SmoothDamp(GetComponent<RectTransform>().sizeDelta, targetSize, ref sizocity, smoothTime);
+            while (tweening)
+            {
+                yield return null;
+            }
+            tweening = true;
+            Vector3 startPos = transform.localPosition;
+            float startTime = Time.time;
+            while (Time.time < startTime+duration)
+            {
+                transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, (Time.time-startTime)/duration);
+                yield return null;
+            }
         }
 
         Transform thumbnailedParent;
@@ -171,7 +178,8 @@ namespace EcoBuilder.Levels
         {
             transform.SetParent(thumbnailedParent, true);
             transform.localScale = Vector3.one;
-            smoothTime = .2f;
+            StartCoroutine(TweenToZeroPos(.5f));
+
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             OnThumbnailed?.Invoke();
         }
@@ -190,11 +198,7 @@ namespace EcoBuilder.Levels
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             transform.SetParent(GameManager.Instance.CardParent, true);
             transform.localScale = Vector3.one;
-            smoothTime = .2f;
-
-            // #if UNITY_EDITOR
-            // UnityEditor.EditorApplication.RepaintHierarchyWindow();
-            // #endif
+            StartCoroutine(TweenToZeroPos(.5f));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
             OnCarded?.Invoke();
@@ -212,11 +216,7 @@ namespace EcoBuilder.Levels
 
             transform.SetParent(GameManager.Instance.NavParent, true);
             transform.localScale = Vector3.one;
-            smoothTime = .6f;
-
-            // #if UNITY_EDITOR
-            // UnityEditor.EditorApplication.RepaintHierarchyWindow();
-            // #endif
+            StartCoroutine(TweenToZeroPos(.5f));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
