@@ -167,7 +167,16 @@ namespace EcoBuilder.Levels
             float startTime = Time.time;
             while (Time.time < startTime+duration)
             {
-                transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, (Time.time-startTime)/duration);
+                float t = (Time.time-startTime)/duration;
+                if (t < .5f)
+                {
+                    t = 2*t*t;
+                }
+                else
+                {
+                    t = -1 + (4-2*t)*t;
+                }
+                transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 yield return null;
             }
             tweening = false;
