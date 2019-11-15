@@ -1300,8 +1300,8 @@ MonoBehaviour:
     numInteractions: 0
     resources: 
     consumers: 
-    targetScore1: 0
-    targetScore2: 0
+    targetScore1: 1
+    targetScore2: 1
   tutorial: {fileID: 0}
   landscape: {fileID: 6175307669712771283, guid: 0cfceb57cb70edf4da131289775de31e,
     type: 3}
