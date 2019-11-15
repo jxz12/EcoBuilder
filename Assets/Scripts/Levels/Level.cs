@@ -55,16 +55,16 @@ namespace EcoBuilder.Levels
         public GameObject Landscape { get { return landscape; } }
 
         // thumbnail
-        [SerializeField] Text numberText;
+        // [SerializeField] Text numberText;
         [SerializeField] Image starsImage;
         [SerializeField] Sprite[] starSprites;
 
         // card
-        [SerializeField] Text title;
-        [SerializeField] Text description;
-        [SerializeField] Text target1;
-        [SerializeField] Text target2;
-        [SerializeField] Text highScore;
+        [SerializeField] TMPro.TextMeshProUGUI title;
+        [SerializeField] TMPro.TextMeshProUGUI description;
+        [SerializeField] TMPro.TextMeshProUGUI target1;
+        [SerializeField] TMPro.TextMeshProUGUI target2;
+        [SerializeField] TMPro.TextMeshProUGUI highScore;
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
@@ -84,7 +84,7 @@ namespace EcoBuilder.Levels
             if (m != Details.consumers.Count)
                 throw new Exception("num edge sources and targets do not match");
 
-            numberText.text = (Details.idx+1).ToString();
+            // numberText.text = (Details.idx+1).ToString();
             title.text = Details.title;
             description.text = Details.description;
 
@@ -170,6 +170,7 @@ namespace EcoBuilder.Levels
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, (Time.time-startTime)/duration);
                 yield return null;
             }
+            tweening = false;
         }
 
         Transform thumbnailedParent;
