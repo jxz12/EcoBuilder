@@ -108,7 +108,7 @@ namespace EcoBuilder
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
             }
-            nodelink.AddLandscape(level.Landscape);
+            nodelink.AddDropShadow(level.Landscape);
         }
 
         // perform calculations if necessary
