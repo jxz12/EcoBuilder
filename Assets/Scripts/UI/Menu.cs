@@ -48,10 +48,11 @@ namespace EcoBuilder.UI
             {
                 // TODO: change this into a prefab?
                 var parent = new GameObject().AddComponent<RectTransform>();
+                parent.SetParent(levelGrid.transform);
+                parent.localScale = Vector3.one;
                 levelParents.Add(parent);
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
-                parent.transform.SetParent(levelGrid.transform);
             }
         }
         // public void UnlockAllLevels()
