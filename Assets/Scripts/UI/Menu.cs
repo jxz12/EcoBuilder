@@ -10,26 +10,26 @@ namespace EcoBuilder.UI
 {
     public class Menu : MonoBehaviour
     {
-        // animation stuff
-        public void GoToOptions()
-        {
-            GetComponent<Animator>().SetInteger("Menu Choice", 0);
-        }
-        public void GoToMain()
-        {
-            GetComponent<Animator>().SetInteger("Menu Choice", 1);
-        }
-        public void GoToLevels()
-        {
-            GetComponent<Animator>().SetInteger("Menu Choice", 2);
-        }
-        public void GoToSurvey()
-        {
-            GetComponent<Animator>().SetInteger("Menu Choice", 3);
-        }
+        // // animation stuff
+        // public void GoToOptions()
+        // {
+        //     GetComponent<Animator>().SetInteger("Menu Choice", 0);
+        // }
+        // public void GoToMain()
+        // {
+        //     GetComponent<Animator>().SetInteger("Menu Choice", 1);
+        // }
+        // public void GoToLevels()
+        // {
+        //     GetComponent<Animator>().SetInteger("Menu Choice", 2);
+        // }
+        // public void GoToSurvey()
+        // {
+        //     GetComponent<Animator>().SetInteger("Menu Choice", 3);
+        // }
         public void QuitGame()
         {
-            Application.Quit();
+            GameManager.Instance.Quit();
         }
 
 

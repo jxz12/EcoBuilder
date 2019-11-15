@@ -41,23 +41,23 @@ namespace EcoBuilder
             //     Screen.fullScreen = true;
             // #endif
 
-            PlayerPrefs.DeleteAll();
+            // PlayerPrefs.DeleteAll();
             if (!PlayerPrefs.HasKey("Has Played"))
             {
                 PlayerPrefs.SetString("Has Played", "yes");
                 PlayerPrefs.Save();
 
-                // TODO: teams and stuff here
+                InitNewPlayer();
+                SavePlayerDetailsLocal();
                 // ShowSurvey();
-
-                // TODO: initialise levels
-                // InitHighScores();
-                player.highScores = new List<int>();
-                player.highScores.Add(0);
-                for (int i=1; i<levelPrefabs.Count; i++)
+            }
+            else
+            {
+                bool loaded = LoadPlayerDetailsLocal();
+                if (!loaded)
                 {
-                    // player.highScores.Add(-1);
-                    player.highScores.Add(0);
+                    InitNewPlayer();
+                    SavePlayerDetailsLocal();
                 }
             }
             if (SceneManager.sceneCount == 1)
@@ -147,12 +147,23 @@ namespace EcoBuilder
         }
         public void Quit()
         {
-            // TODO: send data if you can
+            // TODO: send data if possible
+            Application.Quit();
         }
         public void ResetSaveData()
         {
             PlayerPrefs.DeleteKey("Has Played");
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        private void InitNewPlayer()
+        {
+            player.highScores = new List<int>();
+            player.highScores.Add(0);
+            for (int i=1; i<levelPrefabs.Count; i++)
+            {
+                player.highScores.Add(-1);
+                // player.highScores.Add(0);
+            }
         }
         private bool SavePlayerDetailsLocal()
         {
