@@ -50,6 +50,7 @@ namespace EcoBuilder.UI
                 var parent = new GameObject().AddComponent<RectTransform>();
                 levelParents.Add(parent);
                 var level = Instantiate(prefab, parent);
+                parent.name = level.Details.idx.ToString();
                 parent.transform.SetParent(levelGrid.transform);
             }
         }

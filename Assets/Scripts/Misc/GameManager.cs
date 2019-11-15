@@ -214,6 +214,7 @@ namespace EcoBuilder
 
         [SerializeField] Canvas canvas;
         [SerializeField] RectTransform cardParent, playParent, navParent;
+        [SerializeField] Animator earth;
         public RectTransform CardParent { get { return cardParent; } }
         public RectTransform PlayParent { get { return playParent; } }
         public RectTransform NavParent { get { return navParent; } }
@@ -252,6 +253,7 @@ namespace EcoBuilder
             {
                 Teacher = Instantiate(toPlay.Tutorial, canvas.transform);
             }
+            earth.SetTrigger("Shrink");
         }
         // This is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level, but that is not possible
