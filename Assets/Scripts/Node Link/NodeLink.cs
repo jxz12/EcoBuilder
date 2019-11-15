@@ -267,14 +267,17 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        public void AddLandscape(GameObject landscape)
+        // adds a gameobject to the point (0,-1,0)
+        // like the jump shadow in mario bros.
+        public void AddDropShadow(GameObject shadowPrefab)
         {
-            if (landscape == null)
+            if (shadowPrefab == null)
                 return;
 
-            landscape.transform.SetParent(nodesParent, false);
-            landscape.transform.localPosition = Vector3.down * 1f;
-            landscape.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
+            var shadow = Instantiate(shadowPrefab);
+            shadow.transform.SetParent(nodesParent, false);
+            shadow.transform.localPosition = Vector3.down * 1f;
+            shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
         }
     }
 }

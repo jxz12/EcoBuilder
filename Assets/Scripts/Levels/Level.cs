@@ -186,17 +186,16 @@ namespace EcoBuilder.Levels
         // Vector2 thumbnailedPos;
         public void ShowThumbnail()
         {
+            ShowThumbnail(.5f);
+        }
+        public void ShowThumbnail(float tweenTime)
+        {
             transform.SetParent(thumbnailedParent, true);
             transform.localScale = Vector3.one;
-            StartCoroutine(TweenToZeroPos(.5f));
+            StartCoroutine(TweenToZeroPos(tweenTime));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             OnThumbnailed?.Invoke();
-        }
-        void ShowThumbnail(RectTransform newParent)
-        {
-            thumbnailedParent = newParent;
-            ShowThumbnail();
         }
         public void ShowCard()
         {
@@ -236,12 +235,13 @@ namespace EcoBuilder.Levels
 
 
 
-
-        // play
+        ///////////////////////
+        // Scene changing
 
         public void Play()
         {
-            ShowThumbnail(GameManager.Instance.PlayParent);
+            thumbnailedParent = GameManager.Instance.PlayParent;
+            ShowThumbnail(1.5f);
             GameManager.Instance.PlayLevel(this);
             StartCoroutine(WaitThenEnableQuitReplay());
         }

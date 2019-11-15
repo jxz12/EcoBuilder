@@ -317,6 +317,7 @@ namespace EcoBuilder
             }
             // UnloadSceneThenLoadAnother("Play", "Menu");
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
+            earth.SetTrigger("Grow");
         }
     }
 }
