@@ -14,6 +14,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraints constraints;
+        [SerializeField] ReportCard report;
 
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
@@ -156,7 +157,7 @@ namespace EcoBuilder.UI
         {
             // modelScore = (int)Math.Truncate(score * 100);
             modelScore = (int)(score * 10);
-            scoreExplanation = explanation;
+            report.SetMessage(explanation);
         }
         public void CycleScoreSprite()
         {
@@ -227,7 +228,6 @@ namespace EcoBuilder.UI
             {
                 scoreText.color = Color.green;
                 OnLevelCompletabled?.Invoke();
-                // TODO: setting this should not be here
                 if (!finishDisabled)
                     GameManager.Instance.PlayedLevel.ShowFinishFlag();
             }
@@ -245,19 +245,12 @@ namespace EcoBuilder.UI
             if (NumStars < 1 || NumStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
-            // GameManager.Instance.SavePlayedLevel(NumStars, realisedScore);
-
             GetComponent<Animator>().SetBool("Visible", false);
             star1.SetTrigger("Confetti");
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");
 
             OnLevelCompleted.Invoke();
-        }
-
-        public void ToggleReportCard()
-        {
-            print(scoreExplanation);
         }
     }
 }
