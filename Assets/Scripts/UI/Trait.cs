@@ -10,6 +10,8 @@ namespace EcoBuilder.UI
     public class Trait : MonoBehaviour, IPointerUpHandler
     {
         public event Action<float, float> OnUserSlid; // from, to
+        public event Action<int> OnConflicted;
+        public event Action<int> OnUnconflicted;
         public bool Interactable { set { slider.interactable = value; } }
         public bool Active { set { gameObject.SetActive(value); } }
 
@@ -19,7 +21,7 @@ namespace EcoBuilder.UI
         void Start()
         {
             slider = GetComponent<Slider>();
-            ValueChangedCallback = x=> SetValueWithCallback();
+            ValueChangedCallback = x=> OnValueChanged();
             slider.onValueChanged.AddListener(ValueChangedCallback);
         }
         public float SetValueFromRandomSeed(int randomSeed)
@@ -47,53 +49,48 @@ namespace EcoBuilder.UI
             slider.onValueChanged.AddListener(ValueChangedCallback);
             currentValue = normalizedValue;
         }
+        int conflict = -1;
         float toSnapBack = -1;
-        public void SetValueWithCallback()
+        private void OnValueChanged()
         {
             float newValue = slider.normalizedValue;
-            if (Conflict(newValue))
+            if (conflict >= 0)
             {
-                print("TODO: show user conflict by throwing int event");
-                // SnapBackCallback = ()=> SnapBack(currentValue);
+                OnUnconflicted?.Invoke(conflict);
+            }
+            conflict = FindConflict(newValue);
+            if (conflict >= 0)
+            {
+                OnConflicted?.Invoke(conflict);
                 toSnapBack = currentValue;
                 slider.targetGraphic.color = Color.red;
             }
             else
             {
-                OnUserSlid.Invoke(currentValue, newValue);
-                // SnapBackCallback = null;
+                OnUserSlid?.Invoke(currentValue, newValue);
+                conflict = -1;
                 toSnapBack = -1;
                 currentValue = newValue;
                 slider.targetGraphic.color = Color.white;
             }
         }
-        // Action SnapBackCallback;
-        // void SnapBack(prevValue) // value reference problem?
-        // {
-        //     SetValueWithoutCallback(prevValue);
-        //     currentValue = prevValue;
-        //     SnapBackCallback = null;
-        // }
         public void OnPointerUp(PointerEventData ped)
         {
-            // if (SnapBackCallback != null)
-            // {
-                // SnapBackCallback.Invoke();
-                // SnapBackCallback = null;
-            // }
-            if (toSnapBack >= 0)
+            if (conflict >= 0)
             {
+                OnUnconflicted?.Invoke(conflict);
                 SetValueWithoutCallback(toSnapBack);
+                conflict = -1;
                 toSnapBack = -1;
                 slider.targetGraphic.color = Color.white;
             }
         }
 
         // if this function return false, the slider will 'snap' back
-        Func<float, bool> Conflict;
-        public void AddExternalConflict(Func<float, bool> Rule)
+        Func<float, int> FindConflict;
+        public void AddExternalConflict(Func<float, int> Rule)
         {
-            Conflict = Rule;
+            FindConflict = Rule;
         }
     }
 }

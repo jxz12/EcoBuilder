@@ -6,6 +6,16 @@ namespace EcoBuilder.NodeLink
     {
         [SerializeField] LineRenderer lr;
 
+        [SerializeField] float lineWidth;
+        [SerializeField] float curveRatio;
+        [SerializeField] int curveSegments;
+        [SerializeField] float numBalls;
+
+        public bool Curved { get; set; } = false;
+        public float TileSpeed { get; set; } = 0;
+        public bool Removable { get; set; } = true;
+        public int DefaultOutline { get; set; } = -1;
+
         private Node source;
         public Node Source {
             get { return source; }
@@ -35,49 +45,49 @@ namespace EcoBuilder.NodeLink
             outline.enabled = false;
         }
 
-        bool outlined = false;
+        // bool outlined = false;
         public void Outline(int colourIdx=0)
         {
             // outline.eraseRenderer = false;
-            outline.enabled = true;
-            outlined = true;
+            // outline.enabled = true;
+            // outlined = true;
 
-            if (Removable)
-                outline.color = colourIdx;
-            else
-                outline.color = 0;
+            // if (Removable)
+            //     outline.color = colourIdx;
+            // else
+            //     outline.color = 0;
+
+            outline.enabled = true;
+            outline.color = colourIdx;
         }
         public void Unoutline()
         {
-            outlined = false;
-            if (Removable)
+            // outlined = false;
+            // if (Removable)
+            //     // outline.eraseRenderer = true;
+            //     outline.enabled = false;
+
+            if (DefaultOutline < 0)
                 // outline.eraseRenderer = true;
                 outline.enabled = false;
+            else
+                outline.color = DefaultOutline;
         }
-        float targetAlpha = 1;
+        // float targetAlpha = 1;
         public void Show(bool showing = true)
         {
-            if (showing)
-            {
-                targetAlpha = 1;
-                if (outlined)
-                    outline.enabled = true;
-            }
-            else
-            {
-                targetAlpha = 0;
-                outline.enabled = false;
-            }
+        //     if (showing)
+        //     {
+        //         targetAlpha = 1;
+        //         if (outlined)
+        //             outline.enabled = true;
+        //     }
+        //     else
+        //     {
+        //         targetAlpha = 0;
+        //         outline.enabled = false;
+        //     }
         }
-
-        [SerializeField] float lineWidth;
-        [SerializeField] float curveRatio;
-        [SerializeField] int curveSegments;
-        [SerializeField] float numBalls;
-
-        public bool Curved { get; set; } = false;
-        public float TileSpeed { get; set; } = 0;
-        public bool Removable { get; set; } = true;
 
         private void LateUpdate()
         {
@@ -130,7 +140,7 @@ namespace EcoBuilder.NodeLink
         {
             tileOffset -= TileSpeed;
             lr.material.SetFloat("_Offset", tileOffset);
-            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .1f));
+            // lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .1f));
         }
     }
 }

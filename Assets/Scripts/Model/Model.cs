@@ -203,38 +203,15 @@ namespace EcoBuilder.Model
             OnEquilibrium.Invoke();
         }
 
-        // TODO: this should eventually be the report card
-        int scoreType = 0;
-        public void CycleScoreMetric()
-        {
-            scoreType = (scoreType + 1) % 4;
-            OnEquilibrium.Invoke();
-        }
         float CalculateScore()
         {
-            if (scoreType == 0)
-            {
-                return (float)simulation.MayComplexity;
-            }
-            else if (scoreType == 1)
-            {
-                return (float)simulation.TangComplexity;
-            }
-            else if (scoreType == 2)
-            {
-                print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalAbundance + " " + (simulation.Richness*simulation.Connectance*simulation.TotalAbundance));
-                return (float)(simulation.Richness *
-                               simulation.Connectance *
-                               simulation.TotalAbundance);
-            }
-            else if (scoreType == 3)
-            {
-                print(simulation.Richness + " " + simulation.Connectance + " " + simulation.TotalFlux + " " + (simulation.Richness*simulation.Connectance*simulation.TotalFlux));
-                return (float)(simulation.Richness *
-                               simulation.Connectance *
-                               simulation.TotalFlux);
-            }
-            else throw new Exception("you suck");
+            return (float)(simulation.Richness *
+                            simulation.Connectance *
+                            simulation.TotalAbundance);
+        }
+        public string ScoreExplanation()
+        {
+            return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + simulation.TotalAbundance + " = " + (simulation.Richness*simulation.Connectance*simulation.TotalAbundance);
         }
 
         void TriggerAbundanceEvents()

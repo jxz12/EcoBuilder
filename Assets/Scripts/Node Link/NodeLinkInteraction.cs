@@ -52,18 +52,18 @@ namespace EcoBuilder.NodeLink
                     SuperFocus(idx);
                 }
             }
-            else if (focusState == FocusState.SuperAntifocus)
-            {
-                if (focusedNode == nodes[idx])
-                {
-                    SuperFocus(idx);
-                    focusState = FocusState.SuperFocus;
-                }
-                else
-                {
-                    SuperAntifocus(idx);
-                }
-            }
+            // else if (focusState == FocusState.SuperAntifocus)
+            // {
+            //     if (focusedNode == nodes[idx])
+            //     {
+            //         SuperFocus(idx);
+            //         focusState = FocusState.SuperFocus;
+            //     }
+            //     else
+            //     {
+            //         SuperAntifocus(idx);
+            //     }
+            // }
 
             focusedNode = nodes[idx];
             nodes[idx].Outline(3);
@@ -195,47 +195,47 @@ namespace EcoBuilder.NodeLink
                               + nodes[focusIdx].FocusPos;
             }
         }
-        public void SuperAntifocus(int focusIdx)
-        {
-            var related = new List<Node>();
-            var unrelated = new HashSet<Node>();
+        // public void SuperAntifocus(int focusIdx)
+        // {
+        //     var related = new List<Node>();
+        //     var unrelated = new HashSet<Node>();
 
-            foreach (Node no in nodes)
-            {
-                if (no.Idx == focusIdx)
-                    continue;
+        //     foreach (Node no in nodes)
+        //     {
+        //         if (no.Idx == focusIdx)
+        //             continue;
 
-                // uninteracting
-                if (links[focusIdx,no.Idx] == null && links[no.Idx,focusIdx] == null)
-                {
-                    unrelated.Add(no);
-                    no.focusState = Node.FocusState.Focus;
-                }
-                else
-                {
-                    related.Add(no);
-                    no.focusState = Node.FocusState.Hidden;
-                }
-            }
-            foreach (Link li in links)
-            {
-                if (unrelated.Contains(li.Source) && unrelated.Contains(li.Target))
-                    li.Show(true);
-                else
-                    li.Show(false);
-            }
+        //         // uninteracting
+        //         if (links[focusIdx,no.Idx] == null && links[no.Idx,focusIdx] == null)
+        //         {
+        //             unrelated.Add(no);
+        //             no.focusState = Node.FocusState.Focus;
+        //         }
+        //         else
+        //         {
+        //             related.Add(no);
+        //             no.focusState = Node.FocusState.Hidden;
+        //         }
+        //     }
+        //     foreach (Link li in links)
+        //     {
+        //         if (unrelated.Contains(li.Source) && unrelated.Contains(li.Target))
+        //             li.Show(true);
+        //         else
+        //             li.Show(false);
+        //     }
 
-            // arrange in circle around focus in middle
-            nodes[focusIdx].FocusPos = new Vector3(0, maxHeight/2, 0);
+        //     // arrange in circle around focus in middle
+        //     nodes[focusIdx].FocusPos = new Vector3(0, maxHeight/2, 0);
 
-            float angle = 0;
-            foreach (Node no in unrelated)//.OrderBy(x=>-trophicLevels[x.Idx]))
-            {
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
-                              + nodes[focusIdx].FocusPos;
-                angle += 1f / (unrelated.Count) * 2 * Mathf.PI;
-            }
-        }
+        //     float angle = 0;
+        //     foreach (Node no in unrelated)//.OrderBy(x=>-trophicLevels[x.Idx]))
+        //     {
+        //         no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+        //                       + nodes[focusIdx].FocusPos;
+        //         angle += 1f / (unrelated.Count) * 2 * Mathf.PI;
+        //     }
+        // }
 
 
         Vector3 graphParentUnfocused;

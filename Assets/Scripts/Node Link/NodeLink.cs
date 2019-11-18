@@ -279,5 +279,21 @@ namespace EcoBuilder.NodeLink
             shadow.transform.localPosition = Vector3.down * 1f;
             shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
         }
+        public void SetNodeDefaultOutline(int idx, int colourIdx=0)
+        {
+            nodes[idx].DefaultOutline = colourIdx;
+        }
+        public void SetLinkDefaultOutline(int source, int target, int colourIdx=0)
+        {
+            links[source, target].DefaultOutline = colourIdx;
+        }
+        public void OutlineNode(int idx, int colourIdx=4)
+        {
+            nodes[idx].Outline(colourIdx);
+        }
+        public void UnoutlineNode(int idx)
+        {
+            nodes[idx].Unoutline();
+        }
     }
 }

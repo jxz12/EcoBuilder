@@ -14,18 +14,18 @@ namespace EcoBuilder.UI
 
         class Constraint
         {
-            public Text counter;
+            public TMPro.TextMeshProUGUI counter;
             public Image icon;
             public int threshold=-1;
             public int value=0;
         }
         Dictionary<string, Constraint> constraints;
-        string prefix = "    ";
+        string prefix = "     ";
 
         void Awake()
         {
             constraints = new Dictionary<string, Constraint>();
-            foreach (Text t in transform.GetComponentsInChildren<Text>())
+            foreach (TMPro.TextMeshProUGUI t in transform.GetComponentsInChildren<TMPro.TextMeshProUGUI>())
             {
                 constraints[t.name] = new Constraint
                 {
@@ -78,27 +78,18 @@ namespace EcoBuilder.UI
                 constraints[name].counter.text = prefix + value + "/" + constraints[name].threshold;
                 constraints[name].icon.color = value >= constraints[name].threshold? Color.green : Color.white;
             }
-            // CurrentValue = value;
-            // if (ConstraintLimit <= 0)
-            // {
-            //     number.text = prefix + value.ToString();
-            //     IsSatisfied = true;
-            // }
-            // else
-            // {
-            //     number.text = prefix + CurrentValue + "/" + ConstraintLimit;
-            //     IsSatisfied = (CurrentValue >= ConstraintLimit);
-            //     icon.color = IsSatisfied? Color.green : Color.white;
-            // }
+
         }
         [SerializeField] Tooltip tooltip;
         public void OnPointerEnter(PointerEventData ped)
         {
             tooltip.Enable();
             tooltip.ShowText(Error());
-            StartCoroutine(FollowCursor());
+            followCoroutine = FollowCursor();
+            StartCoroutine(followCoroutine);
             OnErrorShown?.Invoke();
         }
+        private IEnumerator followCoroutine;
         IEnumerator FollowCursor()
         {
             while (true)
@@ -110,7 +101,7 @@ namespace EcoBuilder.UI
         public void OnPointerExit(PointerEventData ped)
         {
             tooltip.Disable();
-            StopCoroutine(FollowCursor());
+            StopCoroutine(followCoroutine);
         }
         public bool Feasible { get; set; }
         public bool Stable { get; set; }

@@ -14,7 +14,10 @@ namespace EcoBuilder.UI
 
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraints constraints;
-        [SerializeField] Help help;
+
+        [SerializeField] Image scoreCurrentImage, scoreTargetImage;
+        [SerializeField] Sprite targetSprite1, targetSprite2;
+        [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText; //, abundanceText;
 
         void Start()
         {
@@ -35,7 +38,6 @@ namespace EcoBuilder.UI
                 constraints.Constrain("Chain", level.Details.minChain);
                 constraints.Constrain("Loop", level.Details.minLoop);
             }
-            // shield.Constrain(-1);
             feasibleScoreCol = scoreText.color;
             infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic number
             scoreText.color = infeasibleScoreCol;
@@ -45,17 +47,18 @@ namespace EcoBuilder.UI
                 DisableFinish();
                 return;
             }
-            help.SetText(level.Details.introduction);
             target1 = level.Details.targetScore1;
             target2 = level.Details.targetScore2;
 
+            // TODO: check if this needs to be unattached in OnDestroy()
             GameManager.Instance.PlayedLevel.OnFinished += CompleteLevel;
         }
-        void OnDestroy()
-        {
-            if (GameManager.Instance != null && GameManager.Instance.PlayedLevel != null)
-                GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
-        }
+        // void OnDestroy()
+        // {
+        //     if (GameManager.Instance != null && GameManager.Instance.PlayedLevel != null)
+        //         GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
+        // }
+
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;
 
@@ -63,10 +66,6 @@ namespace EcoBuilder.UI
         public void AllowUpdateWhen(Func<bool> Allowed)
         {
             CanUpdate = Allowed;
-        }
-        public void ShowHelp(bool showing)
-        {
-            help.Show(showing);
         }
         public void HideScore(bool hidden=true)
         {
@@ -140,10 +139,6 @@ namespace EcoBuilder.UI
         {
             constraints.Display("Loop", lenLoop);
         }
-
-        // float targetAbundance, abundance;
-        int modelScore, realisedScore;
-
         public void DisplayFeastability(bool isFeasible, bool isStable)
         {
             constraints.Feasible = isFeasible;
@@ -153,14 +148,15 @@ namespace EcoBuilder.UI
 		//////////////////////
 		// score calculation
 
-        [SerializeField] Image scoreCurrentImage, scoreTargetImage;
-        [SerializeField] Sprite targetSprite1, targetSprite2;
-        [SerializeField] Text scoreText, scoreTargetText; //, abundanceText;
 
-        public void DisplayScore(float score)
+        // float targetAbundance, abundance;
+        int modelScore, realisedScore;
+        string scoreExplanation = null;
+        public void DisplayScore(float score, string explanation)
         {
             // modelScore = (int)Math.Truncate(score * 100);
             modelScore = (int)(score * 10);
+            scoreExplanation = explanation;
         }
         public void CycleScoreSprite()
         {
@@ -231,6 +227,7 @@ namespace EcoBuilder.UI
             {
                 scoreText.color = Color.green;
                 OnLevelCompletabled?.Invoke();
+                // TODO: setting this should not be here
                 if (!finishDisabled)
                     GameManager.Instance.PlayedLevel.ShowFinishFlag();
             }
@@ -243,16 +240,12 @@ namespace EcoBuilder.UI
             }
             NumStars = newNumStars;
 		}
-        void CompleteLevel()
+        private void CompleteLevel()
         {
             if (NumStars < 1 || NumStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
             // GameManager.Instance.SavePlayedLevel(NumStars, realisedScore);
-
-            help.Show(false);
-            help.SetText(GameManager.Instance.PlayedLevel.Details.congratulation);
-            help.DelayThenShow(2);
 
             GetComponent<Animator>().SetBool("Visible", false);
             star1.SetTrigger("Confetti");
@@ -260,6 +253,11 @@ namespace EcoBuilder.UI
             star3.SetTrigger("Confetti");
 
             OnLevelCompleted.Invoke();
+        }
+
+        public void ToggleReportCard()
+        {
+            print(scoreExplanation);
         }
     }
 }
