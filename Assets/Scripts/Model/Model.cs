@@ -265,6 +265,7 @@ namespace EcoBuilder.Model
         
         public float GetNormalisedAbundance(int idx)
         {
+            TODO: scale this here by total abundance!
             double abundance = simulation.GetSolvedAbundance(idxToSpecies[idx]);
             if (abundance <= 0)
             {

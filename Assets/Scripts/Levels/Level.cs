@@ -25,9 +25,6 @@ namespace EcoBuilder.Levels
             public int minEdges;
             public int minChain;
             public int minLoop;
-            // public int maxEdges;
-            // public int maxChain;
-            // public int maxLoop;
 
             // vertices and edges
             public int numSpecies;

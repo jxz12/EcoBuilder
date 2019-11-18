@@ -7,10 +7,9 @@ namespace EcoBuilder.UI
 {
     public class Help : MonoBehaviour
     {
-        [SerializeField] Text text;
         [SerializeField] VerticalLayoutGroup panelLayout;
         [SerializeField] ContentSizeFitter panelFitter;
-        [SerializeField] Text message;
+        [SerializeField] TMPro.TextMeshProUGUI message;
         [SerializeField] Button hideButton, showButton;
 
         public event Action OnUserShown;
@@ -42,7 +41,7 @@ namespace EcoBuilder.UI
         }
         public void SetText(string toSet)
         {
-            text.text = toSet;
+            message.text = toSet;
             ForceUpdateLayout();
         }
         public void SetDistFromTop(float height, bool damp=true) // 0-1 range
