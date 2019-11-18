@@ -17,6 +17,7 @@ namespace EcoBuilder.NodeLink
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
+        public int DefaultOutline { get; set; } = -1;
 
         GameObject shape;
         cakeslice.Outline outline;
@@ -46,11 +47,11 @@ namespace EcoBuilder.NodeLink
         }
         public void Unoutline()
         {
-            if (Removable)
+            if (DefaultOutline < 0)
                 // outline.eraseRenderer = true;
                 outline.enabled = false;
             else
-                outline.color = 0;
+                outline.color = DefaultOutline;
         }
         bool flashing = false;
         public void Flash(bool isFlashing)

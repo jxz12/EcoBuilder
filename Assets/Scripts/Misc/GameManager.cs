@@ -64,6 +64,7 @@ namespace EcoBuilder
             {
                 SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
                 // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
+                earth.SetTrigger("Grow");
             }
             SavePlayerDetailsLocal();
         }

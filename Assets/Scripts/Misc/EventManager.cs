@@ -9,9 +9,10 @@ namespace EcoBuilder
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
 
+        [SerializeField] UI.MoveRecorder recorder;
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.Score score;
-        [SerializeField] UI.MoveRecorder recorder;
+        [SerializeField] UI.Help help;
 
         void Start()
         {
@@ -33,6 +34,8 @@ namespace EcoBuilder
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
+            inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i);
+            inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
@@ -49,14 +52,11 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledAbundance);
             // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledFlux);
-            model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore);
+            model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore, model.ScoreExplanation());
             model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
 
             score.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             score.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            score.OnLevelCompleted +=      ()=> inspector.Hide();
-            score.OnLevelCompleted +=      ()=> nodelink.Freeze();
-            score.OnLevelCompleted +=      ()=> recorder.Record();
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
@@ -100,15 +100,24 @@ namespace EcoBuilder
 
                 inspector.SetSpeciesRemovable(i, false);
                 nodelink.SetIfNodeRemovable(i, false);
+                nodelink.SetNodeDefaultOutline(i);
             }
             for (int ij=0; ij<level.Details.numInteractions; ij++)
             {
                 int i = level.Details.resources[ij];
                 int j = level.Details.consumers[ij];
+
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
+                nodelink.SetLinkDefaultOutline(i, j);
             }
             nodelink.AddDropShadow(level.Landscape);
+            help.SetText(level.Details.introduction);
+
+            score.OnLevelCompleted += ()=> inspector.Hide();
+            score.OnLevelCompleted += ()=> nodelink.Freeze();
+            score.OnLevelCompleted += ()=> recorder.Record();
+            score.OnLevelCompleted += ()=> help.DelayThenShow(2, level.Details.congratulation);
         }
 
         // perform calculations if necessary
