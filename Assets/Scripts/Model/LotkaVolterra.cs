@@ -92,7 +92,7 @@ namespace EcoBuilder.Model
             if (Richness == 0)
             {
                 TotalAbundance = TotalFlux = 0;
-                return true;
+                return false;
             }
             interaction.Clear();
             negGrowth.Clear();
