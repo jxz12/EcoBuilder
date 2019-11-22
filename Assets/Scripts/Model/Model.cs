@@ -39,6 +39,24 @@ namespace EcoBuilder.Model
         [ReadOnly] [SerializeField]
         double a_min, a_max;  // calculated at runtime
 
+        [ReadOnly] [SerializeField]
+        float minRealAbund = 6e-8f,
+              maxRealAbund = 2f,
+              minRealFlux = 1e-18f,
+              maxRealFlux = 9.2e-7f;
+
+        private float minLogAbund, maxLogAbund,
+                      minLogFlux, maxLogFlux;
+        void InitScales()
+        {
+            minLogAbund = Mathf.Log10(minRealAbund);
+            maxLogAbund = Mathf.Log10(maxRealAbund);
+            minLogFlux = Mathf.Log10(minRealFlux);
+            maxLogFlux = Mathf.Log10(maxRealFlux);
+        }
+
+        ///////////////////////////////////////////////////////////////////
+        // search rate derivations
         class Species
         {
             public int Idx { get; private set; }
@@ -49,16 +67,13 @@ namespace EcoBuilder.Model
             public double Interference { get; set; }
             public double Efficiency { get; set; }
 
-            public double Abundance { get; set; } = 1; // init positive
+            public float NormalisedAbundance { get; set; } = 0; // init positive
 
             public Species(int idx)
             {
                 Idx = idx;
             }
         }
-
-        ///////////////////////////////////////////////////////////////////
-        // search rate derivations
         
         // NOTE: THESE ARE NOT MASS-SPECIFIC, THEY ARE INDIVIDUAL-SPECIFIC
         double ActiveCapture(double m_r, double m_c)
@@ -214,22 +229,56 @@ namespace EcoBuilder.Model
             return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + simulation.TotalAbundance + " = " + (simulation.Richness*simulation.Connectance*simulation.TotalAbundance);
         }
 
+        private float total_NormAbund;
+        private float totalAbund_Norm;
         void TriggerAbundanceEvents()
         {
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)
             {
+
                 Species s = idxToSpecies[i];
-                double newAbundance = simulation.GetSolvedAbundance(s);
-                if (s.Abundance > 0 && newAbundance <= 0)
+                double realAbund = simulation.GetSolvedAbundance(s);
+                float newAbund = -1;
+                if (realAbund <= 0)
+                {
+                    newAbund = -1;
+                }
+                else if (realAbund <= minRealAbund)
+                {
+                    newAbund = 0;
+                    print(i+"-");
+                }
+                else if (realAbund >= maxRealAbund)
+                {
+                    newAbund = 1;
+                    print(i+"+");
+                }
+                else
+                {
+                    newAbund = (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+                }
+
+                if (s.NormalisedAbundance >= 0 && newAbund < 0)
                 {
                     OnEndangered.Invoke(i);
                 }
-                if (s.Abundance <= 0 && newAbundance > 0)
+                if (s.NormalisedAbundance < 0 && newAbund >= 0)
                 {
                     OnRescued.Invoke(i);
                 }
-                s.Abundance = newAbundance;
+                s.NormalisedAbundance = newAbund;
+
+                total_NormAbund += newAbund;
+                totalAbund_Norm += (float)realAbund;
+            }
+            if (totalAbund_Norm <= minRealAbund)
+            {
+                totalAbund_Norm = 0;
+            }
+            else
+            {
+                totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
             }
         }
         static double UnNormaliseOnLogScale(double normalised, double minVal, double maxVal)
@@ -242,97 +291,76 @@ namespace EcoBuilder.Model
             // same as above commented
             return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
         }
-
-        [ReadOnly] [SerializeField]
-        float minScaledAbund = 6e-8f,
-              maxScaledAbund = 2f,
-              minScaledFlux = 1e-18f,
-              maxScaledFlux = 9.2e-7f;
-              // minScaledPlex = 
-              // maxScaledPlex = 
-
-        private float minLogAbund, maxLogAbund,
-                      minLogFlux, maxLogFlux;
-        void InitScales()
-        {
-            minLogAbund = Mathf.Log10(minScaledAbund);
-            maxLogAbund = Mathf.Log10(maxScaledAbund);
-            minLogFlux = Mathf.Log10(minScaledFlux);
-            maxLogFlux = Mathf.Log10(maxScaledFlux);
-            // minLogPlex = 
-            // maxLogPlex = 
-        }
         
         public float GetNormalisedAbundance(int idx)
         {
-            TODO: this
-            double abundance = simulation.GetSolvedAbundance(idxToSpecies[idx]);
-            if (abundance <= 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return (float)(Math.Log10(abundance)-minLogAbund) / (maxLogAbund-minLogAbund);
-            }
+            divide here
+            return idxToSpecies[idx].NormalisedAbundance;
         }
         public float GetNormalisedFlux(int res, int con)
         {
             double flux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
-            if (flux <= 0)
+            if (flux <= minRealFlux)
             {
+                print(res+"-"+con);
                 return 0;
+            }
+            else if (flux >= maxRealFlux)
+            {
+                print(res+"+"+con);
+                return 1;
             }
             else
             {
+                // flux = Mathf.Max(flux, minRealFlux);
                 return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
             }
         }
-        float ScaleAbundScore(double input)
-        {
-            // for flux
-            double normalised = input < maxScaledAbund ?
-                               (Math.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
-                             : input/maxScaledAbund;
+        // float ScaleAbundScore(double input)
+        // {
+        //     // for flux
+        //     double normalised = input < maxScaledAbund ?
+        //                        (Math.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
+        //                      : input/maxScaledAbund;
 
-            return Mathf.Max((float)normalised, 0);
-        }
-        float ScaleFluxScore(double input)
-        {
-            // for flux
-            double normalised = input < maxScaledFlux ?
-                               (Math.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
-                             : input/maxScaledFlux;
+        //     return Mathf.Max((float)normalised, 0);
+        // }
+        // float ScaleFluxScore(double input)
+        // {
+        //     // for flux
+        //     double normalised = input < maxScaledFlux ?
+        //                        (Math.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
+        //                      : input/maxScaledFlux;
 
-            return Mathf.Max((float)normalised, 0);
-        }
-        float ScalePlexScore(double input)
-        {
-            return (float)input;
-            // // for complexity
-            // double normalised = input < maxScaledPlex ?
-            //                    (Math.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
-            //                  : input/maxScaledPlex;
+        //     return Mathf.Max((float)normalised, 0);
+        // }
+        // float ScalePlexScore(double input)
+        // {
+        //     return (float)input;
+        //     // // for complexity
+        //     // double normalised = input < maxScaledPlex ?
+        //     //                    (Math.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
+        //     //                  : input/maxScaledPlex;
             
-            // return Mathf.Max((float)normalised, 0);
-        }
+        //     // return Mathf.Max((float)normalised, 0);
+        // }
 
-        public Tuple<int, float> GetMostComplexSpecies()
-        {
-            return null;
-        }
-        public Tuple<int, float> GetLeastComplexSpecies()
-        {
-            return null;
-        }
-        public Tuple<int, int, float> GetMostComplexLink()
-        {
-            return null;
-        }
-        public Tuple<int, int, float> GetLeastComplexLink()
-        {
-            return null;
-        }
+        // public Tuple<int, float> GetMostComplexSpecies()
+        // {
+        //     return null;
+        // }
+        // public Tuple<int, float> GetLeastComplexSpecies()
+        // {
+        //     return null;
+        // }
+        // public Tuple<int, int, float> GetMostComplexLink()
+        // {
+        //     return null;
+        // }
+        // public Tuple<int, int, float> GetLeastComplexLink()
+        // {
+        //     return null;
+        // }
     }
 
     #if UNITY_EDITOR
