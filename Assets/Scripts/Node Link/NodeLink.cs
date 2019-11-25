@@ -296,5 +296,17 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Unoutline();
         }
+        public void TooltipNode(int idx, string msg)
+        {
+            tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
+            tooltip.ShowText(msg);
+            tooltip.Enable();
+            // frozen = true; // TODO: this might bite me in the ass
+        }
+        public void UntooltipNode(int idx)
+        {
+            tooltip.Disable();
+            // frozen = false;
+        }
     }
 }

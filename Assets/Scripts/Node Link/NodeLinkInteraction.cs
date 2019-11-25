@@ -148,6 +148,7 @@ namespace EcoBuilder.NodeLink
                 // mutual consumption
                 else if (links[focusIdx,no.Idx] != null && links[no.Idx,focusIdx] != null)
                 {
+                    Debug.LogError("Bidirectional Links should be disabled");
                     both.Add(no);
                     no.focusState = Node.FocusState.Focus;
                 }

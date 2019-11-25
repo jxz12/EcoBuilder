@@ -216,6 +216,16 @@ namespace EcoBuilder.UI
         public void AllowConflicts(bool allowed)
         {
             allowConflicts = allowed;
+            if (allowed)
+            {
+                sizeTrait.slider.wholeNumbers = false;
+                greedTrait.slider.wholeNumbers = false;
+            }
+            else
+            {
+                sizeTrait.slider.wholeNumbers = true;
+                greedTrait.slider.wholeNumbers = true;
+            }
         }
         int CheckSizeConflict(float newSize)
         {
@@ -489,7 +499,6 @@ namespace EcoBuilder.UI
                 greedTrait.SetValueWithoutCallback(s.Greediness);
             }
         }
-
         public void Hide()
         {
             if (incubated != null)
@@ -503,6 +512,10 @@ namespace EcoBuilder.UI
                 typesAnim.SetBool("Visible", false);
             }
         }
+
+        //////////////////////////////
+        // stuff for tutorials to use
+
         public void HideSizeSlider(bool hidden=true)
         {
             sizeTrait.Active = !hidden;
@@ -511,19 +524,19 @@ namespace EcoBuilder.UI
         {
             greedTrait.Active = !hidden;
         }
+        public void FixIncubatedSize(float fixedSize)
+        {
+            sizeTrait.FixInitialValue(fixedSize);
+        }
+        public void FixIncubatedGreed(float fixedGreed)
+        {
+            greedTrait.FixInitialValue(fixedGreed);
+        }
+
         bool removeEnabled = true;
         public void HideRemoveButton(bool hidden=true)
         {
             removeEnabled = !hidden;
-        }
-        float initialSizeIfFixed = -1, initialGreedIfFixed = -1;
-        public void FixIncubatedSize(float fixedSize)
-        {
-            initialSizeIfFixed = fixedSize;
-        }
-        public void FixIncubatedGreed(float fixedGreed)
-        {
-            initialGreedIfFixed = fixedGreed;
         }
         public void HidePlantPawButton(bool hidden=true)
         {

@@ -36,6 +36,8 @@ namespace EcoBuilder
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
+            inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
+            inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
@@ -46,13 +48,11 @@ namespace EcoBuilder
             nodelink.OnConstraints +=  ()=> score.DisplayMaxLoop(nodelink.MaxLoop);
 
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
-            model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
+            model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
             model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
-            // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledAbundance);
-            // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledFlux);
             model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore, model.ScoreExplanation());
             model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
 

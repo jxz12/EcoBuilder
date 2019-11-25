@@ -17,7 +17,7 @@ namespace EcoBuilder.UI
 
         float currentValue = -1;
         UnityAction<float> ValueChangedCallback;
-        Slider slider;
+        public Slider slider { get; private set; }
         void Start()
         {
             slider = GetComponent<Slider>();
@@ -26,7 +26,11 @@ namespace EcoBuilder.UI
         }
         public float SetValueFromRandomSeed(int randomSeed)
         {
-            SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
+            if (initialValueIfFixed >= 0)
+                SetValueWithoutCallback(initialValueIfFixed);
+            else
+                SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
+
             return slider.normalizedValue;
         }
         public IEnumerable<float> PossibleValues {
@@ -91,6 +95,14 @@ namespace EcoBuilder.UI
         public void AddExternalConflict(Func<float, int> Rule)
         {
             FindConflict = Rule;
+        }
+        float initialValueIfFixed = -1;
+        public void FixInitialValue(float initialValue)
+        {
+            if (initialValue < 0 || initialValue > 1)
+                throw new Exception("initial value not normalised");
+
+            initialValueIfFixed = initialValue;
         }
     }
 }

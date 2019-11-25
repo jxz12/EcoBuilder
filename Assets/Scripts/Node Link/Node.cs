@@ -114,7 +114,7 @@ namespace EcoBuilder.NodeLink
             else if (focusState == FocusState.Hidden)
             {
                 transform.localPosition =
-                    Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,2),
+                    Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,10),
                                         ref velocity, smoothTime);
             }
         }

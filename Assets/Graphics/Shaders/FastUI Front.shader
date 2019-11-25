@@ -1,11 +1,11 @@
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "UI/Fast-Default-Front"
+Shader "UI/Fast-InFront"
 {
 	Properties
 	{
 		[PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-		_Color ("Tint", Color) = (1,1,1,1)
+		// _Color ("Tint", Color) = (1,1,1,1)
 	}
 
 	SubShader
@@ -50,7 +50,7 @@ Shader "UI/Fast-Default-Front"
 				float4 worldPosition : TEXCOORD1;
 			};
 			
-			fixed4 _Color;
+			// fixed4 _Color;
 			fixed4 _TextureSampleAdd;
 			v2f vert(appdata_t IN)
 			{
@@ -64,7 +64,7 @@ Shader "UI/Fast-Default-Front"
 				OUT.vertex.xy += (_ScreenParams.zw-1.0)*float2(-1,1);
 				#endif
 				
-				OUT.color = IN.color * _Color;
+				OUT.color = IN.color;// * _Color;
 				return OUT;
 			}
 

@@ -75,7 +75,7 @@ namespace EcoBuilder.NodeLink
             mf.mesh.RecalculateNormals();
         }
         public float TargetHealth { get; set; }
-        float health = .5f;
+        float health = 0;
         public void TweenHealth(float healthTween)
         {
             health = Mathf.Lerp(health, TargetHealth, healthTween);
