@@ -40,10 +40,10 @@ namespace EcoBuilder.Model
         double a_min, a_max;  // calculated at runtime
 
         [ReadOnly] [SerializeField]
-        float minRealAbund = 6e-8f,
+        float minRealAbund = 2e-10f,
               maxRealAbund = 2f,
-              minRealFlux = 1e-18f,
-              maxRealFlux = 9.2e-7f;
+              minRealFlux = 1e-16f,
+              maxRealFlux = 1e-6f;
 
         private float minLogAbund, maxLogAbund,
                       minLogFlux, maxLogFlux;
@@ -196,11 +196,11 @@ namespace EcoBuilder.Model
 
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
-        // public bool Nonreactive { get; private set; } = false;
 
-        public float NormalisedScore { get { return CalculateScore(); } }
+        public float NormalisedScore { get; private set; }
         public bool IsCalculating { get; private set; } = false;
 
+                                           // required because this class does not store adjacency
         public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
             IsCalculating = true;
@@ -208,11 +208,9 @@ namespace EcoBuilder.Model
 
             Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
             Stable = await Task.Run(()=> simulation.SolveStability());
-            // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
-
-            print(simulation.TotalFlux + " " + simulation.TotalAbundance);
 
             TriggerAbundanceEvents();
+            CalculateScore();
             IsCalculating = false;
             OnEquilibrium.Invoke();
         }
@@ -222,17 +220,19 @@ namespace EcoBuilder.Model
 
             Feasible = simulation.SolveFeasibility(map);
             Stable = simulation.SolveStability();
-            // Nonreactive = simulation.SolveReactivity();
 
             TriggerAbundanceEvents();
+            CalculateScore();
             OnEquilibrium.Invoke();
         }
 
-        float CalculateScore()
+        private void CalculateScore()
         {
-            return (float)(simulation.Richness *
-                            simulation.Connectance *
-                            simulation.TotalAbundance);
+            // print(simulation.TotalFlux + " " + simulation.TotalAbundance);
+            NormalisedScore = (float)(simulation.Richness *
+                                      simulation.Connectance *
+                                    //   simulation.TotalAbundance) * 100;
+                                      totalAbund_Norm) * 100;
         }
         public string ScoreExplanation()
         {
@@ -253,122 +253,51 @@ namespace EcoBuilder.Model
 
                 float newAbund;
                 if (realAbund <= 0)
-                {
                     newAbund = -1;
-                }
                 else if (realAbund <= minRealAbund)
-                {
                     newAbund = 0;
-                }
                 else if (realAbund >= maxRealAbund)
-                {
                     newAbund = 1;
-                }
                 else
-                {
                     newAbund = (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
-                }
 
                 if (s.NormalisedAbundance >= 0 && newAbund < 0)
-                {
                     OnEndangered.Invoke(i);
-                }
                 if (s.NormalisedAbundance < 0 && newAbund >= 0)
-                {
                     OnRescued.Invoke(i);
-                }
+
                 s.NormalisedAbundance = newAbund;
 
-                if (newAbund >= 0)
-                {
-                    total_NormAbund += newAbund;
-                }
                 totalAbund_Norm += (float)realAbund;
+                if (newAbund >= 0)
+                    total_NormAbund += newAbund;
             }
 
             if (total_NormAbund == 0)
-            {
-                total_NormAbund = 1; // prevent NaN problems in GetNormalisedAbundance
-            }
+                total_NormAbund = 1; // to prevent NaN problems in GetNormalisedAbundance
 
             if (totalAbund_Norm <= minRealAbund)
-            {
                 totalAbund_Norm = 0;
-            }
             else
-            {
                 totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
-            }
+            // print(totalAbund_Norm+" "+total_NormAbund);
         }
         public float GetNormalisedAbundance(int idx)
         {
-                    // calculate proportion first                            multiply by total
+                   // calculate proportion first                            multiply by total
             return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
+            // this is so that total green in health bars adds up to the score
         }
         public float GetNormalisedFlux(int res, int con)
         {
             double flux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
             if (flux <= minRealFlux)
-            {
-                // print(res+"-"+con);
                 return 0;
-            }
             else if (flux >= maxRealFlux)
-            {
-                // print(res+"+"+con);
                 return 1;
-            }
             else
-            {
-                // flux = Mathf.Max(flux, minRealFlux);
                 return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
-            }
         }
-        // float ScaleAbundScore(double input)
-        // {
-        //     // for flux
-        //     double normalised = input < maxScaledAbund ?
-        //                        (Math.Log10(input)-minLogAbund) / (maxLogFlux-minLogFlux)
-        //                      : input/maxScaledAbund;
-
-        //     return Mathf.Max((float)normalised, 0);
-        // }
-        // float ScaleFluxScore(double input)
-        // {
-        //     // for flux
-        //     double normalised = input < maxScaledFlux ?
-        //                        (Math.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
-        //                      : input/maxScaledFlux;
-
-        //     return Mathf.Max((float)normalised, 0);
-        // }
-        // float ScalePlexScore(double input)
-        // {
-        //     return (float)input;
-        //     // // for complexity
-        //     // double normalised = input < maxScaledPlex ?
-        //     //                    (Math.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
-        //     //                  : input/maxScaledPlex;
-            
-        //     // return Mathf.Max((float)normalised, 0);
-        // }
-
-        // public Tuple<int, float> GetMostComplexSpecies()
-        // {
-        //     return null;
-        // }
-        // public Tuple<int, float> GetLeastComplexSpecies()
-        // {
-        //     return null;
-        // }
-        // public Tuple<int, int, float> GetMostComplexLink()
-        // {
-        //     return null;
-        // }
-        // public Tuple<int, int, float> GetLeastComplexLink()
-        // {
-        //     return null;
-        // }
     }
 
     #if UNITY_EDITOR

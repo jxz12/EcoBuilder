@@ -68,19 +68,6 @@ namespace EcoBuilder.UI
         {
             CanUpdate = Allowed;
         }
-        public void HideScore(bool hidden=true)
-        {
-            gameObject.SetActive(!hidden);
-        }
-        public void HideConstraints(bool hidden=true)
-        {
-            constraints.gameObject.SetActive(!hidden);
-        }
-        bool finishDisabled = false;
-        public void DisableFinish(bool disabled=true)
-        {
-            finishDisabled = disabled;
-        }
 
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
@@ -156,7 +143,7 @@ namespace EcoBuilder.UI
         public void DisplayScore(float score, string explanation)
         {
             // modelScore = (int)Math.Truncate(score * 100);
-            modelScore = (int)(score * 10);
+            modelScore = (int)score;
             report.SetMessage(explanation);
         }
         public void CycleScoreSprite()
@@ -220,7 +207,7 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
 
-            // don't calculate 
+            // don't calculate if other objects are busy
             if (!CanUpdate())
                 return;
 
@@ -251,6 +238,22 @@ namespace EcoBuilder.UI
             star3.SetTrigger("Confetti");
 
             OnLevelCompleted.Invoke();
+        }
+
+        ///////////////////////
+        // stuff for tutorials
+        public void HideScore(bool hidden=true)
+        {
+            gameObject.SetActive(!hidden);
+        }
+        public void HideConstraints(bool hidden=true)
+        {
+            constraints.gameObject.SetActive(!hidden);
+        }
+        bool finishDisabled = false;
+        public void DisableFinish(bool disabled=true)
+        {
+            finishDisabled = disabled;
         }
     }
 }

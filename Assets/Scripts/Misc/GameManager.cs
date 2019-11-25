@@ -64,9 +64,10 @@ namespace EcoBuilder
             {
                 SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
                 // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
-                earth.SetTrigger("Grow");
+                // earth.SetTrigger("Grow");
             }
             SavePlayerDetailsLocal();
+            earth.SetTrigger("Grow");
         }
 
 
@@ -149,7 +150,11 @@ namespace EcoBuilder
         public void Quit()
         {
             // TODO: send data if possible
-            Application.Quit();
+            #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+            #else
+                Application.Quit();
+            #endif
         }
         public void ResetSaveData()
         {
