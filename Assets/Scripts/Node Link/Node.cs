@@ -8,7 +8,7 @@ namespace EcoBuilder.NodeLink
     {
         public int Idx { get; private set; }
         public Color Col {
-            get { return shape!=null&&shape.GetComponent<MeshRenderer>()!=null? shape.GetComponent<MeshRenderer>().material.color : Color.black; }
+            get { return shapeRenderer!=null? shapeRenderer.material.color : Color.black; }
         }
         public enum FocusState { Normal, Focus, Hidden }
         public FocusState focusState { get; set; } = FocusState.Normal;
@@ -20,12 +20,15 @@ namespace EcoBuilder.NodeLink
         public int DefaultOutline { get; set; } = -1;
 
         GameObject shape;
-        cakeslice.Outline outline;
+        MeshRenderer shapeRenderer;
+        HealthBar healthBar;
+        cakeslice.Outline outlineHealth, outlineShape;
 
         public void Init(int idx)
         {
             Idx = idx;
             name = idx.ToString();
+            outlineHealth = gameObject.AddComponent<cakeslice.Outline>();
         }
 
         public void Shape(GameObject shapeObject)
@@ -33,7 +36,8 @@ namespace EcoBuilder.NodeLink
             // drop it in at the point at shapeObject's position
             transform.position = shapeObject.transform.position;
             shape = shapeObject;
-            outline = shape.AddComponent<cakeslice.Outline>();
+            shapeRenderer = shape.GetComponent<MeshRenderer>();
+            outlineShape = shape.AddComponent<cakeslice.Outline>();
 
             shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
@@ -42,16 +46,23 @@ namespace EcoBuilder.NodeLink
         public void Outline(int colourIdx)
         {
             // outline.eraseRenderer = false;
-            outline.enabled = true;
-            outline.color = colourIdx;
+            outlineShape.enabled = true;
+            outlineShape.color = colourIdx;
+            outlineHealth.enabled = true;
+            outlineHealth.color = colourIdx;
         }
         public void Unoutline()
         {
             if (DefaultOutline < 0)
-                // outline.eraseRenderer = true;
-                outline.enabled = false;
+            {
+                outlineShape.enabled = false;
+                outlineHealth.enabled = false;
+            }
             else
-                outline.color = DefaultOutline;
+            {
+                outlineShape.color = DefaultOutline;
+                outlineHealth.color = DefaultOutline;
+            }
         }
         bool flashing = false;
         public void Flash(bool isFlashing)
@@ -69,7 +80,7 @@ namespace EcoBuilder.NodeLink
                 {
                     if (enabled)
                     {
-                        shape.GetComponent<MeshRenderer>().enabled = false;
+                        shapeRenderer.enabled = false;
                         enabled = false;
                     }
                 }
@@ -77,13 +88,13 @@ namespace EcoBuilder.NodeLink
                 {
                     if (!enabled)
                     {
-                        shape.GetComponent<MeshRenderer>().enabled = true;
+                        shapeRenderer.enabled = true;
                         enabled = true;
                     }
                 }
                 yield return null;
             }
-            shape.GetComponent<MeshRenderer>().enabled = true;
+            shapeRenderer.enabled = true;
         }
         Vector3 velocity; // for use with smoothdamp
         public void TweenPos(float smoothTime)

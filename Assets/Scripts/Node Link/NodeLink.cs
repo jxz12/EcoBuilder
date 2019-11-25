@@ -21,6 +21,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent;
+        [SerializeField] Effect heartPrefab, skullPrefab;
 
         // [SerializeField] float etaMax, etaDecay; // this causes wobbling...
         // int etaIteration = 0;
@@ -56,7 +57,7 @@ namespace EcoBuilder.NodeLink
             if (doLayout)
                 TweenNodes();
             if (!Input.anyKey && Input.touchCount==0)
-                RotateWithMomentum();
+                MomentumRotate();
         }
 
 

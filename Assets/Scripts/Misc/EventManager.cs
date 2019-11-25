@@ -27,7 +27,7 @@ namespace EcoBuilder
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=       (i)=> score.RemoveIdx(i);
-            inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
+            inspector.OnShaped +=        (i,g)=> { nodelink.ShapeNode(i,g); nodelink.FlashNode(i); }; // init as extinct
             inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
             inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
             inspector.OnIsProducerSet += (i,x)=> score.AddType(i,x);
@@ -45,9 +45,8 @@ namespace EcoBuilder
             nodelink.OnConstraints +=  ()=> score.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=  ()=> score.DisplayMaxLoop(nodelink.MaxLoop);
 
-            model.OnEndangered += (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
-            // model.OnEquilibrium += ()=> nodelink.ResizeNodes(i=> model.GetScaledAbundance(i));
+            model.OnEndangered += (i)=> { nodelink.FlashNode(i); nodelink.SkullEffectNode(i); };
+            model.OnRescued +=    (i)=> { nodelink.UnflashNode(i); nodelink.HeartEffectNode(i); };
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledAbundance);
