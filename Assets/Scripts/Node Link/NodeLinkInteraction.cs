@@ -275,6 +275,14 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Flash(false);
         }
+        public void SkullEffectNode(int idx)
+        {
+            Instantiate(skullPrefab, nodes[idx].transform);
+        }
+        public void HeartEffectNode(int idx)
+        {
+            Instantiate(heartPrefab, nodes[idx].transform);
+        }
 
         void Zoom(float amount)
         {
@@ -303,7 +311,7 @@ namespace EcoBuilder.NodeLink
         }
 
         float yRotation = 0, yRotationMomentum = 0;
-        void Rotate(Vector2 delta)
+        void UserRotate(Vector2 delta)
         {
             var amount = delta / (Screen.dpi==0? 72:Screen.dpi);
             float ySpin = -amount.x * rotationMultiplier;
@@ -348,7 +356,7 @@ namespace EcoBuilder.NodeLink
             }
 
         }
-        private void RotateWithMomentum()
+        private void MomentumRotate()
         {
             if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperAntifocus)
             {
@@ -571,9 +579,9 @@ namespace EcoBuilder.NodeLink
             {
                 // Rotate the whole graph accordingly
                 if (ped.pointerId == -1)
-                    Rotate(ped.delta);
+                    UserRotate(ped.delta);
                 else if (Input.touchCount == 1)
-                    Rotate(ped.delta);
+                    UserRotate(ped.delta);
             }
             if (Input.touchCount == 2) // if pinch/pan
             {
@@ -630,7 +638,7 @@ namespace EcoBuilder.NodeLink
         public void OnScroll(PointerEventData ped)
         {
             Zoom(ped.scrollDelta.y);
-            Rotate(new Vector3(ped.scrollDelta.x, 0));
+            UserRotate(new Vector3(ped.scrollDelta.x, 0));
         }
         // OnDrop gets called before OnEndDrag
         public void OnDrop(PointerEventData ped)

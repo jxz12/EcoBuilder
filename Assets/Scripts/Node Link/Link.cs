@@ -121,17 +121,12 @@ namespace EcoBuilder.NodeLink
             lr.widthMultiplier = width;
 
             float height = (Source.transform.position - Target.transform.position).magnitude;
-            // lr.material.SetFloat("_Spacing", height/numBalls - width);
             lr.material.SetFloat("_Spacing", height/(width*numBalls) - 1);
             lr.material.SetFloat("_RepeatCount", numBalls);
 
             Color c = Target.Col;
-            // if (!Removable)
-            //     c.b = 1;
             lr.startColor = c;
             c = Source.Col;
-            // if (!Removable)
-            //     c.b = 1;
             lr.endColor = c;
         }
 

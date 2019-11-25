@@ -67,7 +67,7 @@ namespace EcoBuilder.Model
             public double Interference { get; set; }
             public double Efficiency { get; set; }
 
-            public float NormalisedAbundance { get; set; } = 0; // init positive
+            public float NormalisedAbundance { get; set; } = -1; // init positive
 
             public Species(int idx)
             {
@@ -177,6 +177,16 @@ namespace EcoBuilder.Model
         {
             idxToSpecies[idx].Interference = -UnNormaliseOnLogScale(greedNormalised, a_min, a_max);
         }
+        static double UnNormaliseOnLogScale(double normalised, double minVal, double maxVal)
+        {
+            // float min = Mathf.Log10(minVal);
+            // float max = Mathf.Log10(maxVal);
+            // float mid = min + normalised*(max-min);
+            // return Mathf.Pow(10, mid);
+
+            // same as above commented
+            return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
+        }
 
 
 
@@ -233,13 +243,15 @@ namespace EcoBuilder.Model
         private float totalAbund_Norm;
         void TriggerAbundanceEvents()
         {
+            total_NormAbund = totalAbund_Norm = 0;
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)
             {
 
                 Species s = idxToSpecies[i];
                 double realAbund = simulation.GetSolvedAbundance(s);
-                float newAbund = -1;
+
+                float newAbund;
                 if (realAbund <= 0)
                 {
                     newAbund = -1;
@@ -269,8 +281,16 @@ namespace EcoBuilder.Model
                 }
                 s.NormalisedAbundance = newAbund;
 
-                total_NormAbund += newAbund;
+                if (newAbund >= 0)
+                {
+                    total_NormAbund += newAbund;
+                }
                 totalAbund_Norm += (float)realAbund;
+            }
+
+            if (total_NormAbund == 0)
+            {
+                total_NormAbund = 1; // prevent NaN problems in GetNormalisedAbundance
             }
             if (totalAbund_Norm <= minRealAbund)
             {
@@ -281,33 +301,23 @@ namespace EcoBuilder.Model
                 totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
             }
         }
-        static double UnNormaliseOnLogScale(double normalised, double minVal, double maxVal)
-        {
-            // float min = Mathf.Log10(minVal);
-            // float max = Mathf.Log10(maxVal);
-            // float mid = min + normalised*(max-min);
-            // return Mathf.Pow(10, mid);
-
-            // same as above commented
-            return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
-        }
         
         public float GetNormalisedAbundance(int idx)
         {
-            divide here
-            return idxToSpecies[idx].NormalisedAbundance;
+                    // calculate proportion first                            multiply by total
+            return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
         }
         public float GetNormalisedFlux(int res, int con)
         {
             double flux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
             if (flux <= minRealFlux)
             {
-                print(res+"-"+con);
+                // print(res+"-"+con);
                 return 0;
             }
             else if (flux >= maxRealFlux)
             {
-                print(res+"+"+con);
+                // print(res+"+"+con);
                 return 1;
             }
             else
