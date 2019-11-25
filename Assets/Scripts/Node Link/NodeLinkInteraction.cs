@@ -596,6 +596,7 @@ namespace EcoBuilder.NodeLink
             if (ped.pointerId == -3) // or middle click
             {
                 // Pan(ped.delta);
+                Zoom(ped.delta.y);
             }
         }
         public void OnEndDrag(PointerEventData ped)
