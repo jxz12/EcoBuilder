@@ -259,12 +259,10 @@ namespace EcoBuilder.Model
                 else if (realAbund <= minRealAbund)
                 {
                     newAbund = 0;
-                    print(i+"-");
                 }
                 else if (realAbund >= maxRealAbund)
                 {
                     newAbund = 1;
-                    print(i+"+");
                 }
                 else
                 {
@@ -292,6 +290,7 @@ namespace EcoBuilder.Model
             {
                 total_NormAbund = 1; // prevent NaN problems in GetNormalisedAbundance
             }
+
             if (totalAbund_Norm <= minRealAbund)
             {
                 totalAbund_Norm = 0;
@@ -301,7 +300,6 @@ namespace EcoBuilder.Model
                 totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
             }
         }
-        
         public float GetNormalisedAbundance(int idx)
         {
                     // calculate proportion first                            multiply by total

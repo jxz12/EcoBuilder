@@ -196,10 +196,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nodelink: {fileID: 1082250983}
   model: {fileID: 26841758}
-  recorder: {fileID: 87083486}
   inspector: {fileID: 1168393887}
+  recorder: {fileID: 87083486}
   score: {fileID: 397998382}
-  help: {fileID: 0}
+  help: {fileID: 1699568495}
 --- !u!1 &87083483
 GameObject:
   m_ObjectHideFlags: 0
@@ -216,7 +216,7 @@ GameObject:
   - component: {fileID: 87083486}
   - component: {fileID: 87083485}
   m_Layer: 0
-  m_Name: Undo
+  m_Name: Recorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6114,6 +6114,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Animal_Generator
+      objectReference: {fileID: 0}
+    - target: {fileID: 2075217385111946362, guid: 936548de6ee50422892e006738b406d9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2075217385111946363, guid: 936548de6ee50422892e006738b406d9,
         type: 3}

@@ -9,8 +9,8 @@ namespace EcoBuilder
         [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
 
-        [SerializeField] UI.MoveRecorder recorder;
         [SerializeField] UI.Inspector inspector;
+        [SerializeField] UI.MoveRecorder recorder;
         [SerializeField] UI.Score score;
         [SerializeField] UI.Help help;
 
@@ -45,8 +45,10 @@ namespace EcoBuilder
             nodelink.OnConstraints +=  ()=> score.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=  ()=> score.DisplayMaxLoop(nodelink.MaxLoop);
 
-            model.OnEndangered += (i)=> { nodelink.FlashNode(i); nodelink.SkullEffectNode(i); };
-            model.OnRescued +=    (i)=> { nodelink.UnflashNode(i); nodelink.HeartEffectNode(i); };
+            model.OnEndangered += (i)=> nodelink.FlashNode(i);
+            model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
+            model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
+            model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             // model.OnEquilibrium += ()=> score.DisplayScore(model.ScaledAbundance);
