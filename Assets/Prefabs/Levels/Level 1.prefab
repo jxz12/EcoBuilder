@@ -233,6 +233,12 @@ PrefabInstance:
       propertyPath: details.numStars
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: nextLevel
+      value: 
+      objectReference: {fileID: 7136175409206580721, guid: c52b7a4c873c8ca489c2166a6679fb81,
+        type: 3}
     - target: {fileID: 7152265202980475453, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_firstOverflowCharacterIndex

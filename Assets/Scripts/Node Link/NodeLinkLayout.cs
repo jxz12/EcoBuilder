@@ -17,7 +17,7 @@ namespace EcoBuilder.NodeLink
             {
                 // get average of all positions, and center
                 Vector3 centroid;
-                if (focusState == FocusState.Unfocus)
+                if (focusState != FocusState.Focus)
                 {
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
