@@ -64,7 +64,7 @@ namespace EcoBuilder
             {
                 SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
                 // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
-                earth.SetTrigger("Grow");
+                earth.Grow();
             }
             SavePlayerDetailsLocal();
         }
@@ -219,7 +219,7 @@ namespace EcoBuilder
 
         [SerializeField] Canvas canvas;
         [SerializeField] RectTransform cardParent, playParent, navParent;
-        [SerializeField] Animator earth;
+        [SerializeField] UI.Earth earth;
         public RectTransform CardParent { get { return cardParent; } }
         public RectTransform PlayParent { get { return playParent; } }
         public RectTransform NavParent { get { return navParent; } }
@@ -258,7 +258,7 @@ namespace EcoBuilder
             {
                 Teacher = Instantiate(toPlay.Tutorial, canvas.transform);
             }
-            earth.SetTrigger("Shrink");
+            earth.Shrink();
         }
         // This is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level, but that is not possible
@@ -322,7 +322,7 @@ namespace EcoBuilder
             }
             // UnloadSceneThenLoadAnother("Play", "Menu");
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
-            earth.SetTrigger("Grow");
+            earth.Grow();
         }
     }
 }

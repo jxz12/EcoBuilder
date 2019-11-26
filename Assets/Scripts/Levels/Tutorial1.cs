@@ -114,7 +114,7 @@ namespace EcoBuilder.Levels
             inspector.Uninspect();
             nodelink.FullUnfocus();
 
-            StartCoroutine(WaitThenDo(wait?2:0, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the exact same dragging action, from the animal to the plant."); }));
+            StartCoroutine(WaitThenDo(wait?2:0, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."); }));
 
             Detach();
             Action<int,int> foo = (i,j)=> ExplainRemove1(1);
