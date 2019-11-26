@@ -20,7 +20,7 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        [SerializeField] Transform graphParent, nodesParent, linksParent;
+        [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
         [SerializeField] Effect heartPrefab, skullPrefab;
 
         // [SerializeField] float etaMax, etaDecay; // this causes wobbling...
@@ -32,8 +32,7 @@ namespace EcoBuilder.NodeLink
             // do stress SGD
             if (nodes.Count > 0)
             {
-                if (focusState != FocusState.SuperFocus &&
-                    focusState != FocusState.SuperAntifocus)
+                if (focusState != FocusState.SuperFocus)
                 {
                     int dq = toBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(dq);
@@ -247,7 +246,7 @@ namespace EcoBuilder.NodeLink
             {
                 float health = healths(no.Idx);
                 health = Mathf.Max(Mathf.Min(health, 1), 0);
-                no.GetComponent<HealthBar>().TargetHealth = health;
+                no.SetHealth(health);
             }
         }
         [SerializeField] float minLinkFlow, maxLinkFlow;
@@ -267,46 +266,6 @@ namespace EcoBuilder.NodeLink
                     li.TileSpeed = minLinkFlow;
                 }
             }
-        }
-        // adds a gameobject to the point (0,-1,0)
-        // like the jump shadow in mario bros.
-        public void AddDropShadow(GameObject shadowPrefab)
-        {
-            if (shadowPrefab == null)
-                return;
-
-            var shadow = Instantiate(shadowPrefab);
-            shadow.transform.SetParent(nodesParent, false);
-            shadow.transform.localPosition = Vector3.down * 1f;
-            shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
-        }
-        public void SetNodeDefaultOutline(int idx, int colourIdx=0)
-        {
-            nodes[idx].DefaultOutline = colourIdx;
-        }
-        public void SetLinkDefaultOutline(int source, int target, int colourIdx=0)
-        {
-            links[source, target].DefaultOutline = colourIdx;
-        }
-        public void OutlineNode(int idx, int colourIdx=4)
-        {
-            nodes[idx].Outline(colourIdx);
-        }
-        public void UnoutlineNode(int idx)
-        {
-            nodes[idx].Unoutline();
-        }
-        public void TooltipNode(int idx, string msg)
-        {
-            tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
-            tooltip.ShowText(msg);
-            tooltip.Enable();
-            // frozen = true; // TODO: this might bite me in the ass
-        }
-        public void UntooltipNode(int idx)
-        {
-            tooltip.Disable();
-            // frozen = false;
         }
     }
 }

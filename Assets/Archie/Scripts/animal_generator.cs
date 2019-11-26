@@ -60,6 +60,7 @@ namespace EcoBuilder.Archie{
             animal.name = adjectives[d0] + " " + nounsConsumer[d1][d2];
             // assign mesh
             animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.999f * Consumer_Meshs.Length)];
+            // animal.transform.localScale = (.4f + .2f*bodySize) * Vector3.one;
 
             // generate texture and material
             // var yuv = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
@@ -83,6 +84,7 @@ namespace EcoBuilder.Archie{
             plant.name = adjectives[d0] + " " + nounsProducer[d1][d2];
             // assign mesh
             plant.GetComponent<MeshFilter>().mesh = Producer_Meshs[(int)(bodySize*.999f * Producer_Meshs.Length)];
+            // plant.transform.localScale = (.4f + .2f*bodySize) * Vector3.one;
 
             // generate texture and material
             // var yuv = new Vector3(.7f-.7f*bodySize, -.4f, .8f*greediness-.4f);
