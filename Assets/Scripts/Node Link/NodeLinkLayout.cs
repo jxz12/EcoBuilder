@@ -13,11 +13,10 @@ namespace EcoBuilder.NodeLink
         Vector3 rotationCenter;
         void TweenNodes()
         {
-            if (focusState != FocusState.SuperFocus && focusState != FocusState.SuperAntifocus)
+            if (focusState != FocusState.SuperFocus)
             {
                 // get average of all positions, and center
                 Vector3 centroid;
-
                 if (focusState == FocusState.Unfocus)
                 {
                     centroid = Vector3.zero;

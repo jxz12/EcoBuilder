@@ -10,25 +10,31 @@ namespace EcoBuilder.NodeLink
         public Color Col {
             get { return shapeRenderer!=null? shapeRenderer.material.color : Color.black; }
         }
-        public enum FocusState { Normal, Focus, Hidden }
-        public FocusState focusState { get; set; } = FocusState.Normal;
+        public enum PositionState { Stress, Focus }
+        public PositionState State { get; set; } = PositionState.Stress;
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
+
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
-        public int DefaultOutline { get; set; } = -1;
 
         GameObject shape;
         MeshRenderer shapeRenderer;
         HealthBar healthBar;
-        cakeslice.Outline outlineHealth, outlineShape;
 
+        public int DefaultOutline { get; set; } = -1;
+        cakeslice.Outline outlineHealth, outlineShape; // TODO: may be slow to have 2 of these
+
+        void Awake()
+        {
+            healthBar = GetComponent<HealthBar>();
+            outlineHealth = gameObject.AddComponent<cakeslice.Outline>();
+        }
         public void Init(int idx)
         {
             Idx = idx;
             name = idx.ToString();
-            outlineHealth = gameObject.AddComponent<cakeslice.Outline>();
         }
 
         public void Shape(GameObject shapeObject)
@@ -64,19 +70,36 @@ namespace EcoBuilder.NodeLink
                 outlineHealth.color = DefaultOutline;
             }
         }
-        bool flashing = false;
+        public void SetHealth(float health)
+        {
+            healthBar.TargetHealth = health;
+        }
+        public void SetNewParent(Transform newParent)
+        {
+            transform.SetParent(newParent, true);
+            transform.localRotation = Quaternion.identity;
+        }
+
+        IEnumerator flashRoutine;
         public void Flash(bool isFlashing)
         {
-            flashing = isFlashing;
-            StartCoroutine(Flash(1f));
+            if (flashRoutine != null)
+            {
+                StopCoroutine(flashRoutine);
+                flashRoutine = null;
+                shapeRenderer.enabled = true;
+            }
+
+            if (isFlashing)
+                StartCoroutine(flashRoutine = Flash(1f));
         }
-        IEnumerator Flash(float time)
+        IEnumerator Flash(float period)
         {
             bool enabled = true;
             float start = Time.time;
-            while (flashing)
+            while (true)
             {
-                if ((Time.time-start) % time < time/2)
+                if ((Time.time-start) % period < period/2)
                 {
                     if (enabled)
                     {
@@ -94,28 +117,54 @@ namespace EcoBuilder.NodeLink
                 }
                 yield return null;
             }
-            shapeRenderer.enabled = true;
+        }
+        float defaultSize = .5f; // TODO:
+        IEnumerator bounceRoutine;
+        public void Bounce()
+        {
+            if (bounceRoutine != null)
+            {
+                StopCoroutine(bounceRoutine);
+                // transform.localScale = Vector3.one;
+            }
+
+            StartCoroutine(bounceRoutine = Bounce(.5f, .1f));
+        }
+        IEnumerator Bounce(float length, float magnitude)
+        {
+            float startTime = Time.time;
+            while (Time.time < startTime+length)
+            {
+                float t = (Time.time-startTime) / length;
+                // float t1 = t-1;
+                // transform.localScale = (.5f + magnitude*(4*Mathf.Sqrt(t) * -(t1*t1*t1))) * Vector3.one;
+                transform.localScale = (defaultSize + magnitude*(4*Mathf.Sqrt(t) * -Mathf.Pow(t-1,3))) * Vector3.one;
+                yield return null;
+            }
+            bounceRoutine = null;
         }
         Vector3 velocity; // for use with smoothdamp
+        Vector3 sizocity; // for use with smoothdamp
         public void TweenPos(float smoothTime)
         {
-            if (focusState == FocusState.Normal)
+            if (State == PositionState.Stress)
             {
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, StressPos,
                                         ref velocity, smoothTime);
             }
-            else if (focusState == FocusState.Focus)
+            else //(State == FocusState.Focus)
             {
                 transform.localPosition =
                     Vector3.SmoothDamp(transform.localPosition, FocusPos,
                                         ref velocity, smoothTime);
             }
-            else if (focusState == FocusState.Hidden)
+
+            if (bounceRoutine == null)
             {
-                transform.localPosition =
-                    Vector3.SmoothDamp(transform.localPosition, StressPos + new Vector3(0,0,10),
-                                        ref velocity, smoothTime);
+                transform.localScale =
+                    Vector3.SmoothDamp(transform.localScale, defaultSize*Vector3.one,
+                                       ref sizocity, smoothTime);
             }
         }
         // public void TweenSize(float sizeTween)

@@ -17,13 +17,13 @@ namespace EcoBuilder.UI
         RectTransform rt;
         Vector2 targetPos, targetAnchor;
         Vector2 velocity, anchosity;
-        Vector2 canvasRefRes; // TODO: move this back into pixels lol
+        Rect canvasRect;
         void Awake()
         {
             rt = GetComponent<RectTransform>();
             targetPos = rt.anchoredPosition;
             targetAnchor = rt.anchorMin;
-            canvasRefRes = GetComponentInParent<Canvas>().GetComponent<RectTransform>().sizeDelta;
+            canvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect;
         }
         void Start()
         {
@@ -44,20 +44,20 @@ namespace EcoBuilder.UI
             message.text = toSet;
             ForceUpdateLayout();
         }
-        public void SetDistFromTop(float height, bool damp=true) // 0-1 range
+        public void SetDistFromTop(float normalisedHeight, bool damp=true) // 0-1 range
         {
-            targetPos.y = canvasRefRes.y * -height;
+            targetPos.y = canvasRect.height * -normalisedHeight;
             // rt.anchorMin = rt.anchorMax = 
             if (!damp)
             {
                 rt.anchoredPosition = targetPos;
             }
         }
-        public void SetWidth(float width)
+        public void SetWidth(float normalisedWidth)
         {
             // float x = isLeft? -canvasRefRes.x*width : canvasRefRes.x*width;
             float prevWidth = rt.sizeDelta.x;
-            float newWidth = canvasRefRes.x * width;
+            float newWidth = canvasRect.width * normalisedWidth;
             targetPos.x *= newWidth / prevWidth;
             rt.sizeDelta = new Vector2(newWidth, rt.sizeDelta.y);
 

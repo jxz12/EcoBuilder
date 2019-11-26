@@ -35,7 +35,7 @@ namespace EcoBuilder
 
         void Start()
         {
-            // TODO: set this to the size of the screen
+            // TODO: set this to the size of the screen for webgl
             // Screen.SetResolution(576, 1024, false);
             // #if !UNITY_WEBGL
             //     Screen.fullScreen = true;
@@ -64,10 +64,9 @@ namespace EcoBuilder
             {
                 SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
                 // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
-                // earth.SetTrigger("Grow");
+                earth.SetTrigger("Grow");
             }
             SavePlayerDetailsLocal();
-            earth.SetTrigger("Grow");
         }
 
 

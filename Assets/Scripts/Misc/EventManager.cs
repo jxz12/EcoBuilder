@@ -35,8 +35,8 @@ namespace EcoBuilder
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i);
-            inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
+            inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
@@ -47,14 +47,15 @@ namespace EcoBuilder
             nodelink.OnConstraints +=  ()=> score.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=  ()=> score.DisplayMaxLoop(nodelink.MaxLoop);
 
-            model.OnEndangered += (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
-            model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
-            model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore, model.ScoreExplanation());
             model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
+            model.OnEndangered += (i)=> nodelink.FlashNode(i);
+            model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
+            model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
+            model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
+            model.OnRescued +=    (i)=> nodelink.BounceNode(i);
 
             score.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             score.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
@@ -85,9 +86,14 @@ namespace EcoBuilder
                                        graphSolved &&
                                        !nodelink.IsCalculating); 
 
+            /////////////////////
+            // initialise level
+
             var level = GameManager.Instance.PlayedLevel;
             if (level == null)
-                return; // only for testing, should never happen in the wild
+            {
+                return; // should never happen in real game
+            }
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -120,6 +126,7 @@ namespace EcoBuilder
             score.OnLevelCompleted += ()=> recorder.Record();
             score.OnLevelCompleted += ()=> help.DelayThenShow(2, level.Details.congratulation);
         }
+
 
         // perform calculations if necessary
         bool atEquilibrium = true, graphSolved = true;
