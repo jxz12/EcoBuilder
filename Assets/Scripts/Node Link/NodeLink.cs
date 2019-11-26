@@ -79,7 +79,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = new Vector3(1,0,-.5f) + .5f*UnityEngine.Random.insideUnitSphere; // prevent divide by zero
+                newNode.StressPos = new Vector3(1,0,-.5f) + .5f*UnityEngine.Random.insideUnitSphere;
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
@@ -89,7 +89,8 @@ namespace EcoBuilder.NodeLink
                 nodeGrave.RemoveAt(idx);
 
                 nodes[idx].gameObject.SetActive(true);
-                nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
+                // nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
+                nodes[idx].StressPos = new Vector3(1,0,-.5f) + .5f*UnityEngine.Random.insideUnitSphere;
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))

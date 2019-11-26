@@ -23,7 +23,7 @@ namespace EcoBuilder.UI
         void Start()
         {
             var level = GameManager.Instance.PlayedLevel;
-            if (level == null || level.Details.title == "Sandbox") // FIXME:
+            if (level == null)
             {
                 constraints.Unconstrain("Leaf");
                 constraints.Unconstrain("Paw");
@@ -63,10 +63,10 @@ namespace EcoBuilder.UI
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;
 
-        Func<bool> CanUpdate;
-        public void AllowUpdateWhen(Func<bool> Allowed)
+        Func<bool> CanFinish = ()=>false;
+        public void AllowLevelFinishWhen(Func<bool> Allowed)
         {
-            CanUpdate = Allowed;
+            CanFinish = ()=> Allowed() && !finishDisabled;
         }
 
         HashSet<int> producers = new HashSet<int>();
@@ -136,36 +136,23 @@ namespace EcoBuilder.UI
 		//////////////////////
 		// score calculation
 
-
-        // float targetAbundance, abundance;
         int modelScore, realisedScore;
+        int numStars;
         string scoreExplanation = null;
         public void DisplayScore(float score, string explanation)
         {
-            // modelScore = (int)Math.Truncate(score * 100);
             modelScore = (int)score;
+            scoreText.text = modelScore.ToString();
             report.SetMessage(explanation);
         }
-        public void CycleScoreSprite()
+        void Update()
         {
-            scoreCurrentImage.transform.Rotate(new Vector3(0,0,-90));
-        }
-
-        // public int NumStars { get; private set; }
-        int NumStars { get; set; }
-		void Update()
-		{
             if (modelScore > realisedScore)
                 scoreText.color = Color.green;
             else if (modelScore < realisedScore)
                 scoreText.color = Color.red;
 
             realisedScore = modelScore;
-            scoreText.text = realisedScore.ToString();
-
-            star1.SetBool("Filled", false);
-            star2.SetBool("Filled", false);
-            star3.SetBool("Filled", false);
 
             int newNumStars = 0;
             if (!constraints.Disjoint && constraints.Feasible && // stable &&
@@ -176,25 +163,24 @@ namespace EcoBuilder.UI
                 constraints.IsSatisfied("Loop"))
             {
                 newNumStars += 1;
-                star1.SetBool("Filled", true);
 
                 if (modelScore >= target1)
                 {
                     newNumStars += 1;
-                    star2.SetBool("Filled", true);
-
                     if (modelScore >= target2)
                     {
                         newNumStars += 1;
-                        star3.SetBool("Filled", true);
                     }
                 }
                 scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .01f);
             }
             else
             {
-                scoreText.color = infeasibleScoreCol;
+                scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, .3f);
             }
+            star1.SetBool("Filled", newNumStars>=1);
+            star2.SetBool("Filled", newNumStars>=2);
+            star3.SetBool("Filled", newNumStars>=3);
 
             if (newNumStars < 2)
             {
@@ -207,29 +193,29 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
 
-            // don't calculate if other objects are busy
-            if (!CanUpdate())
-                return;
 
-            if (NumStars == 0 && newNumStars > 0)
+            if (!CanFinish()) // only throw events if nothing else is busy
             {
-                scoreText.color = Color.green;
+                return;
+            }
+            if (numStars == 0 && newNumStars > 0)
+            {
+                // scoreText.color = Color.green;
                 OnLevelCompletabled?.Invoke();
-                if (!finishDisabled)
-                    GameManager.Instance.PlayedLevel.ShowFinishFlag();
+                GameManager.Instance.PlayedLevel.ShowFinishFlag();
             }
-            else if (NumStars > 0 && newNumStars == 0)
+            else if (numStars > 0 && newNumStars == 0)
             {
-                scoreText.color = infeasibleScoreCol;
+                // scoreText.color = infeasibleScoreCol;
                 OnLevelIncompletabled?.Invoke();
-                if (!finishDisabled)
-                    GameManager.Instance.PlayedLevel.ShowThumbnail();
+                GameManager.Instance.PlayedLevel.ShowThumbnail();
             }
-            NumStars = newNumStars;
-		}
+            numStars = newNumStars;
+        }
+
         private void CompleteLevel()
         {
-            if (NumStars < 1 || NumStars > 3)
+            if (numStars < 1 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
 
             GetComponent<Animator>().SetBool("Visible", false);
@@ -240,11 +226,13 @@ namespace EcoBuilder.UI
             OnLevelCompleted.Invoke();
         }
 
+
         ///////////////////////
         // stuff for tutorials
+
         public void HideScore(bool hidden=true)
         {
-            gameObject.SetActive(!hidden);
+            GetComponent<Animator>().enabled = !hidden;
         }
         public void HideConstraints(bool hidden=true)
         {

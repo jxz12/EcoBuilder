@@ -81,10 +81,10 @@ namespace EcoBuilder
             recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
-            score.AllowUpdateWhen(()=> atEquilibrium &&
-                                       !model.IsCalculating &&
-                                       graphSolved &&
-                                       !nodelink.IsCalculating); 
+            score.AllowLevelFinishWhen(()=> atEquilibrium &&
+                                            !model.IsCalculating &&
+                                            graphSolved &&
+                                            !nodelink.IsCalculating); 
 
             /////////////////////
             // initialise level

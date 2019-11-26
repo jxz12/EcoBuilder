@@ -13,8 +13,8 @@ namespace EcoBuilder.NodeLink
 	{
         [SerializeField] UI.Tooltip tooltip;
         [SerializeField] float rotationMultiplier, zoomMultiplier, panMultiplier;
-        [SerializeField] float yMinRotationMomentum, yRotationDrag;
-        [SerializeField] float xDefaultRotation, rotationTween;
+        [SerializeField] float yMinRotationVelocity, yRotationVelocityTween;
+        [SerializeField] float xDefaultRotation, xRotationTween;
         [SerializeField] float holdThreshold;
 
         enum FocusState { Unfocus, Focus, SuperFocus, Frozen };
@@ -249,14 +249,13 @@ namespace EcoBuilder.NodeLink
             graphParent.localScale = endZoom;
         }
 
-        float yRotation = 0, yRotationMomentum = 0;
+        float yRotation = 0, yRotationVelocity = 0;
         void UserRotate(Vector2 delta)
         {
             var amount = delta / (Screen.dpi==0? 72:Screen.dpi);
             float ySpin = -amount.x * rotationMultiplier;
             float xSpin = amount.y * rotationMultiplier;
-            yRotationMomentum = ySpin;
-            yMinRotationMomentum = Mathf.Abs(yMinRotationMomentum) * Mathf.Sign(ySpin);
+            yRotationVelocity = ySpin;
 
             if (focusState != FocusState.SuperFocus)
             {
@@ -266,28 +265,28 @@ namespace EcoBuilder.NodeLink
                     nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
                     graphParent.Rotate(Vector3.right, xSpin);
                 }
-                else
-                {
-                    yRotation += ySpin;
-                    nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
-                    Quaternion rotator =
-                        Quaternion.AngleAxis(-yRotation, Vector3.up) *
-                        Quaternion.AngleAxis(xSpin, Vector3.right) *
-                        Quaternion.AngleAxis(yRotation, Vector3.up);
-                    // Quaternion rotator =
-                    //     Quaternion.AngleAxis(ySpin, Vector3.up) * 
-                    //     Quaternion.AngleAxis(xSpin, Vector3.right);
-                    foreach (Node no in nodes)
-                    {
-                        no.StressPos -= rotationCenter;
-                        no.StressPos = rotator * no.StressPos;
-                        no.StressPos += rotationCenter;
+                // else
+                // {
+                //     yRotation += ySpin;
+                //     nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+                //     Quaternion rotator =
+                //         Quaternion.AngleAxis(-yRotation, Vector3.up) *
+                //         Quaternion.AngleAxis(xSpin, Vector3.right) *
+                //         Quaternion.AngleAxis(yRotation, Vector3.up);
+                //     // Quaternion rotator =
+                //     //     Quaternion.AngleAxis(ySpin, Vector3.up) * 
+                //     //     Quaternion.AngleAxis(xSpin, Vector3.right);
+                //     foreach (Node no in nodes)
+                //     {
+                //         no.StressPos -= rotationCenter;
+                //         no.StressPos = rotator * no.StressPos;
+                //         no.StressPos += rotationCenter;
 
-                        no.transform.localPosition -= rotationCenter;
-                        no.transform.localPosition = rotator * no.transform.localPosition;
-                        no.transform.localPosition += rotationCenter;
-                    }
-                }
+                //         no.transform.localPosition -= rotationCenter;
+                //         no.transform.localPosition = rotator * no.transform.localPosition;
+                //         no.transform.localPosition += rotationCenter;
+                //     }
+                // }
             }
             else
             {
@@ -301,21 +300,33 @@ namespace EcoBuilder.NodeLink
             {
                 if (constrainTrophic)
                 {
-                    yRotationMomentum += (yMinRotationMomentum - yRotationMomentum) * yRotationDrag;
-                    nodesParent.Rotate(Vector3.up, yRotationMomentum);
-                    yRotation += yRotationMomentum;
+                    while (yRotation < -180)
+                        yRotation += 360;
+                    while (yRotation > 180)
+                        yRotation -= 360;
 
-                    nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.Euler(0,yRotation,0), rotationTween);
+                    if (yRotation < -45) // TODO: magic numbers?
+                        yRotationVelocity = Mathf.Lerp(yRotationVelocity, yMinRotationVelocity, yRotationVelocityTween);
+                    else if (yRotation > 45)
+                        yRotationVelocity = Mathf.Lerp(yRotationVelocity, -yMinRotationVelocity, yRotationVelocityTween);
+                    else
+                        yRotationVelocity = Mathf.Lerp(yRotationVelocity, Mathf.Sign(yRotationVelocity)*yMinRotationVelocity, yRotationVelocityTween);
 
+                    // nodesParent.Rotate(Vector3.up, yRotationVelocity);
+                    yRotation += yRotationVelocity;
+                    nodesParent.localRotation = Quaternion.Euler(0,yRotation,0);
                     var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                    var lerped = Quaternion.Slerp(graphParent.transform.localRotation, graphParentGoal, rotationTween);
-                    graphParent.transform.localRotation = lerped;
+                    graphParent.localRotation = Quaternion.Lerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
                 }
+                // else
+                // {
+                    
+                // }
             }
             else
             {
-                nodesParent.localRotation = Quaternion.Slerp(nodesParent.localRotation, Quaternion.identity, rotationTween);
-                graphParent.transform.localRotation = Quaternion.Slerp(graphParent.transform.localRotation, Quaternion.identity, rotationTween);
+                nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, Quaternion.identity, xRotationTween);
+                graphParent.transform.localRotation = Quaternion.Lerp(graphParent.transform.localRotation, Quaternion.identity, xRotationTween);
             }
         }
 
