@@ -45,11 +45,13 @@ namespace EcoBuilder.Levels
         [SerializeField] LevelDetails details;
         [SerializeField] Tutorial tutorial;
         [SerializeField] GameObject landscape;
+        [SerializeField] Level nextLevel;
 
         public event Action OnThumbnailed, OnCarded, OnFinished;
         public LevelDetails Details { get { return details; } }
         public Tutorial Tutorial { get { return tutorial; } }
         public GameObject Landscape { get { return landscape; } }
+        public Level NextLevel { get; private set; }
 
         // thumbnail
         // [SerializeField] Text numberText;
@@ -180,7 +182,6 @@ namespace EcoBuilder.Levels
         }
 
         Transform thumbnailedParent;
-        // Vector2 thumbnailedPos;
         public void ShowThumbnail()
         {
             ShowThumbnail(.5f);
@@ -256,19 +257,17 @@ namespace EcoBuilder.Levels
             // TODO: 'are you sure' option
             GameManager.Instance.ReturnToMenu();
         }
-        public Level NextLevel { get; private set; }
         public void FinishLevel()
         {
-            // var next = GameManager.Instance.LoadLevel(Details.nextLevelPath);
-            // if (next != null)
-            // {
-            //     next.SetNewThumbnailParent(nextLevelParent, Vector2.zero, false);
-            //     NextLevel = next;
-            // }
-            // else
-            // {
-            //     print("TODO: credits?");
-            // }
+            if (nextLevel != null)
+            {
+                // TODO: unlock level if not done already
+                NextLevel = Instantiate(nextLevel, nextLevelParent);
+            }
+            else
+            {
+                print("TODO: credits?");
+            }
             ShowNavigation();
             OnFinished?.Invoke();
         }

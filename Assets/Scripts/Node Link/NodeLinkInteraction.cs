@@ -208,7 +208,6 @@ namespace EcoBuilder.NodeLink
                 focusedNode.Unoutline();
                 focusedNode = null;
             }
-            focusState = FocusState.Unfocus;
             StartCoroutine(ResetZoom(Vector3.one, 1f));
 
             GetComponent<Animator>().SetTrigger("Freeze");
