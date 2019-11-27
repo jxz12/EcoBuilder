@@ -13,7 +13,7 @@ namespace EcoBuilder.UI
         public event Action<int> OnConflicted;
         public event Action<int> OnUnconflicted;
         public bool Interactable { set { slider.interactable = value; } }
-        public bool Active { set { gameObject.SetActive(value); } }
+        // public bool Active { set { gameObject.SetActive(value); } }
 
         float currentValue = -1;
         UnityAction<float> ValueChangedCallback;

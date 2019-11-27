@@ -195,9 +195,9 @@ namespace EcoBuilder.UI
 
 
             if (!CanFinish()) // only throw events if nothing else is busy
-            {
                 return;
-            }
+
+            GameManager.Instance.PlayedLevel.CurrentScore = realisedScore;
             if (numStars == 0 && newNumStars > 0)
             {
                 // scoreText.color = Color.green;

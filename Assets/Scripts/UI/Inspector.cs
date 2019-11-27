@@ -518,11 +518,11 @@ namespace EcoBuilder.UI
 
         public void HideSizeSlider(bool hidden=true)
         {
-            sizeTrait.Active = !hidden;
+            sizeTrait.gameObject.SetActive(!hidden);
         }
         public void HideGreedSlider(bool hidden=true)
         {
-            greedTrait.Active = !hidden;
+            greedTrait.gameObject.SetActive(!hidden);
         }
         public void FixIncubatedSize(float fixedSize)
         {
