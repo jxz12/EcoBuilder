@@ -91,9 +91,7 @@ namespace EcoBuilder
 
             var level = GameManager.Instance.PlayedLevel;
             if (level == null)
-            {
                 return; // should never happen in real game
-            }
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -120,6 +118,7 @@ namespace EcoBuilder
             }
             nodelink.AddDropShadow(level.Landscape);
             help.SetText(level.Details.introduction);
+            level.StartTutorialIfAvailable();
 
             score.OnLevelCompleted += ()=> inspector.Hide();
             score.OnLevelCompleted += ()=> nodelink.Freeze();

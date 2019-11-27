@@ -87,9 +87,6 @@ namespace EcoBuilder.Levels
             title.text = Details.title;
             description.text = Details.description;
 
-            // producers.text = Details.numProducers.ToString();
-            // consumers.text = Details.numConsumers.ToString();
-
             target1.text = Details.targetScore1.ToString();
             target2.text = Details.targetScore2.ToString();
             SetHighScoreFromGM();
@@ -129,25 +126,11 @@ namespace EcoBuilder.Levels
         }
 
 
-
-
-
-
-
-
-
-
-
-
         //////////////////////////////
         // animations states
 
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
 
-        // public void Lock()
-        // {
-            
-        // }
         // TODO: fun animation here to draw eye towards next level
         public void Unlock()
         {
@@ -231,11 +214,10 @@ namespace EcoBuilder.Levels
 
 
 
-
-
         ///////////////////////
         // Scene changing
 
+        Tutorial teacher;
         public void Play()
         {
             thumbnailedParent = GameManager.Instance.PlayParent;
@@ -243,8 +225,19 @@ namespace EcoBuilder.Levels
             GameManager.Instance.PlayLevel(this);
             StartCoroutine(WaitThenEnableQuitReplay());
         }
+        public void StartTutorialIfAvailable()
+        {
+            if (Tutorial != null)
+                teacher = Instantiate(tutorial, GameManager.Instance.TutParent);
+        }
+        void OnDestroy()
+        {
+            if (teacher != null)
+                Destroy(teacher.gameObject);
+        }
+
         // necessary because there is no separate 'playing' state
-        // it is simply still a thumbnail
+        // but the card requires something different
         IEnumerator WaitThenEnableQuitReplay()
         {
             playButton.gameObject.SetActive(false);
@@ -257,11 +250,17 @@ namespace EcoBuilder.Levels
             // TODO: 'are you sure' option
             GameManager.Instance.ReturnToMenu();
         }
+
+
+        public int CurrentScore { private get; set; }
         public void FinishLevel()
         {
+            if (GameManager.Instance.PlayedLevel != this)
+                throw new Exception("Played level different from one being finished?");
+
+            GameManager.Instance.SavePlayedLevelHighScore(CurrentScore);
             if (nextLevel != null)
             {
-                // TODO: unlock level if not done already
                 NextLevel = Instantiate(nextLevel, nextLevelParent);
             }
             else
@@ -274,6 +273,11 @@ namespace EcoBuilder.Levels
 
         public void Replay()
         {
+            ShowThumbnail();
+            if (NextLevel != null) // if replay from finish
+            {
+                Destroy(NextLevel);
+            }
             GameManager.Instance.PlayLevel(this);
         }
     }

@@ -10,43 +10,18 @@ namespace EcoBuilder.UI
 {
     public class Menu : MonoBehaviour
     {
-        // // animation stuff
-        // public void GoToOptions()
-        // {
-        //     GetComponent<Animator>().SetInteger("Menu Choice", 0);
-        // }
-        // public void GoToMain()
-        // {
-        //     GetComponent<Animator>().SetInteger("Menu Choice", 1);
-        // }
-        // public void GoToLevels()
-        // {
-        //     GetComponent<Animator>().SetInteger("Menu Choice", 2);
-        // }
-        // public void GoToSurvey()
-        // {
-        //     GetComponent<Animator>().SetInteger("Menu Choice", 3);
-        // }
         public void QuitGame()
         {
             GameManager.Instance.Quit();
         }
 
-
-
-        void Start()
-        {
-            ArrangeGMLevels();
-        }
-
         [SerializeField] GridLayoutGroup levelGrid;
         List<RectTransform> levelParents;
-        void ArrangeGMLevels()
+        void Start()
         {
             levelParents = new List<RectTransform>();
             foreach (var prefab in GameManager.Instance.GetLevelPrefabs())
             {
-                // TODO: change this into a prefab?
                 var parent = new GameObject().AddComponent<RectTransform>();
                 parent.SetParent(levelGrid.transform);
                 parent.localScale = Vector3.one;

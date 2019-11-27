@@ -167,7 +167,6 @@ namespace EcoBuilder
             for (int i=1; i<levelPrefabs.Count; i++)
             {
                 player.highScores.Add(-1);
-                // player.highScores.Add(0);
             }
         }
         private bool SavePlayerDetailsLocal()
@@ -217,31 +216,26 @@ namespace EcoBuilder
             return levelPrefabs;
         }
 
-        [SerializeField] Canvas canvas;
-        [SerializeField] RectTransform cardParent, playParent, navParent;
         [SerializeField] UI.Earth earth;
+        [SerializeField] RectTransform cardParent, playParent, navParent, tutParent;
         public RectTransform CardParent { get { return cardParent; } }
         public RectTransform PlayParent { get { return playParent; } }
         public RectTransform NavParent { get { return navParent; } }
+        public RectTransform TutParent { get { return tutParent; } }
 
         public Levels.Level PlayedLevel { get; private set; }
-        public Levels.Tutorial Teacher { get; private set; }
         public void PlayLevel(Levels.Level toPlay)
         {
             if (PlayedLevel != null)
             {
                 if (PlayedLevel.Details.idx != toPlay.Details.idx)
                 {
-                    Destroy(PlayedLevel.gameObject);
                     PlayedLevel = toPlay;
+                    Destroy(PlayedLevel.gameObject);
                 }
                 else
                 {
                     // replay level
-                }
-                if (Teacher != null)
-                {
-                    Destroy(Teacher.gameObject);
                 }
                 // UnloadSceneThenLoadAnother("Play", "Play");
                 StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
@@ -253,39 +247,34 @@ namespace EcoBuilder
                 // UnloadSceneThenLoadAnother("Menu", "Play");
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
-
-            if (toPlay.Tutorial != null)
-            {
-                Teacher = Instantiate(toPlay.Tutorial, canvas.transform);
-            }
             earth.Shrink();
         }
-        // This is necessary because you cannot change prefabs from script when compiled
+
+        // This whole structure is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level, but that is not possible
         public int GetLevelHighScore(int levelIdx)
         {
             return player.highScores[levelIdx];
         }
 
-        // public void SavePlayedLevel(int numStars, int score)
-        // {
-        //     if (numStars > PlayedLevel.Details.numStars)
-        //         PlayedLevel.Details.numStars = numStars;
+        public void SavePlayedLevelHighScore(int score)
+        {
+            int idx = PlayedLevel.Details.idx;
+            if (score > player.highScores[idx])
+                player.highScores[idx] = score;
 
-        //     if (score > PlayedLevel.Details.highScore)
-        //         PlayedLevel.Details.highScore = score; // TODO: animation
+            // unlock next level if not unlocked
+            if (PlayedLevel.NextLevel != null)
+            {
+                int nextIdx = PlayedLevel.NextLevel.Details.idx;
+                if (player.highScores.Count >= nextIdx)
+                    throw new Exception("level idx too high");
 
-        //     // unlock next level if not unlocked
-        //     if (PlayedLevel.NextLevel != null &&
-        //         PlayedLevel.NextLevel.Details.numStars == -1)
-        //     {
-        //         // TODO: animation
-        //         PlayedLevel.NextLevel.Details.numStars = 0;
-        //         PlayedLevel.NextLevel.SaveToFile();
-        //         PlayedLevel.NextLevel.Unlock();
-        //     }
-        //     PlayedLevel.SaveToFile();
-        // }
+                if (player.highScores[nextIdx] < 0)
+                    player.highScores[nextIdx] = 0;
+                // TODO: animation
+            }
+        }
 
 
         ///////////////////
@@ -311,16 +300,11 @@ namespace EcoBuilder
 
         public void ReturnToMenu()
         {
-            if (Teacher != null)
-            {
-                Destroy(Teacher.gameObject);
-            }
             if (PlayedLevel != null)
             {
                 Destroy(PlayedLevel.gameObject);
                 PlayedLevel = null;
             }
-            // UnloadSceneThenLoadAnother("Play", "Menu");
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
             earth.Grow();
         }
