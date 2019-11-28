@@ -62,11 +62,11 @@ namespace EcoBuilder.UI
                 RerollSeed();
             }
             // to set seed from file
-            public Species(int idx, bool isProducer, float size, float greed, int seed)
+            public Species(int idx, bool isProducer, int seed)
                 : this(idx, isProducer)
             {
-                BodySize = size;
-                Greediness = greed;
+                // BodySize = size;
+                // Greediness = greed;
                 RandomSeed = seed;
             }
 
@@ -213,20 +213,20 @@ namespace EcoBuilder.UI
             typesAnim.SetBool("Visible", true);
         }
 
-        public void AllowConflicts(bool allowed)
-        {
-            allowConflicts = allowed;
-            if (allowed)
-            {
-                sizeTrait.slider.wholeNumbers = false;
-                greedTrait.slider.wholeNumbers = false;
-            }
-            else
-            {
-                sizeTrait.slider.wholeNumbers = true;
-                greedTrait.slider.wholeNumbers = true;
-            }
-        }
+        // public void AllowConflicts(bool allowed)
+        // {
+        //     allowConflicts = allowed;
+        //     if (allowed)
+        //     {
+        //         sizeTrait.slider.wholeNumbers = false;
+        //         greedTrait.slider.wholeNumbers = false;
+        //     }
+        //     else
+        //     {
+        //         sizeTrait.slider.wholeNumbers = true;
+        //         greedTrait.slider.wholeNumbers = true;
+        //     }
+        // }
         int CheckSizeConflict(float newSize)
         {
             if (allowConflicts)
@@ -381,6 +381,8 @@ namespace EcoBuilder.UI
             if (inspected != null)
             {
                 inspected = null;
+                sizeTrait.CancelDrag();
+                greedTrait.CancelDrag();
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
         }
@@ -409,7 +411,9 @@ namespace EcoBuilder.UI
             if (greed < 0 || greed > 1)
                 throw new Exception("greed not in bounds");
 
-            var toSpawn = new Species(idx, isProducer, size, greed, randomSeed);
+            var toSpawn = new Species(idx, isProducer, randomSeed);
+            toSpawn.BodySize = sizeTrait.SetValueWithoutCallback(size);
+            toSpawn.Greediness = greedTrait.SetValueWithoutCallback(greed);
             toSpawn.SizeEditable = sizeEditable;
             toSpawn.GreedEditable = greedEditable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);

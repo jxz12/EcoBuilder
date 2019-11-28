@@ -89,16 +89,7 @@ namespace EcoBuilder.Levels
 
             target1.text = Details.targetScore1.ToString();
             target2.text = Details.targetScore2.ToString();
-            SetHighScoreFromGM();
 
-            // targetSize = GetComponent<RectTransform>().sizeDelta;
-            // if (thumbnailedParent == null)
-            //     thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-        }
-
-        // -1 is locked, 0,1,2,3 unlocked plus number of stars
-        void SetHighScoreFromGM()
-        {
             int score = GameManager.Instance.GetLevelHighScore(Details.idx);
             highScore.text = score.ToString();
 
@@ -121,10 +112,12 @@ namespace EcoBuilder.Levels
                 numStars += 1;
                 target2.color = Color.grey;
             }
-
             starsImage.sprite = starSprites[numStars];
-        }
 
+            // targetSize = GetComponent<RectTransform>().sizeDelta;
+            // if (thumbnailedParent == null)
+            //     thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+        }
 
         //////////////////////////////
         // animations states
@@ -206,7 +199,7 @@ namespace EcoBuilder.Levels
 
             transform.SetParent(GameManager.Instance.NavParent, true);
             transform.localScale = Vector3.one;
-            StartCoroutine(TweenToZeroPos(.5f));
+            StartCoroutine(TweenToZeroPos(1f));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
@@ -258,7 +251,11 @@ namespace EcoBuilder.Levels
             if (GameManager.Instance.PlayedLevel != this)
                 throw new Exception("Played level different from one being finished?");
 
-            GameManager.Instance.SavePlayedLevelHighScore(CurrentScore);
+            if (CurrentScore > GameManager.Instance.GetLevelHighScore(details.idx))
+            {
+                print("TODO: congratulation message for getting a high score");
+            }
+            GameManager.Instance.SavePlayedLevelHighScore(CurrentScore); // updates score and should unlock next level
             if (nextLevel != null)
             {
                 NextLevel = Instantiate(nextLevel, nextLevelParent);
@@ -277,6 +274,10 @@ namespace EcoBuilder.Levels
             if (NextLevel != null) // if replay from finish
             {
                 Destroy(NextLevel);
+            }
+            if (teacher != null)
+            {
+                Destroy(teacher);
             }
             GameManager.Instance.PlayLevel(this);
         }

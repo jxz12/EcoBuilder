@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c46ad26e1a5b3bc40a204bf97947464c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  smoothTime: 0.2
+  smoothTime: 0.3
 --- !u!1001 &7445470335636265303
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53,7 +53,7 @@ PrefabInstance:
     - target: {fileID: 7558127652860218878, guid: 7e37e2b78a146eb46bfc6ae23e45356a,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 315
+      value: 45
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7e37e2b78a146eb46bfc6ae23e45356a, type: 3}
