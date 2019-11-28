@@ -128,7 +128,7 @@ namespace EcoBuilder.NodeLink
                 // transform.localScale = Vector3.one;
             }
 
-            StartCoroutine(bounceRoutine = Bounce(.5f, .1f));
+            StartCoroutine(bounceRoutine = Bounce(.6f, .1f));
         }
         IEnumerator Bounce(float length, float magnitude)
         {

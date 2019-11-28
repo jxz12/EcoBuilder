@@ -60,11 +60,11 @@ namespace EcoBuilder
                     SavePlayerDetailsLocal();
                 }
             }
-            if (SceneManager.sceneCount == 1)
+            if (SceneManager.sceneCount == 1) // on startup
             {
                 SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
-                // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
                 earth.Grow();
+                // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
             }
             SavePlayerDetailsLocal();
         }
@@ -230,8 +230,8 @@ namespace EcoBuilder
             {
                 if (PlayedLevel.Details.idx != toPlay.Details.idx)
                 {
-                    PlayedLevel = toPlay;
                     Destroy(PlayedLevel.gameObject);
+                    PlayedLevel = toPlay;
                 }
                 else
                 {
@@ -263,17 +263,15 @@ namespace EcoBuilder
             if (score > player.highScores[idx])
                 player.highScores[idx] = score;
 
-            // unlock next level if not unlocked
-            if (PlayedLevel.NextLevel != null)
-            {
-                int nextIdx = PlayedLevel.NextLevel.Details.idx;
-                if (player.highScores.Count >= nextIdx)
-                    throw new Exception("level idx too high");
+            int nextIdx = PlayedLevel.Details.idx + 1;
+            if (nextIdx >= player.highScores.Count)
+                return;
 
-                if (player.highScores[nextIdx] < 0)
-                    player.highScores[nextIdx] = 0;
-                // TODO: animation
-            }
+            if (player.highScores[nextIdx] < 0)
+                player.highScores[nextIdx] = 0;
+            // TODO: animation
+
+            SavePlayerDetailsLocal();
         }
 
 

@@ -7,31 +7,28 @@ using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
 {
-    public class Trait : MonoBehaviour, IPointerUpHandler
+    public class Trait : MonoBehaviour,
+        // IDragHandler, IBeginDragHandler, IEndDragHandler
+        IPointerDownHandler, IPointerUpHandler
     {
         public event Action<float, float> OnUserSlid; // from, to
         public event Action<int> OnConflicted;
         public event Action<int> OnUnconflicted;
         public bool Interactable { set { slider.interactable = value; } }
-        // public bool Active { set { gameObject.SetActive(value); } }
 
         float currentValue = -1;
-        UnityAction<float> ValueChangedCallback;
         public Slider slider { get; private set; }
-        void Start()
+        void Awake()
         {
             slider = GetComponent<Slider>();
-            ValueChangedCallback = x=> OnValueChanged();
-            slider.onValueChanged.AddListener(ValueChangedCallback);
+            slider.onValueChanged.AddListener(x=> UserChangeValue());
         }
-        public float SetValueFromRandomSeed(int randomSeed)
-        {
-            if (initialValueIfFixed >= 0)
-                SetValueWithoutCallback(initialValueIfFixed);
-            else
-                SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
 
-            return slider.normalizedValue;
+        // if this function return false, the slider will 'snap' back
+        Func<float, int> FindConflict;
+        public void AddExternalConflict(Func<float, int> Rule)
+        {
+            FindConflict = Rule;
         }
         public IEnumerable<float> PossibleValues {
             get {
@@ -45,18 +42,50 @@ namespace EcoBuilder.UI
                 }
             }
         }
-        public void SetValueWithoutCallback(float normalizedValue)
+
+
+        float initialValueIfFixed = -1;
+        public void FixInitialValue(float initialValue)
         {
-            // this is ugly as heck, but sliders are stupid
-            slider.onValueChanged.RemoveListener(ValueChangedCallback);
-            slider.normalizedValue = normalizedValue;
-            slider.onValueChanged.AddListener(ValueChangedCallback);
-            currentValue = normalizedValue;
+            if (initialValue < 0 || initialValue > 1)
+                throw new Exception("initial value not normalised");
+
+            initialValueIfFixed = initialValue;
         }
+
+        // does not set randomly if initial value is fixed
+        public float SetValueFromRandomSeed(int randomSeed)
+        {
+            if (initialValueIfFixed >= 0)
+            {
+                SetValueWithoutCallback(initialValueIfFixed);
+            }
+            else
+            {
+                UnityEngine.Random.InitState(randomSeed);
+                SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
+            }
+
+            return slider.normalizedValue;
+        }
+        public float SetValueWithoutCallback(float normalizedValue)
+        {
+            if (dragging)
+                throw new Exception("should not be dragging while setting value externally");
+
+            slider.normalizedValue = normalizedValue;
+            currentValue = slider.normalizedValue;
+            print(currentValue);
+            return currentValue;
+        }
+
         int conflict = -1;
         float toSnapBack = -1;
-        private void OnValueChanged()
+        private void UserChangeValue()
         {
+            if (!dragging)
+                return; 
+
             float newValue = slider.normalizedValue;
             if (conflict >= 0)
             {
@@ -78,31 +107,49 @@ namespace EcoBuilder.UI
                 slider.targetGraphic.color = Color.white;
             }
         }
-        public void OnPointerUp(PointerEventData ped)
+        private void UndoConflict()
         {
+            if (toSnapBack >= 0)
+            {
+                SetValueWithoutCallback(toSnapBack);
+                toSnapBack = -1;
+            }
             if (conflict >= 0)
             {
                 OnUnconflicted?.Invoke(conflict);
-                SetValueWithoutCallback(toSnapBack);
                 conflict = -1;
-                toSnapBack = -1;
                 slider.targetGraphic.color = Color.white;
             }
         }
-
-        // if this function return false, the slider will 'snap' back
-        Func<float, int> FindConflict;
-        public void AddExternalConflict(Func<float, int> Rule)
+        bool dragging;
+        // public void OnBeginDrag(PointerEventData ped)
+        // {
+        //     dragging = true;
+        // }
+        // public void OnDrag(PointerEventData ped)
+        // {
+        //     // DO NOTHING
+        // }
+        // public void OnEndDrag(PointerEventData ped)
+        // {
+        //     CancelDrag();
+        // }
+        public void OnPointerDown(PointerEventData ped)
         {
-            FindConflict = Rule;
+            dragging = true;
         }
-        float initialValueIfFixed = -1;
-        public void FixInitialValue(float initialValue)
+        public void OnPointerUp(PointerEventData ped)
         {
-            if (initialValue < 0 || initialValue > 1)
-                throw new Exception("initial value not normalised");
-
-            initialValueIfFixed = initialValue;
+            CancelDrag();
+        }
+        // in case a tutorial wants to cancel, or the user does something weird
+        public void CancelDrag()
+        {
+            if (dragging)
+            {
+                dragging = false;
+                UndoConflict();
+            }
         }
     }
 }

@@ -304,7 +304,7 @@ namespace EcoBuilder.NodeLink
                     while (yRotation > 180)
                         yRotation -= 360;
 
-                    if (yRotation < -45) // TODO: magic numbers?
+                    if (yRotation < -45)
                         yRotationVelocity = Mathf.Lerp(yRotationVelocity, yMinRotationVelocity, yRotationVelocityTween);
                     else if (yRotation > 45)
                         yRotationVelocity = Mathf.Lerp(yRotationVelocity, -yMinRotationVelocity, yRotationVelocityTween);
@@ -313,9 +313,10 @@ namespace EcoBuilder.NodeLink
 
                     // nodesParent.Rotate(Vector3.up, yRotationVelocity);
                     yRotation += yRotationVelocity;
-                    nodesParent.localRotation = Quaternion.Euler(0,yRotation,0);
+                    var nodesParentGoal = Quaternion.Euler(0,yRotation,0);
+                    nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, nodesParentGoal, xRotationTween);
                     var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                    graphParent.localRotation = Quaternion.Lerp(graphParent.transform.localRotation, graphParentGoal, xRotationTween);
+                    graphParent.localRotation = Quaternion.Lerp(graphParent.localRotation, graphParentGoal, xRotationTween);
                 }
                 // else
                 // {

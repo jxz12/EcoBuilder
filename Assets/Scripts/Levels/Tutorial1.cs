@@ -10,9 +10,8 @@ namespace EcoBuilder.Levels
         {
             inspector.HideSizeSlider(true);
             inspector.HideGreedSlider(true);
-            inspector.AllowConflicts(true);
-            inspector.FixIncubatedSize(.5f);
-            inspector.FixIncubatedGreed(.5f);
+            inspector.FixIncubatedSize(.3f);
+            inspector.FixIncubatedGreed(.3f);
             inspector.HideRemoveButton();
             score.HideScore(true);
             score.HideConstraints(true);
@@ -233,7 +232,7 @@ namespace EcoBuilder.Levels
         void ExplainNextLevel()
         {
             targetSize = new Vector2(140, 140);
-            targetPos = new Vector2(150, 150);
+            targetPos = new Vector2(50, 300);
             smoothTime = .4f;
 
             Detach();
