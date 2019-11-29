@@ -258,34 +258,9 @@ namespace EcoBuilder.NodeLink
 
             if (focusState != FocusState.SuperFocus)
             {
-                if (constrainTrophic)
-                {
-                    yRotation += yRotationVelocity;
-                    nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
-                    graphParent.Rotate(Vector3.right, xSpin);
-                }
-                // else
-                // {
-                //     yRotation += ySpin;
-                //     nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
-                //     Quaternion rotator =
-                //         Quaternion.AngleAxis(-yRotation, Vector3.up) *
-                //         Quaternion.AngleAxis(xSpin, Vector3.right) *
-                //         Quaternion.AngleAxis(yRotation, Vector3.up);
-                //     // Quaternion rotator =
-                //     //     Quaternion.AngleAxis(ySpin, Vector3.up) * 
-                //     //     Quaternion.AngleAxis(xSpin, Vector3.right);
-                //     foreach (Node no in nodes)
-                //     {
-                //         no.StressPos -= rotationCenter;
-                //         no.StressPos = rotator * no.StressPos;
-                //         no.StressPos += rotationCenter;
-
-                //         no.transform.localPosition -= rotationCenter;
-                //         no.transform.localPosition = rotator * no.transform.localPosition;
-                //         no.transform.localPosition += rotationCenter;
-                //     }
-                // }
+                yRotation += yRotationVelocity;
+                nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+                graphParent.Rotate(Vector3.right, xSpin);
             }
             else
             {
@@ -297,33 +272,25 @@ namespace EcoBuilder.NodeLink
         {
             if (focusState != FocusState.SuperFocus)
             {
-                if (constrainTrophic)
-                {
-                    // apply rotation
-                    yRotation += yRotationVelocity;
-                    var nodesParentGoal = Quaternion.Euler(0,yRotation,0);
-                    nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, nodesParentGoal, 1);
-                    var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                    graphParent.localRotation = Quaternion.Lerp(graphParent.localRotation, graphParentGoal, xRotationTween);
+                // apply rotation
+                yRotation += yRotationVelocity;
+                var nodesParentGoal = Quaternion.Euler(0,yRotation,0);
+                nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, nodesParentGoal, 1);
+                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                graphParent.localRotation = Quaternion.Lerp(graphParent.localRotation, graphParentGoal, xRotationTween);
 
+                // apply damping
+                while (yRotation < -180)
+                    yRotation += 360;
+                while (yRotation > 180)
+                    yRotation -= 360;
 
-                    // apply damping
-                    while (yRotation < -180)
-                        yRotation += 360;
-                    while (yRotation > 180)
-                        yRotation -= 360;
-
-                    if (yRotation < -45)
-                        yRotationVelocity = Mathf.Lerp(yRotationVelocity, yMinRotationVelocity, yRotationVelocityTween);
-                    else if (yRotation > 45)
-                        yRotationVelocity = Mathf.Lerp(yRotationVelocity, -yMinRotationVelocity, yRotationVelocityTween);
-                    else
-                        yRotationVelocity = Mathf.Lerp(yRotationVelocity, Mathf.Sign(yRotationVelocity)*yMinRotationVelocity, yRotationVelocityTween);
-                }
-                // else
-                // {
-                    
-                // }
+                if (yRotation < -45)
+                    yRotationVelocity = Mathf.Lerp(yRotationVelocity, yMinRotationVelocity, yRotationVelocityTween);
+                else if (yRotation > 45)
+                    yRotationVelocity = Mathf.Lerp(yRotationVelocity, -yMinRotationVelocity, yRotationVelocityTween);
+                else
+                    yRotationVelocity = Mathf.Lerp(yRotationVelocity, Mathf.Sign(yRotationVelocity)*yMinRotationVelocity, yRotationVelocityTween);
             }
             else
             {
