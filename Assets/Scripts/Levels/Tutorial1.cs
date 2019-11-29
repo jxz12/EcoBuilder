@@ -10,8 +10,8 @@ namespace EcoBuilder.Levels
         {
             inspector.HideSizeSlider(true);
             inspector.HideGreedSlider(true);
-            inspector.FixIncubatedSize(.3f);
-            inspector.FixIncubatedGreed(.3f);
+            inspector.FixIncubatedSize(.5f);
+            inspector.FixIncubatedGreed(.5f);
             inspector.HideRemoveButton();
             score.HideScore(true);
             score.HideConstraints(true);
@@ -214,7 +214,7 @@ namespace EcoBuilder.Levels
             targetAnchor = new Vector2(.5f,0);
             targetZRot = 405;
             targetPos = new Vector2(140, 70);
-            smoothTime = .6f;
+            smoothTime = .5f;
 
             help.SetSide(false, false);
             help.SetDistFromTop(.1f);
@@ -229,11 +229,15 @@ namespace EcoBuilder.Levels
             nextLevel.OnCarded += foo;
             Detach = ()=>nextLevel.OnCarded -= foo;
         }
+        Canvas onTop;
         void ExplainNextLevel()
         {
-            targetSize = new Vector2(140, 140);
+            // targetSize = new Vector2(140, 140);
             targetPos = new Vector2(50, 300);
-            smoothTime = .4f;
+
+            onTop = gameObject.AddComponent<Canvas>();
+            onTop.overrideSorting = true;
+            onTop.sortingOrder = 3;
 
             Detach();
             Action foo = ()=>Finish();

@@ -204,6 +204,21 @@ namespace EcoBuilder.Levels
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
 
+        // a hack to keep the card on top of the other thumbnails
+        Canvas onTop;
+        GraphicRaycaster raycaster;
+        public void RenderOnTop(int sortOrder)
+        {
+            onTop = gameObject.AddComponent<Canvas>();
+            onTop.overrideSorting = true;
+            onTop.sortingOrder = sortOrder;
+            raycaster = gameObject.AddComponent<GraphicRaycaster>();
+        }
+        public void RenderBelow()
+        {
+            Destroy(raycaster);
+            Destroy(onTop);
+        }
 
 
 
@@ -220,7 +235,7 @@ namespace EcoBuilder.Levels
         }
         public void StartTutorialIfAvailable()
         {
-            if (Tutorial != null)
+            if (tutorial != null)
                 teacher = Instantiate(tutorial, GameManager.Instance.TutParent);
         }
         void OnDestroy()
@@ -270,16 +285,18 @@ namespace EcoBuilder.Levels
 
         public void Replay()
         {
-            ShowThumbnail();
             if (NextLevel != null) // if replay from finish
             {
                 Destroy(NextLevel);
             }
             if (teacher != null)
             {
-                Destroy(teacher);
+                Destroy(teacher.gameObject);
             }
+            // thumbnailedParent = GameManager.Instance.PlayParent;
+            ShowThumbnail(1.5f);
             GameManager.Instance.PlayLevel(this);
+            // StartCoroutine(WaitThenEnableQuitReplay());
         }
     }
 }

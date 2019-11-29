@@ -260,7 +260,7 @@ namespace EcoBuilder.NodeLink
             {
                 if (constrainTrophic)
                 {
-                    yRotation += ySpin;
+                    yRotation += yRotationVelocity;
                     nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
                     graphParent.Rotate(Vector3.right, xSpin);
                 }
@@ -299,6 +299,15 @@ namespace EcoBuilder.NodeLink
             {
                 if (constrainTrophic)
                 {
+                    // apply rotation
+                    yRotation += yRotationVelocity;
+                    var nodesParentGoal = Quaternion.Euler(0,yRotation,0);
+                    nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, nodesParentGoal, 1);
+                    var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
+                    graphParent.localRotation = Quaternion.Lerp(graphParent.localRotation, graphParentGoal, xRotationTween);
+
+
+                    // apply damping
                     while (yRotation < -180)
                         yRotation += 360;
                     while (yRotation > 180)
@@ -310,13 +319,6 @@ namespace EcoBuilder.NodeLink
                         yRotationVelocity = Mathf.Lerp(yRotationVelocity, -yMinRotationVelocity, yRotationVelocityTween);
                     else
                         yRotationVelocity = Mathf.Lerp(yRotationVelocity, Mathf.Sign(yRotationVelocity)*yMinRotationVelocity, yRotationVelocityTween);
-
-                    // nodesParent.Rotate(Vector3.up, yRotationVelocity);
-                    yRotation += yRotationVelocity;
-                    var nodesParentGoal = Quaternion.Euler(0,yRotation,0);
-                    nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, nodesParentGoal, xRotationTween);
-                    var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                    graphParent.localRotation = Quaternion.Lerp(graphParent.localRotation, graphParentGoal, xRotationTween);
                 }
                 // else
                 // {
