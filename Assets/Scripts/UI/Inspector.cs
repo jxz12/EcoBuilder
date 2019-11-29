@@ -155,20 +155,21 @@ namespace EcoBuilder.UI
         void RandomiseIncubated()
         {
             incubated.RerollSeed();
-            if (allowConflicts)
+            if (traitsFixed || allowConflicts)
             {
                 incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
                 incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
             }
             else
             {
+                // first set up a set of possible conflicts
                 var traitPairs = new HashSet<Tuple<float,float>>();
                 foreach (Species spawned in spawnedSpecies.Values)
                 {
                     if (spawned.IsProducer == incubated.IsProducer) // no conflicts with other type
                         traitPairs.Add(Tuple.Create(spawned.BodySize, spawned.Greediness));
                 }
-                // choose a random combination from the available niches
+                // choose a random combination not in the set
                 var availablePairs = new List<Tuple<float, float>>();
                 foreach (float testSize in sizeTrait.PossibleValues)
                 {
@@ -212,21 +213,6 @@ namespace EcoBuilder.UI
             InspectSpecies(spawnedIdx);
             typesAnim.SetBool("Visible", true);
         }
-
-        // public void AllowConflicts(bool allowed)
-        // {
-        //     allowConflicts = allowed;
-        //     if (allowed)
-        //     {
-        //         sizeTrait.slider.wholeNumbers = false;
-        //         greedTrait.slider.wholeNumbers = false;
-        //     }
-        //     else
-        //     {
-        //         sizeTrait.slider.wholeNumbers = true;
-        //         greedTrait.slider.wholeNumbers = true;
-        //     }
-        // }
         int CheckSizeConflict(float newSize)
         {
             if (allowConflicts)
@@ -528,13 +514,18 @@ namespace EcoBuilder.UI
         {
             greedTrait.gameObject.SetActive(!hidden);
         }
+
+        // only for tutorial
+        bool traitsFixed = false;
         public void FixIncubatedSize(float fixedSize)
         {
-            sizeTrait.FixInitialValue(fixedSize);
+            sizeTrait.FixRandomSeedValue(fixedSize);
+            traitsFixed = true;
         }
         public void FixIncubatedGreed(float fixedGreed)
         {
-            greedTrait.FixInitialValue(fixedGreed);
+            greedTrait.FixRandomSeedValue(fixedGreed);
+            traitsFixed = true;
         }
 
         bool removeEnabled = true;

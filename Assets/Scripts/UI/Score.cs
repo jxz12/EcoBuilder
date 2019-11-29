@@ -51,14 +51,13 @@ namespace EcoBuilder.UI
             target1 = level.Details.targetScore1;
             target2 = level.Details.targetScore2;
 
-            // TODO: check if this needs to be unattached in OnDestroy()
             GameManager.Instance.PlayedLevel.OnFinished += CompleteLevel;
         }
-        // void OnDestroy()
-        // {
-        //     if (GameManager.Instance != null && GameManager.Instance.PlayedLevel != null)
-        //         GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
-        // }
+        void OnDestroy()
+        {
+            if (GameManager.Instance != null && GameManager.Instance.PlayedLevel != null)
+                GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
+        }
 
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;

@@ -45,7 +45,7 @@ namespace EcoBuilder.UI
 
 
         float initialValueIfFixed = -1;
-        public void FixInitialValue(float initialValue)
+        public void FixRandomSeedValue(float initialValue)
         {
             if (initialValue < 0 || initialValue > 1)
                 throw new Exception("initial value not normalised");
@@ -58,15 +58,13 @@ namespace EcoBuilder.UI
         {
             if (initialValueIfFixed >= 0)
             {
-                SetValueWithoutCallback(initialValueIfFixed);
+                return SetValueWithoutCallback(initialValueIfFixed);
             }
             else
             {
                 UnityEngine.Random.InitState(randomSeed);
-                SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
+                return SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
             }
-
-            return slider.normalizedValue;
         }
         public float SetValueWithoutCallback(float normalizedValue)
         {
@@ -75,7 +73,6 @@ namespace EcoBuilder.UI
 
             slider.normalizedValue = normalizedValue;
             currentValue = slider.normalizedValue;
-            print(currentValue);
             return currentValue;
         }
 
