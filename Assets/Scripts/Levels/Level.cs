@@ -54,7 +54,6 @@ namespace EcoBuilder.Levels
         public Level NextLevel { get; private set; }
 
         // thumbnail
-        // [SerializeField] Text numberText;
         [SerializeField] Image starsImage;
         [SerializeField] Sprite[] starSprites;
 
@@ -70,6 +69,7 @@ namespace EcoBuilder.Levels
 
         // finish
         [SerializeField] Button finishFlag;
+        [SerializeField] UI.Effect fireworks;
         // navigation
         [SerializeField] RectTransform nextLevelParent;
 
@@ -188,8 +188,8 @@ namespace EcoBuilder.Levels
         }
         public void ShowFinishFlag()
         {
-            // TODO: better animation here
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+            Instantiate(fireworks, transform);
         }
         // called when game is ended
         public void ShowNavigation()
