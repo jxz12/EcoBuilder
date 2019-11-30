@@ -69,7 +69,7 @@ namespace EcoBuilder.Levels
             Detach?.Invoke();
         }
 
-        void FixedUpdate()
+        void Update()
         {
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, smoothTime);
             rt.sizeDelta = Vector2.SmoothDamp(rt.sizeDelta, targetSize, ref sizocity, smoothTime);

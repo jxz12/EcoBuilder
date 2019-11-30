@@ -18,11 +18,11 @@ namespace EcoBuilder.UI
 
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
-        [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText; //, abundanceText;
+        [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
 
-        void Start()
+        Levels.Level constrainedFrom;
+        public void ConstrainFromLevel(Levels.Level level)
         {
-            var level = GameManager.Instance.PlayedLevel;
             if (level == null)
             {
                 constraints.Unconstrain("Leaf");
@@ -40,10 +40,10 @@ namespace EcoBuilder.UI
                 constraints.Constrain("Loop", level.Details.minLoop);
             }
             feasibleScoreCol = scoreText.color;
-            infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic number
+            infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic numbers
             scoreText.color = infeasibleScoreCol;
 
-            if (level == null) // only for test
+            if (level == null) // should never happen in a build
             {
                 DisableFinish();
                 return;
@@ -51,12 +51,13 @@ namespace EcoBuilder.UI
             target1 = level.Details.targetScore1;
             target2 = level.Details.targetScore2;
 
-            GameManager.Instance.PlayedLevel.OnFinished += CompleteLevel;
+            level.OnFinished += CompleteLevel;
+            constrainedFrom = level;
         }
         void OnDestroy()
         {
-            if (GameManager.Instance != null && GameManager.Instance.PlayedLevel != null)
-                GameManager.Instance.PlayedLevel.OnFinished -= CompleteLevel; // not sure if necessary?
+            if (constrainedFrom!=null)
+                constrainedFrom.OnFinished -= CompleteLevel;
         }
 
         int target1, target2;
@@ -196,18 +197,18 @@ namespace EcoBuilder.UI
             if (!CanFinish()) // only throw events if nothing else is busy
                 return;
 
-            GameManager.Instance.PlayedLevel.CurrentScore = realisedScore;
+            constrainedFrom.CurrentScore = realisedScore;
             if (numStars == 0 && newNumStars > 0)
             {
                 // scoreText.color = Color.green;
                 OnLevelCompletabled?.Invoke();
-                GameManager.Instance.PlayedLevel.ShowFinishFlag();
+                constrainedFrom.ShowFinishFlag();
             }
             else if (numStars > 0 && newNumStars == 0)
             {
                 // scoreText.color = infeasibleScoreCol;
                 OnLevelIncompletabled?.Invoke();
-                GameManager.Instance.PlayedLevel.ShowThumbnail();
+                constrainedFrom.ShowThumbnail();
             }
             numStars = newNumStars;
         }

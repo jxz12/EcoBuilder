@@ -34,9 +34,9 @@ namespace EcoBuilder
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
-            inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i);
+            inspector.OnConflicted +=      (i)=> nodelink.HighlightNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
-            inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
+            inspector.OnUnconflicted +=    (i)=> nodelink.UnhighlightNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
@@ -93,6 +93,7 @@ namespace EcoBuilder
             if (level == null)
                 return; // should never happen in real game
 
+            score.ConstrainFromLevel(level);
             for (int i=0; i<level.Details.numSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,

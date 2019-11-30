@@ -22,7 +22,7 @@ namespace EcoBuilder.Levels
         void ExplainIntro()
         {
             targetSize = new Vector2(100,100);
-            targetPos = new Vector2(100,-270);
+            targetPos = new Vector2(100,-220);
             targetAnchor = new Vector2(0,1);
             targetZRot = 30;
 

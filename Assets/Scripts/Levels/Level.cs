@@ -143,14 +143,12 @@ namespace EcoBuilder.Levels
             while (Time.time < startTime+duration)
             {
                 float t = (Time.time-startTime)/duration;
+                // quadratic ease in-out
                 if (t < .5f)
-                {
                     t = 2*t*t;
-                }
                 else
-                {
                     t = -1 + (4-2*t)*t;
-                }
+
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 yield return null;
             }

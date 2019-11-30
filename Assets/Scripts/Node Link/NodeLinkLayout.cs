@@ -13,6 +13,9 @@ namespace EcoBuilder.NodeLink
         Vector3 rotationCenter;
         void TweenNodes()
         {
+            if (!tweenNodes)
+                return;
+
             if (focusState != FocusState.SuperFocus)
             {
                 // get average of all positions, and center
@@ -88,6 +91,60 @@ namespace EcoBuilder.NodeLink
                 no.TweenPos(layoutSmoothTime);
                 no.GetComponent<HealthBar>().TweenHealth(.1f);
             }
+        }
+        [SerializeField] float yMinRotationVelocity, xDefaultRotation;
+        float yRotation=0, yTargetRotation=0, yRotationVelocity=0;
+        float xRotation=0, xTargetRotation=0, xRotationVelocity=0;
+        private void MomentumRotate()
+        {
+            if (dragging)
+            {
+                yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .05f);
+
+                xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .05f);
+            }
+            else
+            {
+                if (focusState != FocusState.SuperFocus)
+                {
+                    float yRotMod = yRotation % 360;
+                    if (yRotMod > 45 || yRotMod < -180)
+                        yMinRotationVelocity = -Mathf.Abs(yMinRotationVelocity);
+                    else if (yRotMod < -45 || yRotMod > 180)
+                        yMinRotationVelocity = Mathf.Abs(yMinRotationVelocity);
+                    else
+                        yMinRotationVelocity = Mathf.Sign(yRotationVelocity) * Mathf.Abs(yMinRotationVelocity);
+
+                    yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
+
+                    yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .05f);
+
+                    FixRotation(ref xRotation);
+                    xTargetRotation = xDefaultRotation;
+                    xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
+                }
+                else
+                {
+                    FixRotation(ref xRotation);
+                    FixRotation(ref yRotation);
+                    
+                    xTargetRotation = 0;
+                    yTargetRotation = 0;
+
+                    xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
+                    yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .3f);
+                    // TODO: lots of magic numbers here
+                }
+            }
+            nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
+            graphParent.transform.localRotation = Quaternion.Euler(xRotation,0,0);
+        }
+        void FixRotation(ref float rotation)
+        {
+            while (rotation < -180)
+                rotation += 360;
+            while (rotation > 180)
+                rotation -= 360;
         }
 
 

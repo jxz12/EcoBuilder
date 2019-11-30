@@ -23,10 +23,8 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
         [SerializeField] Effect heartPrefab, skullPrefab;
 
-        // [SerializeField] float etaMax, etaDecay; // this causes wobbling...
-        // int etaIteration = 0;
         [SerializeField] float eta=.1f;
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             //////////////////////
             // do stress SGD
@@ -52,11 +50,11 @@ namespace EcoBuilder.NodeLink
             {
                 TrophicGaussSeidel();
             }
-
-            if (doLayout)
-                TweenNodes();
-            if (!Input.anyKey && Input.touchCount==0)
-                MomentumRotate();
+        }
+        void Update()
+        {
+            TweenNodes();
+            MomentumRotate();
         }
 
 

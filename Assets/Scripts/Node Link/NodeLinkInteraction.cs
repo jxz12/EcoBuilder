@@ -13,11 +13,8 @@ namespace EcoBuilder.NodeLink
 	{
         [SerializeField] UI.Tooltip tooltip;
         [SerializeField] float rotationMultiplier, zoomMultiplier, panMultiplier;
-        [SerializeField] float yMinRotationVelocity, yRotationVelocityTween;
-        [SerializeField] float xDefaultRotation, xRotationTween;
-        [SerializeField] float holdThreshold;
 
-        enum FocusState { Unfocus, Focus, SuperFocus, Frozen };
+        enum FocusState { Unfocus, Focus, SuperFocus, Frozen }; // frozen is end of game
         FocusState focusState = FocusState.Unfocus;
         Node focusedNode = null;
         public void FocusNode(int idx) // called on click
@@ -214,14 +211,6 @@ namespace EcoBuilder.NodeLink
             focusState = FocusState.Frozen;
         }
 
-        bool doLayout = true;
-        void PauseLayout(bool paused)
-        {
-            if (doLayout != paused) // if already paused
-                return;
-            doLayout = !paused;
-        }
-
         void Zoom(float amount)
         {
             float zoom = amount * zoomMultiplier;
@@ -248,55 +237,12 @@ namespace EcoBuilder.NodeLink
             graphParent.localScale = endZoom;
         }
 
-        float yRotation = 0, yRotationVelocity = 0;
         void UserRotate(Vector2 delta)
         {
-            var amount = delta / (Screen.dpi==0? 72:Screen.dpi);
-            float ySpin = -amount.x * rotationMultiplier;
-            float xSpin = amount.y * rotationMultiplier;
-            yRotationVelocity = ySpin;
-
-            if (focusState != FocusState.SuperFocus)
-            {
-                yRotation += yRotationVelocity;
-                nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
-                graphParent.Rotate(Vector3.right, xSpin);
-            }
-            else
-            {
-                nodesParent.transform.Rotate(Vector3.up, ySpin);
-            }
-
-        }
-        private void MomentumRotate()
-        {
-            if (focusState != FocusState.SuperFocus)
-            {
-                // apply rotation
-                yRotation += yRotationVelocity;
-                var nodesParentGoal = Quaternion.Euler(0,yRotation,0);
-                nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, nodesParentGoal, 1);
-                var graphParentGoal = Quaternion.Euler(xDefaultRotation, 0, 0);
-                graphParent.localRotation = Quaternion.Lerp(graphParent.localRotation, graphParentGoal, xRotationTween);
-
-                // apply damping
-                while (yRotation < -180)
-                    yRotation += 360;
-                while (yRotation > 180)
-                    yRotation -= 360;
-
-                if (yRotation < -45)
-                    yRotationVelocity = Mathf.Lerp(yRotationVelocity, yMinRotationVelocity, yRotationVelocityTween);
-                else if (yRotation > 45)
-                    yRotationVelocity = Mathf.Lerp(yRotationVelocity, -yMinRotationVelocity, yRotationVelocityTween);
-                else
-                    yRotationVelocity = Mathf.Lerp(yRotationVelocity, Mathf.Sign(yRotationVelocity)*yMinRotationVelocity, yRotationVelocityTween);
-            }
-            else
-            {
-                nodesParent.localRotation = Quaternion.Lerp(nodesParent.localRotation, Quaternion.identity, xRotationTween);
-                graphParent.transform.localRotation = Quaternion.Lerp(graphParent.transform.localRotation, Quaternion.identity, xRotationTween);
-            }
+            delta /= (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            delta *= rotationMultiplier; // convert to degrees
+            yTargetRotation -= delta.x;
+            xTargetRotation += delta.y;
         }
 
         ///////////////////////////////
@@ -307,12 +253,13 @@ namespace EcoBuilder.NodeLink
         Node potentialSource;
         Link potentialLink;
         Node pressedNode;
+        bool tweenNodes = true;
         public void OnPointerDown(PointerEventData ped)
         {
             // if (ped.pointerId==-1 || (Input.touchCount==1 && ped.pointerId==0))
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                PauseLayout(true);
+                tweenNodes = false;
 
                 pressedNode = ClosestSnappedNode(ped);
                 if (pressedNode != null)
@@ -328,7 +275,7 @@ namespace EcoBuilder.NodeLink
         {
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                PauseLayout(false);
+                tweenNodes = true;
 
                 if (!ped.dragging) // if click
                 {
@@ -360,8 +307,10 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        bool dragging = false;
         public void OnBeginDrag(PointerEventData ped)
         {
+            dragging = true;
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 if (pressedNode != null)
@@ -389,7 +338,7 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    PauseLayout(false);
+                    tweenNodes = true;
                     tooltip.Disable();
                 }
             }
@@ -552,6 +501,7 @@ namespace EcoBuilder.NodeLink
                     tooltip.Disable();
                 }
             }
+            dragging = false;
         }
         public void OnScroll(PointerEventData ped)
         {
@@ -669,25 +619,27 @@ namespace EcoBuilder.NodeLink
         {
             links[source, target].DefaultOutline = colourIdx;
         }
-        public void OutlineNode(int idx, int colourIdx=4)
+        public void HighlightNode(int idx)
         {
-            nodes[idx].Outline(colourIdx);
+            nodes[idx].Outline(4);
         }
-        public void UnoutlineNode(int idx)
+        public void UnhighlightNode(int idx)
         {
             nodes[idx].Unoutline();
         }
+
+        // TODO: this is a bit messy
         public void TooltipNode(int idx, string msg)
         {
             tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
             tooltip.ShowText(msg);
             tooltip.Enable();
-            // frozen = true; // TODO: this might bite me in the ass
+            tweenNodes = dragging = false;
         }
         public void UntooltipNode(int idx)
         {
             tooltip.Disable();
-            // frozen = false;
+            tweenNodes = dragging = true;
         }
 	}
 }

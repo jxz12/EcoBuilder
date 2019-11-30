@@ -41,7 +41,7 @@ namespace EcoBuilder.Model
 
         [ReadOnly] [SerializeField]
         float minRealAbund = 2e-10f,
-              maxRealAbund = 2f,
+              maxRealAbund = 1.95f,
               minRealFlux = 1e-16f,
               maxRealFlux = 1e-6f;
 
@@ -236,7 +236,8 @@ namespace EcoBuilder.Model
         }
         public string ScoreExplanation()
         {
-            return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + simulation.TotalAbundance + " = " + (simulation.Richness*simulation.Connectance*simulation.TotalAbundance);
+            // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
+            return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
         }
 
         private float total_NormAbund;
@@ -318,7 +319,7 @@ namespace EcoBuilder.Model
                     valueStr = prop.boolValue.ToString();
                     break;
                 case SerializedPropertyType.Float:
-                    valueStr = prop.floatValue.ToString("e1");
+                    valueStr = prop.floatValue.ToString("e2");
                     break;
                 case SerializedPropertyType.String:
                     valueStr = prop.stringValue;

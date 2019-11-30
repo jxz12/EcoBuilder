@@ -98,7 +98,7 @@ namespace EcoBuilder.Levels
             targetAnchor = new Vector3(0f,0f);
             targetZRot = 360;
             StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
-            inspector.HidePlantPawButton();
+            inspector.HideIncubateButton();
 
             Detach();
             Action<int, int> foo = (i,j)=> ExplainFirstEcosystem(true);
@@ -235,9 +235,12 @@ namespace EcoBuilder.Levels
             // targetSize = new Vector2(140, 140);
             targetPos = new Vector2(50, 300);
 
-            onTop = gameObject.AddComponent<Canvas>();
-            onTop.overrideSorting = true;
-            onTop.sortingOrder = 3;
+            if (onTop == null)
+            {
+                onTop = gameObject.AddComponent<Canvas>();
+                onTop.overrideSorting = true;
+                onTop.sortingOrder = 3;
+            }
 
             Detach();
             Action foo = ()=>Finish();
