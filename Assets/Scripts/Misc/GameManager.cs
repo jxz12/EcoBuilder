@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
+using UnityEngine.Events;
 
 // for load/save progress
 using System.Runtime.Serialization;
@@ -280,20 +281,25 @@ namespace EcoBuilder
         ///////////////////
 
         // TODO: loading screen or loading events here
-        event Action OnNewSceneLoaded;
+        [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
+        [Serializable] public class MyFloatEvent : UnityEvent<float> {}
+        [SerializeField] MyFloatEvent OnLoadingProgress;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
+            OnSceneUnloaded.Invoke();
             var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
             while (!unloading.isDone)
             {
+                OnLoadingProgress?.Invoke(unloading.progress/2);
                 yield return null;
             }
             var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
             while (!loading.isDone)
             {
+                OnLoadingProgress?.Invoke(.5f + loading.progress/2);
                 yield return null;
             }
-            OnNewSceneLoaded?.Invoke();
+            OnSceneLoaded?.Invoke();
         }
 
         public void ReturnToMenu()

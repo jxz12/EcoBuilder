@@ -115,7 +115,7 @@ namespace EcoBuilder.UI
             Show(showing);
             OnUserShown?.Invoke();
         }
-        void FixedUpdate()
+        void Update()
         {
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, .15f);
             rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, .15f);

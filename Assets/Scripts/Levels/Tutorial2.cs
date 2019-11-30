@@ -12,7 +12,7 @@ namespace EcoBuilder.Levels
         {
             inspector.HideSizeSlider(false);
             inspector.HideGreedSlider(true);
-            inspector.HidePlantPawButton(true);
+            inspector.HideIncubateButton(true);
             inspector.HideRemoveButton(true);
             score.HideScore(true);
             score.HideConstraints(true);
@@ -83,7 +83,9 @@ namespace EcoBuilder.Levels
             smoothTime = .3f;
             targetSize = Vector2.zero;
 
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or its food source lighter, as lighter species grow and eat faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing the plant again."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(trackRoutine = Track(plant.transform)); targetSize = new Vector2(100,100);}));
+            StartCoroutine(WaitThenDo(delay, ()=>{
+                help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or its food source lighter, as lighter species grow and eat faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing the plant again."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(trackRoutine = Track(plant.transform)); targetSize = new Vector2(100,100);
+            }));
 
 
             Detach();
@@ -131,14 +133,16 @@ namespace EcoBuilder.Levels
             // targetZRot = 45;
             // Point();
             StopCoroutine(shuffleRoutine);
+            smoothTime = .2f;
 
             inspector.Uninspect();
             nodelink.FullUnfocus();
             help.SetSide(false,false);
             help.SetDistFromTop(.13f);
 
-            StartCoroutine(WaitThenDo(2, ()=>{help.SetText("Good job! This bar at the top displays your score, and is based on three things: the number of species, the number of links, and the total population of all species, indicated by the health bars next to each species. You can press your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!");
-            help.Show(true); score.HideScore(false); score.DisableFinish(false);}));
+            StartCoroutine(WaitThenDo(2, ()=>{
+                help.SetText("Good job! This bar at the top displays your score, and is based on three things: the number of species, the number of links, and the total population of all species, indicated by the health bars next to each species. You can press your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
+            }));
 
             Detach();
             Action foo = ()=> Finish();

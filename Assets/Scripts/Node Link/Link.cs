@@ -61,20 +61,24 @@ namespace EcoBuilder.NodeLink
                 outline.color = DefaultOutline;
             }
         }
+        bool show = true;
         public void Show(bool showing=true)
         {
+            show = showing;
             if (showing)
             {
-                gameObject.SetActive(true);
+                // gameObject.SetActive(true);
                 // outline.enabled = true;
             }
             else
             {
-                gameObject.SetActive(false);
+                // gameObject.SetActive(false);
                 // outline.enabled = false;
             }
         }
 
+        private float tileOffset = 0;
+        private float widthocity;
         private void LateUpdate()
         {
             if (Curved)
@@ -103,8 +107,9 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            float width = lineWidth * transform.lossyScale.x;
-            lr.widthMultiplier = width;
+            float width = show? lineWidth*transform.lossyScale.x : 0;
+            // lr.widthMultiplier = width;
+            lr.widthMultiplier = Mathf.SmoothDamp(lr.widthMultiplier, width, ref widthocity, .2f);
 
             float height = (Source.transform.position - Target.transform.position).magnitude;
             lr.material.SetFloat("_Spacing", height/(width*numBalls) - 1);
@@ -114,14 +119,9 @@ namespace EcoBuilder.NodeLink
             lr.startColor = c;
             c = Source.Col;
             lr.endColor = c;
-        }
 
-        private float tileOffset = 0;
-        private void FixedUpdate()
-        {
-            tileOffset -= TileSpeed;
+            tileOffset -= TileSpeed * Time.deltaTime;
             lr.material.SetFloat("_Offset", tileOffset);
-            // lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .1f));
         }
     }
 }

@@ -533,7 +533,7 @@ namespace EcoBuilder.UI
         {
             removeEnabled = !hidden;
         }
-        public void HidePlantPawButton(bool hidden=true)
+        public void HideIncubateButton(bool hidden=true)
         {
             typesAnim.gameObject.SetActive(!hidden);
         }
