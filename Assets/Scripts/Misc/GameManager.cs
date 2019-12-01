@@ -311,7 +311,7 @@ namespace EcoBuilder
         {
             if (PlayedLevel != null)
             {
-                Destroy(PlayedLevel.gameObject);
+                // Destroy(PlayedLevel.gameObject);
                 PlayedLevel = null;
             }
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));

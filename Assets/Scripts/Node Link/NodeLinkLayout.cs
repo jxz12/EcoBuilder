@@ -93,7 +93,7 @@ namespace EcoBuilder.NodeLink
             }
         }
         [SerializeField] float yMinRotationVelocity, xDefaultRotation;
-        float yRotation=0, yTargetRotation=0, yRotationVelocity=0;
+        float yRotation=0, yTargetRotation=0, yRotationVelocity=-Mathf.Epsilon; // spin other way initially
         float xRotation=0, xTargetRotation=0, xRotationVelocity=0;
         private void MomentumRotate()
         {
