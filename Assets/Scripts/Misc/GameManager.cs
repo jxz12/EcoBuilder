@@ -65,7 +65,7 @@ namespace EcoBuilder
             {
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
-            SavePlayerDetailsLocal();
+            player.team = -1;
         }
 
 
@@ -79,24 +79,29 @@ namespace EcoBuilder
             // TODO: store this locally and on server
             public string email;
             public string password;
-            public int team;
 
             public int age;
             public int gender;
             public int education;
             
+            public int team; // 0 is none (also trophic), 1 is trophic, -1 is unconstrained
             public List<int> highScores;
         }
         [SerializeField] PlayerDetails player;
+        public bool ConstrainTrophic { get { return player.team >= 0; } }
+
         public void Login(string email, string password)
         {
+            // TODO: fetch high scores from server if possible.
             StartCoroutine(Http());
         }
         public void Logout()
         {
-            // TODO: keep track of playthroughs, and send if ever log in?
+            // TODO: stop keeping track of playthroughs
         }
 
+        /////////////////////////////
+        // questions at first login
         public void SetEmailAndPassword(string email, string password)
         {
             // TODO: send these to the server to store it 
@@ -147,7 +152,7 @@ namespace EcoBuilder
         }
         public void Quit()
         {
-            // TODO: send data if possible
+            // TODO: send data if possible? and also on every level finish!
             #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
             #else

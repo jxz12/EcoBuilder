@@ -107,8 +107,7 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            float width = show? lineWidth*transform.lossyScale.x : 0;
-            // lr.widthMultiplier = width;
+            float width = show? lineWidth*transform.lossyScale.x : 0; // TODO: make this smooth on lossyScale
             lr.widthMultiplier = Mathf.SmoothDamp(lr.widthMultiplier, width, ref widthocity, .2f);
 
             float height = (Source.transform.position - Target.transform.position).magnitude;
