@@ -14,10 +14,16 @@ namespace EcoBuilder.UI
         public event Action<float, float> OnUserSlid; // from, to
         public event Action<int> OnConflicted;
         public event Action<int> OnUnconflicted;
-        public bool Interactable { set { slider.interactable = value; } }
+        public bool Interactable {
+            set { 
+                slider.interactable = value;
+                slider.targetGraphic.color = value? Color.white : Color.blue;
+            }
+        }
 
         float currentValue = -1;
-        public Slider slider { get; private set; }
+        // public Slider slider { get; private set; }
+        private Slider slider;
         void Awake()
         {
             slider = GetComponent<Slider>();
@@ -119,18 +125,6 @@ namespace EcoBuilder.UI
             }
         }
         bool dragging;
-        // public void OnBeginDrag(PointerEventData ped)
-        // {
-        //     dragging = true;
-        // }
-        // public void OnDrag(PointerEventData ped)
-        // {
-        //     // DO NOTHING
-        // }
-        // public void OnEndDrag(PointerEventData ped)
-        // {
-        //     CancelDrag();
-        // }
         public void OnPointerDown(PointerEventData ped)
         {
             dragging = true;
