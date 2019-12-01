@@ -63,9 +63,7 @@ namespace EcoBuilder
             }
             if (SceneManager.sceneCount == 1) // on startup
             {
-                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
-                earth.Grow();
-                // SceneManager.LoadSceneAsync("Play", LoadSceneMode.Additive);
+                StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
             SavePlayerDetailsLocal();
         }
@@ -248,7 +246,6 @@ namespace EcoBuilder
                 // UnloadSceneThenLoadAnother("Menu", "Play");
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
-            earth.Shrink();
         }
 
         // This whole structure is necessary because you cannot change prefabs from script when compiled
@@ -286,21 +283,29 @@ namespace EcoBuilder
         [SerializeField] MyFloatEvent OnLoadingProgress;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
-            OnSceneUnloaded.Invoke();
-            var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
-            while (!unloading.isDone)
+            if (toUnload != null)
             {
-                OnLoadingProgress?.Invoke(unloading.progress/2);
-                yield return null;
+                OnSceneUnloaded.Invoke();
+                var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
+                while (!unloading.isDone)
+                {
+                    OnLoadingProgress?.Invoke(unloading.progress/2);
+                    yield return null;
+                }
             }
-            var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
-            while (!loading.isDone)
+            if (toLoad != null)
             {
-                OnLoadingProgress?.Invoke(.5f + loading.progress/2);
-                yield return null;
+                var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
+                while (!loading.isDone)
+                {
+                    OnLoadingProgress?.Invoke(.5f + loading.progress/2);
+                    yield return null;
+                }
+                OnSceneLoaded?.Invoke();
+                OnLoaded?.Invoke(toLoad);
             }
-            OnSceneLoaded?.Invoke();
         }
+        public event Action<string> OnLoaded;
 
         public void ReturnToMenu()
         {
@@ -310,7 +315,6 @@ namespace EcoBuilder
                 PlayedLevel = null;
             }
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
-            earth.Grow();
         }
     }
 }

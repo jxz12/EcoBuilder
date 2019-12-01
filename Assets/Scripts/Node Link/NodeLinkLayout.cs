@@ -116,7 +116,6 @@ namespace EcoBuilder.NodeLink
                         yMinRotationVelocity = Mathf.Sign(yRotationVelocity) * Mathf.Abs(yMinRotationVelocity);
 
                     yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
-
                     yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .05f);
 
                     FixRotation(ref xRotation);

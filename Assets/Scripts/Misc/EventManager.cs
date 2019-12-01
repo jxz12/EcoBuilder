@@ -90,10 +90,10 @@ namespace EcoBuilder
             // initialise level
 
             var level = GameManager.Instance.PlayedLevel;
+            score.ConstrainFromLevel(level);
             if (level == null)
                 return; // should never happen in real game
 
-            score.ConstrainFromLevel(level);
             for (int i=0; i<level.Details.numSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,

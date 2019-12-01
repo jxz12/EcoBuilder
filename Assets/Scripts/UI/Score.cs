@@ -194,7 +194,7 @@ namespace EcoBuilder.UI
             }
 
 
-            if (!CanFinish()) // only throw events if nothing else is busy
+            if (!CanFinish() || constrainedFrom==null) // only throw events if nothing else is busy
                 return;
 
             constrainedFrom.CurrentScore = realisedScore;
@@ -233,6 +233,10 @@ namespace EcoBuilder.UI
         public void HideScore(bool hidden=true)
         {
             GetComponent<Animator>().enabled = !hidden;
+            if (hidden)
+                transform.localPosition = new Vector2(0,1000); // hack
+            // else
+            //     transform.localPosition = Vector2.zero;
         }
         public void HideConstraints(bool hidden=true)
         {

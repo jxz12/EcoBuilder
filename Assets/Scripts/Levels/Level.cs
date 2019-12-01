@@ -226,11 +226,26 @@ namespace EcoBuilder.Levels
         Tutorial teacher;
         public void Play()
         {
+            GameManager.Instance.PlayLevel(this);
+            GameManager.Instance.OnLoaded += MoveToCorner;
+        }
+        void MoveToCorner(string s) // TODO: what am I doing make this neater
+        {
             thumbnailedParent = GameManager.Instance.PlayParent;
             ShowThumbnail(1.5f);
-            GameManager.Instance.PlayLevel(this);
-            StartCoroutine(WaitThenEnableQuitReplay());
+            StartCoroutine(WaitThenEnableQuitReplay(1.5f));
+            GameManager.Instance.OnLoaded -= MoveToCorner;
         }
+        // necessary because there is no separate 'playing' state
+        // but the card requires something different
+        IEnumerator WaitThenEnableQuitReplay(float waitTime)
+        {
+            playButton.gameObject.SetActive(false);
+            yield return new WaitForSeconds(waitTime);
+            quitButton.gameObject.SetActive(true);
+            replayButton.gameObject.SetActive(true);
+        }
+
         public void StartTutorialIfAvailable()
         {
             if (tutorial != null)
@@ -242,15 +257,6 @@ namespace EcoBuilder.Levels
                 Destroy(teacher.gameObject);
         }
 
-        // necessary because there is no separate 'playing' state
-        // but the card requires something different
-        IEnumerator WaitThenEnableQuitReplay()
-        {
-            playButton.gameObject.SetActive(false);
-            yield return new WaitForSeconds(.5f);
-            quitButton.gameObject.SetActive(true);
-            replayButton.gameObject.SetActive(true);
-        }
         public void BackToMenu()
         {
             // TODO: 'are you sure' option
