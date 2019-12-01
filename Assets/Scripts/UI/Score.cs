@@ -223,6 +223,8 @@ namespace EcoBuilder.UI
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");
 
+            constraints.Show(false);
+
             OnLevelCompleted.Invoke();
         }
 
