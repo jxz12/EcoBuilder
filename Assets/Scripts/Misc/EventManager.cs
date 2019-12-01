@@ -118,6 +118,7 @@ namespace EcoBuilder
                 nodelink.SetLinkDefaultOutline(i, j);
             }
             nodelink.AddDropShadow(level.Landscape);
+            nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             help.SetText(level.Details.introduction);
             level.StartTutorialIfAvailable();
 

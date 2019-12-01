@@ -10,7 +10,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float layoutSmoothTime=.5f;//, sizeTween=.05f;
 
         Vector3 nodesVelocity, graphVelocity;
-        Vector3 rotationCenter;
+        // Vector3 rotationCenter;
         void TweenNodes()
         {
             if (!tweenNodes)
@@ -20,7 +20,16 @@ namespace EcoBuilder.NodeLink
             {
                 // get average of all positions, and center
                 Vector3 centroid;
-                if (focusState != FocusState.Focus)
+                if (focusState == FocusState.Focus)
+                {
+                    centroid = focusedNode.StressPos;
+
+                    nodesParent.localPosition =
+                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
+                    graphParent.localPosition =
+                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2, ref graphVelocity, layoutSmoothTime);
+                }
+                else // if (focusState != FocusState.Focus)
                 {
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
@@ -35,17 +44,8 @@ namespace EcoBuilder.NodeLink
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused, ref graphVelocity, layoutSmoothTime);
                 }
-                else // if (focusState == FocusState.Focus)
-                {
-                    centroid = focusedNode.StressPos;
 
-                    nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
-                    graphParent.localPosition =
-                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2, ref graphVelocity, layoutSmoothTime);
-                }
-
-                if (constrainTrophic)
+                if (ConstrainTrophic)
                 {
                     // centroid = Vector3.zero;
                     // float height = Mathf.Min(MaxChain, maxHeight);
@@ -56,7 +56,7 @@ namespace EcoBuilder.NodeLink
                         centroid.y = no.StressPos.y - (trophicScaling * (trophicLevels[no.Idx]-1));
                         no.StressPos -= centroid;
                     }
-                    rotationCenter = Vector3.up * height/2;
+                    // rotationCenter = Vector3.up * height/2;
                 }
                 else
                 {
@@ -65,7 +65,7 @@ namespace EcoBuilder.NodeLink
                         sqradius = Mathf.Max(sqradius, (no.StressPos - centroid).sqrMagnitude);
 
                     float radius = Mathf.Sqrt(sqradius);
-                    rotationCenter = Vector3.up * radius;
+                    // rotationCenter = Vector3.up * radius;
                     centroid.y -= radius;
                     foreach (Node no in nodes)
                         no.StressPos -= centroid;
@@ -83,7 +83,7 @@ namespace EcoBuilder.NodeLink
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
                                     ref graphVelocity, layoutSmoothTime);
                 
-                rotationCenter = Vector3.up * maxHeight/2;
+                // rotationCenter = Vector3.up * maxHeight/2;
             }
 
             foreach (Node no in nodes)
@@ -255,7 +255,7 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////////////
         // for trophic level calculation
 
-        [SerializeField] bool constrainTrophic;
+        public bool ConstrainTrophic { get; set; }
         private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
         private SparseVector<float> trophicLevels = new SparseVector<float>();
 

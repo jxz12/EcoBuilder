@@ -36,7 +36,7 @@ namespace EcoBuilder.NodeLink
                     var d_j = ShortestPathsBFS(dq);
 
                     // eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
-                    if (constrainTrophic)
+                    if (ConstrainTrophic)
                         LayoutSGDHorizontal(dq, d_j, eta);
                     else
                         LayoutSGD(dq, d_j, eta);
@@ -77,7 +77,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = new Vector3(1,0,-.5f) + .5f*UnityEngine.Random.insideUnitSphere;
+                newNode.StressPos = new Vector3(1,0,-1) + .5f*UnityEngine.Random.insideUnitSphere;
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
