@@ -114,15 +114,12 @@ namespace EcoBuilder.Levels
             }
             starsImage.sprite = starSprites[numStars];
 
-            // targetSize = GetComponent<RectTransform>().sizeDelta;
-            // if (thumbnailedParent == null)
-            //     thumbnailedParent = transform.parent.GetComponent<RectTransform>();
         }
 
         //////////////////////////////
         // animations states
 
-        enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3 }
+        enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3, Leaving=4 }
 
         // TODO: fun animation here to draw eye towards next level
         public void Unlock()
@@ -130,14 +127,21 @@ namespace EcoBuilder.Levels
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
 
-        bool tweening =false;
-        IEnumerator TweenToZeroPos(float duration)
+        IEnumerator tweenRoutine;
+        IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
         {
-            while (tweening)
+            while (tweenRoutine != null)
             {
                 yield return null;
             }
-            tweening = true;
+            transform.SetParent(newParent, true);
+            transform.localScale = Vector3.one;
+            tweenRoutine = TweenToZeroPos(duration);
+            yield return tweenRoutine;
+            tweenRoutine = null;
+        }
+        IEnumerator TweenToZeroPos(float duration)
+        {
             Vector3 startPos = transform.localPosition;
             float startTime = Time.time;
             while (Time.time < startTime+duration)
@@ -152,7 +156,6 @@ namespace EcoBuilder.Levels
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 yield return null;
             }
-            tweening = false;
         }
 
         Transform thumbnailedParent;
@@ -162,9 +165,7 @@ namespace EcoBuilder.Levels
         }
         public void ShowThumbnail(float tweenTime)
         {
-            transform.SetParent(thumbnailedParent, true);
-            transform.localScale = Vector3.one;
-            StartCoroutine(TweenToZeroPos(tweenTime));
+            StartCoroutine(TweenToZeroPosFrom(tweenTime, thumbnailedParent));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             OnThumbnailed?.Invoke();
@@ -177,9 +178,7 @@ namespace EcoBuilder.Levels
                 GameManager.Instance.CardParent.GetComponentInChildren<Level>().ShowThumbnail();
 
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-            transform.SetParent(GameManager.Instance.CardParent, true);
-            transform.localScale = Vector3.one;
-            StartCoroutine(TweenToZeroPos(.5f));
+            StartCoroutine(TweenToZeroPosFrom(.5f, GameManager.Instance.CardParent));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
             OnCarded?.Invoke();
@@ -195,9 +194,7 @@ namespace EcoBuilder.Levels
             if (GameManager.Instance.NavParent.transform.childCount > 0)
                 throw new Exception("more than one navigation?");
 
-            transform.SetParent(GameManager.Instance.NavParent, true);
-            transform.localScale = Vector3.one;
-            StartCoroutine(TweenToZeroPos(1f));
+            StartCoroutine(TweenToZeroPosFrom(1f, GameManager.Instance.NavParent));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
@@ -227,14 +224,17 @@ namespace EcoBuilder.Levels
         public void Play()
         {
             GameManager.Instance.PlayLevel(this);
-            GameManager.Instance.OnLoaded += MoveToCorner;
+            GameManager.Instance.OnLoaded += MoveToCornerOnPlay;
         }
-        void MoveToCorner(string s) // TODO: what am I doing make this neater
+        void MoveToCornerOnPlay(string sceneName)
         {
+            if (sceneName != "Play")
+                throw new Exception("Play scene not loaded when expected");
+
+            GameManager.Instance.OnLoaded -= MoveToCornerOnPlay;
             thumbnailedParent = GameManager.Instance.PlayParent;
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
-            GameManager.Instance.OnLoaded -= MoveToCorner;
         }
         // necessary because there is no separate 'playing' state
         // but the card requires something different
@@ -261,6 +261,15 @@ namespace EcoBuilder.Levels
         {
             // TODO: 'are you sure' option
             GameManager.Instance.ReturnToMenu();
+            GameManager.Instance.OnLoaded += DestroyWhenMenuLoads;
+        }
+        void DestroyWhenMenuLoads(string sceneName)
+        {
+            if (sceneName != "Menu")
+                throw new Exception("Menu scene not loaded when expected");
+
+            GameManager.Instance.OnLoaded -= DestroyWhenMenuLoads;
+            Destroy(gameObject);
         }
 
 
