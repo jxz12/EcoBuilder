@@ -26,7 +26,7 @@ namespace EcoBuilder.Levels
             targetAnchor = new Vector2(0,1);
             targetZRot = 30;
 
-            help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Feel free to try the tutorials again if you get stuck! If you press and hold this panel to the left, you will receive an explanation for why you cannot finish the level. Good luck!");
+            help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Here you must add two plants, four animals, and have at least 6 interactions between them. If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. Good luck!");
 
             Detach?.Invoke();
             

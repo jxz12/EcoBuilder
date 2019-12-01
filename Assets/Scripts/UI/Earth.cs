@@ -33,20 +33,11 @@ namespace EcoBuilder.UI
             {
                 anim.SetTrigger("Grow");
             }
-            else if (s == "Play")
+            else if (s == "Play" && !anim.GetCurrentAnimatorStateInfo(0).IsName("Hidden")) // so ugly
             {
                 anim.SetTrigger("Shrink");
             }
         }
-        // // for gamemanager
-        // public void Grow()
-        // {
-        //     anim.SetTrigger("Grow");
-        // }
-        // public void Shrink()
-        // {
-        //     anim.SetTrigger("Shrink");
-        // }
 
         // for user interaction
         // [SerializeField] float minRotationVelocity, rotationMultiplier;

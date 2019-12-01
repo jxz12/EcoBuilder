@@ -298,9 +298,10 @@ namespace EcoBuilder.Levels
                 Destroy(teacher.gameObject);
             }
             // thumbnailedParent = GameManager.Instance.PlayParent;
-            ShowThumbnail(1.5f);
-            GameManager.Instance.PlayLevel(this);
+            // ShowThumbnail(1.5f);
+            // GameManager.Instance.PlayLevel(this);
             // StartCoroutine(WaitThenEnableQuitReplay());
+            Play();
         }
     }
 }
