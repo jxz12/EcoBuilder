@@ -42,6 +42,7 @@ namespace EcoBuilder.Levels
         {
             inspector.Uninspect();
             nodelink.FullUnfocus();
+            help.SetDistFromTop(.2f);
 
             StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! If your ecosystem gets too crowded, you can press a species twice to focus only on the species that it is directly connected to. This is helpful for navigating a complicated system. Enjoy the rest of the game!");}));
 
