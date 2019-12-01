@@ -141,7 +141,7 @@ namespace EcoBuilder.Levels
             help.SetDistFromTop(.13f);
 
             StartCoroutine(WaitThenDo(2, ()=>{
-                help.SetText("Good job! This bar at the top displays your score, and is based on three things: the number of species, the number of links, and the total population of all species, indicated by the health bars next to each species. You can press your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
+                help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can press your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
             }));
 
             Detach();
