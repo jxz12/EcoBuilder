@@ -608,7 +608,7 @@ namespace EcoBuilder.NodeLink
 
             var shadow = Instantiate(shadowPrefab);
             shadow.transform.SetParent(nodesParent, false);
-            shadow.transform.localPosition = Vector3.down * 1f;
+            shadow.transform.localPosition = Vector3.zero;
             shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
         }
         public void SetNodeDefaultOutline(int idx, int colourIdx=0)

@@ -24,6 +24,9 @@ namespace EcoBuilder.UI
             targetPos = rt.anchoredPosition;
             targetAnchor = rt.anchorMin;
             canvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect;
+
+            // prevents scene getting dirty, Unity autolayout sucks
+            message.transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
         }
         void Start()
         {
@@ -32,6 +35,7 @@ namespace EcoBuilder.UI
 
             StartCoroutine(DelayThenShow(2, true));
         }
+        // also because unity autolayout suckssss
         void ForceUpdateLayout()
         {
             Canvas.ForceUpdateCanvases();

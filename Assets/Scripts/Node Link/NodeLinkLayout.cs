@@ -60,18 +60,26 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    float sqradius = 0;
-                    foreach (Node no in nodes)
-                        sqradius = Mathf.Max(sqradius, (no.StressPos - centroid).sqrMagnitude);
+                    // float sqradius = 0;
+                    // foreach (Node no in nodes)
+                    //     sqradius = Mathf.Max(sqradius, (no.StressPos - centroid).sqrMagnitude);
 
-                    float radius = Mathf.Sqrt(sqradius);
-                    // rotationCenter = Vector3.up * radius;
-                    centroid.y -= radius;
+                    // float radius = Mathf.Sqrt(sqradius);
+                    // // rotationCenter = Vector3.up * radius;
+                    // centroid.y -= radius;
+                    // foreach (Node no in nodes)
+                    //     no.StressPos -= centroid;
+
+
+                    float minY = float.MaxValue;
                     foreach (Node no in nodes)
+                        minY = Mathf.Min(no.StressPos.y, minY);
+
+                    centroid.y = minY;
+                    foreach (Node no in nodes)
+                    {
                         no.StressPos -= centroid;
-
-                    // TODO: make the nodes bigger here
-                    //          why did I write this?
+                    }
                 }
             }
             else // superfocused
@@ -127,11 +135,11 @@ namespace EcoBuilder.NodeLink
                     FixRotation(ref xRotation);
                     FixRotation(ref yRotation);
                     
-                    xTargetRotation = 0;
-                    yTargetRotation = 0;
+                    // xTargetRotation = 0;
+                    // yTargetRotation = 0;
 
-                    xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
-                    yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .3f);
+                    xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .3f);
+                    yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .3f);
                     // TODO: lots of magic numbers here
                 }
             }
@@ -210,6 +218,92 @@ namespace EcoBuilder.NodeLink
             }
         }
 
+        public static IEnumerable<int> FYShuffle(IEnumerable<int> toShuffle)
+        {
+            var shuffled = new List<int>();
+            foreach (int i in toShuffle)
+                shuffled.Add(i);
+            
+            int n = shuffled.Count;
+            for (int i=0; i<n-1; i++)
+            {
+                int j = UnityEngine.Random.Range(i, n);
+                // i = j
+                yield return shuffled[j];
+                // then j = i
+                shuffled[j] = shuffled[i];
+            }
+            yield return shuffled[n-1];
+        }
+
+        private void LayoutMajorization(int i, Dictionary<int, int> d_j)
+        {
+            Vector3 X_i = nodes[i].StressPos;
+            float topSumX = 0, topSumY = 0, topSumZ = 0, botSum=0;
+            foreach (int j in nodes.Indices)
+            {
+                if (i == j)
+                    continue;
+                
+                Vector3 X_j = nodes[j].StressPos;
+                float mag = (X_i - X_j).magnitude;
+                if (d_j.ContainsKey(j))
+                {
+                    float d_ij = d_j[j];
+                    float w_ij = 1f / (d_ij * d_ij);
+
+                    topSumX += w_ij * (X_j.x + (d_ij*(X_i.x - X_j.x))/mag);
+                    topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
+                    topSumZ += w_ij * (X_j.z + (d_ij*(X_i.z - X_j.z))/mag);
+                    botSum += w_ij;
+                }
+                else if (mag < 1) // apply dwyer separation constraint
+                {
+                    Vector3 r = ((mag-1)/2) * ((X_i-X_j)/mag);
+                    nodes[i].StressPos -= r;
+                    nodes[j].StressPos += r;
+                }
+            }
+            if (botSum > 0)
+            {
+                nodes[i].StressPos = new Vector3(topSumX/botSum, topSumY/botSum, topSumZ/botSum);
+            }
+        }
+        private void LayoutMajorizationHorizontal(int i, Dictionary<int, int> d_j)
+        {
+            float topSumX = 0, /*topSumY = 0,*/ topSumZ = 0, botSum=0;
+            Vector3 X_i = nodes[i].StressPos;
+            foreach (int j in nodes.Indices)
+            {
+                if (i == j)
+                    continue;
+                
+                Vector3 X_j = nodes[j].StressPos;
+                float mag = (X_i - X_j).magnitude;
+                if (d_j.ContainsKey(j))
+                {
+                    float d_ij = d_j[j];
+                    float w_ij = 1f / (d_ij * d_ij);
+
+                    topSumX += w_ij * (X_j.x + (d_ij*(X_i.x - X_j.x))/mag);
+                    // topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
+                    topSumZ += w_ij * (X_j.z + (d_ij*(X_i.z - X_j.z))/mag);
+                    botSum += w_ij;
+                }
+                else if (mag < 1) // apply dwyer separation constraint
+                {
+                    Vector3 r = ((mag-1)/2) * ((X_i-X_j)/mag);
+                    r.y = 0; // constrain y position
+                    nodes[i].StressPos -= r;
+                    nodes[j].StressPos += r;
+                }
+            }
+            if (botSum > 0)
+            {
+                nodes[i].StressPos = new Vector3(topSumX/botSum, nodes[i].StressPos.y, topSumZ/botSum);
+            }
+        }
+
         private Dictionary<int, int> ShortestPathsBFS(int source)
         {
             var visited = new Dictionary<int, int>(); // ugly, but reuse here to ease GC
@@ -232,25 +326,6 @@ namespace EcoBuilder.NodeLink
             }
             return visited;
         }
-
-        public static IEnumerable<int> FYShuffle(IEnumerable<int> toShuffle)
-        {
-            var shuffled = new List<int>();
-            foreach (int i in toShuffle)
-                shuffled.Add(i);
-            
-            int n = shuffled.Count;
-            for (int i=0; i<n-1; i++)
-            {
-                int j = UnityEngine.Random.Range(i, n);
-                // i = j
-                yield return shuffled[j];
-                // then j = i
-                shuffled[j] = shuffled[i];
-            }
-            yield return shuffled[n-1];
-        }
-
 
         ////////////////////////////////////
         // for trophic level calculation
@@ -298,34 +373,6 @@ namespace EcoBuilder.NodeLink
                 trophicLevels[i] = (1 - temp[i]);
                 MaxTrophic = Mathf.Max(trophicLevels[i], MaxTrophic);
             }
-        }
-
-        public static void Majorization(Vector3[] X, int[,] d)
-        {
-            int n = X.Length;
-            for (int i=0; i<n; i++) {
-
-                float topSumX = 0, topSumY = 0, topSumZ = 0, botSum=0;
-                for (int j=0; j<n; j++) {
-                    if (i!=j) {
-                        int d_ij = d[i,j];
-                        float w_ij = 1f / (d_ij * d_ij);
-                        float magnitude = (X[i] - X[j]).magnitude;
-
-                        topSumX += w_ij * (X[j].x + (d_ij*(X[i].x - X[j].x))/magnitude);
-                        topSumY += w_ij * (X[j].y + (d_ij*(X[i].y - X[j].y))/magnitude);
-                        topSumZ += w_ij * (X[j].z + (d_ij*(X[i].z - X[j].z))/magnitude);
-                        botSum += w_ij;
-                    }
-                }
-
-                float newX = topSumX / botSum;
-                float newY = topSumY / botSum;
-                float newZ = topSumZ / botSum;
-
-                X[i] = new Vector3(newX, newY, newZ);
-            }
-
         }
     }
 }

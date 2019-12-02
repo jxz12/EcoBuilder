@@ -9,11 +9,6 @@ Shader "Unlit/ColorMultiply"
     {
         Tags {"Queue"="Transparent" "RenderType"="Multiply"}
         
-        // ZWrite Off
-        // Lighting Off
-        // Fog { Mode Off }
-
-
         Color [_Color]
         // Blend SrcAlpha OneMinusSrcAlpha 
         Blend One OneMinusSrcAlpha 
