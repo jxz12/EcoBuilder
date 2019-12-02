@@ -23,7 +23,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
         [SerializeField] Effect heartPrefab, skullPrefab;
 
-        [SerializeField] float eta=.1f;
+        // [SerializeField] float eta=.1f;
         void FixedUpdate()
         {
             //////////////////////
@@ -36,10 +36,14 @@ namespace EcoBuilder.NodeLink
                     var d_j = ShortestPathsBFS(dq);
 
                     // eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
+                    // if (ConstrainTrophic)
+                    //     LayoutSGDHorizontal(dq, d_j, eta);
+                    // else
+                    //     LayoutSGD(dq, d_j, eta);
                     if (ConstrainTrophic)
-                        LayoutSGDHorizontal(dq, d_j, eta);
+                        LayoutMajorizationHorizontal(dq, d_j);
                     else
-                        LayoutSGD(dq, d_j, eta);
+                        LayoutMajorization(dq, d_j);
 
                     toBFS.Enqueue(dq);
                 }
@@ -77,7 +81,9 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = new Vector3(1,0,-1) + .5f*UnityEngine.Random.insideUnitSphere;
+
+                // TODO: separate unlinked nodes first
+                newNode.StressPos = UnityEngine.Random.insideUnitSphere;
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }

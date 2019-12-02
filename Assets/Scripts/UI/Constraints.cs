@@ -33,6 +33,9 @@ namespace EcoBuilder.UI
                     icon=t.transform.GetComponentInChildren<Image>(),
                 };
             }
+            // prevents scene getting dirty, Unity autolayout sucks
+            GetComponent<VerticalLayoutGroup>().enabled = true;
+            GetComponent<ContentSizeFitter>().enabled = true;
         }
 
         public bool IsSatisfied(string name)

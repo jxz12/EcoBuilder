@@ -3,7 +3,6 @@ Shader "UI/Fast-Colour"
     Properties
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-        _Color ("Tint", Color) = (1,1,1,1)
     }
 
     SubShader
@@ -47,7 +46,6 @@ Shader "UI/Fast-Colour"
                 float4 worldPosition : TEXCOORD1;
             };
             
-            fixed4 _Color;
             fixed4 _TextureSampleAdd;
             v2f vert(appdata_t IN)
             {
@@ -61,8 +59,7 @@ Shader "UI/Fast-Colour"
                 OUT.vertex.xy += (_ScreenParams.zw-1.0)*float2(-1,1);
                 #endif
                 
-                OUT.color = IN.color * _Color;
-                // OUT.color = _Color;
+                OUT.color = IN.color;
                 return OUT;
             }
 

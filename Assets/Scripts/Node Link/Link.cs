@@ -43,6 +43,7 @@ namespace EcoBuilder.NodeLink
             outline = gameObject.AddComponent<cakeslice.Outline>();
             // outline.eraseRenderer = true;
             outline.enabled = false;
+            lr.material.SetFloat("_RepeatCount", numBalls);
         }
 
         public void Outline(int colourIdx=0)
@@ -78,7 +79,7 @@ namespace EcoBuilder.NodeLink
         }
 
         private float tileOffset = 0;
-        private float widthocity;
+        private float widthocity, localWidth;
         private void LateUpdate()
         {
             if (Curved)
@@ -107,12 +108,12 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            float width = show? lineWidth*transform.lossyScale.x : 0; // TODO: make this smooth on lossyScale
-            lr.widthMultiplier = Mathf.SmoothDamp(lr.widthMultiplier, width, ref widthocity, .2f);
+            localWidth = Mathf.SmoothDamp(localWidth, show?lineWidth:0, ref widthocity, .2f);
+            float lossyWidth = transform.lossyScale.x * localWidth;
+            lr.widthMultiplier = lossyWidth;
 
             float height = (Source.transform.position - Target.transform.position).magnitude;
-            lr.material.SetFloat("_Spacing", height/(width*numBalls) - 1);
-            lr.material.SetFloat("_RepeatCount", numBalls);
+            lr.material.SetFloat("_Spacing", height/(lossyWidth*numBalls) - 1);
 
             Color c = Target.Col;
             lr.startColor = c;

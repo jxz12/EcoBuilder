@@ -147,6 +147,7 @@ namespace EcoBuilder.UI
             greedTrait.Interactable = true;
             refroveButton.interactable = true;
             refroveButton.gameObject.SetActive(true);
+            nameField.ExpandIntoRefrove(false); // ugh
 
             GetComponent<Animator>().SetTrigger("Incubate");
             typesAnim.SetBool("Visible", false);
@@ -257,7 +258,10 @@ namespace EcoBuilder.UI
             {
                 RandomiseIncubated();
                 factory.RegenerateSpecies(incubated.GObject, incubated.BodySize, incubated.Greediness, incubated.RandomSeed);
+
                 nameField.SetNameWithoutCallback(incubated.GObject.name);
+                nameField.SetDefaultColour();
+                incubated.UserName = null;
             }
             else if (inspected != null)
             {
@@ -344,12 +348,14 @@ namespace EcoBuilder.UI
             sizeTrait.SetValueWithoutCallback(inspected.BodySize);
             greedTrait.SetValueWithoutCallback(inspected.Greediness);
 
-            nameField.Interactable = false;
+            // nameField.Interactable = false;
             sizeTrait.Interactable  = inspected.SizeEditable;
             greedTrait.Interactable = inspected.GreedEditable;
             refroveButton.interactable = inspected.Removable;
 
-            refroveButton.gameObject.SetActive(removeEnabled);
+            // uuggghhh
+            refroveButton.gameObject.SetActive(!removeHidden);
+            nameField.ExpandIntoRefrove(removeHidden);
         }
         public void Unincubate()
         {
@@ -528,10 +534,10 @@ namespace EcoBuilder.UI
             traitsFixed = true;
         }
 
-        bool removeEnabled = true;
+        bool removeHidden = false;
         public void HideRemoveButton(bool hidden=true)
         {
-            removeEnabled = !hidden;
+            removeHidden = hidden;
         }
         public void HideIncubateButton(bool hidden=true)
         {
