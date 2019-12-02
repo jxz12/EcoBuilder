@@ -42,30 +42,23 @@ namespace EcoBuilder
             //     Screen.fullScreen = true;
             // #endif
 
+            bool loaded = LoadPlayerDetailsLocal();
             // PlayerPrefs.DeleteAll();
-            if (!PlayerPrefs.HasKey("Has Played"))
+            if (!loaded)
             {
-                PlayerPrefs.SetString("Has Played", "yes");
-                PlayerPrefs.Save();
-
+                // 
                 InitNewPlayer();
                 SavePlayerDetailsLocal();
-                // ShowSurvey();
             }
             else
             {
-                bool loaded = LoadPlayerDetailsLocal();
-                if (!loaded)
-                {
-                    InitNewPlayer();
-                    SavePlayerDetailsLocal();
-                }
             }
+
+
             if (SceneManager.sceneCount == 1) // on startup
             {
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
-            player.team = -1;
         }
 
 
@@ -86,6 +79,7 @@ namespace EcoBuilder
             
             public int team; // 0 is none (also trophic), 1 is trophic, -1 is unconstrained
             public List<int> highScores;
+            bool uploaded;
         }
         [SerializeField] PlayerDetails player;
         public bool ConstrainTrophic { get { return player.team >= 0; } }
