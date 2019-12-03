@@ -195,7 +195,7 @@ namespace EcoBuilder
                     details.numInteractions += 1;
                 }
             }
-            Levels.Level.SaveAsNewPrefab(details, DateTime.Now.ToShortTimeString());
+            Levels.Level.SaveAsNewPrefab(details, DateTime.Now.Ticks.ToString());
         }
     }
 }
