@@ -11,11 +11,11 @@ namespace EcoBuilder.Levels
     public class LevelDetails
     {
         // metadata
-        public int idx=0;
-        public string title="";
-        public string description="";
-        public string introduction="";
-        public string congratulation="";
+        public int idx;
+        public string title;
+        public string description;
+        public string introduction;
+        public string congratulation;
 
         // constraints
         public int numProducers;
@@ -315,12 +315,15 @@ namespace EcoBuilder.Levels
 
         public static void SaveAsNewPrefab(LevelDetails detail, string name)
         {
-            var go = new GameObject();
-            var level = go.AddComponent<Level>();
+            #if !UNITY_EDITOR
+                throw new Exception("cannot save level outside editor");
+            #endif
+
+            var level = Instantiate(AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab"));
             level.details = detail;
             bool success;
-            PrefabUtility.SaveAsPrefabAsset(go, "Assets/Prefabs/Levels/"+name+".prefab", out success);
-            Destroy(go);
+            PrefabUtility.SaveAsPrefabAsset(level.gameObject, "Assets/Prefabs/Levels/"+name+".prefab", out success);
+            Destroy(level.gameObject);
         }
     }
 }
