@@ -81,7 +81,7 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = UnityEngine.Random.insideUnitSphere;
+                newNode.StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
                 newNode.SetNewParent(unattachParent);
 
                 nodes[idx] = newNode;
@@ -94,7 +94,7 @@ namespace EcoBuilder.NodeLink
 
                 nodes[idx].gameObject.SetActive(true);
                 // nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
-                nodes[idx].StressPos = new Vector3(1,0,-.5f) + .5f*UnityEngine.Random.insideUnitSphere;
+                nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -188,10 +188,12 @@ namespace EcoBuilder.NodeLink
                 // links[i,j].Curved = links[j,i].Curved = true;
                 throw new Exception("no bidirectional links allowed");
             }
+
+            // TODO: make this work better with superfocus as well.
             if (nodes[i].transform.parent == unattachParent)
-            {
-                TODO: this is more complicated than I thought
-            }
+                nodes[i].SetNewParent(nodesParent);
+            if (nodes[j].transform.parent == unattachParent)
+                nodes[j].SetNewParent(nodesParent);
 
             adjacency[i].Add(j);
             adjacency[j].Add(i);

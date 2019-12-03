@@ -134,9 +134,8 @@ namespace EcoBuilder.NodeLink
                 {
                     FixRotation(ref xRotation);
                     FixRotation(ref yRotation);
-                    
-                    // xTargetRotation = 0;
-                    // yTargetRotation = 0;
+                    FixRotation(ref yTargetRotation);
+                    FixRotation(ref xTargetRotation);
 
                     xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .3f);
                     yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .3f);
