@@ -20,7 +20,7 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
+        [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent, unattachParent;
         [SerializeField] Effect heartPrefab, skullPrefab;
 
         // [SerializeField] float eta=.1f;
@@ -81,9 +81,9 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-
-                // TODO: separate unlinked nodes first
                 newNode.StressPos = UnityEngine.Random.insideUnitSphere;
+                newNode.SetNewParent(unattachParent);
+
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
@@ -187,6 +187,10 @@ namespace EcoBuilder.NodeLink
             {
                 // links[i,j].Curved = links[j,i].Curved = true;
                 throw new Exception("no bidirectional links allowed");
+            }
+            if (nodes[i].transform.parent == unattachParent)
+            {
+                TODO: this is more complicated than I thought
             }
 
             adjacency[i].Add(j);
