@@ -1,47 +1,47 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-
 namespace EcoBuilder.Levels
 {
+    [Serializable]
+    public class LevelDetails
+    {
+        // metadata
+        public int idx;
+        public string title;
+        public string description;
+        public string introduction;
+        public string congratulation;
+
+        // constraints
+        public int numProducers;
+        public int numConsumers;
+        public int minEdges;
+        public int minChain;
+        public int minLoop;
+
+        // vertices and edges
+        public int numSpecies;
+        public List<bool> plants;
+        public List<int> randomSeeds;
+        public List<float> sizes;
+        public List<float> greeds;
+        public List<bool> sizeEditables;
+        public List<bool> greedEditables;
+        public int numInteractions;
+        public List<int> resources;
+        public List<int> consumers;
+
+        // targets
+        public int targetScore1;
+        public int targetScore2;
+    }
     public class Level : MonoBehaviour
     {
-        [Serializable]
-        public class LevelDetails
-        {
-            // metadata
-            public int idx;
-            public string title;
-            public string description;
-            public string introduction;
-            public string congratulation;
-
-            // constraints
-            public int numProducers;
-            public int numConsumers;
-            public int minEdges;
-            public int minChain;
-            public int minLoop;
-
-            // vertices and edges
-            public int numSpecies;
-            public List<bool> plants;
-            public List<int> randomSeeds;
-            public List<float> sizes;
-            public List<float> greeds;
-            public List<bool> sizeEditables;
-            public List<bool> greedEditables;
-            public int numInteractions;
-            public List<int> resources;
-            public List<int> consumers;
-
-            // public int highScore;
-            public int targetScore1;
-            public int targetScore2;
-        }
         [SerializeField] LevelDetails details;
         [SerializeField] Tutorial tutorial;
         [SerializeField] GameObject landscape;
@@ -311,6 +311,14 @@ namespace EcoBuilder.Levels
             // GameManager.Instance.PlayLevel(this);
             // StartCoroutine(WaitThenEnableQuitReplay());
             Play();
+        }
+
+        public static void SaveAsNewPrefab(LevelDetails detail, string name)
+        {
+            var go = new GameObject();
+            var level = go.AddComponent<Level>();
+            level.details = detail;
+            PrefabUtility.SaveAsPrefabAsset(go, "Assets/Prefabs/Levels/"+name);
         }
     }
 }

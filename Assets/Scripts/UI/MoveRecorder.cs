@@ -117,7 +117,7 @@ namespace EcoBuilder.UI
             if (toRedo.type != Move.Type.Interaction)
                 OnSpeciesUndone.Invoke(toRedo.idx);
         }
-        public void Record()
+        public void RecordMoves()
         {
             GetComponent<Animator>().SetBool("Visible", false);
             UnityEngine.Debug.Log("TODO: write to file, send to server");

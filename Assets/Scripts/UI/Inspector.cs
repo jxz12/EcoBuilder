@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 
 namespace EcoBuilder.UI
 {
@@ -543,5 +542,10 @@ namespace EcoBuilder.UI
         {
             typesAnim.gameObject.SetActive(!hidden);
         }
+        public IEnumerable<KeyValuePair<int, Species>> GetSpeciesInfo()
+        {
+            return spawnedSpecies;
+        }
+
     }
 }

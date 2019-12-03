@@ -240,11 +240,6 @@ namespace EcoBuilder.NodeLink
                 links[i,j].Outline(0);
         }
 
-        public IEnumerable<int> GetTargets(int source)
-        {
-            return links.GetColumnIndicesInRow(source);
-        }
-
         public void RehealthBars(Func<int, float> healths)
         {
             foreach (Node no in nodes)
@@ -272,5 +267,12 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+
+        // to give other classes access to the adjacency
+        public IEnumerable<int> GetTargets(int source)
+        {
+            return links.GetColumnIndicesInRow(source);
+        }
+
     }
 }
