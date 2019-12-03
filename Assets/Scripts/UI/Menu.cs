@@ -30,6 +30,18 @@ namespace EcoBuilder.UI
                 parent.name = level.Details.idx.ToString();
             }
         }
+        public void OpenSurvey()
+        {
+            
+        }
+        public void RegisterNewPlayer()
+        {
+            // open menu
+        }
+        public void Login()
+        {
+
+        }
         // public void UnlockAllLevels()
         // {
         //     foreach (Level l in levels)

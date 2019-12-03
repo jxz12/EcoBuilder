@@ -43,7 +43,6 @@ namespace EcoBuilder
             // #endif
 
             bool loaded = LoadPlayerDetailsLocal();
-            // PlayerPrefs.DeleteAll();
             if (!loaded)
             {
                 // 

@@ -231,7 +231,6 @@ namespace EcoBuilder.Model
             // print(simulation.TotalFlux + " " + simulation.TotalAbundance);
             NormalisedScore = (float)(simulation.Richness *
                                       simulation.Connectance *
-                                    //   simulation.TotalAbundance) * 100;
                                       totalAbund_Norm) * 100;
         }
         public string ScoreExplanation()
@@ -299,6 +298,9 @@ namespace EcoBuilder.Model
             else
                 return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
         }
+
+        // TODO: please work out a way of recording this
+        // public void RecordInteractionMatrix(int )
     }
 
     #if UNITY_EDITOR

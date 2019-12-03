@@ -1,21 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace EcoBuilder.UI
 {
     public class Survey : MonoBehaviour
     {
-        // Start is called before the first frame update
-        void Start()
+        public event Action OnRegistered;
+        public event Action<int> OnAgeSet, OnGenderSet, OnEduSet;
+        public void SetAge(int age)
         {
-            
+            OnAgeSet.Invoke(age);
         }
-
-        // Update is called once per frame
-        void Update()
+        public void SetGender(int gen)
         {
-            
+            OnGenderSet.Invoke(gen);
+        }
+        public void SetEducation(int edu)
+        {
+            OnEduSet.Invoke(edu);
         }
     }
 }
