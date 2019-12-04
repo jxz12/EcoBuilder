@@ -3,17 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Networking;
 using UnityEngine.Events;
-
-// for load/save progress
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
 
 namespace EcoBuilder
 {
-    public class GameManager : MonoBehaviour
+    public partial class GameManager : MonoBehaviour
     {
         // singleton pattern
         private static GameManager gameManager;
@@ -32,6 +26,11 @@ namespace EcoBuilder
                 gameManager = this;
             else if (gameManager != this)
                 throw new Exception("More than one GameManager in scene");
+
+            if (SceneManager.sceneCount == 1) // on startup
+            {
+                StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
+            }
         }
 
         void Start()
@@ -41,166 +40,8 @@ namespace EcoBuilder
             // #if !UNITY_WEBGL
             //     Screen.fullScreen = true;
             // #endif
-
-            bool loaded = LoadPlayerDetailsLocal();
-            if (!loaded)
-            {
-                // 
-                InitNewPlayer();
-                SavePlayerDetailsLocal();
-            }
-            else
-            {
-            }
-
-
-            if (SceneManager.sceneCount == 1) // on startup
-            {
-                StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
-            }
+            InitPlayer();
         }
-
-
-        /////////////////////
-        // data collection //
-        /////////////////////
-
-        [Serializable]
-        public class PlayerDetails
-        {
-            // TODO: store this locally and on server
-            public string email;
-            public string password;
-
-            public int age;
-            public int gender;
-            public int education;
-            
-            public int team; // 0 is none (also trophic), 1 is trophic, -1 is unconstrained
-            public List<int> highScores;
-            bool uploaded;
-        }
-        [SerializeField] PlayerDetails player;
-        public bool ConstrainTrophic { get { return player.team >= 0; } }
-
-        public void Login(string email, string password)
-        {
-            // TODO: fetch high scores from server if possible.
-            StartCoroutine(Http());
-        }
-        public void Logout()
-        {
-            // TODO: stop keeping track of playthroughs
-        }
-
-        /////////////////////////////
-        // questions at first login
-        public void SetEmailAndPassword(string email, string password)
-        {
-            // TODO: send these to the server to store it 
-            //       check if it exists in the database,
-        }
-        // TODO: send these to a server with email as the key
-        public void SetTeam(int team)
-        {
-        }
-        public void SetAge(int age)
-        {
-        }
-        public void SetGender(int gender)
-        {
-        }
-        public void SetEducation(int education)
-        {
-        }
-        IEnumerator Http()
-        {
-            using (var p = UnityWebRequest.Get("http://localhost/ecobuilder/bar.php"))
-            {
-                yield return p.SendWebRequest();
-                if (p.isNetworkError || p.isHttpError)
-                {
-                    print(p.error);
-                }
-                else
-                {
-                    print(p.downloadHandler.text);
-                }
-            }
-
-            var form = new WWWForm();
-            form.AddField("foo", "barr");
-            using (var p = UnityWebRequest.Post("http://localhost/ecobuilder/foo.php", form))
-            {
-                yield return p.SendWebRequest();
-                if (p.isNetworkError || p.isHttpError)
-                {
-                    print(p.error);
-                }
-                else
-                {
-                    print(p.downloadHandler.text);
-                }
-            }
-        }
-        public void Quit()
-        {
-            // TODO: send data if possible? and also on every level finish!
-            #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-            #else
-                Application.Quit();
-            #endif
-        }
-        public void ResetSaveData()
-        {
-            PlayerPrefs.DeleteKey("Has Played");
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
-        }
-        private void InitNewPlayer()
-        {
-            player.highScores = new List<int>();
-            player.highScores.Add(0);
-            for (int i=1; i<levelPrefabs.Count; i++)
-            {
-                player.highScores.Add(-1);
-            }
-        }
-        private bool SavePlayerDetailsLocal()
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            try
-            {
-                FileStream file = File.Create(Application.persistentDataPath+"/player.data");
-                bf.Serialize(file, player);
-                file.Close();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("error: " + e.Message);
-                return false;
-            }
-        }
-        private bool LoadPlayerDetailsLocal()
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            try
-            {
-                FileStream file = File.Open(Application.persistentDataPath+"/player.data", FileMode.Open);
-                player = (PlayerDetails)bf.Deserialize(file);
-                file.Close();
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                print("handled exception: " + e.Message);
-                return false;
-            }
-        }
-
-
 
 
         ////////////////////////////////////
@@ -281,9 +122,9 @@ namespace EcoBuilder
         [SerializeField] MyFloatEvent OnLoadingProgress;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
+            OnSceneUnloaded.Invoke();
             if (toUnload != null)
             {
-                OnSceneUnloaded.Invoke();
                 var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
                 while (!unloading.isDone)
                 {
@@ -299,9 +140,9 @@ namespace EcoBuilder
                     OnLoadingProgress?.Invoke(.5f + loading.progress/2);
                     yield return null;
                 }
-                OnSceneLoaded?.Invoke();
                 OnLoaded?.Invoke(toLoad);
             }
+            OnSceneLoaded?.Invoke();
         }
         public event Action<string> OnLoaded;
 
