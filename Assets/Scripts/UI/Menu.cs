@@ -29,30 +29,40 @@ namespace EcoBuilder.UI
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
+            if (GameManager.Instance.FirstPlay)
+            {
+                StartRegistration();
+            }
+            else
+            {
+                RevealMenu();
+            }
         }
-        public void OpenSurvey()
+        [SerializeField] Coin wolfLion;
+        [SerializeField] RegistrationForm form;
+        void StartRegistration()
         {
-            
+            form.Begin();
+            form.OnSubmitted += (e,p,a,g,ed)=> {
+                GameManager.Instance.SetLogin(e,p);
+                GameManager.Instance.SetDemographics(a,g,ed);
+                ShowCoin();
+            };
+            form.OnLoginSkipped += ()=> RevealMenu();
         }
-        public void RegisterNewPlayer()
+        void ShowCoin()
         {
-            // open menu
+            wolfLion.gameObject.SetActive(true);
+            wolfLion.OnLanded += h=> ChooseTeam(h);
         }
-        public void Login()
+        void ChooseTeam(bool team)
         {
 
         }
-        // public void UnlockAllLevels()
-        // {
-        //     foreach (Level l in levels)
-        //     {
-        //         if (l.Details.numStars == -1)
-        //         {
-        //             l.Details.numStars = 0;
-        //             l.SaveToFile();
-        //         }
-        //     }
-        //     GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
-        // }
+        void RevealMenu()
+        {
+            // TODO: change settings to show the team you're on
+            GetComponent<Animator>().SetTrigger("Reveal");
+        }
     }
 }
