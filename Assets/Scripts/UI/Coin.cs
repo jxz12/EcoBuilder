@@ -12,6 +12,7 @@ namespace EcoBuilder.UI
         public void Flip()
         {
             heads = UnityEngine.Random.Range(0, 2) == 0;
+            // TODO: use time.ticks instead?
             anim.SetBool("heads", heads);
             anim.SetTrigger("Flip");
         }
