@@ -43,12 +43,7 @@ namespace EcoBuilder.UI
         void StartRegistration()
         {
             form.gameObject.SetActive(true);
-            form.OnSubmitted += (e,p,a,g,ed)=> {
-                GameManager.Instance.SetLogin(e,p);
-                GameManager.Instance.SetDemographics(a,g,ed);
-                ShowCoin();
-            };
-            form.OnLoginSkipped += ()=> RevealMenu();
+            form.OnFinished += ShowCoin;
         }
         void ShowCoin()
         {

@@ -31,6 +31,7 @@ namespace EcoBuilder
             
             public int team; // 0 is none (also trophic), 1 is trophic, -1 is unconstrained
             public List<int> highScores;
+            public bool online;
         }
         [SerializeField] PlayerDetails player;
         public bool ConstrainTrophic { get { return player.team >= 0; } }
@@ -48,6 +49,7 @@ namespace EcoBuilder
             {
                 player = new PlayerDetails();
                 player.team = 0;
+                player.online = false;
                 player.highScores = new List<int>();
                 player.highScores.Add(0); // unlock first level
                 for (int i=1; i<levelPrefabs.Count; i++)
@@ -72,36 +74,44 @@ namespace EcoBuilder
         }
 
 
+
+        /////////////////////////////
+        // questions at login
         public bool TryLogin(string email, string password)
         {
-            // TODO: fetch high scores from server if possible.
-            // StartCoroutine(Http());
-            return false;
+            player.email = email;
+            player.password = password;
+
+            // TODO: fetch high scores from server in a coroutine
+            player.online = true;
+            return true;
         }
         public bool TryRegister(string email, string password)
         {
+            player.email = email;
+            player.password = password;
+
             // TODO: try to create new account if possible
-            return false;
+            player.online = true;
+            return true;
         }
         public void Logout()
         {
-            // TODO: stop keeping track of playthroughs
-        }
-
-        /////////////////////////////
-        // questions at first login
-        public void SetLogin(string email, string password)
-        {
-            // TODO: send these to the server to store it 
-            //       check if it exists in the database,
+            player.online = false;
+            // TODO: stop sending collecting data, but keep local info
         }
         public void SetDemographics(int age, int gender, int education)
         {
-            // TODO: save these
+            player.age = age;
+            player.gender = gender;
+            player.education = education;
+            // TODO: try sending details
         }
         // TODO: send these to a server with email as the key
         public void SetTeam(int team)
         {
+            player.team = team;
+            // TODO: try sending details
         }
         IEnumerator Http()
         {
@@ -139,15 +149,6 @@ namespace EcoBuilder
                 }
             }
 
-        }
-        public void Quit()
-        {
-            // TODO: send data if possible? and also on every level finish!
-            #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-            #else
-                Application.Quit();
-            #endif
         }
         public void ResetSaveData()
         {
