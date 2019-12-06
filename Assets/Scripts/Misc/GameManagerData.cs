@@ -36,8 +36,13 @@ namespace EcoBuilder
         public bool ConstrainTrophic { get { return player.team >= 0; } }
 
         public bool FirstPlay { get; private set; } = true;
+        static string playerPath;
         private void InitPlayer()
         {
+            // ugh unity annoying
+            playerPath = Application.persistentDataPath+"/player.data";
+
+            DeletePlayerDetailsLocal();
             bool loaded = LoadPlayerDetailsLocal();
             if (!loaded)
             {
@@ -154,7 +159,7 @@ namespace EcoBuilder
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
-                FileStream file = File.Create(Application.persistentDataPath+"/player.data");
+                FileStream file = File.Create(playerPath);
                 bf.Serialize(file, player);
                 file.Close();
                 return true;
@@ -170,7 +175,7 @@ namespace EcoBuilder
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
-                FileStream file = File.Open(Application.persistentDataPath+"/player.data", FileMode.Open);
+                FileStream file = File.Open(playerPath, FileMode.Open);
                 player = (PlayerDetails)bf.Deserialize(file);
                 file.Close();
 
@@ -180,6 +185,17 @@ namespace EcoBuilder
             {
                 print("handled exception: " + e.Message);
                 return false;
+            }
+        }
+        private void DeletePlayerDetailsLocal()
+        {
+            try
+            {
+                File.Delete(playerPath);
+            }
+            catch (Exception e)
+            {
+                print("no save file to delete: " + e.Message);
             }
         }
 
