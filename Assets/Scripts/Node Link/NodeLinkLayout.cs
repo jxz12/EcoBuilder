@@ -157,7 +157,7 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////
         // for stress-based layout
 
-        private Queue<int> toBFS = new Queue<int>();
+        private Queue<int> todoBFS = new Queue<int>();
 
         // SGD
         private void LayoutSGD(int i, Dictionary<int, int> d_j, float eta)
@@ -300,6 +300,18 @@ namespace EcoBuilder.NodeLink
             if (botSum > 0)
             {
                 nodes[i].StressPos = new Vector3(topSumX/botSum, nodes[i].StressPos.y, topSumZ/botSum);
+            }
+        }
+        private void PushToFront(int i)
+        {
+            float zMin = 0;
+            foreach (var node in nodes)
+            {
+                zMin = Mathf.Min(zMin, node.StressPos.z);
+            }
+            if (nodes[i].StressPos.z < zMin)
+            {
+                nodes[i].StressPos = new Vector3(nodes[i].StressPos.z, nodes[i].StressPos.y, zMin);
             }
         }
 

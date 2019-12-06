@@ -20,10 +20,9 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent, unattachParent;
+        [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
         [SerializeField] Effect heartPrefab, skullPrefab;
 
-        // [SerializeField] float eta=.1f;
         void FixedUpdate()
         {
             //////////////////////
@@ -32,20 +31,18 @@ namespace EcoBuilder.NodeLink
             {
                 if (focusState != FocusState.SuperFocus)
                 {
-                    int dq = toBFS.Dequeue(); // only do one vertex at a time
-                    var d_j = ShortestPathsBFS(dq);
+                    int i = todoBFS.Dequeue(); // only do one vertex at a time
+                    var d_j = ShortestPathsBFS(i);
 
-                    // eta = etaMax / (1f + etaDecay*(etaIteration++/nodes.Count));
-                    // if (ConstrainTrophic)
-                    //     LayoutSGDHorizontal(dq, d_j, eta);
-                    // else
-                    //     LayoutSGD(dq, d_j, eta);
+                    if (d_j.Count == 0)
+                        PushToFront(i);
+                    
                     if (ConstrainTrophic)
-                        LayoutMajorizationHorizontal(dq, d_j);
+                        LayoutMajorizationHorizontal(i, d_j);
                     else
-                        LayoutMajorization(dq, d_j);
+                        LayoutMajorization(i, d_j);
 
-                    toBFS.Enqueue(dq);
+                    todoBFS.Enqueue(i);
                 }
             }
             ///////////////////////////////
@@ -82,7 +79,6 @@ namespace EcoBuilder.NodeLink
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
                 newNode.StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
-                newNode.SetNewParent(unattachParent);
 
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
@@ -123,7 +119,7 @@ namespace EcoBuilder.NodeLink
                 foreach (int row in links.GetRowIndicesInColumn(idx))
                     linkGrave.RemoveAt(row, idx);
             }
-            toBFS.Enqueue(idx);
+            todoBFS.Enqueue(idx);
         }
 
         public void RemoveNode(int idx)
@@ -157,11 +153,11 @@ namespace EcoBuilder.NodeLink
 
             // prevent memory leak in SGD data structures
             adjacency.Remove(idx);
-            toBFS.Clear();
+            todoBFS.Clear();
             foreach (int i in adjacency.Keys)
             {
                 adjacency[i].Remove(idx);
-                toBFS.Enqueue(i);
+                todoBFS.Enqueue(i);
             }
         }        
         public void RemoveNodeCompletely(int idx)
@@ -188,12 +184,6 @@ namespace EcoBuilder.NodeLink
                 // links[i,j].Curved = links[j,i].Curved = true;
                 throw new Exception("no bidirectional links allowed");
             }
-
-            // TODO: make this work better with superfocus as well.
-            if (nodes[i].transform.parent == unattachParent)
-                nodes[i].SetNewParent(nodesParent);
-            if (nodes[j].transform.parent == unattachParent)
-                nodes[j].SetNewParent(nodesParent);
 
             adjacency[i].Add(j);
             adjacency[j].Add(i);

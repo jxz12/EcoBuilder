@@ -42,7 +42,7 @@ namespace EcoBuilder.UI
         [SerializeField] RegistrationForm form;
         void StartRegistration()
         {
-            form.Begin();
+            form.gameObject.SetActive(true);
             form.OnSubmitted += (e,p,a,g,ed)=> {
                 GameManager.Instance.SetLogin(e,p);
                 GameManager.Instance.SetDemographics(a,g,ed);

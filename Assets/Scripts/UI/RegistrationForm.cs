@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 namespace EcoBuilder.UI
 {
@@ -13,13 +14,21 @@ namespace EcoBuilder.UI
         public event Action<string, string, int, int, int> OnSubmitted;
         public event Action OnLoginSkipped;
 
-        public void Begin()
+        void Register()
         {
-            // show login/register
+            bool success = GameManager.Instance.TryRegister(email.text, password.text);
+            // show demographics here, then submit
+            if (success)
+            {
+                CollectDemographics();
+            }
+            else
+            {
+                // show error, try again
+                // ALWAYS GIVE OPTION TO NOT REGISTER
+            }
         }
-
-
-        public void Login()
+        void Login()
         {
             // try to get 
             bool success = GameManager.Instance.TryLogin(email.text, password.text);
@@ -34,23 +43,10 @@ namespace EcoBuilder.UI
         }
         public void SkipLogin()
         {
+            // show note to say that scores will not be stored
             OnLoginSkipped.Invoke();
         }
 
-        public void Register()
-        {
-            bool success = GameManager.Instance.TryRegister(email.text, password.text);
-            // show demographics here, then submit
-            if (success)
-            {
-                CollectDemographics();
-            }
-            else
-            {
-                // show error, try again
-                // ALWAYS GIVE OPTION TO NOT REGISTER
-            }
-        }
         public void CollectDemographics()
         {
 
