@@ -190,9 +190,9 @@ RectTransform:
   m_Father: {fileID: 890040414}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 50, y: -201.9875}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 103.975}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &34727227
@@ -357,7 +357,7 @@ PrefabInstance:
     - target: {fileID: 4162887693377987850, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 460
       objectReference: {fileID: 0}
     - target: {fileID: 4162887693377987850, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
@@ -1734,9 +1734,9 @@ RectTransform:
   m_Father: {fileID: 890040414}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 50, y: -340.9625}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 300, y: 113.975}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &600040709
@@ -2486,7 +2486,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &886556236
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2762,11 +2762,6 @@ PrefabInstance:
       propertyPath: m_text
       value: Login
       objectReference: {fileID: 0}
-    - target: {fileID: 5583584484389016415, guid: 54b975144da92cb4aa8a5fd09dbcc869,
-        type: 3}
-      propertyPath: m_TargetGraphic
-      value: 
-      objectReference: {fileID: 933862232}
     - target: {fileID: 6969023389141018058, guid: 54b975144da92cb4aa8a5fd09dbcc869,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -2802,6 +2797,11 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
       value: Login
       objectReference: {fileID: 0}
+    - target: {fileID: 5583584484389016415, guid: 54b975144da92cb4aa8a5fd09dbcc869,
+        type: 3}
+      propertyPath: m_TargetGraphic
+      value: 
+      objectReference: {fileID: 933862232}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 54b975144da92cb4aa8a5fd09dbcc869, type: 3}
 --- !u!224 &933862231 stripped
@@ -4382,9 +4382,46 @@ PrefabInstance:
       propertyPath: m_text
       value: "\u200B"
       objectReference: {fileID: 0}
+    - target: {fileID: 1411763771127535410, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
+        type: 3}
+      propertyPath: m_enableWordWrapping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_HideMobileInput
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_ContentType
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_InputType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1847280000}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CheckPassword
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
@@ -4572,9 +4609,9 @@ RectTransform:
   m_Father: {fileID: 890040414}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 50, y: -60}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 350, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1536853894
@@ -7494,6 +7531,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1174026010}
     m_Modifications:
+    - target: {fileID: 2346777703581513490, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6257852118201395557, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
         type: 3}
       propertyPath: m_Name
@@ -7604,6 +7646,21 @@ PrefabInstance:
       propertyPath: m_text
       value: "\u200B"
       objectReference: {fileID: 0}
+    - target: {fileID: 1411763771127535410, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
+        type: 3}
+      propertyPath: m_textInfo.characterCount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1411763771127535410, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
+        type: 3}
+      propertyPath: m_textAlignment
+      value: 514
+      objectReference: {fileID: 0}
+    - target: {fileID: 1411763771127535410, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
+        type: 3}
+      propertyPath: m_enableWordWrapping
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1
@@ -7627,6 +7684,18 @@ PrefabInstance:
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_ContentType
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_KeyboardType
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_CharacterValidation
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7006888870196142657, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
