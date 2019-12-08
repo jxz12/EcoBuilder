@@ -120,6 +120,7 @@ namespace EcoBuilder.UI
             if (!applyShade)
             {
                 OnFinished.Invoke();
+                gameObject.SetActive(false);
             }
         }
 
