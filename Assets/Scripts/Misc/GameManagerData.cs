@@ -111,6 +111,7 @@ namespace EcoBuilder
         public void SetTeam(int team)
         {
             player.team = team;
+            print(team);
             // TODO: try sending details
         }
         IEnumerator Http()
