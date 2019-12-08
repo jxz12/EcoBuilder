@@ -66,10 +66,14 @@ namespace EcoBuilder.UI
             {
                 GetComponent<Animator>().SetTrigger("Reveal");
                 wolfLion.Exit();
+                // TODO: earth
+                // TODO: logo
             }
+            flipped = !flipped;
         }
         void ChooseTeam(bool team)
         {
+            print(team);
             wolfLion.OnLanded -= ChooseTeam;
             GameManager.Instance.SetTeam(team? -1:1);
             GetComponent<Animator>().SetTrigger("Coin");
