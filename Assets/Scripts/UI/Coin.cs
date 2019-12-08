@@ -21,5 +21,16 @@ namespace EcoBuilder.UI
         {
             OnLanded.Invoke(heads);
         }
+        public void Exit()
+        {
+            anim.SetTrigger("Exit");
+        }
+        void Update()
+        {
+            if (Input.anyKeyDown)
+            {
+                Flip();
+            }
+        }
     }
 }

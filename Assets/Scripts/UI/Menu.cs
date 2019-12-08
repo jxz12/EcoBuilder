@@ -35,10 +35,12 @@ namespace EcoBuilder.UI
             }
             else
             {
-                RevealMenu();
+                GetComponent<Animator>().SetTrigger("Reveal");
+            // TODO: change settings to show the team you're on
             }
         }
         [SerializeField] Coin wolfLion;
+        [SerializeField] Button flipButton;
         [SerializeField] RegistrationForm form;
         void StartRegistration()
         {
@@ -47,17 +49,30 @@ namespace EcoBuilder.UI
         }
         void ShowCoin()
         {
+            form.OnFinished -= ShowCoin;
             wolfLion.gameObject.SetActive(true);
-            wolfLion.OnLanded += h=> ChooseTeam(h);
+            GetComponent<Animator>().SetTrigger("Coin");
+        }
+        bool flipped = false;
+        public void FlipCoin()
+        {
+            if (!flipped)
+            {
+                wolfLion.Flip();
+                wolfLion.OnLanded += ChooseTeam;
+                GetComponent<Animator>().SetTrigger("Coin");
+            }
+            else
+            {
+                GetComponent<Animator>().SetTrigger("Reveal");
+                wolfLion.Exit();
+            }
         }
         void ChooseTeam(bool team)
         {
-
-        }
-        void RevealMenu()
-        {
-            // TODO: change settings to show the team you're on
-            GetComponent<Animator>().SetTrigger("Reveal");
+            wolfLion.OnLanded -= ChooseTeam;
+            GameManager.Instance.SetTeam(team? -1:1);
+            GetComponent<Animator>().SetTrigger("Coin");
         }
     }
 }
