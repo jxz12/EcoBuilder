@@ -29,16 +29,17 @@ namespace EcoBuilder.UI
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
-            if (GameManager.Instance.FirstPlay)
-            {
-                StartRegistration();
-            }
-            else
-            {
+            // if (GameManager.Instance.FirstPlay)
+            // {
+            //     StartRegistration();
+            // }
+            // else
+            // {
                 GetComponent<Animator>().SetTrigger("Reveal");
                 // TODO: change settings to show the team you're on
+                // TODO: add a nice glowing effect for this
                 logo.SetActive(true);
-            }
+            // }
         }
         [SerializeField] GameObject logo;
         [SerializeField] Coin wolfLion;

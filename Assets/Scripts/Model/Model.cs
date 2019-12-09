@@ -285,7 +285,7 @@ namespace EcoBuilder.Model
         public float GetNormalisedAbundance(int idx)
         {
                    // calculate proportion first                            multiply by total
-            return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
+            return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm * idxToSpecies.Count;
             // this is so that total green in health bars adds up to the score
         }
         public float GetNormalisedFlux(int res, int con)

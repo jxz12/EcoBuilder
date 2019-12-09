@@ -116,7 +116,8 @@ namespace EcoBuilder
                 player.highScores[nextIdx] = 0;
             // TODO: animation
 
-            SavePlayerDetailsLocal();
+            // SavePlayerDetailsLocal();
+            // TODO: fix this in webgl
         }
 
 

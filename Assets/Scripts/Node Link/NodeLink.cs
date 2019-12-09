@@ -34,8 +34,9 @@ namespace EcoBuilder.NodeLink
                     int i = todoBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(i);
 
-                    if (d_j.Count == 0)
-                        PushToFront(i);
+                    // TODO:
+                    // if (d_j.Count == 0)
+                    //     PushToFront(i);
                     
                     if (ConstrainTrophic)
                         LayoutMajorizationHorizontal(i, d_j);
@@ -78,7 +79,8 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                newNode.StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
+                // newNode.StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
+                newNode.StressPos = new Vector3(.5f,0,-.5f) + .3f*UnityEngine.Random.insideUnitSphere;
 
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
@@ -90,7 +92,8 @@ namespace EcoBuilder.NodeLink
 
                 nodes[idx].gameObject.SetActive(true);
                 // nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
-                nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
+                // nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
+                nodes[idx].StressPos = new Vector3(.5f,0,-.5f) + .3f*UnityEngine.Random.insideUnitSphere;
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
