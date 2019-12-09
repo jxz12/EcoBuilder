@@ -317,13 +317,13 @@ namespace EcoBuilder.Levels
         {
             #if !UNITY_EDITOR
                 throw new Exception("cannot save level outside editor");
+            #else
+                var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
+                level.GetComponent<Level>().details = detail;
+                bool success;
+                PrefabUtility.SaveAsPrefabAsset(level, "Assets/Prefabs/Levels/"+name+".prefab", out success);
+                Destroy(level);
             #endif
-
-            var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
-            level.GetComponent<Level>().details = detail;
-            bool success;
-            PrefabUtility.SaveAsPrefabAsset(level, "Assets/Prefabs/Levels/"+name+".prefab", out success);
-            Destroy(level);
         }
     }
 }

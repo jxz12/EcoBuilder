@@ -44,7 +44,7 @@ namespace EcoBuilder.Levels
             nodelink.FullUnfocus();
             help.SetDistFromTop(.2f);
 
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! If your ecosystem gets too crowded, you can press a species twice to focus only on the species that it is directly connected to. This is helpful for navigating a complicated system. Enjoy the rest of the game!");}));
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! If your ecosystem gets too crowded, you can press a species twice to focus only on the species that it is directly connected to. This is helpful for navigating a complicated system. You should also notice that no two species are allowed to have identical size and interference. Enjoy the rest of the game!");}));
 
             Detach();
         }

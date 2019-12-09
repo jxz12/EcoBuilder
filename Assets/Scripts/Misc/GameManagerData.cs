@@ -43,10 +43,10 @@ namespace EcoBuilder
             // ugh unity annoying
             playerPath = Application.persistentDataPath+"/player.data";
 
-            DeletePlayerDetailsLocal();
-            bool loaded = LoadPlayerDetailsLocal();
-            if (!loaded)
-            {
+            // DeletePlayerDetailsLocal();
+            // bool loaded = LoadPlayerDetailsLocal();
+            // if (!loaded)
+            // {
                 player = new PlayerDetails();
                 player.team = 0;
                 player.online = false;
@@ -57,11 +57,11 @@ namespace EcoBuilder
                     player.highScores.Add(-1);
                 }
                 FirstPlay = true;
-            }
-            else
-            {
-                FirstPlay = false;
-            }
+            // }
+            // else
+            // {
+            //     FirstPlay = false;
+            // }
             // StartCoroutine(Http());
             // FTP();
         }
@@ -156,49 +156,49 @@ namespace EcoBuilder
             PlayerPrefs.DeleteKey("Has Played");
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
         }
-        private bool SavePlayerDetailsLocal()
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            try
-            {
-                FileStream file = File.Create(playerPath);
-                bf.Serialize(file, player);
-                file.Close();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("error: " + e.Message);
-                return false;
-            }
-        }
-        private bool LoadPlayerDetailsLocal()
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            try
-            {
-                FileStream file = File.Open(playerPath, FileMode.Open);
-                player = (PlayerDetails)bf.Deserialize(file);
-                file.Close();
+        // private bool SavePlayerDetailsLocal()
+        // {
+        //     BinaryFormatter bf = new BinaryFormatter();
+        //     try
+        //     {
+        //         FileStream file = File.Create(playerPath);
+        //         bf.Serialize(file, player);
+        //         file.Close();
+        //         return true;
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         Debug.LogError("error: " + e.Message);
+        //         return false;
+        //     }
+        // }
+        // private bool LoadPlayerDetailsLocal()
+        // {
+        //     BinaryFormatter bf = new BinaryFormatter();
+        //     try
+        //     {
+        //         FileStream file = File.Open(playerPath, FileMode.Open);
+        //         player = (PlayerDetails)bf.Deserialize(file);
+        //         file.Close();
 
-                return true;
-            }
-            catch (Exception e)
-            {
-                print("handled exception: " + e.Message);
-                return false;
-            }
-        }
-        private void DeletePlayerDetailsLocal()
-        {
-            try
-            {
-                File.Delete(playerPath);
-            }
-            catch (Exception e)
-            {
-                print("no save file to delete: " + e.Message);
-            }
-        }
+        //         return true;
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         print("handled exception: " + e.Message);
+        //         return false;
+        //     }
+        // }
+        // private void DeletePlayerDetailsLocal()
+        // {
+        //     try
+        //     {
+        //         File.Delete(playerPath);
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         print("no save file to delete: " + e.Message);
+        //     }
+        // }
     }
 }
