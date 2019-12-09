@@ -36,9 +36,11 @@ namespace EcoBuilder.UI
             else
             {
                 GetComponent<Animator>().SetTrigger("Reveal");
-            // TODO: change settings to show the team you're on
+                // TODO: change settings to show the team you're on
+                logo.SetActive(true);
             }
         }
+        [SerializeField] GameObject logo;
         [SerializeField] Coin wolfLion;
         [SerializeField] Button flipButton;
         [SerializeField] RegistrationForm form;
@@ -64,19 +66,18 @@ namespace EcoBuilder.UI
             }
             else
             {
-                GetComponent<Animator>().SetTrigger("Reveal");
                 wolfLion.Exit();
-                // TODO: earth
-                // TODO: logo
+                GetComponent<Animator>().SetTrigger("Reveal");
+                logo.SetActive(true);
             }
             flipped = !flipped;
         }
         void ChooseTeam(bool team)
         {
-            print(team);
             wolfLion.OnLanded -= ChooseTeam;
             GameManager.Instance.SetTeam(team? -1:1);
             GetComponent<Animator>().SetTrigger("Coin");
+            flipButton.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Continue"; // TODO: boo
         }
     }
 }

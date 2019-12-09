@@ -63,7 +63,6 @@ namespace EcoBuilder
             return levelPrefabs;
         }
 
-        [SerializeField] UI.Earth earth;
         [SerializeField] RectTransform cardParent, playParent, navParent, tutParent;
         public RectTransform CardParent { get { return cardParent; } }
         public RectTransform PlayParent { get { return playParent; } }

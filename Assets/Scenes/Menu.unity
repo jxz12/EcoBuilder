@@ -2512,8 +2512,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelGrid: {fileID: 1843877873}
+  logo: {fileID: 1859362776}
   wolfLion: {fileID: 1560311275}
-  flipButton: {fileID: 0}
+  flipButton: {fileID: 813491790}
   form: {fileID: 1847280000}
 --- !u!1 &890040413
 GameObject:
