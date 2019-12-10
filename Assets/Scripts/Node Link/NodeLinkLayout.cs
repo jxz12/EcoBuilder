@@ -108,7 +108,6 @@ namespace EcoBuilder.NodeLink
             if (dragging)
             {
                 yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .05f);
-
                 xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .05f);
             }
             else
@@ -123,10 +122,12 @@ namespace EcoBuilder.NodeLink
                     else
                         yMinRotationVelocity = Mathf.Sign(yRotationVelocity) * Mathf.Abs(yMinRotationVelocity);
 
-                    yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
-                    yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .05f);
+                    // TODO: add momentum term in userRotate maybe?
+                    // yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
+                    yTargetRotation += yMinRotationVelocity * Time.deltaTime;
+                    yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .3f);
 
-                    FixRotation(ref xRotation);
+                    // FixRotation(ref xRotation);
                     xTargetRotation = xDefaultRotation;
                     xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
                 }
@@ -137,8 +138,8 @@ namespace EcoBuilder.NodeLink
                     FixRotation(ref yTargetRotation);
                     FixRotation(ref xTargetRotation);
 
-                    xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .3f);
-                    yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .3f);
+                    xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .2f);
+                    yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .2f);
                     // TODO: lots of magic numbers here
                 }
             }

@@ -254,7 +254,7 @@ namespace EcoBuilder.Levels
         void OnDestroy()
         {
             if (teacher != null)
-                Destroy(teacher.gameObject);
+                teacher.DestroyMe();
         }
 
         public void BackToMenu()
@@ -304,7 +304,7 @@ namespace EcoBuilder.Levels
             }
             if (teacher != null)
             {
-                Destroy(teacher.gameObject);
+                teacher.DestroyMe();
             }
             // thumbnailedParent = GameManager.Instance.PlayParent;
             // ShowThumbnail(1.5f);
