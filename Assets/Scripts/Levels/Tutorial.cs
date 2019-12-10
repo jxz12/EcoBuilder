@@ -94,5 +94,10 @@ namespace EcoBuilder.Levels
         {
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
+        public void DestroyMe()
+        {
+            StopAllCoroutines();
+            Destroy(gameObject);
+        }
     }
 }
