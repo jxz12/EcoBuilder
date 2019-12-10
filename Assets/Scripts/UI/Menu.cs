@@ -16,6 +16,9 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] GridLayoutGroup levelGrid;
+        [SerializeField] GameObject logo;
+        [SerializeField] Coin wolfLion;
+        [SerializeField] RegistrationForm form;
         List<RectTransform> levelParents;
         void Start()
         {
@@ -29,56 +32,65 @@ namespace EcoBuilder.UI
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
-            // if (GameManager.Instance.FirstPlay)
-            // {
-            //     StartRegistration();
-            // }
-            // else
-            // {
-                GetComponent<Animator>().SetTrigger("Reveal");
-                // TODO: change settings to show the team you're on
-                // TODO: add a nice glowing effect for this
-                logo.SetActive(true);
-            // }
+
+            if (GameManager.Instance.FirstPlay)
+            {
+                StartRegistration();
+            }
+            else
+            {
+                int team = GameManager.Instance.PlayerTeam;
+                if (team == 1)
+                {
+                    wolfLion.gameObject.SetActive(true);
+                    wolfLion.InitializeFlipped(true);
+                }
+                else if (team == -1)
+                {
+                    wolfLion.gameObject.SetActive(true);
+                    wolfLion.InitializeFlipped(false);
+                }
+                StartMainMenu();
+            }
         }
-        [SerializeField] GameObject logo;
-        [SerializeField] Coin wolfLion;
-        [SerializeField] Button flipButton;
-        [SerializeField] RegistrationForm form;
         void StartRegistration()
         {
             form.gameObject.SetActive(true);
             form.OnFinished += ShowCoin;
         }
+        public void SkipRegistration()
+        {
+            form.OnFinished -= ShowCoin;
+            StartMainMenu();
+        }
         void ShowCoin()
         {
             form.OnFinished -= ShowCoin;
             wolfLion.gameObject.SetActive(true);
-            GetComponent<Animator>().SetTrigger("Coin");
+            wolfLion.OnLanded += ChooseTeam;
         }
-        bool flipped = false;
-        public void FlipCoin()
-        {
-            if (!flipped)
-            {
-                wolfLion.Flip();
-                wolfLion.OnLanded += ChooseTeam;
-                GetComponent<Animator>().SetTrigger("Coin");
-            }
-            else
-            {
-                wolfLion.Exit();
-                GetComponent<Animator>().SetTrigger("Reveal");
-                logo.SetActive(true);
-            }
-            flipped = !flipped;
-        }
-        void ChooseTeam(bool team)
+        void ChooseTeam(bool heads)
         {
             wolfLion.OnLanded -= ChooseTeam;
-            GameManager.Instance.SetTeam(team? -1:1);
-            GetComponent<Animator>().SetTrigger("Coin");
-            flipButton.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Continue"; // TODO: boo
+            GameManager.Instance.SetTeam(heads? 1:-1);
+            wolfLion.OnFinished += EndRegistration;
+        }
+        void EndRegistration()
+        {
+            wolfLion.OnFinished -= EndRegistration;
+            GameManager.Instance.SavePlayerDetails();
+            StartMainMenu();
+        }
+
+        void StartMainMenu()
+        {
+            StartCoroutine(WaitThenShowLogo(.7f));
+            GetComponent<Animator>().SetTrigger("Reveal");
+        }
+        IEnumerator WaitThenShowLogo(float waitSeconds)
+        {
+            yield return new WaitForSeconds(waitSeconds);
+            logo.SetActive(true);
         }
     }
 }

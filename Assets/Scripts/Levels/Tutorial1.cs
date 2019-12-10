@@ -164,7 +164,7 @@ namespace EcoBuilder.Levels
             help.Show(false);
             help.SetDistFromTop(.2f);
             targetSize = new Vector2(100,100);
-            targetPos = new Vector2(40, 100);
+            targetPos = new Vector2(40, 120);
             recorder.gameObject.SetActive(true); 
 
             StartCoroutine(WaitThenDo(wait, ()=> { help.Show(true); help.SetText("And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."); }));

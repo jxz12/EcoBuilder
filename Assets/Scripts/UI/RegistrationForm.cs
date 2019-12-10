@@ -10,7 +10,6 @@ namespace EcoBuilder.UI
     public class RegistrationForm : MonoBehaviour
     {
         public event Action OnFinished;
-        // public event Action OnLoggedIn;
 
         [SerializeField] TMPro.TMP_InputField email, password;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
@@ -95,6 +94,7 @@ namespace EcoBuilder.UI
         }
         void Disappear()
         {
+            OnFinished.Invoke();
             StartCoroutine(yTween(1,0,-1000,false));
         }
         IEnumerator yTween(float duration, float yStart, float yEnd, bool applyShade)
@@ -102,9 +102,6 @@ namespace EcoBuilder.UI
             Color startCol = new Color(0,0,0,applyShade?0:.5f);
             Vector3 startPos = new Vector3(0, yStart, 0);
             Vector3 endPos = new Vector3(0, yEnd, 0);
-
-            if (!applyShade)
-                OnFinished.Invoke();
 
             float startTime = Time.time;
             while (Time.time < startTime+duration)
@@ -178,14 +175,14 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.Logout();
         }
-        void Update()
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
-        }
-        void LateUpdate()
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
-            // Canvas.ForceUpdateCanvases();
-        }
+        // void Update()
+        // {
+        //     LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
+        // }
+        // void LateUpdate()
+        // {
+        //     LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
+        //     // Canvas.ForceUpdateCanvases();
+        // }
     }
 }
