@@ -95,32 +95,6 @@ namespace EcoBuilder
             }
         }
 
-        // This whole structure is necessary because you cannot change prefabs from script when compiled
-        // Ideally we would keep this inside Levels.Level, but that is not possible
-        public int GetLevelHighScore(int levelIdx)
-        {
-            return player.highScores[levelIdx];
-        }
-
-        public void SavePlayedLevelHighScore(int score)
-        {
-            int idx = PlayedLevel.Details.idx;
-            if (score > player.highScores[idx])
-                player.highScores[idx] = score;
-
-            int nextIdx = PlayedLevel.Details.idx + 1;
-            if (nextIdx >= player.highScores.Count)
-                return;
-
-            if (player.highScores[nextIdx] < 0)
-                player.highScores[nextIdx] = 0;
-            // TODO: animation
-
-            #if !UNITY_WEBGL
-                SavePlayerDetailsLocal();
-            #endif
-        }
-
 
         ///////////////////
         // scene loading //

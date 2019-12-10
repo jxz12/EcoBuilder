@@ -35,12 +35,13 @@ namespace EcoBuilder
         }
         [SerializeField] PlayerDetails player;
         public bool ConstrainTrophic { get { return player.team >= 0; } }
+        public int PlayerTeam { get { return player.team; } }
 
         public bool FirstPlay { get; private set; } = true;
         static string playerPath;
         private void InitPlayer()
         {
-            // ugh unity annoying
+            // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
 
             // DeletePlayerDetailsLocal();
@@ -111,7 +112,6 @@ namespace EcoBuilder
         public void SetTeam(int team)
         {
             player.team = team;
-            print(team);
             // TODO: try sending details
         }
         IEnumerator Http()
@@ -153,14 +153,19 @@ namespace EcoBuilder
         }
         public void ResetSaveData()
         {
-            PlayerPrefs.DeleteKey("Has Played");
+            DeletePlayerDetailsLocal();
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        public void SavePlayerDetails()
+        {
+            SavePlayerDetailsLocal();
         }
         private bool SavePlayerDetailsLocal()
         {
             #if UNITY_WEBGL
                 return true;
             #endif
+
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
@@ -209,6 +214,32 @@ namespace EcoBuilder
             {
                 print("no save file to delete: " + e.Message);
             }
+        }
+
+        // This whole structure is necessary because you cannot change prefabs from script when compiled
+        // Ideally we would keep this inside Levels.Level, but that is not possible in a build
+        public int GetLevelHighScore(int levelIdx)
+        {
+            return player.highScores[levelIdx];
+        }
+
+        public void SavePlayedLevelHighScore(int score)
+        {
+            int idx = PlayedLevel.Details.idx;
+            if (score > player.highScores[idx])
+                player.highScores[idx] = score;
+
+            int nextIdx = PlayedLevel.Details.idx + 1;
+            if (nextIdx >= player.highScores.Count)
+                return;
+
+            if (player.highScores[nextIdx] < 0)
+                player.highScores[nextIdx] = 0;
+                // TODO: animation here to make it look pretty
+
+            #if !UNITY_WEBGL
+                SavePlayerDetailsLocal();
+            #endif
         }
     }
 }

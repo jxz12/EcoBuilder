@@ -29,5 +29,4 @@ Shader "Mobile/Diffuse Color"
         }
         ENDCG
     }
-    Fallback "Mobile/VertexLit"
 }

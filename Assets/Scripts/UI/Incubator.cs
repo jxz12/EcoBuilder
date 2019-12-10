@@ -16,6 +16,7 @@ namespace EcoBuilder.UI
         void Awake()
         {
             GetComponent<Canvas>().worldCamera = Camera.main;
+            GetComponent<Canvas>().planeDistance = -Camera.main.transform.position.z - 5;
         }
 
         GameObject incubated;
