@@ -33,7 +33,7 @@ namespace EcoBuilder.UI
                 parent.name = level.Details.idx.ToString();
             }
 
-            if (GameManager.Instance.FirstPlay)
+            if (GameManager.Instance.AskForLogin)
             {
                 StartRegistration();
             }
@@ -42,14 +42,15 @@ namespace EcoBuilder.UI
                 int team = GameManager.Instance.PlayerTeam;
                 if (team == 1)
                 {
-                    wolfLion.gameObject.SetActive(true);
+                    // wolfLion.Begin();
                     wolfLion.InitializeFlipped(true);
                 }
                 else if (team == -1)
                 {
-                    wolfLion.gameObject.SetActive(true);
+                    // wolfLion.Begin();
                     wolfLion.InitializeFlipped(false);
                 }
+                // else don't do anything
                 StartMainMenu();
             }
         }
@@ -58,16 +59,18 @@ namespace EcoBuilder.UI
             form.gameObject.SetActive(true);
             form.OnFinished += ShowCoin;
         }
-        public void SkipRegistration()
+        void ShowCoin(bool show)
         {
             form.OnFinished -= ShowCoin;
-            StartMainMenu();
-        }
-        void ShowCoin()
-        {
-            form.OnFinished -= ShowCoin;
-            wolfLion.gameObject.SetActive(true);
-            wolfLion.OnLanded += ChooseTeam;
+            if (show)
+            {
+                wolfLion.Begin();
+                wolfLion.OnLanded += ChooseTeam;
+            }
+            else
+            {
+                StartMainMenu();
+            }
         }
         void ChooseTeam(bool heads)
         {
@@ -84,6 +87,7 @@ namespace EcoBuilder.UI
 
         void StartMainMenu()
         {
+            GameManager.Instance.SavePlayerDetails();
             StartCoroutine(WaitThenShowLogo(.7f));
             GetComponent<Animator>().SetTrigger("Reveal");
         }

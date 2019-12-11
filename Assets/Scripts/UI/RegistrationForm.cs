@@ -9,11 +9,11 @@ namespace EcoBuilder.UI
 {
     public class RegistrationForm : MonoBehaviour
     {
-        public event Action OnFinished;
+        public event Action<bool> OnFinished;
 
         [SerializeField] TMPro.TMP_InputField email, password;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
-        [SerializeField] Toggle GDPR;
+        [SerializeField] Toggle GDPR, askagain;
         [SerializeField] Button loginSubmit, demoSubmit, skipButton, backButton, regButton, loginButton;
         [SerializeField] Sprite tanButton, redButton;
         [SerializeField] Image shade;
@@ -36,6 +36,11 @@ namespace EcoBuilder.UI
                     if (_state == State.Skip)
                     {
                         SetState(State.End);
+                        if (askagain.isOn)
+                        {
+                            GameManager.Instance.DontAskAgainForLogin();
+                        }
+                        OnFinished.Invoke(false);
                     }
                     else
                     {
@@ -94,7 +99,6 @@ namespace EcoBuilder.UI
         }
         void Disappear()
         {
-            OnFinished.Invoke();
             StartCoroutine(yTween(1,0,-1000,false));
         }
         IEnumerator yTween(float duration, float yStart, float yEnd, bool applyShade)
@@ -156,6 +160,7 @@ namespace EcoBuilder.UI
                 if (success)
                 {
                     SetState(State.End);
+                    OnFinished.Invoke(true);
                     // OnLoggedIn.Invoke();
                 }
                 else
@@ -169,12 +174,14 @@ namespace EcoBuilder.UI
         public void TakeDemographics()
         {
             GameManager.Instance.SetDemographics(age.value, gender.value, education.value);
+            GameManager.Instance.SavePlayerDetails();
             SetState(State.End);
+            OnFinished.Invoke(true);
         }
-        public void SkipLogin()
-        {
-            GameManager.Instance.Logout();
-        }
+        // public void SkipLogin()
+        // {
+        //     GameManager.Instance.Logout();
+        // }
         // void Update()
         // {
         //     LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());

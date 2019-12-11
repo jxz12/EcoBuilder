@@ -284,6 +284,10 @@ namespace EcoBuilder.Levels
                 print("TODO: congratulation message for getting a high score");
             }
             GameManager.Instance.SavePlayedLevelHighScore(CurrentScore); // updates score and should unlock next level
+            #if !UNITY_WEBGL
+                GameManager.Instance.SavePlayerDetails();
+            #endif
+
             if (nextLevel != null)
             {
                 NextLevel = Instantiate(nextLevel, nextLevelParent);

@@ -16,6 +16,10 @@ namespace EcoBuilder.UI
             GetComponentInParent<Canvas>().planeDistance = -Camera.main.transform.position.z;
 
             button.onClick.AddListener(Flip);
+        }
+        public void Begin()
+        {
+            anim.SetTrigger("Show");
             StartCoroutine(TweenY(button.GetComponent<RectTransform>(), 1, 110));
         }
         bool heads = false;
