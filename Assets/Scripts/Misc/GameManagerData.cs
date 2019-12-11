@@ -31,37 +31,30 @@ namespace EcoBuilder
             
             public int team; // 0 is none (also trophic), 1 is trophic, -1 is unconstrained
             public List<int> highScores;
-            public bool online;
+            public bool dontAskForLogin;
         }
         [SerializeField] PlayerDetails player;
         public bool ConstrainTrophic { get { return player.team >= 0; } }
         public int PlayerTeam { get { return player.team; } }
+        public bool AskForLogin { get { return player.team==0 && !player.dontAskForLogin; } }
 
-        public bool FirstPlay { get; private set; } = true;
         static string playerPath;
         private void InitPlayer()
         {
             // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
 
-            // DeletePlayerDetailsLocal();
             bool loaded = LoadPlayerDetailsLocal();
             if (!loaded)
             {
                 player = new PlayerDetails();
                 player.team = 0;
-                player.online = false;
                 player.highScores = new List<int>();
                 player.highScores.Add(0); // unlock first level
                 for (int i=1; i<levelPrefabs.Count; i++)
                 {
                     player.highScores.Add(-1);
                 }
-                FirstPlay = true;
-            }
-            else
-            {
-                FirstPlay = false;
             }
             // StartCoroutine(Http());
             // FTP();
@@ -84,7 +77,6 @@ namespace EcoBuilder
             player.password = password;
 
             // TODO: fetch high scores from server in a coroutine
-            player.online = true;
             return true;
         }
         public bool TryRegister(string email, string password)
@@ -93,26 +85,27 @@ namespace EcoBuilder
             player.password = password;
 
             // TODO: try to create new account if possible
-            player.online = true;
             return true;
         }
         public void Logout()
         {
-            player.online = false;
-            // TODO: stop sending collecting data, but keep local info
+            DeletePlayerDetailsLocal();
         }
         public void SetDemographics(int age, int gender, int education)
         {
             player.age = age;
             player.gender = gender;
             player.education = education;
-            // TODO: try sending details
         }
         // TODO: send these to a server with email as the key
         public void SetTeam(int team)
         {
             player.team = team;
             // TODO: try sending details
+        }
+        public void DontAskAgainForLogin()
+        {
+            player.dontAskForLogin = true;
         }
         IEnumerator Http()
         {
@@ -236,10 +229,6 @@ namespace EcoBuilder
             if (player.highScores[nextIdx] < 0)
                 player.highScores[nextIdx] = 0;
                 // TODO: animation here to make it look pretty
-
-            #if !UNITY_WEBGL
-                SavePlayerDetailsLocal();
-            #endif
         }
     }
 }
