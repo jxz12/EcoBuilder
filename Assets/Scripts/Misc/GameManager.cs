@@ -27,6 +27,7 @@ namespace EcoBuilder
             else if (gameManager != this)
                 throw new Exception("More than one GameManager in scene");
 
+            InitPlayer();
             if (SceneManager.sceneCount == 1) // on startup
             {
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
@@ -40,7 +41,6 @@ namespace EcoBuilder
             // #if !UNITY_WEBGL
             //     Screen.fullScreen = true;
             // #endif
-            InitPlayer();
         }
         public void Quit()
         {
@@ -104,6 +104,8 @@ namespace EcoBuilder
         [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
         [Serializable] public class MyFloatEvent : UnityEvent<float> {}
         [SerializeField] MyFloatEvent OnLoadingProgress;
+        [Serializable] public class MyStringEvent : UnityEvent<string> {}
+        public MyStringEvent OnLoaded;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
             OnSceneUnloaded.Invoke();
@@ -128,7 +130,6 @@ namespace EcoBuilder
             }
             OnSceneLoaded?.Invoke();
         }
-        public event Action<string> OnLoaded;
 
         public void ReturnToMenu()
         {

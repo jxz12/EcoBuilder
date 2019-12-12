@@ -5,16 +5,12 @@ using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
 {
-    public class Earth : MonoBehaviour, IDragHandler, IPointerClickHandler
+    public class Planet : MonoBehaviour, IDragHandler, IPointerClickHandler
     {
         Animator anim;
         void Awake()
         {
             anim = GetComponent<Animator>();
-        }
-        void Start()
-        {
-            GameManager.Instance.OnLoaded += Listen;
         }
 
         // for animation events
@@ -27,10 +23,11 @@ namespace EcoBuilder.UI
             this.enabled = true;
         }
 
-        void Listen(string s) // also ugly
+        public void ListenToScenes(string s) // also ugly
         {
             if (s == "Menu")
             {
+                print("hi");
                 anim.SetTrigger("Grow");
             }
             else if (s == "Play" && !anim.GetCurrentAnimatorStateInfo(0).IsName("Hidden")) // so ugly

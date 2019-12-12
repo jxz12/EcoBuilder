@@ -95,7 +95,7 @@ namespace EcoBuilder.Levels
 
             if (score >= 0)
             {
-                Unlock();
+                GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             }
             int numStars = 0;
             if (score >= 1)
@@ -120,12 +120,6 @@ namespace EcoBuilder.Levels
         // animations states
 
         enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3, Leaving=4 }
-
-        // TODO: fun animation here to draw eye towards next level
-        public void Unlock()
-        {
-            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
-        }
 
         IEnumerator tweenRoutine;
         IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
@@ -224,14 +218,14 @@ namespace EcoBuilder.Levels
         public void Play()
         {
             GameManager.Instance.PlayLevel(this);
-            GameManager.Instance.OnLoaded += MoveToCornerOnPlay;
+            GameManager.Instance.OnLoaded.AddListener(MoveToCornerOnPlay);
         }
         void MoveToCornerOnPlay(string sceneName)
         {
             if (sceneName != "Play")
                 throw new Exception("Play scene not loaded when expected");
 
-            GameManager.Instance.OnLoaded -= MoveToCornerOnPlay;
+            GameManager.Instance.OnLoaded.RemoveListener(MoveToCornerOnPlay);
             thumbnailedParent = GameManager.Instance.PlayParent;
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
@@ -261,14 +255,14 @@ namespace EcoBuilder.Levels
         {
             // TODO: 'are you sure' option
             GameManager.Instance.ReturnToMenu();
-            GameManager.Instance.OnLoaded += DestroyWhenMenuLoads;
+            GameManager.Instance.OnLoaded.AddListener(DestroyWhenMenuLoads);
         }
         void DestroyWhenMenuLoads(string sceneName)
         {
             if (sceneName != "Menu")
                 throw new Exception("Menu scene not loaded when expected");
 
-            GameManager.Instance.OnLoaded -= DestroyWhenMenuLoads;
+            GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
             Destroy(gameObject);
         }
 
