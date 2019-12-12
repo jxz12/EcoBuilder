@@ -22,17 +22,6 @@ namespace EcoBuilder.UI
         List<RectTransform> levelParents;
         void Start()
         {
-            levelParents = new List<RectTransform>();
-            foreach (var prefab in GameManager.Instance.GetLevelPrefabs())
-            {
-                var parent = new GameObject().AddComponent<RectTransform>();
-                parent.SetParent(levelGrid.transform);
-                parent.localScale = Vector3.one;
-                levelParents.Add(parent);
-                var level = Instantiate(prefab, parent);
-                parent.name = level.Details.idx.ToString();
-            }
-
             if (GameManager.Instance.AskForLogin)
             {
                 StartRegistration();
@@ -54,6 +43,21 @@ namespace EcoBuilder.UI
                 StartMainMenu();
             }
         }
+        void StartMainMenu()
+        {
+            StartCoroutine(WaitThenShowLogo(.7f));
+            levelParents = new List<RectTransform>();
+            foreach (var prefab in GameManager.Instance.GetLevelPrefabs())
+            {
+                var parent = new GameObject().AddComponent<RectTransform>();
+                parent.SetParent(levelGrid.transform);
+                parent.localScale = Vector3.one;
+                levelParents.Add(parent);
+                var level = Instantiate(prefab, parent);
+                parent.name = level.Details.idx.ToString();
+            }
+            GetComponent<Animator>().SetTrigger("Reveal");
+        }
         void StartRegistration()
         {
             form.gameObject.SetActive(true);
@@ -69,6 +73,7 @@ namespace EcoBuilder.UI
             }
             else
             {
+                // team already chosen
                 StartMainMenu();
             }
         }
@@ -81,16 +86,9 @@ namespace EcoBuilder.UI
         void EndRegistration()
         {
             wolfLion.OnFinished -= EndRegistration;
-            GameManager.Instance.SavePlayerDetails();
             StartMainMenu();
         }
 
-        void StartMainMenu()
-        {
-            GameManager.Instance.SavePlayerDetails();
-            StartCoroutine(WaitThenShowLogo(.7f));
-            GetComponent<Animator>().SetTrigger("Reveal");
-        }
         IEnumerator WaitThenShowLogo(float waitSeconds)
         {
             yield return new WaitForSeconds(waitSeconds);

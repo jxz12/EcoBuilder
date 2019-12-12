@@ -37,9 +37,7 @@ namespace EcoBuilder.UI
                     {
                         SetState(State.End);
                         if (askagain.isOn)
-                        {
                             GameManager.Instance.DontAskAgainForLogin();
-                        }
                         OnFinished.Invoke(false);
                     }
                     else
@@ -66,6 +64,7 @@ namespace EcoBuilder.UI
                     demoObj.SetActive(true);
                     break;
                 case State.End:
+                    GameManager.Instance.SavePlayerDetails();
                     Disappear();
                     break;
             }
@@ -145,6 +144,7 @@ namespace EcoBuilder.UI
                 // show demographics here, then submit
                 if (success)
                 {
+                    // TODO: only check if login exists
                     SetState(State.Demographics);
                     // OnLoggedIn.Invoke();
                 }
@@ -159,8 +159,9 @@ namespace EcoBuilder.UI
                 bool success = GameManager.Instance.TryLogin(email.text, password.text);
                 if (success)
                 {
+                    // TODO: try to actually log in
                     SetState(State.End);
-                    OnFinished.Invoke(true);
+                    OnFinished.Invoke(false);
                     // OnLoggedIn.Invoke();
                 }
                 else
@@ -173,19 +174,22 @@ namespace EcoBuilder.UI
         }
         public void TakeDemographics()
         {
+            // TODO: at this point try to register a new account
             GameManager.Instance.SetDemographics(age.value, gender.value, education.value);
             GameManager.Instance.SavePlayerDetails();
             SetState(State.End);
             OnFinished.Invoke(true);
         }
-        // public void SkipLogin()
-        // {
-        //     GameManager.Instance.Logout();
-        // }
-        // void Update()
-        // {
-        //     LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
-        // }
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                if (email.isFocused)
+                    password.ActivateInputField();
+                else if (password.isFocused)
+                    email.ActivateInputField();
+            }
+        }
         // void LateUpdate()
         // {
         //     LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
