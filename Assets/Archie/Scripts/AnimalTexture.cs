@@ -37,15 +37,19 @@ namespace EcoBuilder.Archie
 
             speciesMesh.materials[0].SetColor("_Color", col);
 
-            var eyes = pick_random(EyeTextures);
-            var nose = pick_random(NoseTextures);
-            var mouth = pick_random(MouthTextures);
-            var cheek = pick_random(CheeckTextures);
+            if (speciesMesh.materials.Length > 1)
+            {
+                var eyes = pick_random(EyeTextures);
+                var nose = pick_random(NoseTextures);
+                var mouth = pick_random(MouthTextures);
+                var cheek = pick_random(CheeckTextures);
 
-            speciesMesh.materials[1].SetTexture("_MainTex", eyes);
-            speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
-            speciesMesh.materials[1].SetTexture("_MainTex3", nose);
-            speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
+                speciesMesh.materials[1].SetTexture("_MainTex", eyes);
+                speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
+                speciesMesh.materials[1].SetTexture("_MainTex3", nose);
+                speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
+            }
+
 
             // speciesMesh.materials[2].SetTexture("_MainTex", mouth);
             // speciesMesh.materials[3].SetTexture("_MainTex", nose);

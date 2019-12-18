@@ -112,36 +112,41 @@ namespace EcoBuilder.NodeLink
             }
             else
             {
-                if (focusState != FocusState.SuperFocus)
-                {
-                    float yRotMod = yRotation % 360;
-                    if (yRotMod > 45 || yRotMod < -180)
-                        yMinRotationVelocity = -Mathf.Abs(yMinRotationVelocity);
-                    else if (yRotMod < -45 || yRotMod > 180)
-                        yMinRotationVelocity = Mathf.Abs(yMinRotationVelocity);
-                    else
-                        yMinRotationVelocity = Mathf.Sign(yRotationVelocity) * Mathf.Abs(yMinRotationVelocity);
+                yTargetRotation = 0;
+                yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .5f);
+                xTargetRotation = xDefaultRotation;
+                xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .5f);
 
-                    // TODO: add momentum term in userRotate maybe?
-                    // yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
-                    yTargetRotation += yMinRotationVelocity * Time.deltaTime;
-                    yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .3f);
+                // if (focusState != FocusState.SuperFocus)
+                // {
+                //     float yRotMod = yRotation % 360;
+                //     if (yRotMod > 45 || yRotMod < -180)
+                //         yMinRotationVelocity = -Mathf.Abs(yMinRotationVelocity);
+                //     else if (yRotMod < -45 || yRotMod > 180)
+                //         yMinRotationVelocity = Mathf.Abs(yMinRotationVelocity);
+                //     else
+                //         yMinRotationVelocity = Mathf.Sign(yRotationVelocity) * Mathf.Abs(yMinRotationVelocity);
 
-                    // FixRotation(ref xRotation);
-                    xTargetRotation = xDefaultRotation;
-                    xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
-                }
-                else
-                {
-                    FixRotation(ref xRotation);
-                    FixRotation(ref yRotation);
-                    FixRotation(ref yTargetRotation);
-                    FixRotation(ref xTargetRotation);
+                //     // TODO: add momentum term in userRotate maybe?
+                //     // yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
+                //     yTargetRotation += yMinRotationVelocity * Time.deltaTime;
+                //     yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .3f);
 
-                    xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .2f);
-                    yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .2f);
-                    // TODO: lots of magic numbers here
-                }
+                //     // FixRotation(ref xRotation);
+                //     xTargetRotation = xDefaultRotation;
+                //     xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
+                // }
+                // else
+                // {
+                //     FixRotation(ref xRotation);
+                //     FixRotation(ref yRotation);
+                //     FixRotation(ref yTargetRotation);
+                //     FixRotation(ref xTargetRotation);
+
+                //     xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .2f);
+                //     yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .2f);
+                //     // TODO: lots of magic numbers here
+                // }
             }
             nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
             graphParent.transform.localRotation = Quaternion.Euler(xRotation,0,0);

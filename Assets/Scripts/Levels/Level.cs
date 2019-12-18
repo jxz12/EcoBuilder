@@ -30,13 +30,17 @@ namespace EcoBuilder.Levels
         public List<int> randomSeeds;
         public List<float> sizes;
         public List<float> greeds;
-        public List<bool> sizeEditables;
-        public List<bool> greedEditables;
         public int numInteractions;
         public List<int> resources;
         public List<int> consumers;
 
-        // targets
+        // traits
+        public bool sizeSliderHidden;
+        public bool greedSliderHidden;
+        public List<bool> sizeEditables;
+        public List<bool> greedEditables;
+
+        // score
         public int targetScore1;
         public int targetScore2;
     }

@@ -8374,13 +8374,13 @@ MonoBehaviour:
     type: 3}
   skullPrefab: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
     type: 3}
-  minLinkFlow: 0.1
-  maxLinkFlow: 0.5
   tooltip: {fileID: 464567629}
   rotationMultiplier: 100
   zoomMultiplier: 0.05
   panMultiplier: 1.2
   snapRadius: 500
+  minLinkFlow: 0.1
+  maxLinkFlow: 0.5
   maxHeight: 3
   layoutSmoothTime: 0.5
   yMinRotationVelocity: 0.3
@@ -8555,7 +8555,7 @@ MonoBehaviour:
   refroveButton: {fileID: 916625267}
   sizeTrait: {fileID: 2095754595}
   greedTrait: {fileID: 1654515231}
-  allowConflicts: 0
+  allowConflicts: 1
   incubator: {fileID: 1297594225}
   factory: {fileID: 416833258}
 --- !u!1001 &1178024093

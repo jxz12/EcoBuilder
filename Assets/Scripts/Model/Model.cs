@@ -119,6 +119,7 @@ namespace EcoBuilder.Model
             // calculate bounds for a_ij and set a_ii in the same range
             a_max = ActiveCapture(kg_max, kg_min) / kg_min;
             a_min = Grazing(kg_min, kg_max) / kg_max;
+            print(a_min+" "+a_max);
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
@@ -153,7 +154,6 @@ namespace EcoBuilder.Model
 
             idxToSpecies.Remove(idx);
             speciesToIdx.Remove(toRemove);
-            // AtEquilibrium = false;
         }
 
         public void SetSpeciesIsProducer(int idx, bool isProducer)
@@ -285,8 +285,11 @@ namespace EcoBuilder.Model
         public float GetNormalisedAbundance(int idx)
         {
                    // calculate proportion first                            multiply by total
-            return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm * idxToSpecies.Count;
+            return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
             // this is so that total green in health bars adds up to the score
+
+            // FIXME: make the score entirely the abundance
+            // return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm * idxToSpecies.Count;
         }
         public float GetNormalisedFlux(int res, int con)
         {
