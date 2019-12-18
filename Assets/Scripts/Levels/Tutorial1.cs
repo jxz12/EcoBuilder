@@ -8,10 +8,8 @@ namespace EcoBuilder.Levels
     {
         protected override void StartLesson()
         {
-            inspector.HideSizeSlider(true);
-            inspector.HideGreedSlider(true);
-            inspector.FixIncubatedSize(.5f);
-            inspector.FixIncubatedGreed(.5f);
+            // inspector.FixIncubatedSize(.5f);
+            // inspector.FixIncubatedGreed(.5f);
             inspector.HideRemoveButton();
             score.HideScore(true);
             score.HideConstraints(true);

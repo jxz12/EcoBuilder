@@ -1727,11 +1727,13 @@ MonoBehaviour:
     randomSeeds: 
     sizes: []
     greeds: []
-    sizeEditables: 
-    greedEditables: 
     numInteractions: 0
     resources: 
     consumers: 
+    sizeSliderHidden: 0
+    greedSliderHidden: 1
+    sizeEditables: 
+    greedEditables: 
     targetScore1: 1
     targetScore2: 1
   tutorial: {fileID: 0}

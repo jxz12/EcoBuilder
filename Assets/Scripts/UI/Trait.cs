@@ -50,15 +50,16 @@ namespace EcoBuilder.UI
         }
 
 
-        float initialValueIfFixed = -1;
-        public void FixRandomSeedValue(float initialValue)
-        {
-            if (initialValue < 0 || initialValue > 1)
-                throw new Exception("initial value not normalised");
+        // float initialValueIfFixed = -1;
+        // public void FixRandomSeedValue(float initialValue)
+        // {
+        //     if (initialValue < 0 || initialValue > 1)
+        //         throw new Exception("initial value not normalised");
 
-            initialValueIfFixed = initialValue;
-        }
+        //     initialValueIfFixed = initialValue;
+        // }
 
+        [SerializeField] float initialValueIfFixed = 0;
         // does not set randomly if initial value is fixed
         public float SetValueFromRandomSeed(int randomSeed)
         {

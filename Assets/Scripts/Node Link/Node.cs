@@ -74,11 +74,12 @@ namespace EcoBuilder.NodeLink
         {
             healthBar.TargetHealth = health;
         }
-        public void SetNewParent(Transform newParent)
+        public void SetNewParentKeepPos(Transform newParent)
         {
             transform.SetParent(newParent, true);
             transform.localRotation = Quaternion.identity;
         }
+
 
         IEnumerator flashRoutine;
         public void Flash(bool isFlashing)
@@ -118,10 +119,15 @@ namespace EcoBuilder.NodeLink
                 yield return null;
             }
         }
+        public void LieDown()
+        {
+            transform.localRotation = Quaternion.Euler(0, 0, -90);
+        }
         float defaultSize = .5f; // TODO:
         IEnumerator bounceRoutine;
         public void Bounce()
         {
+            transform.localRotation = Quaternion.identity;
             if (bounceRoutine != null)
             {
                 StopCoroutine(bounceRoutine);

@@ -54,6 +54,7 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
+            model.OnEndangered += (i)=> nodelink.LieDownNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
             model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnRescued +=    (i)=> nodelink.BounceNode(i);
@@ -120,8 +121,10 @@ namespace EcoBuilder
             }
             nodelink.AddDropShadow(level.Landscape);
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
-            help.SetText(level.Details.introduction);
+            inspector.HideSizeSlider(level.Details.sizeSliderHidden);
+            inspector.HideGreedSlider(level.Details.greedSliderHidden);
             level.StartTutorialIfAvailable();
+            help.SetText(level.Details.introduction);
 
             score.OnLevelCompleted += ()=> inspector.Hide();
             score.OnLevelCompleted += ()=> nodelink.Freeze();

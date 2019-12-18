@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,7 +77,7 @@ namespace EcoBuilder.NodeLink
                 foreach (Node no in nodes)
                 {
                     no.State = Node.PositionState.Stress;
-                    no.SetNewParent(nodesParent);
+                    no.SetNewParentKeepPos(nodesParent);
                 }
                 foreach (Link li in links)
                     li.Show(true);
@@ -93,7 +94,7 @@ namespace EcoBuilder.NodeLink
                     foreach (Node no in nodes)
                     {
                         no.State = Node.PositionState.Stress;
-                        no.SetNewParent(nodesParent);
+                        no.SetNewParentKeepPos(nodesParent);
                     }
                     foreach (Link li in links)
                         li.Show(true);
@@ -115,26 +116,26 @@ namespace EcoBuilder.NodeLink
                 if (no.Idx == focusIdx)
                 {
                     no.State = Node.PositionState.Focus;
-                    no.SetNewParent(nodesParent);
+                    no.SetNewParentKeepPos(nodesParent);
                 }
                 // uninteracting
                 else if (links[focusIdx,no.Idx] == null && links[no.Idx,focusIdx] == null)
                 {
                     unrelated.Add(no);
                     no.State = Node.PositionState.Stress;
-                    no.SetNewParent(unfocusParent);
+                    no.SetNewParentKeepPos(unfocusParent);
                 }
                 else if (links[focusIdx,no.Idx] != null && links[no.Idx,focusIdx] == null)
                 {
                     consumers.Add(no);
                     no.State = Node.PositionState.Focus;
-                    no.SetNewParent(nodesParent);
+                    no.SetNewParentKeepPos(nodesParent);
                 }
                 else if (links[focusIdx,no.Idx] == null && links[no.Idx,focusIdx] != null)
                 {
                     resources.Add(no);
                     no.State = Node.PositionState.Focus;
-                    no.SetNewParent(nodesParent);
+                    no.SetNewParentKeepPos(nodesParent);
                 }
                 // mutual consumption
                 else if (links[focusIdx,no.Idx] != null && links[no.Idx,focusIdx] != null)
@@ -142,7 +143,7 @@ namespace EcoBuilder.NodeLink
                     Debug.LogError("Bidirectional Links should be disabled");
                     both.Add(no);
                     no.State = Node.PositionState.Focus;
-                    no.SetNewParent(nodesParent);
+                    no.SetNewParentKeepPos(nodesParent);
                 }
             }
             foreach (Link li in links)
@@ -579,6 +580,34 @@ namespace EcoBuilder.NodeLink
         ////////////
         // effects
 
+        public void RehealthBars(Func<int, float> healths)
+        {
+            foreach (Node no in nodes)
+            {
+                float health = healths(no.Idx);
+                health = Mathf.Max(Mathf.Min(health, 1), 0);
+                no.SetHealth(health);
+            }
+        }
+        [SerializeField] float minLinkFlow, maxLinkFlow;
+        public void ReflowLinks(Func<int, int, float> flows)
+        {
+            float flowRange = maxLinkFlow - minLinkFlow;
+            foreach (Link li in links)
+            {
+                int res=li.Source.Idx, con=li.Target.Idx;
+                float flow = flows(res, con);
+                if (flow > 0)
+                {
+                    li.TileSpeed = minLinkFlow + flowRange*flow;
+                }
+                else
+                {
+                    li.TileSpeed = minLinkFlow;
+                }
+            }
+        }
+
         public void FlashNode(int idx)
         {
             nodes[idx].Flash(true);
@@ -598,6 +627,10 @@ namespace EcoBuilder.NodeLink
         public void BounceNode(int idx)
         {
             nodes[idx].Bounce();
+        }
+        public void LieDownNode(int idx)
+        {
+            nodes[idx].LieDown();
         }
 
         // adds a gameobject to the point (0,-1,0)
@@ -629,7 +662,7 @@ namespace EcoBuilder.NodeLink
             nodes[idx].Unoutline();
         }
 
-        // TODO: this is a bit messy
+        // TODO: this is a bit messy and doesn't work if graph is spinning
         public void TooltipNode(int idx, string msg)
         {
             tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);

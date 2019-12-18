@@ -155,8 +155,10 @@ namespace EcoBuilder.UI
         void RandomiseIncubated()
         {
             incubated.RerollSeed();
-            if (traitsFixed || allowConflicts)
+            // if (traitsFixed || allowConflicts)
+            if (allowConflicts)
             {
+                                               // this sets randomly or from fixed value
                 incubated.BodySize = sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
                 incubated.Greediness = greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
             }
@@ -520,18 +522,18 @@ namespace EcoBuilder.UI
             greedTrait.gameObject.SetActive(!hidden);
         }
 
-        // only for tutorial
-        bool traitsFixed = false;
-        public void FixIncubatedSize(float fixedSize)
-        {
-            sizeTrait.FixRandomSeedValue(fixedSize);
-            traitsFixed = true;
-        }
-        public void FixIncubatedGreed(float fixedGreed)
-        {
-            greedTrait.FixRandomSeedValue(fixedGreed);
-            traitsFixed = true;
-        }
+        // // only for tutorial
+        // bool traitsFixed = false;
+        // public void FixIncubatedSize(float fixedSize)
+        // {
+        //     sizeTrait.FixRandomSeedValue(fixedSize);
+        //     traitsFixed = true;
+        // }
+        // public void FixIncubatedGreed(float fixedGreed)
+        // {
+        //     greedTrait.FixRandomSeedValue(fixedGreed);
+        //     traitsFixed = true;
+        // }
 
         bool removeHidden = false;
         public void HideRemoveButton(bool hidden=true)

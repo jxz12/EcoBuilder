@@ -80,7 +80,8 @@ namespace EcoBuilder.NodeLink
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
                 // newNode.StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
-                newNode.StressPos = new Vector3(.5f,0,-.5f) + .3f*UnityEngine.Random.insideUnitSphere;
+                // newNode.StressPos = new Vector3(.5f,0,-.5f) + .3f*UnityEngine.Random.insideUnitSphere;
+                newNode.StressPos = UnityEngine.Random.insideUnitCircle;
 
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
@@ -93,7 +94,7 @@ namespace EcoBuilder.NodeLink
                 nodes[idx].gameObject.SetActive(true);
                 // nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
                 // nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
-                nodes[idx].StressPos = new Vector3(.5f,0,-.5f) + .3f*UnityEngine.Random.insideUnitSphere;
+                nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle;
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -237,34 +238,6 @@ namespace EcoBuilder.NodeLink
             links[i,j].Removable = removable;
             if (!removable)
                 links[i,j].Outline(0);
-        }
-
-        public void RehealthBars(Func<int, float> healths)
-        {
-            foreach (Node no in nodes)
-            {
-                float health = healths(no.Idx);
-                health = Mathf.Max(Mathf.Min(health, 1), 0);
-                no.SetHealth(health);
-            }
-        }
-        [SerializeField] float minLinkFlow, maxLinkFlow;
-        public void ReflowLinks(Func<int, int, float> flows)
-        {
-            float flowRange = maxLinkFlow - minLinkFlow;
-            foreach (Link li in links)
-            {
-                int res=li.Source.Idx, con=li.Target.Idx;
-                float flow = flows(res, con);
-                if (flow > 0)
-                {
-                    li.TileSpeed = minLinkFlow + flowRange*flow;
-                }
-                else
-                {
-                    li.TileSpeed = minLinkFlow;
-                }
-            }
         }
 
         // to give other classes access to the adjacency

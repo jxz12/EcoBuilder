@@ -10,8 +10,6 @@ namespace EcoBuilder.Levels
         GameObject plant, animal;
         protected override void StartLesson()
         {
-            inspector.HideSizeSlider(false);
-            inspector.HideGreedSlider(true);
             inspector.HideIncubateButton(true);
             inspector.HideRemoveButton(true);
             score.HideScore(true);
@@ -93,6 +91,7 @@ namespace EcoBuilder.Levels
             nodelink.OnNodeFocused += foo;
             Detach = ()=> nodelink.OnNodeFocused -= foo;
         }
+        // TODO: remove this entirely
         void ExplainInterference()
         {
             help.Show(false);
