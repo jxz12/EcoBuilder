@@ -79,10 +79,6 @@ namespace EcoBuilder.NodeLink
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
-                // newNode.StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
-                // newNode.StressPos = new Vector3(.5f,0,-.5f) + .3f*UnityEngine.Random.insideUnitSphere;
-                newNode.StressPos = UnityEngine.Random.insideUnitCircle;
-
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
             }
@@ -92,9 +88,6 @@ namespace EcoBuilder.NodeLink
                 nodeGrave.RemoveAt(idx);
 
                 nodes[idx].gameObject.SetActive(true);
-                // nodes[idx].StressPos += .2f*UnityEngine.Random.insideUnitSphere;
-                // nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
-                nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle;
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -123,6 +116,8 @@ namespace EcoBuilder.NodeLink
                 foreach (int row in links.GetRowIndicesInColumn(idx))
                     linkGrave.RemoveAt(row, idx);
             }
+            // nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
+            nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle;
             todoBFS.Enqueue(idx);
         }
 

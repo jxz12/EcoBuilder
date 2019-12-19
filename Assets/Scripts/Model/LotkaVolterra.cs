@@ -21,6 +21,8 @@ namespace EcoBuilder.Model
             this.a_ii = a_ii;
             this.a_ij = a_ij;
             this.e_ij = e_ij;
+
+            ResizeMatrices(1); // this is so that things are cached so the first species addition isn't so heavy
         }
 
         // external dictionary for lookup
@@ -36,11 +38,7 @@ namespace EcoBuilder.Model
             int n = internToExtern.Count;
 
             externToIntern[species] = n;
-            // externInteractions[species] = new HashSet<T>();
-
             internToExtern.Add(species);
-            // internInteractions.Add(new HashSet<int>());
-
             ResizeMatrices(n+1);
         }
         public void RemoveSpecies(T species)
@@ -64,7 +62,7 @@ namespace EcoBuilder.Model
         Matrix<double> community, hermitian;
         public void ResizeMatrices(int n)
         {
-            if (n > 0)
+            if (n > 0 && (interaction==null || n!=interaction.RowCount))
             {
                 // A is interaction matrix, x is equilibrium abundance, b is -r
                 interaction = Matrix<double>.Build.Dense(n, n);
@@ -76,11 +74,11 @@ namespace EcoBuilder.Model
                 community = Matrix<double>.Build.Dense(n, n);
                 hermitian = Matrix<double>.Build.Dense(n, n);
             }
-            else
-            {
-                interaction = flux = community = hermitian = null;
-                abundance = negGrowth = null;
-            }
+            // else
+            // {
+            //     interaction = flux = community = hermitian = null;
+            //     abundance = negGrowth = null;
+            // }
         }
 
         public int Richness { get { return internToExtern.Count; } }
@@ -97,7 +95,6 @@ namespace EcoBuilder.Model
             interaction.Clear();
             negGrowth.Clear();
 
-            // numInteractions = 0;
             int n = Richness;
             for (int i=0; i<n; i++)
             {
@@ -113,7 +110,6 @@ namespace EcoBuilder.Model
                     interaction[i,j] -= a;
                     interaction[j,i] += e * a;
                     flux[i,j] = e * a; // init flux here, multiply by abundances later
-                    // numInteractions += 1;
                 }
             }
 

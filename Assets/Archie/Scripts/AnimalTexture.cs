@@ -50,7 +50,6 @@ namespace EcoBuilder.Archie
                 speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
             }
 
-
             // speciesMesh.materials[2].SetTexture("_MainTex", mouth);
             // speciesMesh.materials[3].SetTexture("_MainTex", nose);
 

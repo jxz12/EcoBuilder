@@ -28,7 +28,7 @@ namespace EcoBuilder
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=       (i)=> score.RemoveIdx(i);
-            inspector.OnShaped +=        (i,g)=> { nodelink.ShapeNode(i,g); nodelink.FlashNode(i); }; // init as extinct
+            inspector.OnShaped +=        (i,g)=> { nodelink.ShapeNode(i,g); nodelink.FlashNode(i); nodelink.LieDownNode(i); }; // init as extinct
             inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
             inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
             inspector.OnIsProducerSet += (i,x)=> score.AddType(i,x);
@@ -119,10 +119,19 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.SetLinkDefaultOutline(i, j);
             }
+
+            // TODO: magic numbers
+            if (level.Details.sizeSliderHidden)
+            {
+                inspector.HideSizeSlider(.5f);
+            }
+            if (level.Details.greedSliderHidden)
+            {
+                inspector.HideGreedSlider(.5f);
+            }
+
             nodelink.AddDropShadow(level.Landscape);
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
-            inspector.HideSizeSlider(level.Details.sizeSliderHidden);
-            inspector.HideGreedSlider(level.Details.greedSliderHidden);
             level.StartTutorialIfAvailable();
             help.SetText(level.Details.introduction);
 

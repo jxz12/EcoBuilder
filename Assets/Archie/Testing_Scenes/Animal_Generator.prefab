@@ -46,6 +46,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Animal_Prefab: {fileID: 8620083413230679600, guid: 1f2994656656b4fcdaccf128fdfadbee,
     type: 3}
+  Plant_Prefab: {fileID: 7943114584279828413, guid: e094bc46ecfe745bc9b0013c9235ed86,
+    type: 3}
   Consumer_Meshs:
   - {fileID: 3363173149664772039, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
   - {fileID: 7406790110253308521, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}

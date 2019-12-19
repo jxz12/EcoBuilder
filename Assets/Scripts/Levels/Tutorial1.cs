@@ -8,8 +8,6 @@ namespace EcoBuilder.Levels
     {
         protected override void StartLesson()
         {
-            // inspector.FixIncubatedSize(.5f);
-            // inspector.FixIncubatedGreed(.5f);
             inspector.HideRemoveButton();
             score.HideScore(true);
             score.HideConstraints(true);
@@ -67,7 +65,7 @@ namespace EcoBuilder.Levels
             inspector.SetConsumerAvailability(true);
             inspector.SetProducerAvailability(false);
 
-            help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by pressing the paw button.");
+            help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by tapping the paw button.");
             help.SetDistFromTop(.02f, false);
             help.Show(true);
 
@@ -126,7 +124,7 @@ namespace EcoBuilder.Levels
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
 
-            StartCoroutine(WaitThenDo(wait, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try clicking on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
+            StartCoroutine(WaitThenDo(wait, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
 
             track = true;
             StartCoroutine(Track(secondSpecies.transform));
@@ -145,7 +143,7 @@ namespace EcoBuilder.Levels
 
             help.Show(true);
             help.SetDistFromTop(.7f);
-            help.SetText("And click this skull button to remove the species.");
+            help.SetText("And tap this skull button to remove the species.");
 
             Detach();
             Action foo = ()=> ExplainRemove1(0);
@@ -181,7 +179,7 @@ namespace EcoBuilder.Levels
             help.Show(false);
             // help.SetSide(false, false);
 
-            StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by pressing the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); score.DisableFinish(false); }));
+            StartCoroutine(WaitThenDo(waitSeconds, ()=> { help.Show(true); help.SetText("You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); score.DisableFinish(false); }));
             // TODO: this breaks if they add the link back before removing species
 
             // score.HideConstraints(false);
@@ -196,7 +194,7 @@ namespace EcoBuilder.Levels
             targetAnchor = rt.anchorMin = rt.anchorMax = new Vector2(1,1);
             targetPos = rt.anchoredPosition = new Vector2(-90,-90);
 
-            help.SetText("Well done! Press this button to finish the level.");
+            help.SetText("Well done! Tap this button to finish the level.");
             help.Show(true);
 
             Detach();

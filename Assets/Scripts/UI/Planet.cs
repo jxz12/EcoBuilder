@@ -27,7 +27,6 @@ namespace EcoBuilder.UI
         {
             if (s == "Menu")
             {
-                print("hi");
                 anim.SetTrigger("Grow");
             }
             else if (s == "Play" && !anim.GetCurrentAnimatorStateInfo(0).IsName("Hidden")) // so ugly

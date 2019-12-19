@@ -7,7 +7,7 @@ using System.Diagnostics; // TIME TESTING
 namespace EcoBuilder.Archie{
     public class animal_generator : ProceduralMeshGenerator
     {
-        [SerializeField] GameObject Animal_Prefab;
+        [SerializeField] GameObject Animal_Prefab, Plant_Prefab;
         [SerializeField] Mesh[] Consumer_Meshs, Producer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
         static public List<GameObject> generated_consumers = new List<GameObject>();
         static public List<GameObject> generated_producers = new List<GameObject>();
@@ -23,14 +23,16 @@ namespace EcoBuilder.Archie{
         public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
         {
             UnityEngine.Random.InitState(randomSeed);
-            var created_species = Instantiate(Animal_Prefab);
+            GameObject created_species;
             if (!isProducer)
             {
+                created_species = Instantiate(Animal_Prefab);
                 Form_Animal(created_species, bodySize, greediness, randomSeed);
                 generated_consumers.Add(created_species);
             }
             else
             {
+                created_species = Instantiate(Plant_Prefab);
                 Form_Plant(created_species, bodySize, greediness, randomSeed);
                 generated_producers.Add(created_species);
             }
@@ -68,7 +70,7 @@ namespace EcoBuilder.Archie{
             // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
             // // scale mesh
             // animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
-            var lab = new LABColor(70-50*bodySize, 80*greediness, -50);
+            var lab = new LABColor(70-50*bodySize, 60*greediness, -50);
             Color rgb = lab.ToColor();
 
             Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), rgb);
@@ -91,7 +93,7 @@ namespace EcoBuilder.Archie{
             // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
             // // scale mesh
             // plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
-            var lab = new LABColor(80-50*bodySize, -50+110*greediness, 50);
+            var lab = new LABColor(80-50*bodySize, -80+100*greediness, 50);
             Color rgb = lab.ToColor();
 
             Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), rgb);
