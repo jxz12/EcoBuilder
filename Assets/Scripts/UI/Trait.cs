@@ -36,36 +36,33 @@ namespace EcoBuilder.UI
         {
             FindConflict = Rule;
         }
-        public IEnumerable<float> PossibleValues {
+        public IEnumerable<float> PossibleInitialValues {
             get {
                 if (!slider.wholeNumbers)
                     throw new Exception("not whole numbers");
 
-                float range = slider.maxValue - slider.minValue;
-                for (float val=slider.minValue; val<=slider.maxValue; val+=1)
+                if (InitialValueIfFixed >= 0)
                 {
-                    yield return (val-slider.minValue) / range;
+                    yield return InitialValueIfFixed;
+                }
+                else
+                {
+                    float range = slider.maxValue - slider.minValue;
+                    for (float val=slider.minValue; val<=slider.maxValue; val+=1)
+                    {
+                        yield return (val-slider.minValue) / range;
+                    }
                 }
             }
         }
 
-
-        // float initialValueIfFixed = -1;
-        // public void FixRandomSeedValue(float initialValue)
-        // {
-        //     if (initialValue < 0 || initialValue > 1)
-        //         throw new Exception("initial value not normalised");
-
-        //     initialValueIfFixed = initialValue;
-        // }
-
-        [SerializeField] float initialValueIfFixed = 0;
         // does not set randomly if initial value is fixed
+        public float InitialValueIfFixed { get; set; } = -1;
         public float SetValueFromRandomSeed(int randomSeed)
         {
-            if (initialValueIfFixed >= 0)
+            if (InitialValueIfFixed >= 0)
             {
-                return SetValueWithoutCallback(initialValueIfFixed);
+                return SetValueWithoutCallback(InitialValueIfFixed);
             }
             else
             {

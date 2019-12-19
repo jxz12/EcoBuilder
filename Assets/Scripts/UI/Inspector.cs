@@ -155,7 +155,6 @@ namespace EcoBuilder.UI
         void RandomiseIncubated()
         {
             incubated.RerollSeed();
-            // if (traitsFixed || allowConflicts)
             if (allowConflicts)
             {
                                                // this sets randomly or from fixed value
@@ -173,9 +172,9 @@ namespace EcoBuilder.UI
                 }
                 // choose a random combination not in the set
                 var availablePairs = new List<Tuple<float, float>>();
-                foreach (float testSize in sizeTrait.PossibleValues)
+                foreach (float testSize in sizeTrait.PossibleInitialValues)
                 {
-                    foreach (float testGreed in greedTrait.PossibleValues)
+                    foreach (float testGreed in greedTrait.PossibleInitialValues)
                     {
                         var testPair = Tuple.Create(testSize, testGreed);
                         if (!traitPairs.Contains(testPair))
@@ -193,7 +192,7 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    throw new Exception("somehow filled up all niches!");
+                    throw new Exception("Somehow filled up all niches! Or both traits have fixed initial sizes but conflicts aren't allowed.");
                 }
                 sizeTrait.SetValueWithoutCallback(incubated.BodySize);
                 greedTrait.SetValueWithoutCallback(incubated.Greediness);
@@ -509,32 +508,20 @@ namespace EcoBuilder.UI
                 typesAnim.SetBool("Visible", false);
             }
         }
+        public void HideSizeSlider(float initialSize)
+        {
+            sizeTrait.gameObject.SetActive(false);
+            sizeTrait.InitialValueIfFixed = initialSize;
+        }
+        public void HideGreedSlider(float initialGreed)
+        {
+            greedTrait.gameObject.SetActive(false);
+            greedTrait.InitialValueIfFixed = initialGreed;
+        }
+
 
         //////////////////////////////
         // stuff for tutorials to use
-
-        public void HideSizeSlider(bool hidden=true)
-        {
-            sizeTrait.gameObject.SetActive(!hidden);
-        }
-        public void HideGreedSlider(bool hidden=true)
-        {
-            greedTrait.gameObject.SetActive(!hidden);
-        }
-
-        // // only for tutorial
-        // bool traitsFixed = false;
-        // public void FixIncubatedSize(float fixedSize)
-        // {
-        //     sizeTrait.FixRandomSeedValue(fixedSize);
-        //     traitsFixed = true;
-        // }
-        // public void FixIncubatedGreed(float fixedGreed)
-        // {
-        //     greedTrait.FixRandomSeedValue(fixedGreed);
-        //     traitsFixed = true;
-        // }
-
         bool removeHidden = false;
         public void HideRemoveButton(bool hidden=true)
         {
@@ -544,6 +531,8 @@ namespace EcoBuilder.UI
         {
             typesAnim.gameObject.SetActive(!hidden);
         }
+
+        // for saving levels
         public IEnumerable<KeyValuePair<int, Species>> GetSpeciesInfo()
         {
             return spawnedSpecies;

@@ -1,5 +1,4 @@
-Shader "UI/Fast-Colour-Behind
-"
+Shader "UI/Fast-Colour-Behind"
 {
     Properties
     {

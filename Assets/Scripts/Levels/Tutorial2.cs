@@ -28,7 +28,7 @@ namespace EcoBuilder.Levels
         IEnumerator shuffleRoutine;
         void ExplainIntro()
         {
-            help.SetText("The animal below is going extinct, even though it has food! Let's fix that. Start by focusing on the plant, by pressing it. A blue outline means that a species or link cannot be removed.");
+            help.SetText("The animal below is going extinct, even though it has food! Let's fix that. Start by focusing on the plant, by tapping it. A blue outline means that a species or link cannot be removed.");
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
@@ -82,7 +82,7 @@ namespace EcoBuilder.Levels
             targetSize = Vector2.zero;
 
             StartCoroutine(WaitThenDo(delay, ()=>{
-                help.SetText("Well done! You can save the animal here by giving it more food. This is achieved by making itself or its food source lighter, as lighter species grow and eat faster. This is exactly what happens in the real world! Grass spreads faster than oak trees. A swarm of locusts devours a field much faster than a herd of cows. Try pressing the plant again."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(trackRoutine = Track(plant.transform)); targetSize = new Vector2(100,100);
+                help.SetText("Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(trackRoutine = Track(animal.transform)); targetSize = new Vector2(100,100);
             }));
 
 
@@ -96,16 +96,20 @@ namespace EcoBuilder.Levels
         {
             help.Show(false);
 
-            help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with others of its own species, and so the lower its maximum population. Try changing it to see if you can make the animal go extinct!");
+            // help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with others of its own species, and so the lower its maximum population. Try changing it to see if you can make the animal go extinct!");
+            // help.Show(true);
+            // inspector.HideGreedSlider(false);
+
+            help.SetText("The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. Try changing the animal here in order to make it go extinct again.");
             help.Show(true);
-            inspector.HideGreedSlider(false);
 
             if (trackRoutine != null)
             {
                 StopCoroutine(trackRoutine);
                 trackRoutine = null;
             }
-            StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 90));
+            // StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 90));
+            StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 40));
 
             Detach();
             // Action<int,float,float> foo = (i,x,y)=> ExplainScore();
@@ -139,9 +143,10 @@ namespace EcoBuilder.Levels
             help.SetSide(false,false);
             help.SetDistFromTop(.13f);
 
-            // StartCoroutine(WaitThenDo(2, ()=>{
-            //     help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can press your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
-            // }));
+            // TODO: fix the explanation tap
+            StartCoroutine(WaitThenDo(2, ()=>{
+                help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can tap your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
+            }));
             StartCoroutine(WaitThenDo(2, ()=>{
                 help.SetText("Good job! This bar at the top displays your score, and is based on the size and total health of your ecosystem. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
             }));

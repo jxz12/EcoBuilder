@@ -414,6 +414,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3346323206562518685, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: initialValueIfFixed
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_Sprite
@@ -7353,7 +7358,7 @@ Transform:
   m_GameObject: {fileID: 823585298}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.2, y: 1.2, z: 1.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 842480508}
   m_Father: {fileID: 534420150}
@@ -8555,7 +8560,7 @@ MonoBehaviour:
   refroveButton: {fileID: 916625267}
   sizeTrait: {fileID: 2095754595}
   greedTrait: {fileID: 1654515231}
-  allowConflicts: 1
+  allowConflicts: 0
   incubator: {fileID: 1297594225}
   factory: {fileID: 416833258}
 --- !u!1001 &1178024093
@@ -11952,6 +11957,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3346323206562518685, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: initialValueIfFixed
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}

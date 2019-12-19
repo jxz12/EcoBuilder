@@ -205,7 +205,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.sizes.Array.data[2]
-      value: 0.3
+      value: 0.125
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -220,7 +220,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.greeds.Array.data[2]
-      value: 0.3
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -256,6 +256,16 @@ PrefabInstance:
         type: 3}
       propertyPath: details.targetScore2
       value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.greedEditables.Array.data[1]
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.greedEditables.Array.data[0]
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

@@ -44,6 +44,7 @@ namespace EcoBuilder
             // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
 
+            DeletePlayerDetailsLocal();
             bool loaded = LoadPlayerDetailsLocal();
             if (!loaded)
             {
@@ -53,7 +54,8 @@ namespace EcoBuilder
                 player.highScores.Add(0); // unlock first level
                 for (int i=1; i<levelPrefabs.Count; i++)
                 {
-                    player.highScores.Add(-1);
+                    // player.highScores.Add(-1);
+                    player.highScores.Add(0);
                 }
             }
             // StartCoroutine(Http());
