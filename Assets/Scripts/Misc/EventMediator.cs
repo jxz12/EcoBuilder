@@ -91,10 +91,14 @@ namespace EcoBuilder
             /////////////////////
             // initialise level
 
+            nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             var level = GameManager.Instance.PlayedLevel;
             score.ConstrainFromLevel(level);
             if (level == null)
+            {
+                inspector.HideGreedSlider(.5f);
                 return; // should never happen in real game
+            }
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -131,7 +135,6 @@ namespace EcoBuilder
             }
 
             nodelink.AddDropShadow(level.Landscape);
-            nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             level.StartTutorialIfAvailable();
             help.SetText(level.Details.introduction);
 
