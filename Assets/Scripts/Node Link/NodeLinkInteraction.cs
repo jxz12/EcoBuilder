@@ -13,7 +13,7 @@ namespace EcoBuilder.NodeLink
         IScrollHandler
 	{
         [SerializeField] UI.Tooltip tooltip;
-        [SerializeField] float rotationMultiplier, zoomMultiplier, panMultiplier;
+        [SerializeField] float rotationPerInch, zoomPerInch, panPerInch;
 
         enum FocusState { Unfocus, Focus, SuperFocus, Frozen }; // frozen is end of game
         FocusState focusState = FocusState.Unfocus;
@@ -62,8 +62,9 @@ namespace EcoBuilder.NodeLink
         {
             if (focusState == FocusState.Unfocus)
             {
-                // StartCoroutine(ResetPan(Vector2.zero, 1f));
-                StartCoroutine(ResetZoom(Vector3.one, 1f));
+                // reset pan and zoom
+                StartCoroutine(TweenPan(Vector2.zero, 1f));
+                StartCoroutine(TweenZoom(Vector3.one, 1f));
             }
             else if (focusState == FocusState.Focus)
             {
@@ -85,22 +86,26 @@ namespace EcoBuilder.NodeLink
         }
         public void FullUnfocus()
         {
-            if (focusState != FocusState.Unfocus)
+            while (focusState != FocusState.Unfocus)
             {
-                focusedNode.Unoutline();
-                focusedNode = null;
-                if (focusState == FocusState.SuperFocus)
-                {
-                    foreach (Node no in nodes)
-                    {
-                        no.State = Node.PositionState.Stress;
-                        no.SetNewParentKeepPos(nodesParent);
-                    }
-                    foreach (Link li in links)
-                        li.Show(true);
-                }
-                focusState = FocusState.Unfocus;
+                Unfocus();
             }
+            // if (focusState != FocusState.Unfocus)
+            // {
+            //     focusedNode.Unoutline();
+            //     focusedNode = null;
+            //     if (focusState == FocusState.SuperFocus)
+            //     {
+            //         foreach (Node no in nodes)
+            //         {
+            //             no.State = Node.PositionState.Stress;
+            //             no.SetNewParentKeepPos(nodesParent);
+            //         }
+            //         foreach (Link li in links)
+            //             li.Show(true);
+            //     }
+            //     focusState = FocusState.Unfocus;
+            // }
         }
 
         public void SuperFocus(int focusIdx)
@@ -206,44 +211,68 @@ namespace EcoBuilder.NodeLink
                 focusedNode.Unoutline();
                 focusedNode = null;
             }
-            StartCoroutine(ResetZoom(Vector3.one, 1f));
+            FullUnfocus();
+            Unfocus(); // reset zoom and pan if possible
 
             GetComponent<Animator>().SetTrigger("Freeze");
             focusState = FocusState.Frozen;
         }
 
-        void Zoom(float amount)
+        void UserZoom(float pixelDelta)
         {
-            float zoom = amount * zoomMultiplier;
+            float inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            float zoom = inchesDelta * zoomPerInch;
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
-            graphParent.localScale *= 1 + zoom;
+            nodesParent.localScale *= 1 + zoom;
         }
-        IEnumerator ResetZoom(Vector3 endZoom, float duration)
+        void UserPan(Vector2 pixelDelta)
         {
-            Vector3 startZoom = graphParent.localScale;
+            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            nodesParent.localPosition += (Vector3)inchesDelta * panPerInch;
+        }
+        void UserRotate(Vector2 pixelDelta)
+        {
+            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            Vector2 rotation = inchesDelta * rotationPerInch; // convert to degrees
+            yTargetRotation -= rotation.x;
+            xTargetRotation += rotation.y;
+        }
+
+        IEnumerator TweenZoom(Vector3 endZoom, float duration)
+        {
+            Vector3 startZoom = nodesParent.localScale;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
             {
                 // graphParent.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
                 float t = (Time.time-startTime) / duration * 2;
                 if (t < 1) 
-                    graphParent.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
+                    nodesParent.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
                 else
-                    graphParent.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
+                    nodesParent.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
 
                 yield return null;
             }
-            graphParent.localScale = endZoom;
+            nodesParent.localScale = endZoom;
         }
-
-        void UserRotate(Vector2 delta)
+        IEnumerator TweenPan(Vector3 endPan, float duration)
         {
-            delta /= (Screen.dpi==0? 72:Screen.dpi); // convert to inches
-            delta *= rotationMultiplier; // convert to degrees
-            yTargetRotation -= delta.x;
-            xTargetRotation += delta.y;
+            Vector3 startZoom = nodesParent.localPosition;
+            float startTime = Time.time;
+            while (Time.time < startTime + duration)
+            {
+                // graphParent.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
+                float t = (Time.time-startTime) / duration * 2;
+                if (t < 1) 
+                    nodesParent.localPosition = startZoom + (endPan-startZoom)/2f*t*t;
+                else
+                    nodesParent.localPosition = startZoom - (endPan-startZoom)/2f*((t-1)*(t-3)-1);
+
+                yield return null;
+            }
+            nodesParent.localScale = endPan;
         }
 
         ///////////////////////////////
@@ -455,16 +484,21 @@ namespace EcoBuilder.NodeLink
                 Touch t1 = Input.touches[0];
                 Touch t2 = Input.touches[1];
 
-                float dist = (t1.position - t2.position).magnitude;
-                float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                // Zoom(dist - prevDist);
-                Zoom((dist - prevDist) * .05f); // TODO: fix this for touch/scrollwheel
-                // Pan((t1.deltaPosition + t2.deltaPosition) / 2);
+                if (Vector2.Dot(t1.deltaPosition, t2.deltaPosition) <= 0) // if touches moved in opposite directions
+                {
+                    float dist = (t1.position - t2.position).magnitude;
+                    float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
+                    UserZoom(dist - prevDist);
+                }
+                else
+                {
+                    UserPan((t1.deltaPosition + t2.deltaPosition) / 2);
+                }
             }
-            if (ped.pointerId == -3) // or middle click
+            if (ped.pointerId < -1) // or right/middle click
             {
-                // Pan(ped.delta);
-                Zoom(ped.delta.y);
+                UserPan(ped.delta);
+                // Zoom(ped.delta.y);
             }
         }
         public void OnEndDrag(PointerEventData ped)
@@ -507,7 +541,7 @@ namespace EcoBuilder.NodeLink
         }
         public void OnScroll(PointerEventData ped)
         {
-            Zoom(ped.scrollDelta.y);
+            UserZoom(-ped.scrollDelta.y);
             UserRotate(new Vector3(ped.scrollDelta.x, 0));
         }
         // OnDrop gets called before OnEndDrag
@@ -539,7 +573,7 @@ namespace EcoBuilder.NodeLink
 
         // this returns any node within the snap radius
         // if more than one are in the radius, then return the closest to the camera.
-        [SerializeField] float snapRadius;
+        [SerializeField] float snapRadiusInches;
         private Node ClosestSnappedNode(PointerEventData ped)
         {
             if (focusState == FocusState.Frozen)
@@ -558,15 +592,15 @@ namespace EcoBuilder.NodeLink
             {
                 Node closest = null;
                 float closestDist = float.MaxValue;
-                float radius = snapRadius * snapRadius;
-                radius /= Screen.dpi==0? 72:Screen.dpi;
+                float snapRadiusPxls = snapRadiusInches * (Screen.dpi==0? 72:Screen.dpi);
+                float sqRadius = snapRadiusPxls * snapRadiusPxls;
                 foreach (Node no in nodes)
                 {
                     Vector2 screenPos = Camera.main.WorldToScreenPoint(no.transform.position);
 
                     // if the click is within the clickable radius
                     float dist = (ped.position-screenPos).sqrMagnitude;
-                    if (dist < radius && dist < closestDist)
+                    if (dist < sqRadius && dist < closestDist)
                     {
                         closest = no;
                         closestDist = dist;

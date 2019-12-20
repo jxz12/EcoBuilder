@@ -6,8 +6,8 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float maxHeight=3f;
-        [SerializeField] float layoutSmoothTime=.5f;//, sizeTween=.05f;
+        [SerializeField] float maxHeight;
+        [SerializeField] float layoutSmoothTime;
 
         Vector3 nodesVelocity, graphVelocity;
         // Vector3 rotationCenter;
@@ -24,8 +24,8 @@ namespace EcoBuilder.NodeLink
                 {
                     centroid = focusedNode.StressPos;
 
-                    nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
+                    // nodesParent.localPosition =
+                    //     Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2, ref graphVelocity, layoutSmoothTime);
                 }
@@ -39,8 +39,8 @@ namespace EcoBuilder.NodeLink
                     }
                     centroid /= nodes.Count;
 
-                    nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
+                    // nodesParent.localPosition =
+                    //     Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
                         Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused, ref graphVelocity, layoutSmoothTime);
                 }
@@ -48,8 +48,8 @@ namespace EcoBuilder.NodeLink
                 if (ConstrainTrophic)
                 {
                     // centroid = Vector3.zero;
-                    // float height = Mathf.Min(MaxChain, maxHeight);
-                    float height = MaxChain;
+                    float height = Mathf.Min(MaxChain, maxHeight);
+                    // float height = MaxChain;
                     float trophicScaling = MaxTrophic>1? height / (MaxTrophic-1) : 1;
                     foreach (Node no in nodes)
                     {
@@ -100,7 +100,7 @@ namespace EcoBuilder.NodeLink
                 no.GetComponent<HealthBar>().TweenHealth(.1f);
             }
         }
-        [SerializeField] float yMinRotationVelocity, xDefaultRotation;
+        [SerializeField] float xDefaultRotation;
         float yRotation=0, yTargetRotation=0, yRotationVelocity=-Mathf.Epsilon; // spin other way initially
         float xRotation=0, xTargetRotation=0, xRotationVelocity=0;
         private void MomentumRotate()
@@ -116,37 +116,6 @@ namespace EcoBuilder.NodeLink
                 yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .5f);
                 xTargetRotation = xDefaultRotation;
                 xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .5f);
-
-                // if (focusState != FocusState.SuperFocus)
-                // {
-                //     float yRotMod = yRotation % 360;
-                //     if (yRotMod > 45 || yRotMod < -180)
-                //         yMinRotationVelocity = -Mathf.Abs(yMinRotationVelocity);
-                //     else if (yRotMod < -45 || yRotMod > 180)
-                //         yMinRotationVelocity = Mathf.Abs(yMinRotationVelocity);
-                //     else
-                //         yMinRotationVelocity = Mathf.Sign(yRotationVelocity) * Mathf.Abs(yMinRotationVelocity);
-
-                //     // TODO: add momentum term in userRotate maybe?
-                //     // yTargetRotation += (yRotationVelocity*.8f + yMinRotationVelocity) * Time.deltaTime;
-                //     yTargetRotation += yMinRotationVelocity * Time.deltaTime;
-                //     yRotation = Mathf.SmoothDamp(yRotation, yTargetRotation, ref yRotationVelocity, .3f);
-
-                //     // FixRotation(ref xRotation);
-                //     xTargetRotation = xDefaultRotation;
-                //     xRotation = Mathf.SmoothDamp(xRotation, xTargetRotation, ref xRotationVelocity, .3f);
-                // }
-                // else
-                // {
-                //     FixRotation(ref xRotation);
-                //     FixRotation(ref yRotation);
-                //     FixRotation(ref yTargetRotation);
-                //     FixRotation(ref xTargetRotation);
-
-                //     xRotation = Mathf.SmoothDamp(xRotation, 0, ref xRotationVelocity, .2f);
-                //     yRotation = Mathf.SmoothDamp(yRotation, 0, ref yRotationVelocity, .2f);
-                //     // TODO: lots of magic numbers here
-                // }
             }
             nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
             graphParent.transform.localRotation = Quaternion.Euler(xRotation,0,0);

@@ -177,7 +177,7 @@ PrefabInstance:
         type: 3}
       propertyPath: nextLevel
       value: 
-      objectReference: {fileID: 9084862648602956166, guid: 8dfd1232bd32bff48ac329e23bdb574d,
+      objectReference: {fileID: 6555380569939054073, guid: 9df2b2b4aa525477ea746811f9ea647f,
         type: 3}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -283,6 +283,11 @@ PrefabInstance:
         type: 3}
       propertyPath: details.sizeEditables.Array.data[1]
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.numConsumers
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
