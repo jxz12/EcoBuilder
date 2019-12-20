@@ -91,7 +91,7 @@ namespace EcoBuilder
             /////////////////////
             // initialise level
 
-            nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
+            nodelink.ConstrainTrophic = GameManager.Instance.PlayerTeam == GameManager.PlayerDetails.Team.Wolf;
             var level = GameManager.Instance.PlayedLevel;
             score.ConstrainFromLevel(level);
             if (level == null)
@@ -140,7 +140,7 @@ namespace EcoBuilder
 
             score.OnLevelCompleted += ()=> inspector.Hide();
             score.OnLevelCompleted += ()=> nodelink.Freeze();
-            // score.OnLevelCompleted += ()=> recorder.RecordMoves();
+            score.OnLevelCompleted += ()=> recorder.RecordMoves();
             score.OnLevelCompleted += ()=> help.DelayThenShow(2, level.Details.congratulation);
         }
 
@@ -169,48 +169,54 @@ namespace EcoBuilder
             }
         }
 
-        // This is to be used for level creation
-        public void RecordDetailsIntoLevel()
+        #if UNITY_EDITOR
+        void Update()
         {
-            var details = new Levels.LevelDetails();
-            details.plants = new List<bool>();
-            details.randomSeeds = new List<int>();
-            details.sizes = new List<float>();
-            details.greeds = new List<float>();
-            details.sizeEditables = new List<bool>();
-            details.greedEditables = new List<bool>();
-
-            var squishedIdxs = new Dictionary<int, int>();
-            int counter = 0;
-            foreach (var kvp in inspector.GetSpeciesInfo())
+            if (Input.GetKeyDown(KeyCode.Q) &&
+                Input.GetKeyDown(KeyCode.Q) &&
+                Input.GetKeyDown(KeyCode.Q))
             {
-                int idx = kvp.Key;
-                UI.Inspector.Species s = kvp.Value;
-                details.plants.Add(s.IsProducer);
-                details.randomSeeds.Add(s.RandomSeed);
-                details.sizes.Add(s.BodySize);
-                details.greeds.Add(s.Greediness);
-                details.sizeEditables.Add(s.SizeEditable);
-                details.greedEditables.Add(s.GreedEditable);
+                var details = new Levels.LevelDetails();
+                details.plants = new List<bool>();
+                details.randomSeeds = new List<int>();
+                details.sizes = new List<float>();
+                details.greeds = new List<float>();
+                details.sizeEditables = new List<bool>();
+                details.greedEditables = new List<bool>();
 
-                squishedIdxs[idx] = counter++;
-            }
-            details.numSpecies = squishedIdxs.Count;
-            
-            details.resources = new List<int>();
-            details.consumers = new List<int>();
-            details.numInteractions = 0;
-            foreach (var kvp in inspector.GetSpeciesInfo())
-            {
-                int i = kvp.Key;
-                foreach (int j in nodelink.GetTargets(i))
+                var squishedIdxs = new Dictionary<int, int>();
+                int counter = 0;
+                foreach (var kvp in inspector.GetSpeciesInfo())
                 {
-                    details.resources.Add(squishedIdxs[i]);
-                    details.consumers.Add(squishedIdxs[j]);
-                    details.numInteractions += 1;
+                    int idx = kvp.Key;
+                    UI.Inspector.Species s = kvp.Value;
+                    details.plants.Add(s.IsProducer);
+                    details.randomSeeds.Add(s.RandomSeed);
+                    details.sizes.Add(s.BodySize);
+                    details.greeds.Add(s.Greediness);
+                    details.sizeEditables.Add(s.SizeEditable);
+                    details.greedEditables.Add(s.GreedEditable);
+
+                    squishedIdxs[idx] = counter++;
                 }
+                details.numSpecies = squishedIdxs.Count;
+                
+                details.resources = new List<int>();
+                details.consumers = new List<int>();
+                details.numInteractions = 0;
+                foreach (var kvp in inspector.GetSpeciesInfo())
+                {
+                    int i = kvp.Key;
+                    foreach (int j in nodelink.GetTargets(i))
+                    {
+                        details.resources.Add(squishedIdxs[i]);
+                        details.consumers.Add(squishedIdxs[j]);
+                        details.numInteractions += 1;
+                    }
+                }
+                Levels.Level.SaveAsNewPrefab(details, DateTime.Now.Ticks.ToString());
             }
-            Levels.Level.SaveAsNewPrefab(details, DateTime.Now.Ticks.ToString());
         }
+        #endif
     }
 }

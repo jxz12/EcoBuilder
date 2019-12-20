@@ -29,13 +29,13 @@ namespace EcoBuilder
             public int gender;
             public int education;
             
-            public int team; // 0 is none (also trophic), 1 is trophic, -1 is unconstrained
+            public enum Team { None, Wolf, Lion }
+            public Team team = Team.None;
             public List<int> highScores;
             public bool dontAskForLogin;
         }
         [SerializeField] PlayerDetails player;
-        public bool ConstrainTrophic { get { return player.team >= 0; } }
-        public int PlayerTeam { get { return player.team; } }
+        public PlayerDetails.Team PlayerTeam { get { return player.team; } }
         public bool AskForLogin { get { return player.team==0 && !player.dontAskForLogin; } }
 
         static string playerPath;
@@ -48,8 +48,6 @@ namespace EcoBuilder
             bool loaded = LoadPlayerDetailsLocal();
             if (!loaded)
             {
-                player = new PlayerDetails();
-                player.team = 0;
                 player.highScores = new List<int>();
                 player.highScores.Add(0); // unlock first level
                 for (int i=1; i<levelPrefabs.Count; i++)
@@ -100,7 +98,7 @@ namespace EcoBuilder
             player.education = education;
         }
         // TODO: send these to a server with email as the key
-        public void SetTeam(int team)
+        public void SetTeam(PlayerDetails.Team team)
         {
             player.team = team;
             // TODO: try sending details

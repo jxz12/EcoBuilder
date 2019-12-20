@@ -58,12 +58,13 @@ namespace EcoBuilder.NodeLink
                 OnNodeFocused?.Invoke(idx);
             }
         }
+        Vector3 defaultNodelinkPos;
         void Unfocus()
         {
             if (focusState == FocusState.Unfocus)
             {
                 // reset pan and zoom
-                StartCoroutine(TweenPan(Vector2.zero, 1f));
+                StartCoroutine(TweenPan(defaultNodelinkPos, 1f));
                 StartCoroutine(TweenZoom(Vector3.one, 1f));
             }
             else if (focusState == FocusState.Focus)
@@ -87,25 +88,7 @@ namespace EcoBuilder.NodeLink
         public void FullUnfocus()
         {
             while (focusState != FocusState.Unfocus)
-            {
                 Unfocus();
-            }
-            // if (focusState != FocusState.Unfocus)
-            // {
-            //     focusedNode.Unoutline();
-            //     focusedNode = null;
-            //     if (focusState == FocusState.SuperFocus)
-            //     {
-            //         foreach (Node no in nodes)
-            //         {
-            //             no.State = Node.PositionState.Stress;
-            //             no.SetNewParentKeepPos(nodesParent);
-            //         }
-            //         foreach (Link li in links)
-            //             li.Show(true);
-            //     }
-            //     focusState = FocusState.Unfocus;
-            // }
         }
 
         public void SuperFocus(int focusIdx)
@@ -206,15 +189,11 @@ namespace EcoBuilder.NodeLink
         }
         public void Freeze()
         {
-            if (focusedNode != null)
-            {
-                focusedNode.Unoutline();
-                focusedNode = null;
-            }
             FullUnfocus();
-            Unfocus(); // reset zoom and pan if possible
+            StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
+            StartCoroutine(TweenPan(defaultNodelinkPos, 2));
 
-            GetComponent<Animator>().SetTrigger("Freeze");
+            Instantiate(confettiPrefab, nodesParent.transform);
             focusState = FocusState.Frozen;
         }
 
@@ -225,12 +204,12 @@ namespace EcoBuilder.NodeLink
             zoom = Mathf.Min(zoom, .5f);
             zoom = Mathf.Max(zoom, -.5f);
 
-            nodesParent.localScale *= 1 + zoom;
+            transform.localScale *= 1 + zoom;
         }
         void UserPan(Vector2 pixelDelta)
         {
             Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
-            nodesParent.localPosition += (Vector3)inchesDelta * panPerInch;
+            transform.localPosition += (Vector3)inchesDelta * panPerInch;
         }
         void UserRotate(Vector2 pixelDelta)
         {
@@ -242,37 +221,35 @@ namespace EcoBuilder.NodeLink
 
         IEnumerator TweenZoom(Vector3 endZoom, float duration)
         {
-            Vector3 startZoom = nodesParent.localScale;
+            Vector3 startZoom = transform.localScale;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
             {
-                // graphParent.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
                 float t = (Time.time-startTime) / duration * 2;
                 if (t < 1) 
-                    nodesParent.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
+                    transform.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
                 else
-                    nodesParent.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
+                    transform.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
 
                 yield return null;
             }
-            nodesParent.localScale = endZoom;
+            transform.localScale = endZoom;
         }
         IEnumerator TweenPan(Vector3 endPan, float duration)
         {
-            Vector3 startZoom = nodesParent.localPosition;
+            Vector3 startZoom = transform.localPosition;
             float startTime = Time.time;
             while (Time.time < startTime + duration)
             {
-                // graphParent.localScale = Vector3.Lerp(startZoom, goalZoom, (Time.time-startTime)/duration);
                 float t = (Time.time-startTime) / duration * 2;
                 if (t < 1) 
-                    nodesParent.localPosition = startZoom + (endPan-startZoom)/2f*t*t;
+                    transform.localPosition = startZoom + (endPan-startZoom)/2f*t*t;
                 else
-                    nodesParent.localPosition = startZoom - (endPan-startZoom)/2f*((t-1)*(t-3)-1);
+                    transform.localPosition = startZoom - (endPan-startZoom)/2f*((t-1)*(t-3)-1);
 
                 yield return null;
             }
-            nodesParent.localScale = endPan;
+            transform.localPosition = endPan;
         }
 
         ///////////////////////////////
