@@ -131,9 +131,7 @@ namespace EcoBuilder.NodeLink
             if (bounceRoutine != null)
             {
                 StopCoroutine(bounceRoutine);
-                // transform.localScale = Vector3.one;
             }
-
             StartCoroutine(bounceRoutine = Bounce(.6f, .1f));
         }
         IEnumerator Bounce(float length, float magnitude)
@@ -142,8 +140,6 @@ namespace EcoBuilder.NodeLink
             while (Time.time < startTime+length)
             {
                 float t = (Time.time-startTime) / length;
-                // float t1 = t-1;
-                // transform.localScale = (.5f + magnitude*(4*Mathf.Sqrt(t) * -(t1*t1*t1))) * Vector3.one;
                 transform.localScale = (defaultSize + magnitude*(4*Mathf.Sqrt(t) * -Mathf.Pow(t-1,3))) * Vector3.one;
                 yield return null;
             }
@@ -173,18 +169,5 @@ namespace EcoBuilder.NodeLink
                                        ref sizocity, smoothTime);
             }
         }
-        // public void TweenSize(float sizeTween)
-        // {
-        //     if (focusState != FocusState.Hidden)
-        //     {
-        //         transform.localScale =
-        //             Vector3.Lerp(transform.localScale, Size*Vector3.one, sizeTween);
-        //     }
-        //     else
-        //     {
-        //         transform.localScale =
-        //             Vector3.Lerp(transform.localScale, Vector3.zero, sizeTween);
-        //     }
-        // }
     }
 }

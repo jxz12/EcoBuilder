@@ -21,12 +21,19 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
-        [SerializeField] Effect heartPrefab, skullPrefab;
+        [SerializeField] Effect heartPrefab, skullPrefab, confettiPrefab;
 
-        void FixedUpdate()
+        void Start()
         {
-            //////////////////////
-            // do stress SGD
+            xRotation = xDefaultRotation = graphParent.localRotation.eulerAngles.x;
+            defaultNodelinkPos = transform.localPosition;
+            transform.localScale = Vector3.zero;
+            StartCoroutine(TweenZoom(Vector3.one, 2));
+        }
+        void Update()
+        {
+            ////////////////////////////////////
+            // do stress and trophic levels
             if (nodes.Count > 0)
             {
                 if (focusState != FocusState.SuperFocus)
@@ -34,27 +41,20 @@ namespace EcoBuilder.NodeLink
                     int i = todoBFS.Dequeue(); // only do one vertex at a time
                     var d_j = ShortestPathsBFS(i);
 
-                    // TODO:
-                    // if (d_j.Count == 0)
-                    //     PushToFront(i);
-                    
-                    if (ConstrainTrophic)
+                    if (ConstrainTrophic && !LaplacianDetZero)
+                    {
+                        TrophicGaussSeidel();
                         LayoutMajorizationHorizontal(i, d_j);
+                    }
                     else
+                    {
                         LayoutMajorization(i, d_j);
-
+                    }
                     todoBFS.Enqueue(i);
                 }
             }
-            ///////////////////////////////
-            // calculate trophic levels
-            if (!LaplacianDetZero)
-            {
-                TrophicGaussSeidel();
-            }
-        }
-        void Update()
-        {
+            ///////////////////////////////////
+            // smoothly interpolate positions
             TweenNodes();
             MomentumRotate();
         }

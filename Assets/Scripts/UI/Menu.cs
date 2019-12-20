@@ -28,18 +28,19 @@ namespace EcoBuilder.UI
             }
             else
             {
-                int team = GameManager.Instance.PlayerTeam;
-                if (team == 1)
+                var team = GameManager.Instance.PlayerTeam;
+                if (team == GameManager.PlayerDetails.Team.Lion)
                 {
                     // wolfLion.Begin();
                     wolfLion.InitializeFlipped(true);
                 }
-                else if (team == -1)
+                else if (team == GameManager.PlayerDetails.Team.Wolf)
                 {
                     // wolfLion.Begin();
                     wolfLion.InitializeFlipped(false);
                 }
-                // else don't do anything
+                // else {} // do not init coin otherwise
+
                 StartMainMenu();
             }
         }
@@ -80,7 +81,7 @@ namespace EcoBuilder.UI
         void ChooseTeam(bool heads)
         {
             wolfLion.OnLanded -= ChooseTeam;
-            GameManager.Instance.SetTeam(heads? 1:-1);
+            GameManager.Instance.SetTeam(heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf);
             wolfLion.OnFinished += EndRegistration;
         }
         void EndRegistration()

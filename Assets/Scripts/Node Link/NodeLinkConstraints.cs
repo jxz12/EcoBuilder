@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,6 @@ namespace EcoBuilder.NodeLink
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
         public int MaxChain { get; private set; } = 0;
-        public float MaxTrophic { get; private set; } = 1;
         public int MaxLoop { get; private set; } = 0;
 
         public bool IsCalculating { get; private set; } = false;
@@ -24,6 +24,9 @@ namespace EcoBuilder.NodeLink
             IsCalculating = true;
 
             RefreshTrophic();
+            await Task.Run(()=> LayoutSGD());
+            // LayoutSGD();
+
             var inout = JohnsonInOut(); // not async to synchronize state
             MaxLoop = await Task.Run(()=> LongestLoop(inout.Item1, inout.Item2));
 
@@ -33,6 +36,8 @@ namespace EcoBuilder.NodeLink
         public void ConstraintsSync()
         {
             RefreshTrophic();
+            LayoutSGD();
+
             var inout = JohnsonInOut();
             MaxLoop = LongestLoop(inout.Item1, inout.Item2);
 
@@ -40,8 +45,6 @@ namespace EcoBuilder.NodeLink
         }
         void RefreshTrophic()
         {
-            // etaIteration = 0; // reset SGD (wobbles)
-
             Disjoint = CheckDisjoint();
             NumEdges = links.Count();
 
@@ -49,16 +52,90 @@ namespace EcoBuilder.NodeLink
             var heights = HeightBFS(basal);
             LaplacianDetZero = (heights.Count != nodes.Count);
 
-            if (focusState == FocusState.SuperFocus)
+            if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
                 SuperFocus(focusedNode.Idx);
-            // else if (focusState == FocusState.SuperAntifocus)
-            //     SuperAntifocus(focusedNode.Idx);
 
             MaxChain = 0;
             foreach (int height in heights.Values)
                 MaxChain = Math.Max(height, MaxChain);
+        }
 
-            // MaxTrophic cannot be here as it is always evolving
+        ////////////////////////////
+        // refresh layout with SGD
+
+        private void LayoutSGD()
+        {
+            var terms = new List<Tuple<int,int,int>>();
+            int d_max = 0;
+            foreach (int i in nodes.Indices)
+            {
+                var d_j = ShortestPathsBFS(i);
+                foreach (var d in d_j.Where(foo=> foo.Key!=i))
+                {
+                    terms.Add(Tuple.Create(i, d.Key, d.Value));
+                    d_max = Math.Max(d.Value, d_max);
+                }
+            }
+            foreach (float eta in ExpoSchedule(d_max))
+            {
+                FYShuffle(terms);
+                foreach (var term in terms)
+                {
+                    int i = term.Item1, j = term.Item2, d_ij = term.Item3;
+                    Vector3 X_ij = nodes[i].StressPos - nodes[j].StressPos;
+
+                    float mag = X_ij.magnitude;
+                    float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+                    Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                    nodes[i].StressPos -= mu * r;
+                    nodes[j].StressPos += mu * r;
+                }
+            }
+        }
+        private IEnumerable<float> ExpoSchedule(int d_max)
+        {
+            float eta_max = d_max*d_max;
+            float lambda = Mathf.Log(eta_max) / 9;
+            for (int t=0; t<10; t++)
+            {
+                yield return eta_max * Mathf.Exp(-lambda * t);
+                break;
+            }
+        }
+
+        private Dictionary<int, int> ShortestPathsBFS(int source)
+        {
+            var visited = new Dictionary<int, int>();
+
+            visited[source] = 0;
+            var q = new Queue<int>();
+            q.Enqueue(source);
+
+            while (q.Count > 0)
+            {
+                int current = q.Dequeue();
+                foreach (int next in adjacency[current])
+                {
+                    if (!visited.ContainsKey(next))
+                    {
+                        q.Enqueue(next);
+                        visited[next] = visited[current] + 1;
+                    }
+                }
+            }
+            return visited;
+        }
+        public static void FYShuffle<T>(List<T> deck)
+        {
+            var rand = new System.Random();
+            int n = deck.Count;
+            for (int i=0; i<n-1; i++)
+            {
+                int j = rand.Next(i, n);
+                T temp = deck[j];
+                deck[j] = deck[i];
+                deck[i] = temp;
+            }
         }
 
         ///////////////////////////////////////////////////////
