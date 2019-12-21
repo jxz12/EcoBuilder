@@ -118,6 +118,7 @@ namespace EcoBuilder
                     yield return null;
                 }
             }
+            yield return new WaitForSeconds(1);
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);

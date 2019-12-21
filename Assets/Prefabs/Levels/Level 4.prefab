@@ -394,8 +394,8 @@ PrefabInstance:
         type: 3}
       propertyPath: details.introduction
       value: In this level, the lighter species is eating the plant too quickly for
-        the heavier one to survive. You must save the heavier one by adding the correct
-        new species.
+        the heavier one to survive. You must save the heavier one by changing the
+        lighter one.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
