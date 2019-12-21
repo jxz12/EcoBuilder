@@ -187,6 +187,9 @@ namespace EcoBuilder.NodeLink
             adjacency[i].Add(j);
             adjacency[j].Add(i);
 
+            nodes[i].Disconnected = false;
+            nodes[j].Disconnected = false;
+
             OnLinked?.Invoke();
         }
         public void RemoveLink(int i, int j)
@@ -203,6 +206,11 @@ namespace EcoBuilder.NodeLink
                 links[j,i].Curved = false;
                 throw new Exception("no bidirectional links allowed");
             }
+
+            if (adjacency[i].Count == 0)
+                nodes[i].Disconnected = true;
+            if (adjacency[j].Count == 0)
+                nodes[j].Disconnected = true;
 
             OnLinked?.Invoke();
         }

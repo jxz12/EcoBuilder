@@ -18,6 +18,7 @@ namespace EcoBuilder.NodeLink
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
+        public bool Disconnected {get; set; } = true;
 
         GameObject shape;
         MeshRenderer shapeRenderer;
@@ -151,22 +152,19 @@ namespace EcoBuilder.NodeLink
         {
             if (State == PositionState.Stress)
             {
-                transform.localPosition =
-                    Vector3.SmoothDamp(transform.localPosition, StressPos,
-                                        ref velocity, smoothTime);
+                if (!Disconnected)
+                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos, ref velocity, smoothTime);
+                else
+                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos+Vector3.back, ref velocity, smoothTime);
             }
             else //(State == FocusState.Focus)
             {
-                transform.localPosition =
-                    Vector3.SmoothDamp(transform.localPosition, FocusPos,
-                                        ref velocity, smoothTime);
+                transform.localPosition = Vector3.SmoothDamp(transform.localPosition, FocusPos, ref velocity, smoothTime);
             }
 
             if (bounceRoutine == null)
             {
-                transform.localScale =
-                    Vector3.SmoothDamp(transform.localScale, defaultSize*Vector3.one,
-                                       ref sizocity, smoothTime);
+                transform.localScale = Vector3.SmoothDamp(transform.localScale, defaultSize*Vector3.one, ref sizocity, smoothTime);
             }
         }
     }
