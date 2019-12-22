@@ -59,15 +59,15 @@ namespace EcoBuilder.Model
         // search rate derivations
         class Species
         {
-            public int Idx { get; private set; }
-            public double BodySize { get; set; }
-            public bool IsProducer { get; set; }
+            public int Idx { get; private set; } = -1;
+            public bool IsProducer { get; set; } = false;
+            public double BodySize { get; set; } = double.NaN;
+            public double Interference { get; set; } = double.NaN;
 
-            public double Metabolism { get; set; }
-            public double Interference { get; set; }
-            public double Efficiency { get; set; }
+            public double Metabolism { get; set; } = double.NaN;
+            public double Efficiency { get; set; } = double.NaN;
 
-            public float NormalisedAbundance { get; set; } = -1; // init positive
+            public float NormalisedAbundance { get; set; } = -1; // init negative so that heart appears
 
             public Species(int idx)
             {
@@ -150,15 +150,22 @@ namespace EcoBuilder.Model
                 throw new Exception("does not contain idx " + idx);
 
             Species toRemove = idxToSpecies[idx];
+            // if (toRemove.IsProducer)
+            //     numProducers -= 1;
             simulation.RemoveSpecies(toRemove);
 
             idxToSpecies.Remove(idx);
             speciesToIdx.Remove(toRemove);
         }
 
+        // int numProducers = 0;
         public void SetSpeciesIsProducer(int idx, bool isProducer)
         {
             Species s = idxToSpecies[idx];
+            // if (!s.IsProducer && isProducer)
+            //     numProducers += 1;
+            // else if (s.IsProducer && !isProducer)
+            //     numProducers -= 1;
             s.IsProducer = isProducer;
 
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
@@ -284,12 +291,13 @@ namespace EcoBuilder.Model
         }
         public float GetNormalisedAbundance(int idx)
         {
-                   // calculate proportion first                            multiply by total
-            return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
+                          // calculate proportion first                             multiply by total
+            // float ratio = (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
             // this is so that total green in health bars adds up to the score
 
-            // FIXME: make the score entirely the abundance
-            // return (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm * idxToSpecies.Count;
+            // return ratio * idxToSpecies.Count / numProducers;
+            // return ratio;
+            return idxToSpecies[idx].NormalisedAbundance;
         }
         public float GetNormalisedFlux(int res, int con)
         {
