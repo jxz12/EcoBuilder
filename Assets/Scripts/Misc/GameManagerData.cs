@@ -21,7 +21,6 @@ namespace EcoBuilder
         [Serializable]
         public class PlayerDetails
         {
-            // TODO: store this locally and on server
             public string email;
             public string password;
 
@@ -31,11 +30,15 @@ namespace EcoBuilder
             
             public enum Team { None, Wolf, Lion }
             public Team team = Team.None;
+            public bool reverseDrag;
             public List<int> highScores;
             public bool dontAskForLogin;
         }
         [SerializeField] PlayerDetails player;
         public PlayerDetails.Team PlayerTeam { get { return player.team; } }
+
+        public bool ConstrainTrophic { get { return player.team != GameManager.PlayerDetails.Team.Lion; } }
+        public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForLogin { get { return player.team==0 && !player.dontAskForLogin; } }
 
         static string playerPath;
@@ -102,6 +105,10 @@ namespace EcoBuilder
         {
             player.team = team;
             // TODO: try sending details
+        }
+        public void SetDragDirection(bool reversed)
+        {
+            player.reverseDrag = reversed;
         }
         public void DontAskAgainForLogin()
         {

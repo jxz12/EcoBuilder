@@ -3495,9 +3495,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1168393880}
+  - component: {fileID: 1168393887}
   - component: {fileID: 1168393882}
   - component: {fileID: 1168393881}
-  - component: {fileID: 1168393887}
   - component: {fileID: 1168393884}
   - component: {fileID: 1168393886}
   - component: {fileID: 1168393885}
@@ -3656,7 +3656,7 @@ MonoBehaviour:
   refroveButton: {fileID: 916625267}
   sizeTrait: {fileID: 2095754595}
   greedTrait: {fileID: 1654515231}
-  allowConflicts: 0
+  allowConflicts: 1
   incubator: {fileID: 1297594225}
   factory: {fileID: 416833258}
 --- !u!1001 &1178024093

@@ -91,7 +91,8 @@ namespace EcoBuilder
             /////////////////////
             // initialise level
 
-            nodelink.ConstrainTrophic = GameManager.Instance.PlayerTeam == GameManager.PlayerDetails.Team.Wolf;
+            nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
+            nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
             var level = GameManager.Instance.PlayedLevel;
             score.ConstrainFromLevel(level);
             if (level == null)
