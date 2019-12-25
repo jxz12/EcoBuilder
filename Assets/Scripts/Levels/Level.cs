@@ -16,7 +16,6 @@ namespace EcoBuilder.Levels
         public string description;
         public string introduction;
         public string congratulation;
-        public string conclusion;
 
         // constraints
         public int numProducers;

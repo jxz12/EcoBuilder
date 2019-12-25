@@ -10,15 +10,16 @@ namespace EcoBuilder.UI
 {
     public class Menu : MonoBehaviour
     {
-        public void QuitGame()
-        {
-            GameManager.Instance.Quit();
-        }
-
-        [SerializeField] GridLayoutGroup levelGrid;
+        [SerializeField] GridLayoutGroup learningLevels;
+        [SerializeField] VerticalLayoutGroup researchLevels;
         [SerializeField] GameObject logo;
         [SerializeField] Coin wolfLion;
         [SerializeField] RegistrationForm form;
+        [SerializeField] Toggle reverseDrag;
+
+        [SerializeField] Button researchWorld;
+        [SerializeField] Image researchLock;
+
         List<RectTransform> levelParents;
         void Start()
         {
@@ -51,12 +52,19 @@ namespace EcoBuilder.UI
             foreach (var prefab in GameManager.Instance.GetLevelPrefabs())
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
-                parent.SetParent(levelGrid.transform);
+                parent.SetParent(learningLevels.transform);
                 parent.localScale = Vector3.one;
                 levelParents.Add(parent);
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
+            if (GameManager.Instance.IsLearningFinished())
+            {
+                researchWorld.interactable = true;
+                researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
+                researchLock.enabled = false; // remove lock
+            }
+            reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             GetComponent<Animator>().SetTrigger("Reveal");
         }
         void StartRegistration()
@@ -94,6 +102,14 @@ namespace EcoBuilder.UI
         {
             yield return new WaitForSeconds(waitSeconds);
             logo.SetActive(true);
+        }
+        public void QuitGame()
+        {
+            GameManager.Instance.Quit();
+        }
+        public void SetReverseDrag(bool reversed)
+        {
+            GameManager.Instance.SetDragDirection(reversed);
         }
     }
 }

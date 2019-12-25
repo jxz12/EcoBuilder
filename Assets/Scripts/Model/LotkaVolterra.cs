@@ -367,6 +367,24 @@ namespace EcoBuilder.Model
         //     return Lambda <= 0;
         // }
 
+        public double[,] GetState()
+        {
+            // columns:
+            // A*x=b
+            // n 1 1
+
+            var state = new double[Richness, Richness+2];
+            for (int row=0; row<Richness; row++)
+            {
+                for (int col=0; col<Richness; col++)
+                {
+                    state[row,col] = interaction[row,col];
+                }
+                state[row, Richness] = abundance[row];
+                state[row, Richness+1] = negGrowth[row];
+            }
+            return state;
+        }
 
 
 
@@ -374,7 +392,7 @@ namespace EcoBuilder.Model
         /////////////////////
         // helper functions
 
-        public static string MathNetMatStr(Matrix<double> mat, string formatter="e1")
+        static string MathNetMatStr(Matrix<double> mat, string formatter="e1")
         {
             var sb = new System.Text.StringBuilder();
             // int m = mat.GetLength(0), n = mat.GetLength(1);
@@ -391,7 +409,7 @@ namespace EcoBuilder.Model
             return sb.ToString();
         }
         
-        public static string MathNetVecStr(Vector<double> vec, string formatter="e2")
+        static string MathNetVecStr(Vector<double> vec, string formatter="e2")
         {
             var sb = new System.Text.StringBuilder();
             int n = vec.Count;

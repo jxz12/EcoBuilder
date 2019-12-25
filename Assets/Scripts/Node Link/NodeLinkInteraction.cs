@@ -362,17 +362,17 @@ namespace EcoBuilder.NodeLink
                 && dummyTarget != null)
             {
                 Node snappedNode = ClosestSnappedNode(ped);
-                if (snappedNode!=null && snappedNode!=pressedNode
-                    && ((!DragFromTarget && snappedNode.CanBeTarget)
+                if (snappedNode!=null && snappedNode!=pressedNode &&
+                    (((!DragFromTarget && snappedNode.CanBeTarget)
                          && ((links[snappedNode.Idx, pressedNode.Idx]==null &&
                               links[pressedNode.Idx, snappedNode.Idx]==null) ||
                              (links[pressedNode.Idx, snappedNode.Idx]!=null &&
                               links[pressedNode.Idx, snappedNode.Idx].Removable)))
-                    || ((DragFromTarget && snappedNode.CanBeSource)
+                     || ((DragFromTarget && snappedNode.CanBeSource)
                          && ((links[snappedNode.Idx, pressedNode.Idx]==null &&
                               links[pressedNode.Idx, snappedNode.Idx]==null) ||
                              (links[snappedNode.Idx, pressedNode.Idx]!=null &&
-                              links[snappedNode.Idx, pressedNode.Idx].Removable)))
+                              links[snappedNode.Idx, pressedNode.Idx].Removable))))
                    )
                 {
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(snappedNode.transform.position));

@@ -200,9 +200,9 @@ namespace EcoBuilder.Levels
             Detach();
             Action foo = ()=> Finish();
             Action fooo = ()=> ExplainFinishCondition(0);
-            score.OnLevelCompleted += foo;
+            GameManager.Instance.PlayedLevel.OnFinished += foo; 
             score.OnLevelIncompletabled += fooo;
-            Detach = ()=>{ score.OnLevelCompleted -= foo; score.OnLevelIncompletabled -= fooo; };
+            Detach = ()=>{ GameManager.Instance.PlayedLevel.OnFinished -= foo; score.OnLevelIncompletabled -= fooo; };
         }
         Level nextLevel = null;
         void Finish()

@@ -16,7 +16,6 @@ namespace EcoBuilder.Levels
         protected Model.Model model;
 
         protected Image pointer;
-        // [SerializeField] protected Sprite point, grab, pan;
         
         protected Vector2 targetPos, targetSize, targetAnchor;
         private Vector2 velocity, sizocity, anchosity;

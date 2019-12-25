@@ -9,7 +9,6 @@ namespace EcoBuilder.UI
     {
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
-        public event Action OnLevelCompleted;
         public event Action OnLevelCompletabled, OnLevelIncompletabled;
 
         [SerializeField] Animator star1, star2, star3;
@@ -51,13 +50,8 @@ namespace EcoBuilder.UI
             target1 = level.Details.targetScore1;
             target2 = level.Details.targetScore2;
 
-            level.OnFinished += CompleteLevel;
+            // level.OnFinished += CompleteLevel;
             constrainedFrom = level;
-        }
-        void OnDestroy()
-        {
-            if (constrainedFrom!=null)
-                constrainedFrom.OnFinished -= CompleteLevel;
         }
 
         int target1, target2;
@@ -132,6 +126,19 @@ namespace EcoBuilder.UI
             constraints.Feasible = isFeasible;
 			constraints.Stable = isStable;
         }
+        public void CompleteLevel()
+        {
+            if (numStars < 1 || numStars > 3)
+                throw new Exception("cannot pass with less than 0 or more than 3 stars");
+
+            GetComponent<Animator>().SetBool("Visible", false);
+            star1.SetTrigger("Confetti");
+            star2.SetTrigger("Confetti");
+            star3.SetTrigger("Confetti");
+
+            constraints.Show(false);
+        }
+
 
 		//////////////////////
 		// score calculation
@@ -211,21 +218,6 @@ namespace EcoBuilder.UI
                 constrainedFrom.ShowThumbnail();
             }
             numStars = newNumStars;
-        }
-
-        private void CompleteLevel()
-        {
-            if (numStars < 1 || numStars > 3)
-                throw new Exception("cannot pass with less than 0 or more than 3 stars");
-
-            GetComponent<Animator>().SetBool("Visible", false);
-            star1.SetTrigger("Confetti");
-            star2.SetTrigger("Confetti");
-            star3.SetTrigger("Confetti");
-
-            constraints.Show(false);
-
-            OnLevelCompleted.Invoke();
         }
 
 

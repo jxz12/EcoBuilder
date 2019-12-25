@@ -139,12 +139,28 @@ namespace EcoBuilder
             level.StartTutorialIfAvailable();
             help.SetText(level.Details.introduction);
 
-            score.OnLevelCompleted += ()=> inspector.Hide();
-            score.OnLevelCompleted += ()=> nodelink.Freeze();
-            score.OnLevelCompleted += ()=> recorder.RecordMoves();
-            score.OnLevelCompleted += ()=> help.DelayThenShow(2, level.Details.congratulation);
+            level.OnFinished += FinishPlaythrough;
+            toDetach = level;
         }
+        Levels.Level toDetach;
+        void OnDestroy()
+        {
+            if (toDetach != null) // I think this is ugly
+            {
+                toDetach.OnFinished -= FinishPlaythrough;
+            }
+        }
+        void FinishPlaythrough()
+        {
+            inspector.Hide();
+            nodelink.Freeze();
+            score.CompleteLevel();
+            help.DelayThenShow(2, GameManager.Instance.PlayedLevel.Details.congratulation);
 
+            double[,] state = model.RecordState();
+            int[,] record = recorder.RecordMoves();
+            GameManager.Instance.SavePlaythrough(state, record);
+        }
 
         // perform calculations if necessary
         bool atEquilibrium = true, graphSolved = true;
@@ -153,19 +169,19 @@ namespace EcoBuilder
             if (!graphSolved && !nodelink.IsCalculating)
             {
                 graphSolved = true;
-                #if UNITY_WEBGL
-                    nodelink.ConstraintsSync();
+                #if UNITY_WEBGL // threads are not supported on webgl
+                nodelink.ConstraintsSync();
                 #else
-                    nodelink.ConstraintsAsync();
+                nodelink.ConstraintsAsync();
                 #endif
             }
             if (!atEquilibrium && !model.IsCalculating)
             {
                 atEquilibrium = true;
                 #if UNITY_WEBGL
-                    model.EquilibriumSync(nodelink.GetTargets);
+                model.EquilibriumSync(nodelink.GetTargets);
                 #else
-                    model.EquilibriumAsync(nodelink.GetTargets);
+                model.EquilibriumAsync(nodelink.GetTargets);
                 #endif
             }
         }
@@ -173,9 +189,16 @@ namespace EcoBuilder
         #if UNITY_EDITOR
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                double[,] state = model.RecordState();
+                int[,] record = recorder.RecordMoves();
+                GameManager.Instance.SavePlaythrough(state, record);
+            }
+            // save a level for convenience
             if (Input.GetKeyDown(KeyCode.Q) &&
-                Input.GetKeyDown(KeyCode.Q) &&
-                Input.GetKeyDown(KeyCode.Q))
+                Input.GetKeyDown(KeyCode.W) &&
+                Input.GetKeyDown(KeyCode.E))
             {
                 var details = new Levels.LevelDetails();
                 details.plants = new List<bool>();
