@@ -9,6 +9,7 @@ using UnityEngine.Networking;
 // for load/save local
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Text;
 
 namespace EcoBuilder
 {
@@ -30,7 +31,7 @@ namespace EcoBuilder
             
             public enum Team { None, Wolf, Lion }
             public Team team = Team.None;
-            public bool reverseDrag;
+            public bool reverseDrag = true;
             public List<int> highScores;
             public bool dontAskForLogin;
         }
@@ -52,67 +53,15 @@ namespace EcoBuilder
             if (!loaded)
             {
                 player.highScores = new List<int>();
-                player.highScores.Add(0); // unlock first level
+                player.highScores.Add(1); // unlock first level
                 for (int i=1; i<levelPrefabs.Count; i++)
                 {
                     // player.highScores.Add(-1);
-                    player.highScores.Add(0);
+                    player.highScores.Add(1);
                 }
             }
             // StartCoroutine(Http());
             // FTP();
-        }
-        private void FTP()
-        {
-            // var file = new FileInfo("a.txt");
-            // var address = "iclwf-dev01.cc.ic.ac.uk";
-
-            // /data/www/dev/sites/www-ecobuildergame.org
-        }
-
-
-
-        /////////////////////////////
-        // questions at login
-        public bool TryLogin(string email, string password)
-        {
-            player.email = email;
-            player.password = password;
-
-            // TODO: fetch high scores from server in a coroutine
-            return true;
-        }
-        public bool TryRegister(string email, string password)
-        {
-            player.email = email;
-            player.password = password;
-
-            // TODO: try to create new account if possible
-            return true;
-        }
-        public void Logout()
-        {
-            DeletePlayerDetailsLocal();
-        }
-        public void SetDemographics(int age, int gender, int education)
-        {
-            player.age = age;
-            player.gender = gender;
-            player.education = education;
-        }
-        // TODO: send these to a server with email as the key
-        public void SetTeam(PlayerDetails.Team team)
-        {
-            player.team = team;
-            // TODO: try sending details
-        }
-        public void SetDragDirection(bool reversed)
-        {
-            player.reverseDrag = reversed;
-        }
-        public void DontAskAgainForLogin()
-        {
-            player.dontAskForLogin = true;
         }
         IEnumerator Http()
         {
@@ -150,15 +99,6 @@ namespace EcoBuilder
                 }
             }
 
-        }
-        public void ResetSaveData()
-        {
-            DeletePlayerDetailsLocal();
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
-        }
-        public void SavePlayerDetails()
-        {
-            SavePlayerDetailsLocal();
         }
         private bool SavePlayerDetailsLocal()
         {
@@ -216,6 +156,81 @@ namespace EcoBuilder
             }
         }
 
+
+
+        /////////////////////////////
+        // questions at login
+
+        public bool TryLogin(string email, string password)
+        {
+            player.email = email;
+            player.password = password;
+
+            // TODO: fetch high scores from server in a coroutine
+            return true;
+        }
+        public bool TryRegister(string email, string password)
+        {
+            player.email = email;
+            player.password = password;
+
+            // TODO: try to create new account if possible
+            return true;
+        }
+        public void Logout()
+        {
+            DeletePlayerDetailsLocal();
+        }
+        public void SetDemographics(int age, int gender, int education)
+        {
+            player.age = age;
+            player.gender = gender;
+            player.education = education;
+        }
+        // TODO: send these to a server with email as the key
+        public void SetTeam(PlayerDetails.Team team)
+        {
+            player.team = team;
+            // TODO: try sending details again
+        }
+        public void SetDragDirection(bool reversed)
+        {
+            player.reverseDrag = reversed;
+        }
+        public void DontAskAgainForLogin()
+        {
+            player.dontAskForLogin = true;
+        }
+        public void ResetSaveData()
+        {
+            DeletePlayerDetailsLocal();
+            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        public void SavePlayerDetails()
+        {
+            SavePlayerDetailsLocal();
+        }
+        public void SavePlaythrough(double[,] model, int[,] record)
+        {
+            var bf = new BinaryFormatter();
+            var form = new WWWForm();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, model);
+                form.AddBinaryData("model", ms.ToArray());
+            }
+
+            // form.AddBinaryData("model", Encoding.ASCII.GetBytes(record));
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, record);
+                form.AddBinaryData("record", ms.ToArray());
+            }
+
+            print("TODO: send actual data");
+            // TODO: cut max size of these things if necessary
+        }
+
         // This whole structure is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level, but that is not possible in a build
         public int GetLevelHighScore(int levelIdx)
@@ -236,6 +251,15 @@ namespace EcoBuilder
             if (player.highScores[nextIdx] < 0)
                 player.highScores[nextIdx] = 0;
                 // TODO: animation here to make it look pretty
+        }
+        public bool IsLearningFinished()
+        {
+            foreach (int score in player.highScores)
+            {
+                if (score < 1)
+                    return false;
+            }
+            return true;
         }
     }
 }

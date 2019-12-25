@@ -153,7 +153,7 @@ namespace EcoBuilder.Levels
 
             Detach();
             Action foo = ()=> Finish();
-            score.OnLevelCompleted += foo;
+            GameManager.Instance.PlayedLevel.OnFinished += foo;
         }
         void Finish()
         {

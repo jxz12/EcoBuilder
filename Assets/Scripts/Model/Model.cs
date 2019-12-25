@@ -119,7 +119,7 @@ namespace EcoBuilder.Model
             // calculate bounds for a_ij and set a_ii in the same range
             a_max = ActiveCapture(kg_max, kg_min) / kg_min;
             a_min = Grazing(kg_min, kg_max) / kg_max;
-            print(a_min+" "+a_max);
+            // print(a_min+" "+a_max);
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
@@ -310,8 +310,10 @@ namespace EcoBuilder.Model
                 return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
         }
 
-        // TODO: please work out a way of recording this
-        // public void RecordInteractionMatrix(int )
+        public double[,] RecordState()
+        {
+            return simulation.GetState();
+        }
     }
 
     #if UNITY_EDITOR

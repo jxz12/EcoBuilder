@@ -58,16 +58,11 @@ namespace EcoBuilder
         ////////////////////////////////////
 
         [SerializeField] List<Levels.Level> levelPrefabs; // each level is a prefab
+        [SerializeField] List<Levels.Level> researchLevelPrefabs;
         public IEnumerable<Levels.Level> GetLevelPrefabs()
         {
             return levelPrefabs;
         }
-
-        [SerializeField] RectTransform cardParent, playParent, navParent, tutParent;
-        public RectTransform CardParent { get { return cardParent; } }
-        public RectTransform PlayParent { get { return playParent; } }
-        public RectTransform NavParent { get { return navParent; } }
-        public RectTransform TutParent { get { return tutParent; } }
 
         public Levels.Level PlayedLevel { get; private set; }
         public void PlayLevel(Levels.Level toPlay)
@@ -94,6 +89,13 @@ namespace EcoBuilder
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
         }
+
+        // for levels to attach to
+        [SerializeField] RectTransform cardParent, playParent, navParent, tutParent;
+        public RectTransform CardParent { get { return cardParent; } }
+        public RectTransform PlayParent { get { return playParent; } }
+        public RectTransform NavParent { get { return navParent; } }
+        public RectTransform TutParent { get { return tutParent; } }
 
 
         ///////////////////
