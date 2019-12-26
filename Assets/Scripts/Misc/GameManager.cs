@@ -57,11 +57,15 @@ namespace EcoBuilder
         // storing information for levels //
         ////////////////////////////////////
 
-        [SerializeField] List<Levels.Level> levelPrefabs; // each level is a prefab
+        [SerializeField] List<Levels.Level> learningLevelPrefabs; // each level is a prefab
         [SerializeField] List<Levels.Level> researchLevelPrefabs;
-        public IEnumerable<Levels.Level> GetLevelPrefabs()
+        public IEnumerable<Levels.Level> GetLearningLevelPrefabs()
         {
-            return levelPrefabs;
+            return learningLevelPrefabs;
+        }
+        public IEnumerable<Levels.Level> GetResearchLevelPrefabs()
+        {
+            return researchLevelPrefabs;
         }
 
         public Levels.Level PlayedLevel { get; private set; }

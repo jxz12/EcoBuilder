@@ -12,7 +12,6 @@ namespace EcoBuilder.UI
     {
         [SerializeField] GridLayoutGroup learningLevels;
         [SerializeField] VerticalLayoutGroup researchLevels;
-        [SerializeField] GameObject logo;
         [SerializeField] Coin wolfLion;
         [SerializeField] RegistrationForm form;
         [SerializeField] Toggle reverseDrag;
@@ -20,7 +19,6 @@ namespace EcoBuilder.UI
         [SerializeField] Button researchWorld;
         [SerializeField] Image researchLock;
 
-        List<RectTransform> levelParents;
         void Start()
         {
             if (GameManager.Instance.AskForLogin)
@@ -45,16 +43,17 @@ namespace EcoBuilder.UI
                 StartMainMenu();
             }
         }
+
+        [SerializeField] Levels.Leaderboard leaderboardPrefab;
+        Dictionary<int, Levels.Leaderboard> leaderboards;
         void StartMainMenu()
         {
             StartCoroutine(WaitThenShowLogo(.7f));
-            levelParents = new List<RectTransform>();
-            foreach (var prefab in GameManager.Instance.GetLevelPrefabs())
+            foreach (var prefab in GameManager.Instance.GetLearningLevelPrefabs())
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
                 parent.SetParent(learningLevels.transform);
                 parent.localScale = Vector3.one;
-                levelParents.Add(parent);
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
@@ -63,6 +62,15 @@ namespace EcoBuilder.UI
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
                 researchLock.enabled = false; // remove lock
+                leaderboards = new Dictionary<int, Levels.Leaderboard>();
+                foreach (var prefab in GameManager.Instance.GetResearchLevelPrefabs())
+                {
+                    var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
+                    var level = leaderboard.GiveLevelPrefab(prefab);
+                    leaderboards[level.Details.idx] = leaderboard;
+                    leaderboard.name = level.Details.idx.ToString();
+                    // TODO: fetch best scores from server
+                }
             }
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             GetComponent<Animator>().SetTrigger("Reveal");
@@ -98,6 +106,7 @@ namespace EcoBuilder.UI
             StartMainMenu();
         }
 
+        [SerializeField] GameObject logo;
         IEnumerator WaitThenShowLogo(float waitSeconds)
         {
             yield return new WaitForSeconds(waitSeconds);
