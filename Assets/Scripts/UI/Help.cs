@@ -33,7 +33,7 @@ namespace EcoBuilder.UI
             hideButton.onClick.AddListener(()=>UserShow(false));
             showButton.onClick.AddListener(()=>UserShow(true));
 
-            StartCoroutine(DelayThenShow(2, true));
+            // StartCoroutine(DelayThenShow(2, true));
         }
         // also because unity autolayout suckssss
         void ForceUpdateLayout()

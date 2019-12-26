@@ -102,7 +102,6 @@ namespace EcoBuilder
         // scene loading //
         ///////////////////
 
-        // TODO: loading screen or loading events here
         [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
         [Serializable] public class MyFloatEvent : UnityEvent<float> {}
         [SerializeField] MyFloatEvent OnLoadingProgress;
@@ -120,7 +119,7 @@ namespace EcoBuilder
                     yield return null;
                 }
             }
-            yield return new WaitForSeconds(1);
+            // yield return new WaitForSeconds(1);
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
@@ -142,6 +141,16 @@ namespace EcoBuilder
                 PlayedLevel = null;
             }
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
+        }
+
+
+        ///////////////////////////
+        // showing help messages
+
+        [SerializeField] UI.Help helpText;
+        public void ShowHelpText(float delay, string message)
+        {
+            helpText.DelayThenShow(delay, message);
         }
     }
 }

@@ -230,7 +230,10 @@ namespace EcoBuilder.Levels
                 throw new Exception("Play scene not loaded when expected");
 
             GameManager.Instance.OnLoaded.RemoveListener(MoveToCornerOnPlay);
-            thumbnailedParent = GameManager.Instance.PlayParent;
+
+            thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
+            GameManager.Instance.ShowHelpText(2f, details.introduction); // show intro
+
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
         }
@@ -295,6 +298,7 @@ namespace EcoBuilder.Levels
                 print("TODO: credits?");
             }
             ShowNavigation();
+            GameManager.Instance.ShowHelpText(2f, details.congratulation);
             OnFinished?.Invoke();
         }
 
