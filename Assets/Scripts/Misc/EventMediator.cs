@@ -13,7 +13,6 @@ namespace EcoBuilder
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.MoveRecorder recorder;
         [SerializeField] UI.Score score;
-        [SerializeField] UI.Help help;
 
         void Start()
         {
@@ -137,7 +136,6 @@ namespace EcoBuilder
 
             nodelink.AddDropShadow(level.Landscape);
             level.StartTutorialIfAvailable();
-            help.SetText(level.Details.introduction);
 
             level.OnFinished += FinishPlaythrough;
             toDetach = level;
@@ -155,7 +153,6 @@ namespace EcoBuilder
             inspector.Hide();
             nodelink.Freeze();
             score.CompleteLevel();
-            help.DelayThenShow(2, GameManager.Instance.PlayedLevel.Details.congratulation);
 
             double[,] state = model.RecordState();
             int[,] record = recorder.RecordMoves();
@@ -189,7 +186,9 @@ namespace EcoBuilder
         #if UNITY_EDITOR
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.A) &&
+                Input.GetKeyDown(KeyCode.S) &&
+                Input.GetKeyDown(KeyCode.D))
             {
                 double[,] state = model.RecordState();
                 int[,] record = recorder.RecordMoves();

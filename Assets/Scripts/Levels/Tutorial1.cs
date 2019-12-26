@@ -24,7 +24,6 @@ namespace EcoBuilder.Levels
             targetAnchor = new Vector2(1,0);
             targetZRot = 315;
 
-            help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning the world around by dragging it, or add your first species by tapping the leaf in the bottom right.");
             help.SetSide(false);
             help.SetDistFromTop(.2f);
             help.SetWidth(.6f);

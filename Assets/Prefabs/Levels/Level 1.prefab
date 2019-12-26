@@ -399,7 +399,9 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.introduction
-      value: TUTORIAL
+      value: Welcome to EcoBuilder! Let's build your first ecosystem. Try spinning
+        the world around by dragging it, or add your first species by tapping the
+        leaf in the bottom right.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
