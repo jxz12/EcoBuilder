@@ -384,41 +384,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 162464186}
   m_CullTransparentMesh: 0
---- !u!84 &184838956
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 383
-  m_Height: 681
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthFormat: 1
-  m_ColorFormat: 59
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &195783122
 GameObject:
   m_ObjectHideFlags: 0
@@ -831,6 +796,41 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!84 &592874089
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 383
+  m_Height: 681
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthFormat: 1
+  m_ColorFormat: 59
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &785766813
 GameObject:
   m_ObjectHideFlags: 0
@@ -1038,9 +1038,9 @@ MonoBehaviour:
   sourceCamera: {fileID: 1047668687}
   outlineCamera: {fileID: 1539204445}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1249042027}
-  extraRenderTexture: {fileID: 184838956}
---- !u!84 &1249042027
+  renderTexture: {fileID: 1098767240}
+  extraRenderTexture: {fileID: 592874089}
+--- !u!84 &1098767240
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1195,7 +1195,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1249042027}
+  m_TargetTexture: {fileID: 1098767240}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -1610,6 +1610,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3bd384213e72bb4dba94db5562ea438, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  anim: {fileID: 0}
+  rotation: 0
+  rotationTarget: 0
+  rotationVelocity: 0
 --- !u!1 &1699568489
 GameObject:
   m_ObjectHideFlags: 0
@@ -2014,15 +2018,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd395c9079810294f9b533fac813c91b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelPrefabs:
+  learningLevelPrefabs:
   - {fileID: 1744894759364357133, guid: c2e2e7070b5713f478704ab422e6101e, type: 3}
   - {fileID: 7136175409206580721, guid: c52b7a4c873c8ca489c2166a6679fb81, type: 3}
   - {fileID: 4638591380250888387, guid: 3ad9bc409dd604f4281cba80dbfa1967, type: 3}
   - {fileID: 6359706992194124060, guid: e54ba88d3a339a64ea6ad3a506d42e4e, type: 3}
   - {fileID: 8665813143970102708, guid: acbf7472b3cb4824d983e588660fcb1a, type: 3}
   - {fileID: 1800796938296571500, guid: 145f5128eb4d03b4c8e8ea330b9b94d8, type: 3}
-  - {fileID: 6446573934160891793, guid: 5c984fcf41280d9418405047b6219966, type: 3}
-  researchLevelPrefabs: []
+  researchLevelPrefabs:
+  - {fileID: 2385526102536167791, guid: c01d5755e33f04300a832e0278947112, type: 3}
+  - {fileID: 7969209065543887064, guid: 490bc508d5df445ceb2542cffa8e5109, type: 3}
   cardParent: {fileID: 1623094543}
   playParent: {fileID: 1972433609}
   navParent: {fileID: 1368957747}
@@ -2114,7 +2119,6 @@ MonoBehaviour:
     education: 0
     team: 0
     reverseDrag: 1
-    highScores: 
     dontAskForLogin: 0
 --- !u!1 &2087513292
 GameObject:

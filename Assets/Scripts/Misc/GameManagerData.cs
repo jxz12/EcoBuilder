@@ -32,7 +32,7 @@ namespace EcoBuilder
             public enum Team { None, Wolf, Lion }
             public Team team = Team.None;
             public bool reverseDrag = true;
-            public List<int> highScores;
+            public Dictionary<int, int> highScores;
             public bool dontAskForLogin;
         }
         [SerializeField] PlayerDetails player;
@@ -52,12 +52,21 @@ namespace EcoBuilder
             bool loaded = LoadPlayerDetailsLocal();
             if (!loaded)
             {
-                player.highScores = new List<int>();
-                player.highScores.Add(1); // unlock first level
-                for (int i=1; i<levelPrefabs.Count; i++)
+                player.highScores = new Dictionary<int,int>();
+                player.highScores[learningLevelPrefabs[0].Details.idx] = 1; // unlock first level
+                for (int i=1; i<learningLevelPrefabs.Count; i++)
                 {
-                    // player.highScores.Add(-1);
-                    player.highScores.Add(1);
+                    if (player.highScores.ContainsKey(learningLevelPrefabs[i].Details.idx))
+                        throw new Exception("two levels with same idx");
+                    else
+                        player.highScores[learningLevelPrefabs[i].Details.idx] = 1; // unlock first level
+                }
+                foreach (var researchLevel in researchLevelPrefabs)
+                {
+                    if (player.highScores.ContainsKey(researchLevel.Details.idx))
+                        throw new Exception("two levels with same idx");
+                    else
+                        player.highScores[researchLevel.Details.idx] = 1; // unlock first level
                 }
             }
             // StartCoroutine(Http());
@@ -254,12 +263,11 @@ namespace EcoBuilder
         }
         public bool IsLearningFinished()
         {
-            foreach (int score in player.highScores)
-            {
-                if (score < 1)
-                    return false;
-            }
-            return true;
+            // check if last learning level has been completed
+            if (player.highScores[learningLevelPrefabs[learningLevelPrefabs.Count-1].Details.idx] < 1)
+                return false;
+            else
+                return true;
         }
     }
 }
