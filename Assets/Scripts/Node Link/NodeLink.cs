@@ -27,7 +27,7 @@ namespace EcoBuilder.NodeLink
         {
             xRotation = xDefaultRotation = graphParent.localRotation.eulerAngles.x;
             defaultNodelinkPos = transform.localPosition;
-            transform.localScale = Vector3.zero;
+            graphParent.localScale = Vector3.zero;
             StartCoroutine(TweenZoom(Vector3.one, 2));
         }
         void Update()
@@ -249,5 +249,118 @@ namespace EcoBuilder.NodeLink
             return links.GetColumnIndicesInRow(source);
         }
 
+
+        ////////////
+        // effects
+
+        public void RehealthBars(Func<int, float> healths)
+        {
+            foreach (Node no in nodes)
+            {
+                float health = healths(no.Idx);
+                health = Mathf.Max(Mathf.Min(health, 1), 0);
+                no.SetHealth(health);
+            }
+        }
+        [SerializeField] float minLinkFlow, maxLinkFlow;
+        public void ReflowLinks(Func<int, int, float> flows)
+        {
+            float flowRange = maxLinkFlow - minLinkFlow;
+            foreach (Link li in links)
+            {
+                int res=li.Source.Idx, con=li.Target.Idx;
+                float flow = flows(res, con);
+                if (flow > 0)
+                {
+                    li.TileSpeed = minLinkFlow + flowRange*flow;
+                }
+                else
+                {
+                    li.TileSpeed = minLinkFlow;
+                }
+            }
+        }
+
+        public void FlashNode(int idx)
+        {
+            nodes[idx].Flash(true);
+        }
+        public void UnflashNode(int idx)
+        {
+            nodes[idx].Flash(false);
+        }
+        public void SkullEffectNode(int idx)
+        {
+            Instantiate(skullPrefab, nodes[idx].transform);
+        }
+        public void HeartEffectNode(int idx)
+        {
+            Instantiate(heartPrefab, nodes[idx].transform);
+        }
+        public void BounceNode(int idx)
+        {
+            nodes[idx].Bounce();
+        }
+        public void LieDownNode(int idx)
+        {
+            nodes[idx].LieDown();
+        }
+
+        // adds a gameobject like the jump shadow in mario bros.
+        public void AddDropShadow(GameObject shadowPrefab)
+        {
+            if (shadowPrefab == null)
+                return;
+
+            var shadow = Instantiate(shadowPrefab);
+            shadow.transform.SetParent(nodesParent, false);
+            shadow.transform.localPosition = Vector3.zero;
+            shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
+        }
+        public void SetNodeDefaultOutline(int idx, int colourIdx=0)
+        {
+            nodes[idx].DefaultOutline = colourIdx;
+        }
+        public void SetLinkDefaultOutline(int source, int target, int colourIdx=0)
+        {
+            links[source, target].DefaultOutline = colourIdx;
+        }
+        public void HighlightNode(int idx)
+        {
+            nodes[idx].Outline(4); // 4 is red
+        }
+        public void UnhighlightNode(int idx)
+        {
+            nodes[idx].Unoutline();
+        }
+        public void HighlightChain()
+        {
+            foreach (int idx in TallestNodes)
+                nodes[idx].Outline(4);
+        }
+        public void HighlightLoop()
+        {
+            foreach (int idx in LongestLoop)
+                nodes[idx].Outline(4);
+        }
+        public void Unhighlight()
+        {
+            foreach (Node no in nodes)
+                no.Unoutline();
+        }
+
+        // TODO: this is a bit messy and doesn't work if graph is spinning
+        public void TooltipNode(int idx, string msg)
+        {
+            tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
+            tooltip.ShowText(msg);
+            tooltip.Enable();
+            tweenNodes = dragging = false;
+        }
+        public void UntooltipNode(int idx)
+        {
+            tooltip.Disable();
+            tweenNodes = dragging = true;
+        }
     }
 }

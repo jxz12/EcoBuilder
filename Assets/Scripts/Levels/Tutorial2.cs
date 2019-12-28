@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace EcoBuilder.Levels
 {
+    // this tutorial teaches the size slider and its effects
     public class Tutorial2 : Tutorial
     {
         GameObject plant, animal;
@@ -147,9 +147,9 @@ namespace EcoBuilder.Levels
             StartCoroutine(WaitThenDo(2, ()=>{
                 help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can tap your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
             }));
-            StartCoroutine(WaitThenDo(2, ()=>{
-                help.SetText("Good job! This bar at the top displays your score, and is based on the size and total health of your ecosystem. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
-            }));
+            // StartCoroutine(WaitThenDo(2, ()=>{
+            //     help.SetText("Good job! This bar at the top displays your score, and is based on the size and total health of your ecosystem. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
+            // }));
 
             Detach();
             Action foo = ()=> Finish();

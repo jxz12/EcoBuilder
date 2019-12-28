@@ -200,6 +200,7 @@ MonoBehaviour:
   inspector: {fileID: 1168393887}
   recorder: {fileID: 87083486}
   score: {fileID: 397998382}
+  constraints: {fileID: 2059067487}
 --- !u!1 &87083483
 GameObject:
   m_ObjectHideFlags: 0
@@ -417,6 +418,11 @@ PrefabInstance:
         type: 3}
       propertyPath: initialValueIfFixed
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_Value
+      value: 4.95
       objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
@@ -1806,7 +1812,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -2235,7 +2241,12 @@ PrefabInstance:
     - target: {fileID: 1918289444444130885, guid: 2e13ac69c39a1304d92c166058b73812,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 9
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1918289444444130885, guid: 2e13ac69c39a1304d92c166058b73812,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4282140680
       objectReference: {fileID: 0}
     - target: {fileID: 3673420264678104023, guid: 2e13ac69c39a1304d92c166058b73812,
         type: 3}
@@ -2444,7 +2455,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -2656,7 +2667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -2992,13 +3003,13 @@ MonoBehaviour:
     type: 3}
   confettiPrefab: {fileID: 1404063831746591855, guid: 0373f08e386ba4dd7b8216868a67e36a,
     type: 3}
+  minLinkFlow: 0.1
+  maxLinkFlow: 0.5
   tooltip: {fileID: 464567629}
   rotationPerInch: 30
   zoomPerInch: 0.5
   panPerInch: 1
   snapRadiusInches: 0.5
-  minLinkFlow: 0.1
-  maxLinkFlow: 0.5
   maxHeight: 3.5
   layoutSmoothTime: 0.7
 --- !u!1 &1168393879
@@ -3171,7 +3182,6 @@ MonoBehaviour:
   refroveButton: {fileID: 916625267}
   sizeTrait: {fileID: 2095754595}
   greedTrait: {fileID: 1654515231}
-  allowConflicts: 1
   incubator: {fileID: 1297594225}
   factory: {fileID: 416833258}
 --- !u!1001 &1178024093
@@ -3906,7 +3916,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -4527,7 +4537,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
     m_SelectOnLeft: {fileID: 0}
@@ -6122,12 +6132,12 @@ PrefabInstance:
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
@@ -6163,6 +6173,11 @@ PrefabInstance:
         type: 3}
       propertyPath: initialValueIfFixed
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_Value
+      value: 5.19
       objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}

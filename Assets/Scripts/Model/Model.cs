@@ -238,23 +238,26 @@ namespace EcoBuilder.Model
             // print(simulation.TotalFlux + " " + simulation.TotalAbundance);
             NormalisedScore = (float)(simulation.Richness *
                                       simulation.Connectance *
-                                      totalAbund_Norm) * 100;
+                                      totalAbund);
+                                    //   totalAbund_Norm) * 100;
         }
         public string ScoreExplanation()
         {
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
-            return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
+            // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
+            return "TODO:";
         }
 
-        private float total_NormAbund;
-        private float totalAbund_Norm;
+        // private float total_NormAbund;
+        // private float totalAbund_Norm;
+        private double totalAbund;
         void TriggerAbundanceEvents()
         {
-            total_NormAbund = totalAbund_Norm = 0;
+            // total_NormAbund = totalAbund_Norm = 0;
+            totalAbund = 0;
             // show abundance warnings
             foreach (int i in idxToSpecies.Keys)
             {
-
                 Species s = idxToSpecies[i];
                 double realAbund = simulation.GetSolvedAbundance(s);
 
@@ -275,19 +278,20 @@ namespace EcoBuilder.Model
 
                 s.NormalisedAbundance = newAbund;
 
-                totalAbund_Norm += (float)realAbund;
-                if (newAbund >= 0)
-                    total_NormAbund += newAbund;
+                totalAbund += realAbund;
+                // totalAbund_Norm += (float)realAbund;
+                // if (newAbund >= 0)
+                //     total_NormAbund += newAbund;
             }
+            print(totalAbund);
 
-            if (total_NormAbund == 0)
-                total_NormAbund = 1; // to prevent NaN problems in GetNormalisedAbundance
+            // if (total_NormAbund == 0)
+            //     total_NormAbund = 1; // to prevent NaN problems in GetNormalisedAbundance
 
-            if (totalAbund_Norm <= minRealAbund)
-                totalAbund_Norm = 0;
-            else
-                totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
-            // print(totalAbund_Norm+" "+total_NormAbund);
+            // if (totalAbund_Norm <= minRealAbund)
+            //     totalAbund_Norm = 0;
+            // else
+            //     totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
         }
         public float GetNormalisedAbundance(int idx)
         {

@@ -45,7 +45,7 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] Levels.Leaderboard leaderboardPrefab;
-        Dictionary<int, Levels.Leaderboard> leaderboards;
+        // Dictionary<int, Levels.Leaderboard> leaderboards;
         void StartMainMenu()
         {
             StartCoroutine(WaitThenShowLogo(.7f));
@@ -57,19 +57,20 @@ namespace EcoBuilder.UI
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
-            if (GameManager.Instance.IsLearningFinished())
+            if (GameManager.Instance.IsLearningFinished)
             {
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
                 researchLock.enabled = false; // remove lock
-                leaderboards = new Dictionary<int, Levels.Leaderboard>();
+                // leaderboards = new Dictionary<int, Levels.Leaderboard>();
                 foreach (var prefab in GameManager.Instance.GetResearchLevelPrefabs())
                 {
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
                     var level = leaderboard.GiveLevelPrefab(prefab);
-                    leaderboards[level.Details.idx] = leaderboard;
-                    leaderboard.name = level.Details.idx.ToString();
-                    // TODO: fetch best scores from server
+                    // leaderboards[level.Details.idx] = leaderboard;
+
+                    var scores = GameManager.Instance.GetGlobalTop3Scores(level.Details.idx);
+                    leaderboard.SetScores(scores.Item1, scores.Item2, scores.Item3);
                 }
             }
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
