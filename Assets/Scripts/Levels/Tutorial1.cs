@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace EcoBuilder.Levels
 {
+    // this tutorial teaches about how to build a structure
     public class Tutorial1 : Tutorial
     {
         protected override void StartLesson()
@@ -85,7 +86,14 @@ namespace EcoBuilder.Levels
             secondSpecies = second;
             secondIdx = idx;
             inspector.SetConsumerAvailability(false);
-            help.SetText("Your " + secondSpecies.name + " is hungry! Drag from it to the " + firstSpecies.name + " to give it some food.");
+            if (GameManager.Instance.ReverseDragDirection)
+            {
+                help.SetText("Your " + secondSpecies.name + " is hungry! Drag from it to the " + firstSpecies.name + " to give it some food.");
+            }
+            else
+            {
+                help.SetText("Your " + secondSpecies.name + " is hungry! Drag from the " + firstSpecies.name + " to it to give it some food.");
+            }
             help.Show(true);
 
             shuffle = true;

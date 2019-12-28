@@ -70,8 +70,11 @@ namespace EcoBuilder
                 }
             }
             // StartCoroutine(Http());
-            // FTP();
         }
+
+
+        ///////////////////////////////
+        // saving and things
         IEnumerator Http()
         {
             // var form = new WWWForm();
@@ -164,6 +167,64 @@ namespace EcoBuilder
                 print("no save file to delete: " + e.Message);
             }
         }
+        public void ResetSaveData()
+        {
+            DeletePlayerDetailsLocal();
+            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+
+        public void Logout()
+        {
+            DeletePlayerDetailsLocal();
+        }
+        public void SavePlaythrough(double[,] model, int[,] record)
+        {
+            var bf = new BinaryFormatter();
+            var form = new WWWForm();
+            form.AddField("idx", PlayedLevel.Details.idx.ToString());
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, model);
+                form.AddBinaryData("model", ms.ToArray());
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, record);
+                form.AddBinaryData("record", ms.ToArray());
+            }
+
+            print("TODO: send actual data");
+            // TODO: cut max size of these things if necessary
+            //       if sending fails, store locally and try to send next time
+        }
+        public void SavePlayedLevelHighScore(int score)
+        {
+            int idx = PlayedLevel.Details.idx;
+            if (score > player.highScores[idx])
+                player.highScores[idx] = score;
+
+            if (PlayedLevel.NextLevel != null) // unlock next level
+            {
+                int nextIdx = PlayedLevel.NextLevel.Details.idx;
+                if (player.highScores[nextIdx] < 0)
+                    player.highScores[nextIdx] = 0; // TODO: animation here to draw eye towards unlock
+            }
+            SavePlayerDetailsLocal();
+        }
+
+
+        // This whole structure is necessary because you cannot change prefabs from script when compiled
+        // Ideally we would keep this inside Levels.Level, but that is not possible in a build
+        public int GetPlayerHighScore(int levelIdx)
+        {
+            return player.highScores[levelIdx];
+        }
+        public Tuple<int,int,int> GetGlobalTop3Scores(int levelIdx)
+        {
+            // TODO: get global scores from server
+            return Tuple.Create(14,12,10);
+        }
 
 
 
@@ -174,6 +235,7 @@ namespace EcoBuilder
         {
             player.email = email;
             player.password = password;
+            SavePlayerDetailsLocal();
 
             // TODO: fetch high scores from server in a coroutine
             return true;
@@ -182,92 +244,45 @@ namespace EcoBuilder
         {
             player.email = email;
             player.password = password;
+            SavePlayerDetailsLocal();
 
             // TODO: try to create new account if possible
             return true;
-        }
-        public void Logout()
-        {
-            DeletePlayerDetailsLocal();
         }
         public void SetDemographics(int age, int gender, int education)
         {
             player.age = age;
             player.gender = gender;
             player.education = education;
+            SavePlayerDetailsLocal();
+
+            // TODO: send these to a server with email as the key
         }
-        // TODO: send these to a server with email as the key
         public void SetTeam(PlayerDetails.Team team)
         {
             player.team = team;
+            SavePlayerDetailsLocal();
             // TODO: try sending details again
         }
         public void SetDragDirection(bool reversed)
         {
             player.reverseDrag = reversed;
+            SavePlayerDetailsLocal();
         }
         public void DontAskAgainForLogin()
         {
             player.dontAskForLogin = true;
-        }
-        public void ResetSaveData()
-        {
-            DeletePlayerDetailsLocal();
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
-        }
-        public void SavePlayerDetails()
-        {
             SavePlayerDetailsLocal();
         }
-        public void SavePlaythrough(double[,] model, int[,] record)
-        {
-            var bf = new BinaryFormatter();
-            var form = new WWWForm();
-            using (var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, model);
-                form.AddBinaryData("model", ms.ToArray());
+
+        public bool IsLearningFinished {
+            get {
+                // check if last learning level has been completed
+                if (player.highScores[learningLevelPrefabs[learningLevelPrefabs.Count-1].Details.idx] < 1)
+                    return false;
+                else
+                    return true;
             }
-
-            // form.AddBinaryData("model", Encoding.ASCII.GetBytes(record));
-            using (var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, record);
-                form.AddBinaryData("record", ms.ToArray());
-            }
-
-            print("TODO: send actual data");
-            // TODO: cut max size of these things if necessary
-        }
-
-        // This whole structure is necessary because you cannot change prefabs from script when compiled
-        // Ideally we would keep this inside Levels.Level, but that is not possible in a build
-        public int GetLevelHighScore(int levelIdx)
-        {
-            return player.highScores[levelIdx];
-        }
-
-        public void SavePlayedLevelHighScore(int score)
-        {
-            int idx = PlayedLevel.Details.idx;
-            if (score > player.highScores[idx])
-                player.highScores[idx] = score;
-
-            int nextIdx = PlayedLevel.Details.idx + 1;
-            if (nextIdx >= player.highScores.Count)
-                return;
-
-            if (player.highScores[nextIdx] < 0)
-                player.highScores[nextIdx] = 0;
-                // TODO: animation here to make it look pretty
-        }
-        public bool IsLearningFinished()
-        {
-            // check if last learning level has been completed
-            if (player.highScores[learningLevelPrefabs[learningLevelPrefabs.Count-1].Details.idx] < 1)
-                return false;
-            else
-                return true;
         }
     }
 }

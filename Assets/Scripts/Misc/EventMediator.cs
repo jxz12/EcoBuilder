@@ -13,12 +13,13 @@ namespace EcoBuilder
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.MoveRecorder recorder;
         [SerializeField] UI.Score score;
+        [SerializeField] UI.Constraints constraints;
 
         void Start()
         {
-            ///////////////////////////////////
-            // hook up events between objects
-
+            ////////////////////////////////////
+            // hook up events between objects //
+            ////////////////////////////////////
             inspector.OnIncubated +=        ()=> nodelink.FullUnfocus();
             inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f); // TODO: magic number
             inspector.OnUnincubated +=      ()=> nodelink.MoveHorizontal(0);
@@ -26,13 +27,15 @@ namespace EcoBuilder
             inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
-            inspector.OnDespawned +=       (i)=> score.RemoveIdx(i);
-            inspector.OnShaped +=        (i,g)=> { nodelink.ShapeNode(i,g); nodelink.FlashNode(i); nodelink.LieDownNode(i); }; // init as extinct
+            inspector.OnDespawned +=       (i)=> constraints.RemoveIdx(i);
+            inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
             inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
             inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
-            inspector.OnIsProducerSet += (i,x)=> score.AddType(i,x);
+            inspector.OnIsProducerSet += (i,x)=> constraints.AddType(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
+            inspector.OnUserSpawned +=     (i)=> nodelink.FlashNode(i);
+            inspector.OnUserSpawned +=     (i)=> nodelink.LieDownNode(i); // init as extinct
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.HighlightNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
@@ -42,15 +45,16 @@ namespace EcoBuilder
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
             nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
-            nodelink.OnConstraints +=  ()=> score.DisplayDisjoint(nodelink.Disjoint);
-            nodelink.OnConstraints +=  ()=> score.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnConstraints +=  ()=> score.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnConstraints +=  ()=> score.DisplayMaxLoop(nodelink.MaxLoop);
+            nodelink.OnConstraints +=  ()=> constraints.DisplayDisjoint(nodelink.Disjoint);
+            nodelink.OnConstraints +=  ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
+            nodelink.OnConstraints +=  ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
+            nodelink.OnConstraints +=  ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
 
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore, model.ScoreExplanation());
-            model.OnEquilibrium += ()=> score.DisplayFeastability(model.Feasible, model.Stable);
+            model.OnEquilibrium += ()=> constraints.DisplayFeasibility(model.Feasible);
+            model.OnEquilibrium += ()=> constraints.DisplayStability(model.Stable);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
             model.OnEndangered += (i)=> nodelink.LieDownNode(i);
@@ -58,8 +62,8 @@ namespace EcoBuilder
             model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnRescued +=    (i)=> nodelink.BounceNode(i);
 
-            score.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
-            score.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
+            constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
+            constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
@@ -82,23 +86,35 @@ namespace EcoBuilder
             recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
-            score.AllowLevelFinishWhen(()=> atEquilibrium &&
-                                            !model.IsCalculating &&
-                                            graphSolved &&
-                                            !nodelink.IsCalculating); 
 
-            /////////////////////
-            // initialise level
+            //////////////////////
+            // initialise level //
+            //////////////////////
+            var level = GameManager.Instance.PlayedLevel;
+            if (level == null) // should never happen in real game
+            {
+                level = Instantiate(Levels.Level.GetDefaultLevel());
+                level.transform.SetParent(GameManager.Instance.PlayParent, false);
+            }
 
+            inspector.HideSizeSlider(level.Details.sizeSliderHidden);
+            inspector.HideGreedSlider(level.Details.greedSliderHidden);
+            inspector.AllowConflicts(level.Details.conflictsAllowed);
+            nodelink.AllowSuperfocus = level.Details.superfocusAllowed;
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
-            var level = GameManager.Instance.PlayedLevel;
-            score.ConstrainFromLevel(level);
-            if (level == null)
-            {
-                inspector.HideGreedSlider(.5f);
-                return; // should never happen in real game
-            }
+            nodelink.AddDropShadow(level.Landscape);
+
+            score.SetScoreThresholds(level.Details.targetScore1, level.Details.targetScore2);
+            score.OnLevelCompletabled +=   ()=> level.ShowFinishFlag();
+            score.OnLevelIncompletabled += ()=> level.ShowThumbnail();
+
+            // TODO: unconstrain in other situations
+            constraints.Constrain("Leaf", level.Details.numProducers);
+            constraints.Constrain("Paw", level.Details.numConsumers);
+            constraints.Constrain("Count", level.Details.minEdges);
+            constraints.Constrain("Chain", level.Details.minChain);
+            constraints.Constrain("Loop", level.Details.minLoop);
 
             for (int i=0; i<level.Details.numSpecies; i++)
             {
@@ -124,29 +140,15 @@ namespace EcoBuilder
                 nodelink.SetLinkDefaultOutline(i, j);
             }
 
-            // TODO: magic numbers
-            if (level.Details.sizeSliderHidden)
-            {
-                inspector.HideSizeSlider(.5f);
-            }
-            if (level.Details.greedSliderHidden)
-            {
-                inspector.HideGreedSlider(.5f);
-            }
-
-            nodelink.AddDropShadow(level.Landscape);
-            level.StartTutorialIfAvailable();
-
             level.OnFinished += FinishPlaythrough;
-            toDetach = level;
+            playedLevel = level;
+            level.StartTutorialIfAvailable();
         }
-        Levels.Level toDetach;
+        Levels.Level playedLevel;
         void OnDestroy()
         {
-            if (toDetach != null) // I think this is ugly
-            {
-                toDetach.OnFinished -= FinishPlaythrough;
-            }
+            if (playedLevel != null) // I think this is ugly
+                playedLevel.OnFinished -= FinishPlaythrough;
         }
         void FinishPlaythrough()
         {
@@ -154,6 +156,7 @@ namespace EcoBuilder
             nodelink.Freeze();
             score.CompleteLevel();
 
+            playedLevel.SaveLevel(score.NormalisedScore);
             double[,] state = model.RecordState();
             int[,] record = recorder.RecordMoves();
             GameManager.Instance.SavePlaythrough(state, record);
@@ -180,6 +183,11 @@ namespace EcoBuilder
                 #else
                 model.EquilibriumAsync(nodelink.GetTargets);
                 #endif
+            }
+            if (atEquilibrium && !model.IsCalculating &&
+                graphSolved && !nodelink.IsCalculating)
+            {
+                score.UpdateScore();
             }
         }
 

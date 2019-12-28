@@ -64,7 +64,6 @@ namespace EcoBuilder.UI
                     demoObj.SetActive(true);
                     break;
                 case State.End:
-                    GameManager.Instance.SavePlayerDetails();
                     Disappear();
                     break;
             }
@@ -176,7 +175,6 @@ namespace EcoBuilder.UI
         {
             // TODO: at this point try to register a new account
             GameManager.Instance.SetDemographics(age.value, gender.value, education.value);
-            GameManager.Instance.SavePlayerDetails();
             SetState(State.End);
             OnFinished.Invoke(true);
         }

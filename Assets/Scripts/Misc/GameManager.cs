@@ -45,6 +45,7 @@ namespace EcoBuilder
         public void Quit()
         {
             // TODO: send data if possible? and also on every level finish!
+            
             #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
             #else

@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace EcoBuilder.Levels
 {
-    // this tutorial teaches double tapping for focus at the end of a bigger construction
-    public class Tutorial3 : Tutorial
+    // this tutorial teaches the greed slider and superfocus
+    public class Tutorial6 : Tutorial
     {
         protected override void StartLesson()
         {
@@ -20,7 +20,7 @@ namespace EcoBuilder.Levels
             targetAnchor = new Vector2(0,1);
             targetZRot = 30;
 
-            help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Here you must add two plants, four animals, and have at least 6 interactions between them. If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. Good luck!");
+            help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Here you must add two plants, four animals, and have at least 6 interactions between them. If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. There is one more rule: any two animals also cannot have the same weight. Good luck!");
 
             Detach?.Invoke();
             

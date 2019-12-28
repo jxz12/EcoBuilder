@@ -34,7 +34,6 @@ namespace EcoBuilder.UI
         [SerializeField] Button refroveButton;
         [SerializeField] Trait sizeTrait;
         [SerializeField] Trait greedTrait;
-        [SerializeField] bool allowConflicts;
         
         [SerializeField] Incubator incubator;
         [SerializeField] ProceduralMeshGenerator factory;
@@ -508,15 +507,20 @@ namespace EcoBuilder.UI
                 typesAnim.SetBool("Visible", false);
             }
         }
-        public void HideSizeSlider(float initialSize)
+        public void HideSizeSlider(bool hidden)
         {
-            sizeTrait.gameObject.SetActive(false);
-            sizeTrait.InitialValueIfFixed = initialSize;
+            sizeTrait.gameObject.SetActive(!hidden);
+            sizeTrait.RandomiseInitialValue = !hidden;
         }
-        public void HideGreedSlider(float initialGreed)
+        public void HideGreedSlider(bool hidden)
         {
-            greedTrait.gameObject.SetActive(false);
-            greedTrait.InitialValueIfFixed = initialGreed;
+            greedTrait.gameObject.SetActive(!hidden);
+            greedTrait.RandomiseInitialValue = !hidden;
+        }
+        private bool allowConflicts = true;
+        public void AllowConflicts(bool allowed)
+        {
+            allowConflicts = allowed;
         }
 
 

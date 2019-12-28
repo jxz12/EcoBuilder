@@ -10,7 +10,11 @@ namespace EcoBuilder.UI
     public class Constraints : MonoBehaviour,
         IPointerEnterHandler, IPointerExitHandler
     {
+        public event Action<bool> OnProducersAvailable;
+        public event Action<bool> OnConsumersAvailable;
         public event Action OnErrorShown;
+        public event Action<bool> OnChainHovered;
+        // public event Action OnLoopHovered;
 
         class Constraint
         {
@@ -36,6 +40,73 @@ namespace EcoBuilder.UI
             // prevents scene getting dirty, Unity autolayout sucks
             GetComponent<VerticalLayoutGroup>().enabled = true;
             GetComponent<ContentSizeFitter>().enabled = true;
+        }
+
+        HashSet<int> producers = new HashSet<int>();
+        HashSet<int> consumers = new HashSet<int>();
+        public void AddType(int idx, bool isProducer)
+        {
+            if (isProducer)
+            {
+                // this will have to be changed if we want to let species switch type
+                producers.Add(idx);
+
+                Display("Leaf", producers.Count);
+                if (GetThreshold("Leaf") > 0 && IsSatisfied("Leaf"))
+                    OnProducersAvailable.Invoke(false);
+            }
+            else
+            {
+                consumers.Add(idx);
+
+                Display("Paw", consumers.Count);
+                if (GetThreshold("Paw") > 0 && IsSatisfied("Paw"))
+                    OnConsumersAvailable.Invoke(false);
+            }
+        }
+        public void RemoveIdx(int idx)
+        {
+            if (producers.Contains(idx))
+            {
+                producers.Remove(idx);
+
+                if (GetThreshold("Leaf") > 0 && IsSatisfied("Leaf"))
+                    OnProducersAvailable.Invoke(true);
+                Display("Leaf", producers.Count);
+            }
+            else
+            {
+                consumers.Remove(idx);
+
+                if (GetThreshold("Paw") > 0 && IsSatisfied("Paw"))
+                    OnConsumersAvailable.Invoke(true);
+                Display("Paw", consumers.Count);
+
+            }
+        }
+        public void DisplayDisjoint(bool isDisjoint)
+        {
+            Disjoint = isDisjoint;
+        }
+        public void DisplayNumEdges(int numEdges)
+        {
+            Display("Count", numEdges);
+        }
+        public void DisplayMaxChain(int lenChain)
+        {
+            Display("Chain", lenChain);
+        }
+        public void DisplayMaxLoop(int lenLoop)
+        {
+            Display("Loop", lenLoop);
+        }
+        public void DisplayFeasibility(bool isFeasible)
+        {
+            Feasible = isFeasible;
+        }
+        public void DisplayStability(bool isStable)
+        {
+			Stable = isStable;
         }
 
         public bool IsSatisfied(string name)
@@ -92,12 +163,27 @@ namespace EcoBuilder.UI
             StartCoroutine(followCoroutine);
             OnErrorShown?.Invoke();
         }
+        
         private IEnumerator followCoroutine;
+        bool chainHovered = false;
         IEnumerator FollowCursor()
         {
             while (true)
             {
                 tooltip.SetPos(Input.mousePosition);
+
+                bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraints["Chain"].counter.rectTransform, Input.mousePosition);
+                if (!chainHovered && overChain)
+                {
+                    OnChainHovered.Invoke(true);
+                    chainHovered = true;
+                }
+                else if (chainHovered && !overChain)
+                {
+                    OnChainHovered.Invoke(false);
+                    chainHovered = false;
+                }
+
                 yield return null;
             }
         }
@@ -105,10 +191,15 @@ namespace EcoBuilder.UI
         {
             tooltip.Disable();
             StopCoroutine(followCoroutine);
+            if (chainHovered)
+            {
+                OnChainHovered.Invoke(false);
+                chainHovered = false;
+            }
         }
-        public bool Feasible { get; set; }
-        public bool Stable { get; set; }
-        public bool Disjoint { get; set; }
+        public bool Feasible { get; private set; }
+        public bool Stable { get; private set; }
+        public bool Disjoint { get; private set; }
         string Error()
         {
             if (constraints["Paw"].value==0 && constraints["Leaf"].value==0)

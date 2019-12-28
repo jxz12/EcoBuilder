@@ -21,13 +21,14 @@ namespace EcoBuilder.UI
             }
         }
 
-        float currentValue = -1;
+        float currentValue, defaultValue;
         // public Slider slider { get; private set; }
         private Slider slider;
         void Awake()
         {
             slider = GetComponent<Slider>();
             slider.onValueChanged.AddListener(x=> UserChangeValue());
+            currentValue = defaultValue = slider.normalizedValue;
         }
 
         // if this function return false, the slider will 'snap' back
@@ -41,9 +42,9 @@ namespace EcoBuilder.UI
                 if (!slider.wholeNumbers)
                     throw new Exception("not whole numbers");
 
-                if (InitialValueIfFixed >= 0)
+                if (!RandomiseInitialValue)
                 {
-                    yield return InitialValueIfFixed;
+                    yield return defaultValue;
                 }
                 else
                 {
@@ -57,12 +58,12 @@ namespace EcoBuilder.UI
         }
 
         // does not set randomly if initial value is fixed
-        public float InitialValueIfFixed { get; set; } = -1;
+        public bool RandomiseInitialValue { get; set; } = true;
         public float SetValueFromRandomSeed(int randomSeed)
         {
-            if (InitialValueIfFixed >= 0)
+            if (!RandomiseInitialValue)
             {
-                return SetValueWithoutCallback(InitialValueIfFixed);
+                return SetValueWithoutCallback(defaultValue);
             }
             else
             {

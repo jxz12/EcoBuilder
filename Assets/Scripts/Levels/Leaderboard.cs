@@ -6,16 +6,18 @@ namespace EcoBuilder.Levels
     public class Leaderboard : MonoBehaviour
     {
         [SerializeField] RectTransform levelParent;
-        [SerializeField] TMPro.TextMeshProUGUI scoreText;
+        [SerializeField] TMPro.TextMeshProUGUI titleText, scoreText;
 
         public Level LevelToPlay { get { return levelParent.GetComponentInChildren<Level>(); } }
         public Level GiveLevelPrefab(Level levelPrefab)
         {
+            name = levelPrefab.Details.idx.ToString();
+            titleText.text = levelPrefab.Details.title;
             return Instantiate(levelPrefab, levelParent);
         }
-        void SetScores()
+        public void SetScores(int first, int second, int third)
         {
-            // TODO: get global scores from server in Menu
+            scoreText.text = "#1 "+first+"\n#2 "+second+"\n#3 "+third;
         }
     }
 }

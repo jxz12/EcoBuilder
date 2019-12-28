@@ -37,6 +37,8 @@ namespace EcoBuilder.Levels
         // traits
         public bool sizeSliderHidden;
         public bool greedSliderHidden;
+        public bool conflictsAllowed;
+        public bool superfocusAllowed;
         public List<bool> sizeEditables;
         public List<bool> greedEditables;
 
@@ -94,7 +96,7 @@ namespace EcoBuilder.Levels
             target1.text = Details.targetScore1.ToString();
             target2.text = Details.targetScore2.ToString();
 
-            int score = GameManager.Instance.GetLevelHighScore(Details.idx);
+            int score = GameManager.Instance.GetPlayerHighScore(Details.idx);
             highScore.text = score.ToString();
 
             if (score >= 0)
@@ -134,6 +136,7 @@ namespace EcoBuilder.Levels
             }
             transform.SetParent(newParent, true);
             transform.localScale = Vector3.one;
+
             tweenRoutine = TweenToZeroPos(duration);
             yield return tweenRoutine;
             tweenRoutine = null;
@@ -274,20 +277,10 @@ namespace EcoBuilder.Levels
         }
 
 
-        public int CurrentScore { private get; set; }
         public void FinishLevel()
         {
             if (GameManager.Instance.PlayedLevel != this)
                 throw new Exception("Played level different from one being finished?");
-
-            if (CurrentScore > GameManager.Instance.GetLevelHighScore(details.idx))
-            {
-                print("TODO: congratulation message for getting a high score");
-            }
-            GameManager.Instance.SavePlayedLevelHighScore(CurrentScore); // updates score and should unlock next level
-            #if !UNITY_WEBGL
-                GameManager.Instance.SavePlayerDetails();
-            #endif
 
             if (nextLevel != null)
             {
@@ -295,12 +288,21 @@ namespace EcoBuilder.Levels
             }
             else
             {
-                print("TODO: credits?");
+                print("TODO: credits? reduce width of navigation?");
             }
             ShowNavigation();
             GameManager.Instance.ShowHelpText(2f, details.congratulation);
             OnFinished?.Invoke();
         }
+        public void SaveLevel(int score)
+        {
+            if (score > GameManager.Instance.GetPlayerHighScore(details.idx))
+            {
+                print("TODO: congratulation message for getting a high score");
+            }
+            GameManager.Instance.SavePlayedLevelHighScore(score); // updates score and should unlock next level
+        }
+
 
         public void Replay()
         {
@@ -326,10 +328,15 @@ namespace EcoBuilder.Levels
             #endif
 
             var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
+            // var level = PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
             level.GetComponent<Level>().details = detail;
             bool success;
             PrefabUtility.SaveAsPrefabAsset(level, "Assets/Prefabs/Levels/"+name+".prefab", out success);
             Destroy(level);
+        }
+        public static Level GetDefaultLevel()
+        {
+            return AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab");
         }
     }
 }

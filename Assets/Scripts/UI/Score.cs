@@ -7,8 +7,6 @@ namespace EcoBuilder.UI
 {
     public class Score : MonoBehaviour
     {
-        public event Action<bool> OnProducersAvailable;
-        public event Action<bool> OnConsumersAvailable;
         public event Action OnLevelCompletabled, OnLevelIncompletabled;
 
         [SerializeField] Animator star1, star2, star3;
@@ -19,112 +17,19 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite targetSprite1, targetSprite2;
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
 
-        Levels.Level constrainedFrom;
-        public void ConstrainFromLevel(Levels.Level level)
-        {
-            if (level == null)
-            {
-                constraints.Unconstrain("Leaf");
-                constraints.Unconstrain("Paw");
-                constraints.Unconstrain("Count");
-                constraints.Unconstrain("Chain");
-                constraints.Unconstrain("Loop");
-            }
-            else
-            {
-                constraints.Constrain("Leaf", level.Details.numProducers);
-                constraints.Constrain("Paw", level.Details.numConsumers);
-                constraints.Constrain("Count", level.Details.minEdges);
-                constraints.Constrain("Chain", level.Details.minChain);
-                constraints.Constrain("Loop", level.Details.minLoop);
-            }
-            feasibleScoreCol = scoreText.color;
-            infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic numbers
-            scoreText.color = infeasibleScoreCol;
-
-            if (level == null) // should never happen in a build
-            {
-                DisableFinish();
-                return;
-            }
-            target1 = level.Details.targetScore1;
-            target2 = level.Details.targetScore2;
-
-            // level.OnFinished += CompleteLevel;
-            constrainedFrom = level;
-        }
 
         int target1, target2;
         Color feasibleScoreCol, infeasibleScoreCol;
-
-        Func<bool> CanFinish = ()=>false;
-        public void AllowLevelFinishWhen(Func<bool> Allowed)
+        void Awake()
         {
-            CanFinish = ()=> Allowed() && !finishDisabled;
+            feasibleScoreCol = scoreText.color;
+            infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic numbers
+            scoreText.color = infeasibleScoreCol;
         }
-
-        HashSet<int> producers = new HashSet<int>();
-        HashSet<int> consumers = new HashSet<int>();
-        public void AddType(int idx, bool isProducer)
+        public void SetScoreThresholds(int target1, int target2)
         {
-            if (isProducer)
-            {
-                // this will have to be changed if we want to let species switch type
-                producers.Add(idx);
-
-                constraints.Display("Leaf", producers.Count);
-                if (constraints.GetThreshold("Leaf") > 0 && constraints.IsSatisfied("Leaf"))
-                    OnProducersAvailable.Invoke(false);
-            }
-            else
-            {
-                consumers.Add(idx);
-
-                constraints.Display("Paw", consumers.Count);
-                if (constraints.GetThreshold("Paw") > 0 && constraints.IsSatisfied("Paw"))
-                    OnConsumersAvailable.Invoke(false);
-            }
-        }
-        public void RemoveIdx(int idx)
-        {
-            if (producers.Contains(idx))
-            {
-                producers.Remove(idx);
-
-                if (constraints.GetThreshold("Leaf") > 0 && constraints.IsSatisfied("Leaf"))
-                    OnProducersAvailable.Invoke(true);
-                constraints.Display("Leaf", producers.Count);
-            }
-            else
-            {
-                consumers.Remove(idx);
-
-                if (constraints.GetThreshold("Paw") > 0 && constraints.IsSatisfied("Paw"))
-                    OnConsumersAvailable.Invoke(true);
-                constraints.Display("Paw", consumers.Count);
-
-            }
-        }
-        public void DisplayDisjoint(bool isDisjoint)
-        {
-			constraints.Disjoint = isDisjoint;
-        }
-        public void DisplayNumEdges(int numEdges)
-        {
-            constraints.Display("Count", numEdges);
-        }
-        public void DisplayMaxChain(int lenChain)
-        {
-            constraints.Display("Chain", lenChain);
-        }
-        public void DisplayMaxLoop(int lenLoop)
-        {
-            constraints.Display("Loop", lenLoop);
-        }
-        public void DisplayFeastability(bool isFeasible, bool isStable)
-        {
-            constraints.Feasible = isFeasible;
-			constraints.Stable = isStable;
+            this.target1 = target1;
+            this.target2 = target2;
         }
         public void CompleteLevel()
         {
@@ -143,26 +48,29 @@ namespace EcoBuilder.UI
 		//////////////////////
 		// score calculation
 
-        int modelScore, realisedScore;
-        int numStars;
+        public int NormalisedScore { get; private set; }
+        float modelScore;
+        int numStars, newNumStars;
         string scoreExplanation = null;
-        public void DisplayScore(float score, string explanation)
+        public void DisplayScore(float newModelScore, string explanation)
         {
-            modelScore = (int)score;
-            scoreText.text = modelScore.ToString();
             report.SetMessage(explanation);
+
+            if (newModelScore > modelScore)
+                scoreText.color = Color.green;
+            else if (newModelScore < modelScore)
+                scoreText.color = Color.red;
+
+            modelScore = newModelScore;
+            NormalisedScore = (int)modelScore; // TODO: better normalisation plz
+            scoreText.text = NormalisedScore.ToString();
+
         }
         void Update()
         {
-            if (modelScore > realisedScore)
-                scoreText.color = Color.green;
-            else if (modelScore < realisedScore)
-                scoreText.color = Color.red;
-
-            realisedScore = modelScore;
-
-            int newNumStars = 0;
-            if (!constraints.Disjoint && constraints.Feasible && // stable &&
+            newNumStars = 0;
+            if (!constraints.Disjoint &&
+                constraints.Feasible &&
                 constraints.IsSatisfied("Leaf") &&
                 constraints.IsSatisfied("Paw") &&
                 constraints.IsSatisfied("Count") &&
@@ -171,23 +79,23 @@ namespace EcoBuilder.UI
             {
                 newNumStars += 1;
 
-                if (modelScore >= target1)
+                if (NormalisedScore >= target1)
                 {
                     newNumStars += 1;
-                    if (modelScore >= target2)
+                    if (NormalisedScore >= target2)
                     {
                         newNumStars += 1;
                     }
                 }
-                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .01f);
+                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .1f*Time.deltaTime);
             }
             else
             {
-                scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, .3f);
+                scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, 3f*Time.deltaTime);
             }
             star1.SetBool("Filled", newNumStars>=1);
             star2.SetBool("Filled", newNumStars>=2);
-            star3.SetBool("Filled", newNumStars>=3);
+            star3.SetBool("Filled", newNumStars==3);
 
             if (newNumStars < 2)
             {
@@ -199,23 +107,16 @@ namespace EcoBuilder.UI
                 scoreTargetText.text = target2.ToString();
                 scoreTargetImage.sprite = targetSprite2;
             }
-
-
-            if (!CanFinish() || constrainedFrom==null) // only throw events if nothing else is busy
-                return;
-
-            constrainedFrom.CurrentScore = realisedScore;
+        }
+        public void UpdateScore() // should only be called from outside when ready
+        {
             if (numStars == 0 && newNumStars > 0)
             {
-                // scoreText.color = Color.green;
                 OnLevelCompletabled?.Invoke();
-                constrainedFrom.ShowFinishFlag();
             }
             else if (numStars > 0 && newNumStars == 0)
             {
-                // scoreText.color = infeasibleScoreCol;
                 OnLevelIncompletabled?.Invoke();
-                constrainedFrom.ShowThumbnail();
             }
             numStars = newNumStars;
         }
