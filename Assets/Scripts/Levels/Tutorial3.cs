@@ -25,7 +25,7 @@ namespace EcoBuilder.Levels
             Detach?.Invoke();
             
             Action foo = ()=> ExplainFocus();
-            Action fooo = ()=> { targetSize = Vector2.zero; help.Show(false); };
+            Action<bool> fooo = (b)=> { targetSize = Vector2.zero; help.Show(false); };
             Action foooo = ()=> { targetSize = new Vector2(100,100); };
             score.OnLevelCompletabled += foo;
             constraints.OnErrorShown += fooo;

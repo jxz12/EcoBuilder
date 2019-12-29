@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
@@ -14,7 +15,6 @@ namespace EcoBuilder.NodeLink
         public bool Curved { get; set; } = false;
         public float TileSpeed { get; set; } = 0;
         public bool Removable { get; set; } = true;
-        public int DefaultOutline { get; set; } = -1;
 
         private Node source;
         public Node Source {
@@ -46,21 +46,20 @@ namespace EcoBuilder.NodeLink
             lr.material.SetFloat("_RepeatCount", numBalls);
         }
 
-        public void Outline(int colourIdx=0)
+        Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
+        public void PushOutline(cakeslice.Outline.Colour colour)
         {
             outline.enabled = true;
-            outline.color = colourIdx;
+            outline.colour = colour;
+            outlines.Push(colour);
         }
-        public void Unoutline()
+        public void PopOutline()
         {
-            if (DefaultOutline < 0) // if no default outline
-            {
-                outline.enabled = false;
-            }
+            outlines.Pop();
+            if (outlines.Count > 0)
+                outline.colour = outlines.Peek();
             else
-            {
-                outline.color = DefaultOutline;
-            }
+                outline.enabled = false;
         }
         bool show = true;
         public void Show(bool showing=true)

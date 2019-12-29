@@ -9,7 +9,7 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink :
         IPointerDownHandler, IPointerUpHandler,
-        IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler,
         IScrollHandler
 	{
         [SerializeField] UI.Tooltip tooltip;
@@ -21,8 +21,12 @@ namespace EcoBuilder.NodeLink
         Node focusedNode = null;
         public void FocusNode(int idx) // called on click
         {
-            if (focusedNode != nodes[idx] && focusedNode != null)
-                focusedNode.Unoutline();
+            if (focusedNode != nodes[idx])
+            {
+                nodes[idx].PushOutline(cakeslice.Outline.Colour.Yellow);
+                if (focusedNode != null) // focus switched
+                    focusedNode.PopOutline();
+            }
 
             if (focusState == FocusState.Unfocus)
             {
@@ -47,9 +51,7 @@ namespace EcoBuilder.NodeLink
                     SuperFocus(idx);
                 }
             }
-
             focusedNode = nodes[idx];
-            nodes[idx].Outline(3);
         }
         public void SwitchFocus(int idx) // urgh, this is needed because of undoing
         {
@@ -70,7 +72,7 @@ namespace EcoBuilder.NodeLink
             }
             else if (focusState == FocusState.Focus)
             {
-                focusedNode.Unoutline();
+                focusedNode.PopOutline();
                 focusedNode = null;
                 focusState = FocusState.Unfocus;
             }
@@ -268,33 +270,32 @@ namespace EcoBuilder.NodeLink
                 pressedNode = ClosestSnappedNode(ped);
                 if (pressedNode != null)
                 {
-                    pressedNode.Outline(1);
+                    pressedNode.PushOutline(cakeslice.Outline.Colour.Yellow);
                     tooltip.Enable();
                     tooltip.ShowInspect();
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
                 }
             }
         }
+        // called before OnEndDrag
         public void OnPointerUp(PointerEventData ped)
         {
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 tweenNodes = true;
 
+                if (pressedNode != null)
+                {
+                    pressedNode.PopOutline(); // remove initial yellow press outline
+                    tooltip.Disable();
+                }
                 if (!ped.dragging) // if click
                 {
                     if (pressedNode != null)
                     {
                         FocusNode(pressedNode.Idx);
                         OnNodeFocused?.Invoke(pressedNode.Idx);
-
-                        if (pressedNode == focusedNode)
-                            pressedNode.Outline(3);
-                        else
-                            pressedNode.Unoutline();
-
                         pressedNode = null;
-                        tooltip.Disable();
                     }
                     else if (focusState != FocusState.Frozen)
                     {
@@ -338,12 +339,10 @@ namespace EcoBuilder.NodeLink
                         dummyLink = Instantiate(linkPrefab, linksParent);
                         dummyLink.Source = pressedNode;
                         dummyLink.Target = dummyTarget;
-                        if (!DragFromTarget)
-                            dummyLink.TileSpeed = minLinkFlow;
-                        else
-                            dummyLink.TileSpeed = -minLinkFlow;
+                        dummyLink.TileSpeed = DragFromTarget? -minLinkFlow : minLinkFlow;
 
-                        potentialLink = dummyLink;
+                        pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
+                        dummyLink.PushOutline(cakeslice.Outline.Colour.Orange);
                     }
                     else
                     {
@@ -360,9 +359,18 @@ namespace EcoBuilder.NodeLink
         public void OnDrag(PointerEventData ped)
         {
             if ((ped.pointerId==-1 || ped.pointerId==0)
-                && dummyTarget != null)
+                && dummyTarget != null) // checks if snapping should even be tried
             {
+                if (potentialTarget != null) // remove previous outline if needed
+                {
+                    pressedNode.PopOutline();
+                    potentialTarget.PopOutline();
+                    potentialLink.PopOutline();
+                    potentialTarget = null;
+                    potentialLink = null;
+                }
                 Node snappedNode = ClosestSnappedNode(ped);
+                // a load of crap to determine if a snap occurs
                 if (snappedNode!=null && snappedNode!=pressedNode &&
                     (((!DragFromTarget && snappedNode.CanBeTarget)
                          && ((links[snappedNode.Idx, pressedNode.Idx]==null &&
@@ -377,77 +385,35 @@ namespace EcoBuilder.NodeLink
                    )
                 {
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(snappedNode.transform.position));
-                    if (potentialTarget != snappedNode) // if not same as previous
-                    {
-                        if (potentialTarget != null)
-                        {
-                            if (potentialTarget == focusedNode)
-                                potentialTarget.Outline(1);
-                            else
-                                potentialTarget.Unoutline();
-                        }
-                        potentialTarget = snappedNode;
-                    }
+                    potentialTarget = snappedNode;
 
-                    Link snappedLink;
-                    if (!DragFromTarget)
-                        snappedLink = links[pressedNode.Idx, snappedNode.Idx];
-                    else
-                        snappedLink = links[snappedNode.Idx, pressedNode.Idx];
-
-                    if (snappedLink == null) // link to be added
+                    Link linkToRemove = DragFromTarget? links[snappedNode.Idx, pressedNode.Idx]
+                                                      : links[pressedNode.Idx, snappedNode.Idx];
+                    if (linkToRemove == null)
                     {
                         dummyLink.Target = snappedNode;
-                        if (potentialLink != dummyLink)
-                        {
-                            potentialLink.Unoutline();
-                            potentialLink = dummyLink;
-                            if (potentialTarget == focusedNode)
-                                potentialTarget.Outline(1);
-                            else
-                                potentialTarget.Unoutline();
-                        }
-                        pressedNode.Outline(1);
-                        potentialTarget.Outline(1);
-                        potentialLink.Outline(1);
+                        potentialLink = dummyLink;
+
+                        pressedNode.PushOutline(cakeslice.Outline.Colour.Green);
+                        potentialTarget.PushOutline(cakeslice.Outline.Colour.Green);
+                        potentialLink.PushOutline(cakeslice.Outline.Colour.Green);
 
                         tooltip.ShowAddLink();
                     }
                     else // link to be deleted
                     {
-                        if (potentialLink != snappedLink)
-                        {
-                            potentialLink.Unoutline();
-                        }
-                        pressedNode.Outline(2);
                         dummyLink.Target = pressedNode; // hide dummyLink
-                        potentialTarget.Outline(2);
-                        potentialLink = snappedLink;
-                        potentialLink.Outline(2);
+                        potentialLink = linkToRemove;
+
+                        pressedNode.PushOutline(cakeslice.Outline.Colour.Red);
+                        potentialTarget.PushOutline(cakeslice.Outline.Colour.Red);
+                        potentialLink.PushOutline(cakeslice.Outline.Colour.Red);
 
                         tooltip.ShowUnlink();
                     }
                 }
                 else // no snap
                 {
-                    if (potentialTarget != null)
-                    {
-                        if (potentialTarget == focusedNode)
-                            potentialTarget.Outline(3);
-                        else
-                            potentialTarget.Unoutline();
-
-                        potentialTarget = null;
-                    }
-                    if (potentialLink != dummyLink)
-                    {
-                        potentialLink.Unoutline();
-                        potentialLink = dummyLink;
-                    }
-                    pressedNode.Outline(1);
-                    potentialLink.Outline(1);
-
-
                     Vector3 screenPoint = ped.position;
                     screenPoint.z = pressedNode.transform.position.z - Camera.main.transform.position.z;
                     dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
@@ -499,51 +465,7 @@ namespace EcoBuilder.NodeLink
         {
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                if (pressedNode != null)
-                {
-                    if (pressedNode == focusedNode)
-                        pressedNode.Outline(3);
-                    else
-                        pressedNode.Unoutline();
-
-                    pressedNode = null;
-
-                    if (potentialLink != null)
-                    {
-                        potentialLink.Unoutline();
-                        potentialLink = null;
-                    }
-                    if (potentialTarget != null)
-                    {
-                        if (potentialTarget == focusedNode)
-                            potentialTarget.Outline(3);
-                        else
-                            potentialTarget.Unoutline();
-
-                        potentialTarget = null;
-                    }
-                    if (dummyLink != null)
-                        Destroy(dummyLink.gameObject);
-
-                    if (dummyTarget != null)
-                        Destroy(dummyTarget.gameObject);
-
-                    tooltip.Disable();
-                }
-            }
-            dragging = false;
-        }
-        public void OnScroll(PointerEventData ped)
-        {
-            UserZoom(-ped.scrollDelta.y);
-            UserRotate(new Vector3(ped.scrollDelta.x, 0));
-        }
-        // OnDrop gets called before OnEndDrag
-        public void OnDrop(PointerEventData ped)
-        {
-            if (ped.pointerId==0 || ped.pointerId==-1)
-            {
-                if (potentialTarget != null && pressedNode != null)
+                if (potentialTarget != null)
                 {
                     // add/remove a new link
                     int i, j;
@@ -567,8 +489,31 @@ namespace EcoBuilder.NodeLink
                         RemoveLink(i, j);
                         OnUserUnlinked?.Invoke(i, j);
                     }
+
+                    pressedNode.PopOutline();
+                    potentialTarget.PopOutline();
+                    potentialLink.PopOutline();
+                    potentialTarget = null;
+                    potentialLink = null;
+                }
+
+                if (dummyTarget != null)
+                {
+                    if (dummyLink != null)
+                        Destroy(dummyLink.gameObject);
+                    if (dummyTarget != null)
+                        Destroy(dummyTarget.gameObject);
+
+                    pressedNode.PopOutline(); // orange outline from drag
+                    pressedNode = null;
                 }
             }
+            dragging = false;
+        }
+        public void OnScroll(PointerEventData ped)
+        {
+            UserZoom(-ped.scrollDelta.y);
+            UserRotate(new Vector3(ped.scrollDelta.x, 0));
         }
 
 

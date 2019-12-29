@@ -122,6 +122,41 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!84 &78119326
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 383
+  m_Height: 681
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthFormat: 1
+  m_ColorFormat: 59
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &147788354
 GameObject:
   m_ObjectHideFlags: 0
@@ -986,11 +1021,11 @@ MonoBehaviour:
   lineThickness: 1
   lineIntensity: 1
   fillAmount: 0
-  lineColor0: {r: 0, g: 0, b: 1, a: 1}
+  lineColor0: {r: 1, g: 1, b: 0, a: 1}
   lineColor1: {r: 0, g: 1, b: 0, a: 1}
   lineColor2: {r: 1, g: 0, b: 0, a: 1}
-  lineColor3: {r: 1, g: 1, b: 0, a: 1}
-  lineColor4: {r: 1, g: 0.49803922, b: 0, a: 1}
+  lineColor3: {r: 0, g: 0, b: 1, a: 1}
+  lineColor4: {r: 1, g: 0.7882353, b: 0, a: 1}
   lineColor5: {r: 1, g: 0, b: 1, a: 1}
   lineColor6: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   additiveRendering: 0
@@ -1003,9 +1038,9 @@ MonoBehaviour:
   sourceCamera: {fileID: 1047668687}
   outlineCamera: {fileID: 1539204445}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1155482627}
-  extraRenderTexture: {fileID: 1761522556}
---- !u!84 &1155482627
+  renderTexture: {fileID: 78119326}
+  extraRenderTexture: {fileID: 1060308381}
+--- !u!84 &1060308381
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1160,7 +1195,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1155482627}
+  m_TargetTexture: {fileID: 78119326}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -1710,41 +1745,6 @@ MonoBehaviour:
   message: {fileID: 1676696547}
   hideButton: {fileID: 2002214224}
   showButton: {fileID: 537604671}
---- !u!84 &1761522556
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 383
-  m_Height: 681
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthFormat: 1
-  m_ColorFormat: 59
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &1799815271
 GameObject:
   m_ObjectHideFlags: 0
