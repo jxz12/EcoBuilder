@@ -328,41 +328,39 @@ namespace EcoBuilder.NodeLink
         }
         public void OutlineChain(bool highlighted, cakeslice.Outline.Colour colour)
         {
-            if (MaxChain == 0)
-                return;
+            // TODO: check if calculating, and wait until done?
+            if (MaxChain == 0) return;
             if (highlighted)
             {
-
-                nodes[TallestNodes[0]].PushOutline(colour);
-                for (int i=1; i<TallestNodes.Count; i++)
+                foreach (int idx in TallestNodes)
+                    nodes[idx].PushOutline(colour);
+            }
+            else
+            {
+                foreach (int idx in TallestNodes)
+                    nodes[idx].PopOutline();
+            }
+        }
+        public void OutlineLoop(bool highlighted, cakeslice.Outline.Colour colour)
+        {
+            if (MaxLoop == 0) return;
+            if (highlighted)
+            {
+                for (int i=0; i<LongestLoop.Count; i++)
                 {
-                    links[TallestNodes[i-1], TallestNodes[i]].PushOutline(colour);
-                    nodes[TallestNodes[i]].PushOutline(colour);
+                    links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]].PushOutline(colour);
+                    nodes[LongestLoop[i]].PushOutline(colour);
                 }
             }
             else
             {
-                nodes[TallestNodes[0]].PopOutline();
-                for (int i=1; i<TallestNodes.Count; i++)
+                for (int i=0; i<LongestLoop.Count; i++)
                 {
-                    links[TallestNodes[i-1], TallestNodes[i]].PopOutline();
-                    nodes[TallestNodes[i]].PopOutline();
+                    links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]].PushOutline(colour);
+                    nodes[LongestLoop[i]].PopOutline();
                 }
             }
         }
-        // public void OutlineLoop(bool highlighted)
-        // {
-        //     if (highlighted)
-        //     {
-        //         foreach (int idx in LongestLoop)
-        //             nodes[idx].Outline(cakeslice.Outline.Colour.Red);
-        //     }
-        //     else
-        //     {
-        //         foreach (int idx in LongestLoop)
-        //             nodes[idx].Unoutline();
-        //     }
-        // }
 
         // TODO: this is a bit messy and doesn't work if graph is spinning
         public void TooltipNode(int idx, string msg)
