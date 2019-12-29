@@ -30,7 +30,7 @@ namespace EcoBuilder.NodeLink
             await Task.Run(()=> LayoutSGD());
 
             var inout = JohnsonInOut(); // not async to ensure synchronize state
-            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(inout.Item1, inout.Item2));
+            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2));
 
             IsCalculating = false;
             OnConstraints.Invoke();
@@ -41,7 +41,7 @@ namespace EcoBuilder.NodeLink
             LayoutSGD();
 
             var inout = JohnsonInOut();
-            LongestLoop = JohnsonsAlgorithm(inout.Item1, inout.Item2);
+            LongestLoop = JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2);
 
             OnConstraints.Invoke();
         }
@@ -248,23 +248,19 @@ namespace EcoBuilder.NodeLink
             return Tuple.Create(incomingCopy, outgoingCopy);
         }
 
-        // very slow, so run async if possible
-        List<int> JohnsonsAlgorithm(Dictionary<int, HashSet<int>> incoming, Dictionary<int, HashSet<int>> outgoing)
+        // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
+        // can be very slow, so run async if possible
+        static List<int> johnsonLongestLoop;
+        static List<int> JohnsonsAlgorithm(IEnumerable<int> indices, Dictionary<int, HashSet<int>> incoming, Dictionary<int, HashSet<int>> outgoing)
         {
-            int longestPathLength = 0;
-            List<int> longestPath = null;
-            foreach (Node no in nodes)
+            johnsonLongestLoop = new List<int>(); // empty list is no loop
+            foreach (int idx in indices)
             {
-                int idx = no.Idx;
                 // if the strongly connected component is bigger than just the vertex
                 var scc = StronglyConnectedComponent(idx, outgoing, incoming);
 
-                List<int> johnsonPath = JohnsonSingleSource(idx, outgoing);
-                if (johnsonPath.Count > longestPathLength)
-                {
-                    longestPathLength = johnsonPath.Count;
-                    longestPath = johnsonPath;
-                }
+                // JohnsonSingleSource(idx, outgoing);
+                JohnsonSingleSource(idx, scc);
 
                 // remove node from graph
                 outgoing.Remove(idx);
@@ -274,13 +270,12 @@ namespace EcoBuilder.NodeLink
                 foreach (var set in incoming.Values)
                     set.Remove(idx);
             }
-			return longestPath;
+            return new List<int>(johnsonLongestLoop.AsEnumerable().Reverse());
         }
-        Stack<int> johnsonStack = new Stack<int>();
-        HashSet<int> johnsonSet = new HashSet<int>();
-        Dictionary<int, HashSet<int>> johnsonMap = new Dictionary<int, HashSet<int>>();
-		List<int> johnsonLongestPath;
-        List<int> JohnsonSingleSource(int source, Dictionary<int, HashSet<int>> outgoing)
+        static Stack<int> johnsonStack = new Stack<int>();
+        static HashSet<int> johnsonSet = new HashSet<int>();
+        static Dictionary<int, HashSet<int>> johnsonMap = new Dictionary<int, HashSet<int>>();
+        static void JohnsonSingleSource(int source, Dictionary<int, HashSet<int>> outgoing)
         {
             johnsonStack.Clear();
             johnsonSet.Clear();
@@ -288,11 +283,9 @@ namespace EcoBuilder.NodeLink
 			foreach (int i in outgoing.Keys)
 				johnsonMap[i] = new HashSet<int>();
 
-			johnsonLongestPath = new List<int>(); // do not use clear as we want to not overwrite best
             JohnsonDFS(source, source, outgoing);
-			return johnsonLongestPath;
         }
-        bool JohnsonDFS(int source, int current, Dictionary<int, HashSet<int>> outgoing)
+        static bool JohnsonDFS(int source, int current, Dictionary<int, HashSet<int>> outgoing)
         {
             bool foundCycle = false;
             johnsonStack.Push(current);
@@ -302,9 +295,10 @@ namespace EcoBuilder.NodeLink
             {
                 if (next == source) // found cycle, so see if it is longest
                 {
-                    if (johnsonStack.Count > johnsonLongestPath.Count)
-						johnsonLongestPath = new List<int>(johnsonStack);
-
+                    if (johnsonStack.Count > johnsonLongestLoop.Count)
+                    {
+						johnsonLongestLoop = new List<int>(johnsonStack);
+                    }
                     foundCycle = true;
                 }
                 else if (!johnsonSet.Contains(next))
@@ -329,7 +323,7 @@ namespace EcoBuilder.NodeLink
             johnsonStack.Pop();
             return foundCycle;
         }
-        void JohnsonUnblock(int toUnblock)
+        static void JohnsonUnblock(int toUnblock)
         {
             // recursively unblock everything on path that we are freeing up
             johnsonSet.Remove(toUnblock);
@@ -342,8 +336,8 @@ namespace EcoBuilder.NodeLink
         }
 
 
-        // returns the next strongly connected component with more than one vertex
-        Dictionary<int, HashSet<int>> StronglyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing, Dictionary<int, HashSet<int>> incoming)
+        // returns the strongly connected component including idx
+        static Dictionary<int, HashSet<int>> StronglyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing, Dictionary<int, HashSet<int>> incoming)
         {
             var component1 = WeaklyConnectedComponent(idx, outgoing);
             var component2 = WeaklyConnectedComponent(idx, incoming);
@@ -363,7 +357,7 @@ namespace EcoBuilder.NodeLink
             }
             return scc;
         }
-        HashSet<int> WeaklyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing)
+        static HashSet<int> WeaklyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing)
         {
             var q = new Queue<int>();
             var visited = new HashSet<int>();

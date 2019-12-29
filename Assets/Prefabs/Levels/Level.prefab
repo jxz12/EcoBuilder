@@ -1719,9 +1719,9 @@ MonoBehaviour:
     congratulation: Default Congratulation
     numProducers: 0
     numConsumers: 0
-    minEdges: -1
+    minEdges: 0
     minChain: 0
-    minLoop: -1
+    minLoop: 0
     numSpecies: 0
     plants: 
     randomSeeds: 

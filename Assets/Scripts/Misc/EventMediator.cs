@@ -65,7 +65,7 @@ namespace EcoBuilder
             constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
             constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
-            // constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
+            constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
