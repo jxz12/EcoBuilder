@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
@@ -24,7 +25,6 @@ namespace EcoBuilder.NodeLink
         MeshRenderer shapeRenderer;
         HealthBar healthBar;
 
-        public int DefaultOutline { get; set; } = -1;
         cakeslice.Outline outlineHealth, outlineShape; // TODO: may be slow to have 2 of these
 
         void Awake()
@@ -50,25 +50,28 @@ namespace EcoBuilder.NodeLink
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
         }
-        public void Outline(int colourIdx)
+
+        Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
+        public void PushOutline(cakeslice.Outline.Colour colour)
         {
-            // outline.eraseRenderer = false;
             outlineShape.enabled = true;
-            outlineShape.color = colourIdx;
+            outlineShape.colour = colour;
             outlineHealth.enabled = true;
-            outlineHealth.color = colourIdx;
+            outlineHealth.colour = colour;
+            outlines.Push(colour);
         }
-        public void Unoutline()
+        public void PopOutline()
         {
-            if (DefaultOutline < 0)
+            outlines.Pop();
+            if (outlines.Count > 0)
             {
-                outlineShape.enabled = false;
-                outlineHealth.enabled = false;
+                outlineShape.colour = outlines.Peek();
+                outlineHealth.colour = outlines.Peek();
             }
             else
             {
-                outlineShape.color = DefaultOutline;
-                outlineHealth.color = DefaultOutline;
+                outlineShape.enabled = false;
+                outlineHealth.enabled = false;
             }
         }
         public void SetHealth(float health)

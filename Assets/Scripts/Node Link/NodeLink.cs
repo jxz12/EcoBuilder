@@ -233,14 +233,10 @@ namespace EcoBuilder.NodeLink
         public void SetIfNodeRemovable(int idx, bool removable)
         {
             nodes[idx].Removable = removable;
-            if (!removable)
-                nodes[idx].Outline(0);
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
             links[i,j].Removable = removable;
-            if (!removable)
-                links[i,j].Outline(0);
         }
 
         // to give other classes access to the adjacency
@@ -317,37 +313,56 @@ namespace EcoBuilder.NodeLink
             shadow.transform.localPosition = Vector3.zero;
             shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
         }
-        public void SetNodeDefaultOutline(int idx, int colourIdx=0)
+
+        public void OutlineNode(int idx, cakeslice.Outline.Colour colour)
         {
-            nodes[idx].DefaultOutline = colourIdx;
+            nodes[idx].PushOutline(colour);
         }
-        public void SetLinkDefaultOutline(int source, int target, int colourIdx=0)
+        public void UnoutlineNode(int idx)
         {
-            links[source, target].DefaultOutline = colourIdx;
+            nodes[idx].PopOutline();
         }
-        public void HighlightNode(int idx)
+        public void OutlineLink(int src, int trg, cakeslice.Outline.Colour colour)
         {
-            nodes[idx].Outline(4); // 4 is red
+            links[src,trg].PushOutline(colour);
         }
-        public void UnhighlightNode(int idx)
+        public void OutlineChain(bool highlighted, cakeslice.Outline.Colour colour)
         {
-            nodes[idx].Unoutline();
+            if (MaxChain == 0)
+                return;
+            if (highlighted)
+            {
+
+                nodes[TallestNodes[0]].PushOutline(colour);
+                for (int i=1; i<TallestNodes.Count; i++)
+                {
+                    links[TallestNodes[i-1], TallestNodes[i]].PushOutline(colour);
+                    nodes[TallestNodes[i]].PushOutline(colour);
+                }
+            }
+            else
+            {
+                nodes[TallestNodes[0]].PopOutline();
+                for (int i=1; i<TallestNodes.Count; i++)
+                {
+                    links[TallestNodes[i-1], TallestNodes[i]].PopOutline();
+                    nodes[TallestNodes[i]].PopOutline();
+                }
+            }
         }
-        public void HighlightChain()
-        {
-            foreach (int idx in TallestNodes)
-                nodes[idx].Outline(4);
-        }
-        public void HighlightLoop()
-        {
-            foreach (int idx in LongestLoop)
-                nodes[idx].Outline(4);
-        }
-        public void Unhighlight()
-        {
-            foreach (Node no in nodes)
-                no.Unoutline();
-        }
+        // public void OutlineLoop(bool highlighted)
+        // {
+        //     if (highlighted)
+        //     {
+        //         foreach (int idx in LongestLoop)
+        //             nodes[idx].Outline(cakeslice.Outline.Colour.Red);
+        //     }
+        //     else
+        //     {
+        //         foreach (int idx in LongestLoop)
+        //             nodes[idx].Unoutline();
+        //     }
+        // }
 
         // TODO: this is a bit messy and doesn't work if graph is spinning
         public void TooltipNode(int idx, string msg)

@@ -1717,10 +1717,10 @@ MonoBehaviour:
     description: Default Level
     introduction: Default Introduction
     congratulation: Default Congratulation
-    numProducers: -1
-    numConsumers: -1
+    numProducers: 0
+    numConsumers: 0
     minEdges: -1
-    minChain: -1
+    minChain: 0
     minLoop: -1
     numSpecies: 0
     plants: 
@@ -1733,6 +1733,7 @@ MonoBehaviour:
     sizeSliderHidden: 0
     greedSliderHidden: 1
     conflictsAllowed: 1
+    superfocusAllowed: 0
     sizeEditables: 
     greedEditables: 
     targetScore1: 1

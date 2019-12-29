@@ -12,9 +12,9 @@ namespace EcoBuilder.UI
     {
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
-        public event Action OnErrorShown;
+        public event Action<bool> OnErrorShown;
         public event Action<bool> OnChainHovered;
-        // public event Action OnLoopHovered;
+        public event Action<bool> OnLoopHovered;
 
         class Constraint
         {
@@ -117,23 +117,21 @@ namespace EcoBuilder.UI
         {
             GetComponent<Animator>().SetBool("Visible", visible);
         }
-        public void Unconstrain(string name)
-        {
-            constraints[name].threshold = -1;
-            constraints[name].counter.gameObject.SetActive(true);
-            constraints[name].counter.text = prefix + "0";
-        }
         public void Constrain(string name, int threshold)
         {
-            if (threshold <= 0)
+            if (threshold < 0) // hide
             {
                 constraints[name].counter.gameObject.SetActive(false);
             }
+            else if (threshold == 0) // display but do not track
+            {
+                constraints[name].counter.text = prefix + "0";
+            }
             else
             {
-                constraints[name].threshold = threshold;
                 constraints[name].counter.text = prefix + "0/" + threshold;
             }
+            constraints[name].threshold = threshold;
         }
         public int GetThreshold(string name)
         {
@@ -161,11 +159,11 @@ namespace EcoBuilder.UI
             tooltip.ShowText(Error());
             followCoroutine = FollowCursor();
             StartCoroutine(followCoroutine);
-            OnErrorShown?.Invoke();
+            OnErrorShown?.Invoke(true);
         }
         
         private IEnumerator followCoroutine;
-        bool chainHovered = false;
+        bool chainHovered=false, loopHovered=false;
         IEnumerator FollowCursor()
         {
             while (true)
@@ -173,15 +171,31 @@ namespace EcoBuilder.UI
                 tooltip.SetPos(Input.mousePosition);
 
                 bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraints["Chain"].counter.rectTransform, Input.mousePosition);
+                bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraints["Loop"].counter.rectTransform, Input.mousePosition);
+                if (overChain && overLoop)
+                    throw new Exception("cannot highlight both chains and loops");
+
+                // always unhighlight first to clear highlighting
+                if (chainHovered && !overChain)
+                {
+                    OnChainHovered?.Invoke(false);
+                    chainHovered = false;
+                }
+                if (loopHovered && !overLoop)
+                {
+                    OnLoopHovered?.Invoke(false);
+                    loopHovered = false;
+                }
+
                 if (!chainHovered && overChain)
                 {
-                    OnChainHovered.Invoke(true);
+                    OnChainHovered?.Invoke(true);
                     chainHovered = true;
                 }
-                else if (chainHovered && !overChain)
+                if (!loopHovered && overLoop)
                 {
-                    OnChainHovered.Invoke(false);
-                    chainHovered = false;
+                    OnLoopHovered?.Invoke(true);
+                    loopHovered = true;
                 }
 
                 yield return null;
@@ -193,9 +207,15 @@ namespace EcoBuilder.UI
             StopCoroutine(followCoroutine);
             if (chainHovered)
             {
-                OnChainHovered.Invoke(false);
+                OnChainHovered?.Invoke(false);
                 chainHovered = false;
             }
+            if (loopHovered)
+            {
+                OnLoopHovered?.Invoke(false);
+                loopHovered = false;
+            }
+            OnErrorShown?.Invoke(false);
         }
         public bool Feasible { get; private set; }
         public bool Stable { get; private set; }

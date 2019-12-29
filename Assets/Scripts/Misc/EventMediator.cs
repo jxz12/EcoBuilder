@@ -37,9 +37,9 @@ namespace EcoBuilder
             inspector.OnUserSpawned +=     (i)=> nodelink.FlashNode(i);
             inspector.OnUserSpawned +=     (i)=> nodelink.LieDownNode(i); // init as extinct
             inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
-            inspector.OnConflicted +=      (i)=> nodelink.HighlightNode(i);
+            inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
             inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
-            inspector.OnUnconflicted +=    (i)=> nodelink.UnhighlightNode(i);
+            inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
@@ -64,6 +64,8 @@ namespace EcoBuilder
 
             constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
+            constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
+            // constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
@@ -109,7 +111,6 @@ namespace EcoBuilder
             score.OnLevelCompletabled +=   ()=> level.ShowFinishFlag();
             score.OnLevelIncompletabled += ()=> level.ShowThumbnail();
 
-            // TODO: unconstrain in other situations
             constraints.Constrain("Leaf", level.Details.numProducers);
             constraints.Constrain("Paw", level.Details.numConsumers);
             constraints.Constrain("Count", level.Details.minEdges);
@@ -128,7 +129,7 @@ namespace EcoBuilder
 
                 inspector.SetSpeciesRemovable(i, false);
                 nodelink.SetIfNodeRemovable(i, false);
-                nodelink.SetNodeDefaultOutline(i);
+                nodelink.OutlineNode(i, cakeslice.Outline.Colour.Blue);
             }
             for (int ij=0; ij<level.Details.numInteractions; ij++)
             {
@@ -137,7 +138,7 @@ namespace EcoBuilder
 
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
-                nodelink.SetLinkDefaultOutline(i, j);
+                nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
 
             level.OnFinished += FinishPlaythrough;
