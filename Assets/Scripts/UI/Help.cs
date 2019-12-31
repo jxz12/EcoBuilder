@@ -111,7 +111,7 @@ namespace EcoBuilder.UI
         public void DelayThenShow(float seconds, string msg)
         {
             Show(false);
-            SetText(GameManager.Instance.PlayedLevel.Details.congratulation);
+            SetText(msg);
             StartCoroutine(DelayThenShow(seconds, true));
         }
         void UserShow(bool showing) // to attach to button

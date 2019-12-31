@@ -169,6 +169,7 @@ namespace EcoBuilder.NodeLink
             // if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
             //     SuperFocus(focusedNode.Idx);
 
+            MaxChain = 0;
             foreach (int height in heights.Values)
                 MaxChain = Math.Max(height, MaxChain);
 

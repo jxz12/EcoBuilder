@@ -106,7 +106,6 @@ namespace EcoBuilder
         ///////////////////
         // scene loading //
         ///////////////////
-
         [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
         [Serializable] public class MyFloatEvent : UnityEvent<float> {}
         [SerializeField] MyFloatEvent OnLoadingProgress;

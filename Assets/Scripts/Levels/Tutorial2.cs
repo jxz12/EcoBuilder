@@ -70,8 +70,8 @@ namespace EcoBuilder.Levels
         void ExplainMetabolism(float delay)
         {
             help.Show(false);
-            inspector.Uninspect();
-            nodelink.FullUnfocus();
+            // inspector.Uninspect();
+            nodelink.ForceUnfocus();
 
             if (shuffleRoutine != null)
             {
@@ -138,8 +138,8 @@ namespace EcoBuilder.Levels
             StopCoroutine(shuffleRoutine);
             smoothTime = .2f;
 
-            inspector.Uninspect();
-            nodelink.FullUnfocus();
+            // inspector.Uninspect();
+            nodelink.ForceUnfocus();
             help.SetSide(false,false);
             help.SetDistFromTop(.13f);
 

@@ -25,7 +25,7 @@ namespace EcoBuilder.Levels
         public int minLoop;
 
         // vertices and edges
-        public int numSpecies;
+        public int numInitSpecies;
         public List<bool> plants;
         public List<int> randomSeeds;
         public List<float> sizes;
@@ -81,7 +81,7 @@ namespace EcoBuilder.Levels
 
         void Start()
         {
-            int n = Details.numSpecies;
+            int n = Details.numInitSpecies;
             if (n != Details.randomSeeds.Count || n != Details.sizes.Count || n != Details.greeds.Count)
                 throw new Exception("num species and sizes or greeds do not match");
 
@@ -226,6 +226,7 @@ namespace EcoBuilder.Levels
         {
             GameManager.Instance.PlayLevel(this);
             GameManager.Instance.OnLoaded.AddListener(MoveToCornerOnPlay);
+            // TODO: loading message!
         }
         void MoveToCornerOnPlay(string sceneName)
         {
@@ -233,7 +234,6 @@ namespace EcoBuilder.Levels
                 throw new Exception("Play scene not loaded when expected");
 
             GameManager.Instance.OnLoaded.RemoveListener(MoveToCornerOnPlay);
-
             thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
             GameManager.Instance.ShowHelpText(2f, details.introduction); // show intro
 
@@ -291,6 +291,7 @@ namespace EcoBuilder.Levels
                 print("TODO: credits? reduce width of navigation?");
             }
             ShowNavigation();
+            // TODO: make the thing show at right height here
             GameManager.Instance.ShowHelpText(2f, details.congratulation);
             OnFinished?.Invoke();
         }

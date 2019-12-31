@@ -75,6 +75,7 @@ namespace EcoBuilder.NodeLink
                 focusedNode.PopOutline();
                 focusedNode = null;
                 focusState = FocusState.Unfocus;
+                OnUnfocused?.Invoke();
             }
             else if (focusState == FocusState.SuperFocus)
             {
@@ -88,7 +89,7 @@ namespace EcoBuilder.NodeLink
                     li.Show(true);
             }
         }
-        public void FullUnfocus()
+        public void ForceUnfocus()
         {
             while (focusState != FocusState.Unfocus)
                 Unfocus();
@@ -192,7 +193,7 @@ namespace EcoBuilder.NodeLink
         }
         public void Freeze()
         {
-            FullUnfocus();
+            ForceUnfocus();
             StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
             StartCoroutine(TweenPan(defaultNodelinkPos, 2));
 
@@ -299,14 +300,7 @@ namespace EcoBuilder.NodeLink
                     }
                     else if (focusState != FocusState.Frozen)
                     {
-                        if (focusState == FocusState.Unfocus)
-                        {
-                            OnEmptyPressed?.Invoke();
-                        }
-                        else if (focusState == FocusState.Focus)
-                        {
-                            OnUnfocused?.Invoke();
-                        }
+                        OnEmptyPressed?.Invoke();
                         Unfocus();
                     }
                 }

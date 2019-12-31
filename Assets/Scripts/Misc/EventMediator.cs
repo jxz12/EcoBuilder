@@ -20,7 +20,7 @@ namespace EcoBuilder
             ////////////////////////////////////
             // hook up events between objects //
             ////////////////////////////////////
-            inspector.OnIncubated +=        ()=> nodelink.FullUnfocus();
+            inspector.OnIncubated +=        ()=> nodelink.ForceUnfocus();
             inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f); // TODO: magic number
             inspector.OnUnincubated +=      ()=> nodelink.MoveHorizontal(0);
             inspector.OnSpawned +=         (i)=> nodelink.AddNode(i);
@@ -52,7 +52,7 @@ namespace EcoBuilder
 
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
-            model.OnEquilibrium += ()=> score.DisplayScore(model.NormalisedScore, model.ScoreExplanation());
+            model.OnEquilibrium += ()=> score.DisplayScore(model.Complexity, model.ScoreExplanation());
             model.OnEquilibrium += ()=> constraints.DisplayFeasibility(model.Feasible);
             model.OnEquilibrium += ()=> constraints.DisplayStability(model.Stable);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
@@ -64,8 +64,8 @@ namespace EcoBuilder
 
             constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
-            constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
+            constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Cyan);
+            constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Cyan);
 
             inspector.OnSpawned +=         (i)=> atEquilibrium = false;
             inspector.OnSpawned +=         (i)=> graphSolved = false;
@@ -117,7 +117,7 @@ namespace EcoBuilder
             constraints.Constrain("Chain", level.Details.minChain);
             constraints.Constrain("Loop", level.Details.minLoop);
 
-            for (int i=0; i<level.Details.numSpecies; i++)
+            for (int i=0; i<level.Details.numInitSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,
                     level.Details.plants[i],
@@ -231,7 +231,7 @@ namespace EcoBuilder
 
                     squishedIdxs[idx] = counter++;
                 }
-                details.numSpecies = squishedIdxs.Count;
+                details.numInitSpecies = squishedIdxs.Count;
                 
                 details.resources = new List<int>();
                 details.consumers = new List<int>();

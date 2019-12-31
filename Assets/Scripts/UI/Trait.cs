@@ -8,7 +8,6 @@ using UnityEngine.EventSystems;
 namespace EcoBuilder.UI
 {
     public class Trait : MonoBehaviour,
-        // IDragHandler, IBeginDragHandler, IEndDragHandler
         IPointerDownHandler, IPointerUpHandler
     {
         public event Action<float, float> OnUserSlid; // from, to
@@ -21,14 +20,13 @@ namespace EcoBuilder.UI
             }
         }
 
-        float currentValue, defaultValue;
-        // public Slider slider { get; private set; }
+        float currentValue;
         private Slider slider;
         void Awake()
         {
             slider = GetComponent<Slider>();
             slider.onValueChanged.AddListener(x=> UserChangeValue());
-            currentValue = defaultValue = slider.normalizedValue;
+            currentValue  = slider.normalizedValue;
         }
 
         // if this function return false, the slider will 'snap' back
@@ -44,7 +42,7 @@ namespace EcoBuilder.UI
 
                 if (!RandomiseInitialValue)
                 {
-                    yield return defaultValue;
+                    yield return slider.normalizedValue;
                 }
                 else
                 {
@@ -63,7 +61,7 @@ namespace EcoBuilder.UI
         {
             if (!RandomiseInitialValue)
             {
-                return SetValueWithoutCallback(defaultValue);
+                return slider.normalizedValue;
             }
             else
             {
