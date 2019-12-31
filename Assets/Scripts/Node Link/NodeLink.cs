@@ -126,7 +126,7 @@ namespace EcoBuilder.NodeLink
             if (nodes[idx] == null)
                 throw new Exception("no index " + idx);
             if (focusedNode != null && focusedNode.Idx == idx)
-                FullUnfocus();
+                ForceUnfocus();
 
             // move to graveyard to save for later
             nodes[idx].gameObject.SetActive(false);

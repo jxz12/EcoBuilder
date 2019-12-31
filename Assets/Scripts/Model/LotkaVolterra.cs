@@ -116,7 +116,7 @@ namespace EcoBuilder.Model
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
-            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
+            UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
             // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
             // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
@@ -214,6 +214,7 @@ namespace EcoBuilder.Model
         }
         public double MayComplexity { get { return CalculateMayComplexity(community); } }
         public double TangComplexity { get { return CalculateTangComplexity(community); } }
+        public double HoComplexity { get { return Richness * Connectance * TotalAbundance; }}
 
         static double CalculateMayComplexity(Matrix<double> community)
         {

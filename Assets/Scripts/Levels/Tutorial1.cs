@@ -113,8 +113,8 @@ namespace EcoBuilder.Levels
             shuffle = false;
             targetSize = new Vector2(0,0);
             help.Show(false);
-            inspector.Uninspect();
-            nodelink.FullUnfocus();
+            // inspector.Uninspect();
+            nodelink.ForceUnfocus();
 
             StartCoroutine(WaitThenDo(wait?2:0, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."); }));
 
@@ -126,8 +126,8 @@ namespace EcoBuilder.Levels
         void ExplainRemove1(float wait)
         {
             help.Show(false);
-            inspector.Uninspect();
-            nodelink.FullUnfocus();
+            // inspector.Uninspect();
+            nodelink.ForceUnfocus();
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
 

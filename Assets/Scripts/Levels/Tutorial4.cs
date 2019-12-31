@@ -9,24 +9,67 @@ namespace EcoBuilder.Levels
     {
         protected override void StartLesson()
         {
-            targetSize = new Vector2(100,100);
+            targetSize = Vector2.zero;
 
             ExplainIntro();
         }
         void ExplainIntro()
         {
-            targetSize = new Vector2(100,100);
-            targetPos = new Vector2(100,-220);
-            targetAnchor = new Vector2(0,1);
-            targetZRot = 30;
-
-            help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Here you must add two plants, four animals, and have at least 6 interactions between them. If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. There is one more rule: any two animals also cannot have the same weight. Good luck!");
-
             Detach?.Invoke();
+
+            // disallow animal on animal, disallow plan on plant
+            //   to ensure only one of each is in system
+
+            Action foo = ()=> CheckChainOfHeight(1, ExplainChainOfOne);
+            nodelink.OnConstraints += foo;
+            Detach = ()=> nodelink.OnConstraints -= foo;
         }
-        // make a chain of 2
-        // then reduce it to 1 by making a triangle
-        // then task with making a chain of three
+        void CheckChainOfHeight(int heightGoal, Action Todo)
+        {
+            if (nodelink.MaxChain == heightGoal)
+                Todo.Invoke();
+        }
+        void ExplainChainOfOne()
+        {
+            Detach?.Invoke();
+            help.SetText("chain of one done! Now do two");
+            help.Show(true);
+            // allow animal again, but only one more
+            // ask to make a chain of 2
+
+            Action foo = ()=> CheckChainOfHeight(2, ExplainChainOfTwo);
+            nodelink.OnConstraints += foo;
+            Detach = ()=> nodelink.OnConstraints -= foo;
+        }
+        void ExplainChainOfTwo()
+        {
+            Detach?.Invoke();
+            help.SetText("chain of two done! Now do one again");
+            help.Show(true);
+            // now that there is a chain of 2, ask them to reduce it again by making a triangle
+
+            Action foo = ()=> CheckChainOfHeight(1, ExplainBackToOne); // TODO: make sure it's a triangle
+            nodelink.OnConstraints += foo;
+            Detach = ()=> nodelink.OnConstraints -= foo;
+        }
+        void ExplainBackToOne()
+        {
+            Detach?.Invoke();
+            help.SetText("triangle! Now do three to finish the level");
+            // ask the user to make a chain of three with only one more 
+            Action foo = ()=> CheckChainOfHeight(3, ExplainThree);
+            nodelink.OnConstraints += foo;
+            Detach = ()=> nodelink.OnConstraints -= foo;
+        }
+        void ExplainThree()
+        {
+            Detach?.Invoke();
+            nodelink.ForceUnfocus();
+            help.Show(false);
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! You now understand chains.");}));
+            // TODO: enable mass editing only now?
+        }
+        
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
             yield return new WaitForSeconds(seconds);

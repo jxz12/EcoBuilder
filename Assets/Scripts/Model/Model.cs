@@ -158,14 +158,9 @@ namespace EcoBuilder.Model
             speciesToIdx.Remove(toRemove);
         }
 
-        // int numProducers = 0;
         public void SetSpeciesIsProducer(int idx, bool isProducer)
         {
             Species s = idxToSpecies[idx];
-            // if (!s.IsProducer && isProducer)
-            //     numProducers += 1;
-            // else if (s.IsProducer && !isProducer)
-            //     numProducers -= 1;
             s.IsProducer = isProducer;
 
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
@@ -204,7 +199,7 @@ namespace EcoBuilder.Model
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
 
-        public float NormalisedScore { get; private set; }
+        public float Complexity { get { print(simulation.HoComplexity+" "+simulation.MayComplexity); return (float)simulation.HoComplexity; } }
         public bool IsCalculating { get; private set; } = false;
 
                                            // required because this class does not store adjacency
@@ -217,7 +212,6 @@ namespace EcoBuilder.Model
             Stable = await Task.Run(()=> simulation.SolveStability());
 
             TriggerAbundanceEvents();
-            CalculateScore();
             IsCalculating = false;
             OnEquilibrium.Invoke();
         }
@@ -229,18 +223,9 @@ namespace EcoBuilder.Model
             Stable = simulation.SolveStability();
 
             TriggerAbundanceEvents();
-            CalculateScore();
             OnEquilibrium.Invoke();
         }
 
-        private void CalculateScore()
-        {
-            // print(simulation.TotalFlux + " " + simulation.TotalAbundance);
-            NormalisedScore = (float)(simulation.Richness *
-                                      simulation.Connectance *
-                                      totalAbund);
-                                    //   totalAbund_Norm) * 100;
-        }
         public string ScoreExplanation()
         {
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
@@ -283,7 +268,7 @@ namespace EcoBuilder.Model
                 // if (newAbund >= 0)
                 //     total_NormAbund += newAbund;
             }
-            print(totalAbund);
+            // print(totalAbund);
 
             // if (total_NormAbund == 0)
             //     total_NormAbund = 1; // to prevent NaN problems in GetNormalisedAbundance

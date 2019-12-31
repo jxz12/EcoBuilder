@@ -15,11 +15,31 @@ namespace EcoBuilder.Levels
         }
         void ExplainIntro()
         {
-            help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Here you must add two plants, four animals, and have at least 6 interactions between them. If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. There is one more rule: any two animals also cannot have the same weight. Good luck!");
-
             Detach?.Invoke();
+            // ask the user to make a chain of three first
+            
+            nodelink.OnConstraints += ()=> CheckChainOfHeight(3, ExplainChainThree);
         }
-        // create a loop of 3
+        void CheckChainOfHeight(int heightGoal, Action Todo)
+        {
+            if (nodelink.MaxChain == heightGoal)
+                Todo.Invoke();
+        }
+        void ExplainChainThree()
+        {
+            // now make them connect the lowest animal to the highest
+            // disallow other actions somehow
+            nodelink.OnConstraints += ()=> CheckLoopOfLength(3, ExplainLoopThree);
+        }
+        void CheckLoopOfLength(int lengthGoal, Action Todo)
+        {
+            if (nodelink.MaxLoop == lengthGoal)
+                Todo.Invoke();
+        }
+        void ExplainLoopThree()
+        {
+            // ask them to try and make a loop of 4
+        }
         // create another loop attached to the same one
         // task with 
         IEnumerator WaitThenDo(float seconds, Action Todo)
