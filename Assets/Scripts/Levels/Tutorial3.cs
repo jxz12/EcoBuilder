@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace EcoBuilder.Levels
 {
-    // this tutorial teaches constraints window
+    // this tutorial teaches constraints window and disjoint
     public class Tutorial3 : Tutorial
     {
         protected override void StartLesson()
