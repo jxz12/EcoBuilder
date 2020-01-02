@@ -6,11 +6,10 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink
     { 
-        [SerializeField] float maxHeight;
+        [SerializeField] float focusHeight;
         [SerializeField] float layoutSmoothTime;
 
         Vector3 nodesVelocity, graphVelocity;
-        // Vector3 rotationCenter;
         void TweenNodes()
         {
             if (!tweenNodes)
@@ -27,7 +26,7 @@ namespace EcoBuilder.NodeLink
                     nodesParent.localPosition =
                         Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
                     graphParent.localPosition =
-                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2, ref graphVelocity, layoutSmoothTime);
+                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*focusHeight, ref graphVelocity, layoutSmoothTime);
                 }
                 else // if (focusState != FocusState.Focus)
                 {
@@ -72,11 +71,10 @@ namespace EcoBuilder.NodeLink
                     Vector3.SmoothDamp(nodesParent.localPosition, -focusedNode.FocusPos,
                                        ref nodesVelocity, layoutSmoothTime);
                 graphParent.localPosition =
-                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*maxHeight/2,
+                    Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*focusHeight,
                                     ref graphVelocity, layoutSmoothTime);
-                
-                // rotationCenter = Vector3.up * maxHeight/2;
             }
+            // TODO: measure the width and height of the layout and scale according to that
 
             foreach (Node no in nodes)
             {
@@ -202,7 +200,7 @@ namespace EcoBuilder.NodeLink
         // for trophic level calculation
 
         public bool ConstrainTrophic { get; set; }
-        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector
+        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector here
         private SparseVector<float> trophicLevels = new SparseVector<float>();
 
         // update the system of linear equations (Laplacian)
@@ -245,9 +243,9 @@ namespace EcoBuilder.NodeLink
                 maxTrophic = Mathf.Max(trophicLevels[i], maxTrophic);
             }
             float trophicScaling = 1;
-            if (maxTrophic > maxHeight)
+            if (maxTrophic-1 > MaxChain)
             {
-                trophicScaling = maxHeight / maxTrophic;
+                trophicScaling = MaxChain / maxTrophic;
             }
             foreach (Node no in nodes)
             {

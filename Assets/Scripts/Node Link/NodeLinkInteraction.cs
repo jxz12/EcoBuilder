@@ -148,7 +148,7 @@ namespace EcoBuilder.NodeLink
 
 
             // arrange in circle around focus in middle
-            nodes[focusIdx].FocusPos = new Vector3(0, maxHeight/2, 0);
+            nodes[focusIdx].FocusPos = Vector3.up * focusHeight;
 
             // both resources and consumers on right
             int right = System.Math.Max(consumers.Count, resources.Count)*2;
@@ -162,14 +162,14 @@ namespace EcoBuilder.NodeLink
             foreach (Node no in consumers.OrderBy(c=>-c.StressPos.x))
             {
                 angle += 1f / (consumers.Count+1) * range;
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * focusHeight
                               + nodes[focusIdx].FocusPos;
             }
             angle = 0;
             foreach (Node no in resources.OrderBy(r=>-r.StressPos.x))
             {
                 angle -= 1f / (resources.Count+1) * range;
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * focusHeight
                               + nodes[focusIdx].FocusPos;
             }
             angle -= 1f / (resources.Count+1) * range;
@@ -177,7 +177,7 @@ namespace EcoBuilder.NodeLink
             foreach (Node no in both.OrderBy(b=>b.StressPos.y))
             {
                 angle -= 1f / (both.Count+1) * range;
-                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * (maxHeight/2)
+                no.FocusPos = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle),.2f) * focusHeight
                               + nodes[focusIdx].FocusPos;
             }
         }
@@ -350,11 +350,19 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        [SerializeField] float inversePanPerDragInch;
         public void OnDrag(PointerEventData ped)
         {
             if ((ped.pointerId==-1 || ped.pointerId==0)
                 && dummyTarget != null) // checks if snapping should even be tried
             {
+                if (focusState == FocusState.Focus)
+                {
+                    // pan graph a little to reach far away nodes on vertical screen
+                    Vector3 dragInches = ped.delta / (Screen.dpi==0? 72:Screen.dpi);
+                    graphParent.transform.localPosition -= dragInches * inversePanPerDragInch;
+                }
+
                 if (potentialTarget != null) // remove previous outline if needed
                 {
                     pressedNode.PopOutline();
