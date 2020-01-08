@@ -146,7 +146,6 @@ namespace EcoBuilder.NodeLink
                     li.Show(true);
             }
 
-
             // arrange in circle around focus in middle
             nodes[focusIdx].FocusPos = Vector3.up * focusHeight;
 
@@ -197,10 +196,17 @@ namespace EcoBuilder.NodeLink
             StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
             StartCoroutine(TweenPan(defaultNodelinkPos, 2));
 
-            Instantiate(confettiPrefab, nodesParent.transform);
+            Instantiate(confettiPrefab, transform);
             focusState = FocusState.Frozen;
         }
 
+        void UserRotate(Vector2 pixelDelta)
+        {
+            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            Vector2 rotation = inchesDelta * rotationPerInch; // convert to degrees
+            yTargetRotation -= rotation.x;
+            xTargetRotation += rotation.y;
+        }
         void UserZoom(float pixelDelta)
         {
             float inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
@@ -210,19 +216,6 @@ namespace EcoBuilder.NodeLink
 
             graphParent.localScale *= 1 + zoom;
         }
-        void UserPan(Vector2 pixelDelta)
-        {
-            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
-            transform.localPosition += (Vector3)inchesDelta * panPerInch;
-        }
-        void UserRotate(Vector2 pixelDelta)
-        {
-            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
-            Vector2 rotation = inchesDelta * rotationPerInch; // convert to degrees
-            yTargetRotation -= rotation.x;
-            xTargetRotation += rotation.y;
-        }
-
         IEnumerator TweenZoom(Vector3 endZoom, float duration)
         {
             Vector3 startZoom = graphParent.localScale;
@@ -238,6 +231,11 @@ namespace EcoBuilder.NodeLink
                 yield return null;
             }
             graphParent.localScale = endZoom;
+        }
+        void UserPan(Vector2 pixelDelta)
+        {
+            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            transform.localPosition += (Vector3)inchesDelta * panPerInch;
         }
         IEnumerator TweenPan(Vector3 endPan, float duration)
         {
@@ -350,18 +348,18 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        [SerializeField] float inversePanPerDragInch;
+        // [SerializeField] float inversePanPerDragInch;
         public void OnDrag(PointerEventData ped)
         {
             if ((ped.pointerId==-1 || ped.pointerId==0)
                 && dummyTarget != null) // checks if snapping should even be tried
             {
-                if (focusState == FocusState.Focus)
-                {
-                    // pan graph a little to reach far away nodes on vertical screen
-                    Vector3 dragInches = ped.delta / (Screen.dpi==0? 72:Screen.dpi);
-                    graphParent.transform.localPosition -= dragInches * inversePanPerDragInch;
-                }
+                // if (focusState == FocusState.Focus)
+                // {
+                //     // pan graph a little to reach far away nodes on vertical screen
+                //     Vector3 dragInches = ped.delta / (Screen.dpi==0? 72:Screen.dpi);
+                //     graphParent.transform.localPosition -= dragInches * inversePanPerDragInch;
+                // }
 
                 if (potentialTarget != null) // remove previous outline if needed
                 {

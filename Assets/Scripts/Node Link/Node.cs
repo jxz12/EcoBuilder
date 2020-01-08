@@ -41,7 +41,7 @@ namespace EcoBuilder.NodeLink
         public void Shape(GameObject shapeObject)
         {
             // drop it in at the point at shapeObject's position
-            transform.position = shapeObject.transform.position;
+            // transform.position = shapeObject.transform.position;
             shape = shapeObject;
             shapeRenderer = shape.GetComponent<MeshRenderer>();
             outlineShape = shape.AddComponent<cakeslice.Outline>();
@@ -158,7 +158,7 @@ namespace EcoBuilder.NodeLink
                 if (!Disconnected)
                     transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos, ref velocity, smoothTime);
                 else
-                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos+Vector3.back, ref velocity, smoothTime);
+                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos+.5f*Vector3.back, ref velocity, smoothTime);
             }
             else //(State == FocusState.Focus)
             {

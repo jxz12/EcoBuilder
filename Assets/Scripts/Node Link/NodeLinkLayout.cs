@@ -23,12 +23,10 @@ namespace EcoBuilder.NodeLink
                 {
                     centroid = focusedNode.StressPos;
 
-                    nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
-                    graphParent.localPosition =
-                        Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*focusHeight, ref graphVelocity, layoutSmoothTime);
+                    nodesParent.localPosition = Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
+                    graphParent.localPosition = Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*focusHeight, ref graphVelocity, layoutSmoothTime);
                 }
-                else // if (focusState != FocusState.Focus)
+                else // if not focus
                 {
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
@@ -38,19 +36,15 @@ namespace EcoBuilder.NodeLink
                     }
                     centroid /= nodes.Count;
 
-                    nodesParent.localPosition =
-                        Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
-                    graphParent.localPosition =
-                        Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused, ref graphVelocity, layoutSmoothTime);
+                    nodesParent.localPosition = Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
+                    graphParent.localPosition = Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused, ref graphVelocity, layoutSmoothTime);
                 }
 
                 if (ConstrainTrophic)
                 {
                     centroid.y = 0;
                     foreach (Node no in nodes)
-                    {
                         no.StressPos -= centroid;
-                    }
                 }
                 else
                 {
@@ -60,9 +54,7 @@ namespace EcoBuilder.NodeLink
 
                     centroid.y = minY;
                     foreach (Node no in nodes)
-                    {
                         no.StressPos -= centroid;
-                    }
                 }
             }
             else // superfocused
@@ -74,16 +66,38 @@ namespace EcoBuilder.NodeLink
                     Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*focusHeight,
                                     ref graphVelocity, layoutSmoothTime);
             }
-            // TODO: measure the width and height of the layout and scale according to that
-
+            
             foreach (Node no in nodes)
             {
                 no.TweenPos(layoutSmoothTime);
-                no.GetComponent<HealthBar>().TweenHealth(.1f);
+                no.GetComponent<HealthBar>().TweenHealth(1f * Time.deltaTime);
             }
+
+            if (focusState != FocusState.Focus)
+            {
+                float maxError = float.MinValue;
+                foreach (Node no in nodes)
+                {
+                    // make sure that all nodes fit on screen
+                    var viewportPos = Camera.main.WorldToViewportPoint(no.transform.localPosition * graphScaleTarget) - new Vector3(.5f,.5f);
+                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .4f);
+                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .4f); // TODO: magic numbers
+                }
+                graphScaleTarget -= maxError*.1f; // TODO: magic number
+                graphScaleTarget = Mathf.Min(graphScaleTarget, 1); // don't scale too much
+            }
+            else
+            {
+                
+            }
+            graphScale = Mathf.SmoothDamp(graphScale, graphScaleTarget, ref graphScaleVelocity, 2f);
+            graphParent.localScale = graphScale * Vector3.one;
         }
+        float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;
+
+
         float xDefaultRotation;
-        float yRotation=0, yTargetRotation=0, yRotationVelocity=-Mathf.Epsilon; // spin other way initially
+        float yRotation=0, yTargetRotation=0, yRotationVelocity=0;
         float xRotation=0, xTargetRotation=0, xRotationVelocity=0;
         private void MomentumRotate()
         {
@@ -102,14 +116,6 @@ namespace EcoBuilder.NodeLink
             nodesParent.transform.localRotation = Quaternion.Euler(0,yRotation,0);
             graphParent.transform.localRotation = Quaternion.Euler(xRotation,0,0);
         }
-        void FixRotation(ref float rotation)
-        {
-            while (rotation < -180)
-                rotation += 360;
-            while (rotation > 180)
-                rotation -= 360;
-        }
-
 
         /////////////////////////////////
         // for stress-based layout
@@ -243,9 +249,9 @@ namespace EcoBuilder.NodeLink
                 maxTrophic = Mathf.Max(trophicLevels[i], maxTrophic);
             }
             float trophicScaling = 1;
-            if (maxTrophic-1 > MaxChain)
+            if (maxTrophic > MaxChain+1)
             {
-                trophicScaling = MaxChain / maxTrophic;
+                trophicScaling = (MaxChain+1) / maxTrophic;
             }
             foreach (Node no in nodes)
             {
