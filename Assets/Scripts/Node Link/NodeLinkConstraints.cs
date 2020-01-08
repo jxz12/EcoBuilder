@@ -61,6 +61,7 @@ namespace EcoBuilder.NodeLink
                     terms.Add(Tuple.Create(i, d.Key, d.Value));
                     d_max = Math.Max(d.Value, d_max);
                 }
+                nodes[i].StressPos *= .5f; // shrink to middle
             }
             foreach (float eta in ExpoSchedule(d_max))
             {

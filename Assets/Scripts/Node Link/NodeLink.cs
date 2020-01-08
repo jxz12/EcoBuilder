@@ -27,6 +27,7 @@ namespace EcoBuilder.NodeLink
         {
             xRotation = xDefaultRotation = graphParent.localRotation.eulerAngles.x;
             defaultNodelinkPos = transform.localPosition;
+
             graphParent.localScale = Vector3.zero;
             StartCoroutine(TweenZoom(Vector3.one, 2));
         }
@@ -356,7 +357,7 @@ namespace EcoBuilder.NodeLink
             {
                 for (int i=0; i<LongestLoop.Count; i++)
                 {
-                    links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]].PushOutline(colour);
+                    links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]].PopOutline();
                     nodes[LongestLoop[i]].PopOutline();
                 }
             }

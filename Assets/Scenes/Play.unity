@@ -162,10 +162,10 @@ MonoBehaviour:
   e_c: 0.5
   kg_min: 0.001
   kg_max: 1000
-  a_min: 0
-  a_max: 0
+  a_min: 0.00001
+  a_max: 1
   minRealAbund: 2e-10
-  maxRealAbund: 1.9
+  maxRealAbund: 1.95
   minRealFlux: 1e-16
   maxRealFlux: 0.000001
 --- !u!4 &26841759
@@ -1997,39 +1997,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 842480508}
-  m_Father: {fileID: 534420150}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &842480507
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 842480508}
-  m_Layer: 0
-  m_Name: Unattached
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &842480508
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 842480507}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 823585299}
+  m_Father: {fileID: 534420150}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &843911844
@@ -3009,9 +2978,8 @@ MonoBehaviour:
   rotationPerInch: 30
   zoomPerInch: 0.5
   panPerInch: 1
-  inversePanPerDragInch: 0.25
   snapRadiusInches: 0.5
-  focusHeight: 2
+  focusHeight: 1
   layoutSmoothTime: 0.7
 --- !u!1 &1168393879
 GameObject:
@@ -3711,6 +3679,7 @@ MonoBehaviour:
   incubatedParent: {fileID: 901439142}
   pickupZone: {fileID: 1525128320}
   dropZone: {fileID: 1672761749}
+  planeDistance: 5
 --- !u!223 &1297594226
 Canvas:
   m_ObjectHideFlags: 0
@@ -6133,12 +6102,12 @@ PrefabInstance:
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0.375
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.375
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1408770984019036706, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
@@ -6178,7 +6147,7 @@ PrefabInstance:
     - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_Value
-      value: 4.14
+      value: 5.02
       objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}

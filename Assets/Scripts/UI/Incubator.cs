@@ -12,11 +12,12 @@ namespace EcoBuilder.UI
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
+        [SerializeField] float planeDistance;
 
         void Awake()
         {
             GetComponent<Canvas>().worldCamera = Camera.main;
-            GetComponent<Canvas>().planeDistance = -Camera.main.transform.position.z - 5;
+            GetComponent<Canvas>().planeDistance = planeDistance;
         }
 
         GameObject incubated;
@@ -66,7 +67,7 @@ namespace EcoBuilder.UI
                     GetComponent<Animator>().SetBool("Droppable", false);
                 }
                 Vector3 mousePos = ped.position;
-                mousePos.z = -transform.position.z + 1;
+                mousePos.z = planeDistance - 1;
                 Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
 
                 incubatedParent.position = worldPos;
