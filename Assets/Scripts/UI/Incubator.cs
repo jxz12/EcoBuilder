@@ -14,7 +14,7 @@ namespace EcoBuilder.UI
         [SerializeField] Image pickupZone, dropZone;
         [SerializeField] float planeDistance;
 
-        void Awake()
+        void Start()
         {
             GetComponent<Canvas>().worldCamera = Camera.main;
             GetComponent<Canvas>().planeDistance = planeDistance;

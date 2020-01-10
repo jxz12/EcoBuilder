@@ -337,7 +337,8 @@ namespace EcoBuilder.Levels
         }
         public static Level GetDefaultLevel()
         {
-            return AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab");
+            // return AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab");
+            return AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning 8.prefab");
         }
     }
 }

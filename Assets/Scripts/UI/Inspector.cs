@@ -9,13 +9,12 @@ namespace EcoBuilder.UI
     public class Inspector : MonoBehaviour
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
-        public event Action<int, GameObject> OnShaped;
+        public event Action<int, GameObject> OnSpawned;
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
         public event Action<int> OnConflicted;
         public event Action<int> OnUnconflicted;
-        public event Action<int> OnSpawned;
         public event Action<int> OnDespawned;
 
         public event Action<int, float, float> OnUserSizeSet;
@@ -102,9 +101,8 @@ namespace EcoBuilder.UI
         void SpawnWithEvents(Species toSpawn)
         {
             spawnedSpecies[toSpawn.Idx] = toSpawn;
-            OnSpawned?.Invoke(toSpawn.Idx); // must be invoked first
+            OnSpawned?.Invoke(toSpawn.Idx, toSpawn.GObject); // must be invoked first
 
-            OnShaped?.Invoke(toSpawn.Idx, toSpawn.GObject);
             OnIsProducerSet?.Invoke(toSpawn.Idx, toSpawn.IsProducer);
             OnSizeSet?.Invoke(toSpawn.Idx, toSpawn.BodySize);
             OnGreedSet?.Invoke(toSpawn.Idx, toSpawn.Greediness);
@@ -265,16 +263,12 @@ namespace EcoBuilder.UI
             else if (inspected != null)
             {
                 if (!inspected.Removable)
-                {
                     throw new Exception("inspected not removable");
-                }
-                else
-                {
-                    Bury(inspected);
-                    OnUserDespawned?.Invoke(inspected.Idx);
-                    inspected = null;
-                    GetComponent<Animator>().SetTrigger("Uninspect");
-                }
+
+                Bury(inspected);
+                OnUserDespawned?.Invoke(inspected.Idx);
+                inspected = null;
+                GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else
             {

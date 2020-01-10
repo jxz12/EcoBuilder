@@ -133,10 +133,6 @@ namespace EcoBuilder.UI
             }
             constraints[name].threshold = threshold;
         }
-        public int GetThreshold(string name)
-        {
-            return constraints[name].threshold;
-        }
         public void Display(string name, int value)
         {
             constraints[name].value = value;
@@ -150,7 +146,14 @@ namespace EcoBuilder.UI
                 constraints[name].counter.text = prefix + value + "/" + constraints[name].threshold;
                 constraints[name].icon.color = value >= constraints[name].threshold? Color.green : Color.white;
             }
-
+        }
+        public int GetThreshold(string name)
+        {
+            return constraints[name].threshold;
+        }
+        public int GetValue(string name)
+        {
+            return constraints[name].value;
         }
         [SerializeField] Tooltip tooltip;
         public void OnPointerEnter(PointerEventData ped)

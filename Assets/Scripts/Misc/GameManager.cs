@@ -37,20 +37,20 @@ namespace EcoBuilder
         void Start()
         {
             // TODO: set this to the size of the screen for webgl
-            // Screen.SetResolution(576, 1024, false);
-            // #if !UNITY_WEBGL
-            //     Screen.fullScreen = true;
-            // #endif
+// #if !UNITY_WEBGL
+//             Screen.SetResolution(576, 1024, false);
+//             Screen.fullScreen = true;
+// #endif
         }
         public void Quit()
         {
             // TODO: send data if possible? and also on every level finish!
             
-            #if UNITY_EDITOR
-                UnityEditor.EditorApplication.isPlaying = false;
-            #else
-                Application.Quit();
-            #endif
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
 

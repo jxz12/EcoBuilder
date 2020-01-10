@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
-    // [RequireComponent(typeof(Animator))]
     public class Node : MonoBehaviour
     {
         public int Idx { get; private set; }

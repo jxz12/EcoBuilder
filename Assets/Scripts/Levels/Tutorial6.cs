@@ -27,6 +27,7 @@ namespace EcoBuilder.Levels
             // then show the effects of interference
             // then add another species
             // show the conflicts
+            // explain superfocus
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
