@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using SparseMatrix;
 using UnityEngine;
 
@@ -72,28 +74,42 @@ namespace EcoBuilder.NodeLink
                 no.TweenPos(layoutSmoothTime);
                 no.GetComponent<HealthBar>().TweenHealth(1f * Time.deltaTime);
             }
+        }
 
-            if (focusState != FocusState.Focus)
+        void TweenZoom()
+        {
+            if (focusState == FocusState.Unfocus || focusState == FocusState.Frozen)
             {
+                // adjust zoom target and pan when unfocused
                 float maxError = float.MinValue;
                 foreach (Node no in nodes)
                 {
                     // make sure that all nodes fit on screen
                     var viewportPos = Camera.main.WorldToViewportPoint(no.transform.localPosition * graphScaleTarget) - new Vector3(.5f,.5f);
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .4f);
-                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .4f); // TODO: magic numbers
+                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .4f);
                 }
                 graphScaleTarget -= maxError*.1f; // TODO: magic number
                 graphScaleTarget = Mathf.Min(graphScaleTarget, 1); // don't scale too much
+                graphScale = Mathf.SmoothDamp(graphScale, graphScaleTarget, ref graphScaleVelocity, zoomSmoothTime);
+
+                // reset pan
+                transform.localPosition = Vector3.SmoothDamp(transform.localPosition, Vector3.zero, ref panVelocity, layoutSmoothTime);
             }
-            else
+            else if (focusState == FocusState.Focus)
             {
-                
+                // graphScale = Mathf.SmoothDamp(graphScale, 1.2f, ref graphScaleVelocity, zoomSmoothTime);
             }
-            graphScale = Mathf.SmoothDamp(graphScale, graphScaleTarget, ref graphScaleVelocity, 2f);
+            else if (focusState == FocusState.SuperFocus)
+            {
+                graphScale = Mathf.SmoothDamp(graphScale, 1, ref graphScaleVelocity, zoomSmoothTime);
+            }
             graphParent.localScale = graphScale * Vector3.one;
+            // TODO: magic numbers
         }
+        [SerializeField] float zoomSmoothTime;
         float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;
+        Vector3 panVelocity;
 
 
         float xDefaultRotation;
@@ -117,11 +133,31 @@ namespace EcoBuilder.NodeLink
             graphParent.transform.localRotation = Quaternion.Euler(xRotation,0,0);
         }
 
-        /////////////////////////////////
-        // for stress-based layout
-
+        /////////////////////////////
+        // for stress-based layout //
+        /////////////////////////////
         private Queue<int> todoBFS = new Queue<int>();
 
+        private void LayoutNextQueuedNode()
+        {
+            if (nodes.Count == 0 || focusState == FocusState.SuperFocus)
+                return;
+
+            int i = todoBFS.Dequeue(); // only do one vertex at a time
+            var d_j = ShortestPathsBFS(i);
+
+            if (ConstrainTrophic && !LaplacianDetZero)
+            {
+                TrophicGaussSeidel();
+                LayoutMajorizationHorizontal(i, d_j);
+            }
+            else
+            {
+                LayoutMajorization(i, d_j);
+            }
+            todoBFS.Enqueue(i);
+        }
+        [SerializeField] float centeringMultiplier;
         private void LayoutMajorization(int i, Dictionary<int, int> d_j)
         {
             Vector3 X_i = nodes[i].StressPos;
@@ -152,7 +188,7 @@ namespace EcoBuilder.NodeLink
             }
             if (botSum > 0)
             {
-                nodes[i].StressPos = new Vector3(topSumX/botSum, topSumY/botSum, topSumZ/botSum);
+                nodes[i].StressPos = new Vector3(topSumX/botSum, topSumY/botSum, topSumZ/botSum) * centeringMultiplier;
             }
         }
         private void LayoutMajorizationHorizontal(int i, Dictionary<int, int> d_j)
@@ -186,19 +222,85 @@ namespace EcoBuilder.NodeLink
             }
             if (botSum > 0)
             {
-                nodes[i].StressPos = new Vector3(topSumX/botSum, nodes[i].StressPos.y, topSumZ/botSum);
+                nodes[i].StressPos = new Vector3(topSumX/botSum, nodes[i].StressPos.y, topSumZ/botSum) * centeringMultiplier;
             }
         }
-        private void PushToFront(int i)
+
+        ////////////////////////////
+        // refresh layout with SGD
+
+        private void LayoutSGD()
         {
-            float zMin = 0;
-            foreach (var node in nodes)
+            var terms = new List<Tuple<int,int,int>>();
+            int d_max = 0;
+            foreach (int i in nodes.Indices)
             {
-                zMin = Mathf.Min(zMin, node.StressPos.z);
+                var d_j = ShortestPathsBFS(i);
+                foreach (var d in d_j.Where(foo=> foo.Key!=i))
+                {
+                    terms.Add(Tuple.Create(i, d.Key, d.Value));
+                    d_max = Math.Max(d.Value, d_max);
+                }
             }
-            if (nodes[i].StressPos.z < zMin)
+            foreach (float eta in ExpoSchedule(d_max))
             {
-                nodes[i].StressPos = new Vector3(nodes[i].StressPos.z, nodes[i].StressPos.y, zMin);
+                FYShuffle(terms);
+                foreach (var term in terms)
+                {
+                    int i = term.Item1, j = term.Item2, d_ij = term.Item3;
+                    Vector3 X_ij = nodes[i].StressPos - nodes[j].StressPos;
+
+                    float mag = X_ij.magnitude;
+                    float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
+                    Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
+                    nodes[i].StressPos -= mu * r;
+                    nodes[j].StressPos += mu * r;
+                }
+            }
+        }
+        private IEnumerable<float> ExpoSchedule(int d_max)
+        {
+            yield return d_max*d_max;
+            // float eta_max = d_max*d_max;
+            // float lambda = Mathf.Log(eta_max) / 9;
+            // for (int t=0; t<10; t++)
+            // {
+            //     yield return eta_max * Mathf.Exp(-lambda * t);
+            // }
+        }
+
+        private Dictionary<int, int> ShortestPathsBFS(int source)
+        {
+            var visited = new Dictionary<int, int>();
+
+            visited[source] = 0;
+            var q = new Queue<int>();
+            q.Enqueue(source);
+
+            while (q.Count > 0)
+            {
+                int current = q.Dequeue();
+                foreach (int next in adjacency[current])
+                {
+                    if (!visited.ContainsKey(next))
+                    {
+                        q.Enqueue(next);
+                        visited[next] = visited[current] + 1;
+                    }
+                }
+            }
+            return visited;
+        }
+        public static void FYShuffle<T>(List<T> deck, int seed=0)
+        {
+            var rand = new System.Random(seed);
+            int n = deck.Count;
+            for (int i=0; i<n-1; i++)
+            {
+                int j = rand.Next(i, n);
+                T temp = deck[j];
+                deck[j] = deck[i];
+                deck[i] = temp;
             }
         }
 

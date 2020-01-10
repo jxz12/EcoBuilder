@@ -114,9 +114,9 @@ namespace EcoBuilder
         }
         private bool SavePlayerDetailsLocal()
         {
-            #if UNITY_WEBGL
-                return true;
-            #endif
+#if UNITY_WEBGL
+            return true;
+#endif
 
             BinaryFormatter bf = new BinaryFormatter();
             try
@@ -155,9 +155,9 @@ namespace EcoBuilder
         }
         private void DeletePlayerDetailsLocal()
         {
-            #if UNITY_WEBGL
-                return;
-            #endif
+#if UNITY_WEBGL
+            return;
+#endif
             try
             {
                 File.Delete(playerPath);

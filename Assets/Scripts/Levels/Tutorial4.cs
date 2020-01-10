@@ -16,24 +16,33 @@ namespace EcoBuilder.Levels
         void ExplainIntro()
         {
             Detach?.Invoke();
-
-            // disallow animal on animal, disallow plan on plant
-            //   to ensure only one of each is in system
+            help.SetText("Now that you are... Let's start with making a simple one with one chain");
 
             Action foo = ()=> CheckChainOfHeight(1, ExplainChainOfOne);
             nodelink.OnConstraints += foo;
-            Detach = ()=> nodelink.OnConstraints -= foo;
+            Action fooo = ()=> LimitNumAnimals(1);
+            nodelink.OnConstraints += fooo;
+            Detach = ()=> { nodelink.OnConstraints -= foo; nodelink.OnConstraints -= fooo; };
         }
         void CheckChainOfHeight(int heightGoal, Action Todo)
         {
             if (nodelink.MaxChain == heightGoal)
                 Todo.Invoke();
         }
+        // ensure only one animal is in system at beginning
+        void LimitNumAnimals(int limit)
+        {
+            if (constraints.GetValue("Paw") >= limit)
+                inspector.SetConsumerAvailability(false);
+            else
+                inspector.SetConsumerAvailability(true);
+        }
         void ExplainChainOfOne()
         {
             Detach?.Invoke();
             help.SetText("chain of one done! Now do two");
             help.Show(true);
+            inspector.SetConsumerAvailability(true);
             // allow animal again, but only one more
             // ask to make a chain of 2
 

@@ -23,20 +23,16 @@ namespace EcoBuilder
             inspector.OnIncubated +=        ()=> nodelink.ForceUnfocus();
             inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f); // TODO: magic number
             inspector.OnUnincubated +=      ()=> nodelink.MoveHorizontal(0);
-            inspector.OnSpawned +=         (i)=> nodelink.AddNode(i);
-            inspector.OnSpawned +=         (i)=> model.AddSpecies(i);
+            inspector.OnSpawned +=       (i,g)=> nodelink.AddNode(i,g);
+            inspector.OnSpawned +=       (i,g)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=       (i)=> constraints.RemoveIdx(i);
-            inspector.OnShaped +=        (i,g)=> nodelink.ShapeNode(i,g);
             inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
             inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
             inspector.OnIsProducerSet += (i,x)=> constraints.AddType(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
-            inspector.OnUserSpawned +=     (i)=> nodelink.FlashNode(i);
-            inspector.OnUserSpawned +=     (i)=> nodelink.LieDownNode(i); // init as extinct
-            inspector.OnUserSpawned +=     (i)=> nodelink.FocusNode(i);
             inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
             inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
             inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
@@ -44,7 +40,7 @@ namespace EcoBuilder
 
             nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
-            nodelink.OnEmptyPressed += ()=> inspector.Unincubate();
+            nodelink.OnEmptyTapped +=  ()=> inspector.Unincubate();
             nodelink.OnConstraints +=  ()=> constraints.DisplayDisjoint(nodelink.Disjoint);
             nodelink.OnConstraints +=  ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
             nodelink.OnConstraints +=  ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
@@ -67,8 +63,8 @@ namespace EcoBuilder
             constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Cyan);
             constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Cyan);
 
-            inspector.OnSpawned +=         (i)=> atEquilibrium = false;
-            inspector.OnSpawned +=         (i)=> graphSolved = false;
+            inspector.OnSpawned +=       (i,g)=> atEquilibrium = false;
+            inspector.OnSpawned +=       (i,g)=> graphSolved = false;
             inspector.OnDespawned +=       (i)=> atEquilibrium = false;
             inspector.OnDespawned +=       (i)=> graphSolved = false;
             inspector.OnIsProducerSet += (i,x)=> atEquilibrium = false;
@@ -170,20 +166,20 @@ namespace EcoBuilder
             if (!graphSolved && !nodelink.IsCalculating)
             {
                 graphSolved = true;
-                #if UNITY_WEBGL // threads are not supported on webgl
+#if UNITY_WEBGL // threads are not supported on webgl
                 nodelink.ConstraintsSync();
-                #else
+#else
                 nodelink.ConstraintsAsync();
                 #endif
             }
             if (!atEquilibrium && !model.IsCalculating)
             {
                 atEquilibrium = true;
-                #if UNITY_WEBGL
+#if UNITY_WEBGL
                 model.EquilibriumSync(nodelink.GetTargets);
-                #else
+#else
                 model.EquilibriumAsync(nodelink.GetTargets);
-                #endif
+#endif
             }
             if (atEquilibrium && !model.IsCalculating &&
                 graphSolved && !nodelink.IsCalculating)
@@ -192,7 +188,7 @@ namespace EcoBuilder
             }
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.A) &&
@@ -249,6 +245,6 @@ namespace EcoBuilder
                 Levels.Level.SaveAsNewPrefab(details, DateTime.Now.Ticks.ToString());
             }
         }
-        #endif
+#endif
     }
 }

@@ -28,6 +28,7 @@ namespace EcoBuilder.Levels
             help.SetSide(false);
             help.SetDistFromTop(.2f);
             help.SetWidth(.6f);
+            help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try adding your first species by tapping the leaf in the bottom right.");
             inspector.SetConsumerAvailability(false);
 
             Detach?.Invoke();
@@ -48,9 +49,9 @@ namespace EcoBuilder.Levels
             Detach();
             Action<int, GameObject> foo = (x,g)=> ExplainSpawn(g,x);
             Action fooo = ()=> ExplainIntro();
-            inspector.OnShaped += foo;
-            nodelink.OnEmptyPressed += fooo;
-            Detach = ()=> { inspector.OnShaped -= foo; nodelink.OnEmptyPressed -= fooo; };
+            inspector.OnSpawned += foo;
+            nodelink.OnEmptyTapped += fooo;
+            Detach = ()=> { inspector.OnSpawned -= foo; nodelink.OnEmptyTapped -= fooo; };
         }
         GameObject firstSpecies;
         int firstIdx;
@@ -73,10 +74,10 @@ namespace EcoBuilder.Levels
             Action<int, GameObject> foo = (x,g)=> ExplainInteraction(g,x);
             Action fooo = ()=> { help.Show(false); targetSize = Vector2.zero; };
             Action foooo = ()=> { help.Show(true); targetSize = new Vector2(100,100); };
-            inspector.OnShaped += foo;
+            inspector.OnSpawned += foo;
             inspector.OnIncubated += fooo;
             inspector.OnUnincubated += foooo;
-            Detach = ()=> { inspector.OnShaped -= foo; inspector.OnIncubated -= fooo; inspector.OnUnincubated -= foooo; };
+            Detach = ()=> { inspector.OnSpawned -= foo; inspector.OnIncubated -= fooo; inspector.OnUnincubated -= foooo; };
         }
 
         GameObject secondSpecies;
@@ -89,10 +90,12 @@ namespace EcoBuilder.Levels
             if (GameManager.Instance.ReverseDragDirection)
             {
                 help.SetText("Your " + secondSpecies.name + " is hungry! Drag from it to the " + firstSpecies.name + " to give it some food.");
+                StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
             }
             else
             {
                 help.SetText("Your " + secondSpecies.name + " is hungry! Drag from the " + firstSpecies.name + " to it to give it some food.");
+                StartCoroutine(Shuffle(secondSpecies.transform, firstSpecies.transform, 2f));
             }
             help.Show(true);
 
@@ -100,7 +103,6 @@ namespace EcoBuilder.Levels
             targetSize = new Vector3(100,100);
             targetAnchor = new Vector3(0f,0f);
             targetZRot = 360;
-            StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
             inspector.HideIncubateButton();
 
             Detach();
@@ -222,7 +224,6 @@ namespace EcoBuilder.Levels
             help.SetSide(false, false);
             help.SetDistFromTop(.1f);
             help.SetWidth(.7f);
-            // help.SetText("Well done! You have built your first ecosystem. In the next level you will learn how to edit the traits of your species, changing the way they interact with each other. Press this button at the bottom to select the next level.");
 
             if (nextLevel == null)
                 nextLevel = GameManager.Instance.PlayedLevel.NextLevel;

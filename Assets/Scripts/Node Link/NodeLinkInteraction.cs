@@ -67,15 +67,14 @@ namespace EcoBuilder.NodeLink
             if (focusState == FocusState.Unfocus)
             {
                 // reset pan and zoom
-                StartCoroutine(TweenPan(defaultNodelinkPos, 1f));
-                StartCoroutine(TweenZoom(Vector3.one, 1f));
+                // StartCoroutine(TweenPan(defaultNodelinkPos, 1f));
+                // StartCoroutine(TweenZoom(Vector3.one, 1f));
             }
             else if (focusState == FocusState.Focus)
             {
                 focusedNode.PopOutline();
                 focusedNode = null;
                 focusState = FocusState.Unfocus;
-                OnUnfocused?.Invoke();
             }
             else if (focusState == FocusState.SuperFocus)
             {
@@ -193,8 +192,8 @@ namespace EcoBuilder.NodeLink
         public void Freeze()
         {
             ForceUnfocus();
-            StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
-            StartCoroutine(TweenPan(defaultNodelinkPos, 2));
+            // StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
+            // StartCoroutine(TweenPan(defaultNodelinkPos, 2));
 
             Instantiate(confettiPrefab, transform);
             focusState = FocusState.Frozen;
@@ -207,15 +206,15 @@ namespace EcoBuilder.NodeLink
             yTargetRotation -= rotation.x;
             xTargetRotation += rotation.y;
         }
-        void UserZoom(float pixelDelta)
-        {
-            float inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
-            float zoom = inchesDelta * zoomPerInch;
-            zoom = Mathf.Min(zoom, .5f);
-            zoom = Mathf.Max(zoom, -.5f);
+        // void UserZoom(float pixelDelta)
+        // {
+        //     float inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+        //     float zoom = inchesDelta * zoomPerInch;
+        //     zoom = Mathf.Min(zoom, .5f);
+        //     zoom = Mathf.Max(zoom, -.5f);
 
-            graphParent.localScale *= 1 + zoom;
-        }
+        //     graphParent.localScale *= 1 + zoom;
+        // }
         IEnumerator TweenZoom(Vector3 endZoom, float duration)
         {
             Vector3 startZoom = graphParent.localScale;
@@ -296,10 +295,14 @@ namespace EcoBuilder.NodeLink
                         OnNodeFocused?.Invoke(pressedNode.Idx);
                         pressedNode = null;
                     }
-                    else if (focusState != FocusState.Frozen)
+                    else if (focusState == FocusState.Focus)
                     {
-                        OnEmptyPressed?.Invoke();
                         Unfocus();
+                        OnUnfocused?.Invoke();
+                    }
+                    else if (focusState == FocusState.Unfocus)
+                    {
+                        OnEmptyTapped?.Invoke();
                     }
                 }
             }
@@ -448,7 +451,7 @@ namespace EcoBuilder.NodeLink
                 {
                     float dist = (t1.position - t2.position).magnitude;
                     float prevDist = ((t1.position-t1.deltaPosition) - (t2.position-t2.deltaPosition)).magnitude;
-                    UserZoom(dist - prevDist);
+                    // UserZoom(dist - prevDist);
                 }
                 else
                 {
@@ -512,7 +515,7 @@ namespace EcoBuilder.NodeLink
         }
         public void OnScroll(PointerEventData ped)
         {
-            UserZoom(-ped.scrollDelta.y);
+            // UserZoom(-ped.scrollDelta.y);
             UserRotate(new Vector3(ped.scrollDelta.x, 0));
         }
 

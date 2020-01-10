@@ -10,7 +10,7 @@ namespace EcoBuilder.NodeLink
     {
         public event Action<int> OnNodeFocused;
         public event Action OnUnfocused;
-        public event Action OnEmptyPressed;
+        public event Action OnEmptyTapped;
         public event Action OnConstraints;
         public event Action OnLinked;
 
@@ -33,30 +33,9 @@ namespace EcoBuilder.NodeLink
         }
         void Update()
         {
-            ////////////////////////////////////
-            // do stress and trophic levels
-            if (nodes.Count > 0)
-            {
-                if (focusState != FocusState.SuperFocus)
-                {
-                    int i = todoBFS.Dequeue(); // only do one vertex at a time
-                    var d_j = ShortestPathsBFS(i);
-
-                    if (ConstrainTrophic && !LaplacianDetZero)
-                    {
-                        TrophicGaussSeidel();
-                        LayoutMajorizationHorizontal(i, d_j);
-                    }
-                    else
-                    {
-                        LayoutMajorization(i, d_j);
-                    }
-                    todoBFS.Enqueue(i);
-                }
-            }
-            ///////////////////////////////////
-            // smoothly interpolate positions
+            LayoutNextQueuedNode();
             TweenNodes();
+            TweenZoom();
             MomentumRotate();
         }
 
@@ -71,7 +50,7 @@ namespace EcoBuilder.NodeLink
         SparseVector<Node> nodeGrave = new SparseVector<Node>();
         SparseMatrix<Link> linkGrave = new SparseMatrix<Link>();
 
-        public void AddNode(int idx)
+        public void AddNode(int idx, GameObject shape)
         {
             if (nodes[idx] != null)
                 throw new Exception("index " + idx + " already added");
@@ -82,6 +61,12 @@ namespace EcoBuilder.NodeLink
                 newNode.Init(idx);
                 nodes[idx] = newNode;
                 adjacency[idx] = new HashSet<int>();
+
+                // initialise as flashing
+                nodes[idx].Shape(shape);
+                FlashNode(idx);
+                LieDownNode(idx);
+                FocusNode(idx);
             }
             else if (nodeGrave[idx] != null) // bring back old
             {
@@ -89,6 +74,7 @@ namespace EcoBuilder.NodeLink
                 nodeGrave.RemoveAt(idx);
 
                 nodes[idx].gameObject.SetActive(true);
+                nodes[idx].Shape(shape); // technically not necessary
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -216,13 +202,6 @@ namespace EcoBuilder.NodeLink
             OnLinked?.Invoke();
         }
 
-        public void ShapeNode(int idx, GameObject shape)
-        {
-            if (nodes[idx] == null)
-                throw new Exception("no index " + idx);
-
-            nodes[idx].Shape(shape);
-        }
         public void SetIfNodeCanBeSource(int idx, bool canBeSource) // basal
         {
             nodes[idx].CanBeSource = canBeSource;

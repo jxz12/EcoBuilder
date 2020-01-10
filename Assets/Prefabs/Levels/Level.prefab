@@ -1733,7 +1733,7 @@ MonoBehaviour:
     sizeSliderHidden: 0
     greedSliderHidden: 1
     conflictsAllowed: 1
-    superfocusAllowed: 0
+    superfocusAllowed: 1
     sizeEditables: 
     greedEditables: 
     targetScore1: 1

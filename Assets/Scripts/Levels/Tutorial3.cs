@@ -19,6 +19,7 @@ namespace EcoBuilder.Levels
             targetPos = new Vector2(100,-220);
             targetAnchor = new Vector2(0,1);
             targetZRot = 30;
+            help.SetText("Let's put your skills to the test! Here you must add 2 plants and two animals, and must have at least 5 interactions between them. Use this level to If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. Good luck!");
 
             Detach?.Invoke();
             
@@ -36,7 +37,7 @@ namespace EcoBuilder.Levels
             nodelink.ForceUnfocus();
             help.SetDistFromTop(.2f);
 
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! If your ecosystem gets too large, you can use two fingers to pinch and zoom out. You can press once on empty space to reset the zoom.");}));
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! The next few levels will show you something");}));
 
             Detach();
         }
