@@ -11,7 +11,7 @@ namespace EcoBuilder.UI
     {
         public event Action<bool> OnFinished;
 
-        [SerializeField] TMPro.TMP_InputField email, password;
+        [SerializeField] TMPro.TMP_InputField username, password;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle GDPR, askagain;
         [SerializeField] Button loginSubmit, demoSubmit, skipButton, backButton, regButton, loginButton;
@@ -86,8 +86,8 @@ namespace EcoBuilder.UI
             backButton.onClick.AddListener(()=> SetState(State.Start));
             regButton.onClick.AddListener(()=> SetState(State.Register));
             loginButton.onClick.AddListener(()=> SetState(State.Login));
-            email.onValueChanged.AddListener(s=> CheckEmail());
-            GDPR.onValueChanged.AddListener(b=> CheckEmail());
+            username.onValueChanged.AddListener(s=> CheckUsername());
+            GDPR.onValueChanged.AddListener(b=> CheckUsername());
             SetState(State.Start);
             Appear();
         }
@@ -123,23 +123,28 @@ namespace EcoBuilder.UI
                 gameObject.SetActive(false);
         }
 
-        static Regex re = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
-        public void CheckEmail()
+        public void CheckUsername()
         {
             if (_state == State.Register)
             {
-                loginSubmit.interactable = re.IsMatch(email.text) && GDPR.isOn;
+                loginSubmit.interactable = UsernameOkay() && GDPR.isOn;
             }
             else
             {
-                loginSubmit.interactable = re.IsMatch(email.text);
+                loginSubmit.interactable = UsernameOkay();
             }
+        }
+        private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+        private bool UsernameOkay()
+        {
+            return true; // TODO: profanity filter
+            // return emailRegex.IsMatch(username.text);
         }
         public void LoginOrRegister()
         {
             if (_state == State.Register)
             {
-                bool success = GameManager.Instance.TryRegister(email.text, password.text);
+                bool success = GameManager.Instance.TryRegister(username.text, password.text);
                 // show demographics here, then submit
                 if (success)
                 {
@@ -155,7 +160,7 @@ namespace EcoBuilder.UI
             else if (_state == State.Login)
             {
                 // try to get 
-                bool success = GameManager.Instance.TryLogin(email.text, password.text);
+                bool success = GameManager.Instance.TryLogin(username.text, password.text);
                 if (success)
                 {
                     // TODO: try to actually log in
@@ -182,16 +187,11 @@ namespace EcoBuilder.UI
         {
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                if (email.isFocused)
+                if (username.isFocused)
                     password.ActivateInputField();
                 else if (password.isFocused)
-                    email.ActivateInputField();
+                    username.ActivateInputField();
             }
         }
-        // void LateUpdate()
-        // {
-        //     LayoutRebuilder.ForceRebuildLayoutImmediate(transform.GetComponent<RectTransform>());
-        //     // Canvas.ForceUpdateCanvases();
-        // }
     }
 }
