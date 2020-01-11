@@ -45,6 +45,7 @@ namespace EcoBuilder.Levels
         // score
         public int targetScore1;
         public int targetScore2;
+        public string alternateScore;
     }
     public class Level : MonoBehaviour
     {

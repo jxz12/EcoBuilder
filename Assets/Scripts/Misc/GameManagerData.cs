@@ -22,7 +22,7 @@ namespace EcoBuilder
         [Serializable]
         public class PlayerDetails
         {
-            public string email;
+            public string username;
             public string password;
 
             public int age;
@@ -69,49 +69,9 @@ namespace EcoBuilder
                         player.highScores[researchLevel.Details.idx] = 1; // unlock first level
                 }
             }
-            // StartCoroutine(Http());
         }
 
 
-        ///////////////////////////////
-        // saving and things
-        IEnumerator Http()
-        {
-            // var form = new WWWForm();
-            // form.AddField("foo", "barr");
-            // using (var p = UnityWebRequest.Post("https://www.ecobuildergame.org/Foo/foo.php", form))
-            // {
-            //     yield return p.SendWebRequest();
-            //     if (p.isNetworkError || p.isHttpError)
-            //     {
-            //         print(p.error);
-            //     }
-            //     else
-            //     {
-            //         print(p.downloadHandler.text);
-            //     }
-            // }
-
-            // var form = new WWWForm();
-            // foreach (var kvp in ICDatabaseLogin.MySQL)
-            // {
-            //     form.AddField(kvp.Key, kvp.Value);
-            // }
-
-            using (var p = UnityWebRequest.Get("https://www.ecobuildergame.org/Foo/bar.php"))
-            {
-                yield return p.SendWebRequest();
-                if (p.isNetworkError || p.isHttpError)
-                {
-                    print(p.error);
-                }
-                else
-                {
-                    print(p.downloadHandler.text);
-                }
-            }
-
-        }
         private bool SavePlayerDetailsLocal()
         {
 #if UNITY_WEBGL
@@ -173,6 +133,63 @@ namespace EcoBuilder
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
         }
 
+        public bool TryRegister(string username, string password)
+        {
+            player.username = username;
+            player.password = password;
+            SavePlayerDetailsLocal();
+
+            StartCoroutine(TryRegisterRemote(username, password));
+            return true;
+        }
+        IEnumerator TryRegisterRemote(string username, string password)
+        {
+            var form = new WWWForm();
+            form.AddField("username", username);
+            form.AddField("password", password);
+            using (var p = UnityWebRequest.Post("127.0.0.1/ecobuilder/register.php", form))
+            {
+                yield return p.SendWebRequest();
+                if (p.isNetworkError || p.isHttpError)
+                {
+                    print(p.error);
+                }
+                else
+                {
+                    print(p.downloadHandler.text);
+                }
+            }
+        }
+        public bool TryLogin(string username, string password)
+        {
+            player.username = username;
+            player.password = password;
+            SavePlayerDetailsLocal();
+
+            // TODO: fetch high scores from server in a coroutine
+            return true;
+        }
+        public void SetDemographics(int age, int gender, int education)
+        {
+            player.age = age;
+            player.gender = gender;
+            player.education = education;
+            SavePlayerDetailsLocal();
+
+            // TODO: send these to a server with email as the key
+        }
+        public void SetTeam(PlayerDetails.Team team)
+        {
+            player.team = team;
+            SavePlayerDetailsLocal();
+            // TODO: try sending details again
+        }
+
+        public void DontAskAgainForLogin()
+        {
+            player.dontAskForLogin = true;
+            SavePlayerDetailsLocal();
+        }
         public void Logout()
         {
             DeletePlayerDetailsLocal();
@@ -225,56 +242,11 @@ namespace EcoBuilder
             // TODO: get global scores from server
             return Tuple.Create(14,12,10);
         }
-
-
-
-        /////////////////////////////
-        // questions at login
-
-        public bool TryLogin(string email, string password)
-        {
-            player.email = email;
-            player.password = password;
-            SavePlayerDetailsLocal();
-
-            // TODO: fetch high scores from server in a coroutine
-            return true;
-        }
-        public bool TryRegister(string email, string password)
-        {
-            player.email = email;
-            player.password = password;
-            SavePlayerDetailsLocal();
-
-            // TODO: try to create new account if possible
-            return true;
-        }
-        public void SetDemographics(int age, int gender, int education)
-        {
-            player.age = age;
-            player.gender = gender;
-            player.education = education;
-            SavePlayerDetailsLocal();
-
-            // TODO: send these to a server with email as the key
-        }
-        public void SetTeam(PlayerDetails.Team team)
-        {
-            player.team = team;
-            SavePlayerDetailsLocal();
-            // TODO: try sending details again
-        }
         public void SetDragDirection(bool reversed)
         {
             player.reverseDrag = reversed;
             SavePlayerDetailsLocal();
         }
-        public void DontAskAgainForLogin()
-        {
-            player.dontAskForLogin = true;
-            SavePlayerDetailsLocal();
-        }
-
         public bool IsLearningFinished {
             get {
                 // check if last learning level has been completed
