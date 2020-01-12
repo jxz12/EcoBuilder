@@ -309,17 +309,17 @@ PrefabInstance:
     - target: {fileID: 4162887693377987851, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 119
+      value: 107
       objectReference: {fileID: 0}
     - target: {fileID: 4162887693377987851, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 19
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4162887693377987851, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 20
+      value: 18
       objectReference: {fileID: 0}
     - target: {fileID: 4162887693377987851, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
@@ -334,8 +334,13 @@ PrefabInstance:
     - target: {fileID: 4162887693377987851, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_text
-      value: Please Enter an email address and password. We will only use the email
-        address for password recovery, and nothing else.
+      value: Please choose a username and password. You may optionally enter an email
+        to be used for password reminders.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4162887693377987851, guid: c3a6d35841da70e45913176cb9eadd7b,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4281416200
       objectReference: {fileID: 0}
     - target: {fileID: 4162887693377987853, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
@@ -675,11 +680,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_ContentType
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_InputType
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -700,6 +705,14 @@ PrefabInstance:
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_KeyboardType
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
+      propertyPath: m_CharacterValidation
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1411763771127535410, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
         type: 3}
@@ -1195,6 +1208,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[9].m_Text
       value: 76 and above
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510598362698673135, guid: 309a73376d4d3c04bb08e59604049d6c,
+        type: 3}
+      propertyPath: m_Value
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2698439988583036945, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
@@ -5037,6 +5055,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1306779385}
   m_CullTransparentMesh: 0
+--- !u!114 &1326667305 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5,
+    type: 3}
+  m_PrefabInstance: {fileID: 297908446}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2da0c512f12947e489f739169773d7ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1337961922
 GameObject:
   m_ObjectHideFlags: 0
@@ -6551,6 +6581,11 @@ PrefabInstance:
       propertyPath: m_Options.m_Options.Array.data[8].m_Text
       value: 76 and above
       objectReference: {fileID: 0}
+    - target: {fileID: 2510598362698673135, guid: 309a73376d4d3c04bb08e59604049d6c,
+        type: 3}
+      propertyPath: m_Value
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2698439988583036945, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
       propertyPath: m_firstOverflowCharacterIndex
@@ -7463,6 +7498,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   username: {fileID: 6257852118501634638}
   password: {fileID: 1523389865}
+  email: {fileID: 1326667305}
   age: {fileID: 425216710885883179}
   gender: {fileID: 1586721902}
   education: {fileID: 335938601}
@@ -8507,7 +8543,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1001 &425216710885883178
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8759,6 +8795,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_firstOverflowCharacterIndex
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2510598362698673135, guid: 309a73376d4d3c04bb08e59604049d6c,
+        type: 3}
+      propertyPath: m_Value
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2698439988583036945, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
