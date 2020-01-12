@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 // for load/save local
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Text;
+
 
 namespace EcoBuilder
 {
@@ -24,6 +24,7 @@ namespace EcoBuilder
         {
             public string username;
             public string password;
+            public string email;
 
             public int age;
             public int gender;
@@ -75,7 +76,7 @@ namespace EcoBuilder
         private bool SavePlayerDetailsLocal()
         {
 #if UNITY_WEBGL
-            return true;
+            return false;
 #endif
 
             BinaryFormatter bf = new BinaryFormatter();
@@ -129,24 +130,29 @@ namespace EcoBuilder
         }
         public void ResetSaveData()
         {
+            // TODO: something else
             DeletePlayerDetailsLocal();
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
         }
 
-        public bool TryRegister(string username, string password)
+
+
+
+        ///////////////////
+        // web things
+        public void Register(string username, string password, string email)
         {
             player.username = username;
             player.password = password;
+            player.email = email;
             SavePlayerDetailsLocal();
-
-            StartCoroutine(TryRegisterRemote(username, password));
-            return true;
         }
-        IEnumerator TryRegisterRemote(string username, string password)
+        public IEnumerator TryRegisterRemote()
         {
             var form = new WWWForm();
-            form.AddField("username", username);
-            form.AddField("password", password);
+            form.AddField("username", Encryption.Encrypt(player.username));
+            form.AddField("password", Encryption.Encrypt(player.password));
+            form.AddField("email", Encryption.Encrypt(player.email));
             using (var p = UnityWebRequest.Post("127.0.0.1/ecobuilder/register.php", form))
             {
                 yield return p.SendWebRequest();
@@ -160,7 +166,41 @@ namespace EcoBuilder
                 }
             }
         }
-        public bool TryLogin(string username, string password)
+        public void SetDemographics(int age, int gender, int education)
+        {
+            player.age = age;
+            player.gender = gender;
+            player.education = education;
+            SavePlayerDetailsLocal();
+        }
+        public IEnumerator TryDemographicsRemote()
+        {
+            var form = new WWWForm();
+            form.AddField("username", Encryption.Encrypt(player.username));
+            form.AddField("password", Encryption.Encrypt(player.password));
+            form.AddField("age", Encryption.Encrypt(player.age.ToString()));
+            form.AddField("gender", Encryption.Encrypt(player.gender.ToString()));
+            form.AddField("education", Encryption.Encrypt(player.education.ToString()));
+            using (var p = UnityWebRequest.Post("127.0.0.1/ecobuilder/demographics.php", form))
+            {
+                yield return p.SendWebRequest();
+                if (p.isNetworkError || p.isHttpError)
+                {
+                    print(p.error);
+                }
+                else
+                {
+                    print(p.downloadHandler.text);
+                }
+            }
+        }
+        public void SetTeam(PlayerDetails.Team team)
+        {
+            player.team = team;
+            SavePlayerDetailsLocal();
+            // TODO: try sending details again
+        }
+        public bool Login(string username, string password)
         {
             player.username = username;
             player.password = password;
@@ -169,20 +209,10 @@ namespace EcoBuilder
             // TODO: fetch high scores from server in a coroutine
             return true;
         }
-        public void SetDemographics(int age, int gender, int education)
+        public bool SendEmailReminder(string username)
         {
-            player.age = age;
-            player.gender = gender;
-            player.education = education;
-            SavePlayerDetailsLocal();
-
-            // TODO: send these to a server with email as the key
-        }
-        public void SetTeam(PlayerDetails.Team team)
-        {
-            player.team = team;
-            SavePlayerDetailsLocal();
-            // TODO: try sending details again
+            // TODO:
+            return true;
         }
 
         public void DontAskAgainForLogin()

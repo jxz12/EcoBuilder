@@ -11,7 +11,7 @@ namespace EcoBuilder.UI
     {
         public event Action<bool> OnFinished;
 
-        [SerializeField] TMPro.TMP_InputField username, password;
+        [SerializeField] TMPro.TMP_InputField username, password, email;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle GDPR, askagain;
         [SerializeField] Button loginSubmit, demoSubmit, skipButton, backButton, regButton, loginButton;
@@ -28,7 +28,6 @@ namespace EcoBuilder.UI
                 case State.Start:
                     ResetObjects();
                     startObj.SetActive(true);
-                    GDPR.gameObject.SetActive(true);
                     skipButton.image.sprite = tanButton;
                     backButton.interactable = false;
                     break;
@@ -52,10 +51,13 @@ namespace EcoBuilder.UI
                     // FIXME: unity is a pile of shit
                     idObj.SetActive(true);
                     GDPR.isOn = false;
+                    GDPR.gameObject.SetActive(true);
+                    email.gameObject.SetActive(true);
                     loginSubmit.interactable = false;
                     break;
                 case State.Login:
                     GDPR.gameObject.SetActive(false);
+                    email.gameObject.SetActive(false);
                     ResetObjects();
                     idObj.SetActive(true);
                     break;
@@ -134,52 +136,39 @@ namespace EcoBuilder.UI
                 loginSubmit.interactable = UsernameOkay();
             }
         }
-        private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
         private bool UsernameOkay()
         {
-            return true; // TODO: profanity filter
-            // return emailRegex.IsMatch(username.text);
+            return true; // TODO: profanity filter?
+        }
+        private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+        private bool EmailOkay()
+        {
+            return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text);
         }
         public void LoginOrRegister()
         {
             if (_state == State.Register)
             {
-                bool success = GameManager.Instance.TryRegister(username.text, password.text);
-                // show demographics here, then submit
-                if (success)
-                {
-                    // TODO: only check if login exists
-                    SetState(State.Demographics);
-                    // OnLoggedIn.Invoke();
-                }
-                else
-                {
-                    // TODO: show error message
-                }
+                GameManager.Instance.Register(username.text, password.text, email.text);
+                StartCoroutine(GameManager.Instance.TryRegisterRemote());
+                // TODO: check if successful
+                SetState(State.Demographics);
             }
             else if (_state == State.Login)
             {
                 // try to get 
-                bool success = GameManager.Instance.TryLogin(username.text, password.text);
-                if (success)
-                {
-                    // TODO: try to actually log in
-                    SetState(State.End);
-                    OnFinished.Invoke(false);
-                    // OnLoggedIn.Invoke();
-                }
-                else
-                {
-                    // TODO: show error message
-                }
+                bool success = GameManager.Instance.Login(username.text, password.text);
+                // StartCoroutine(GameManager.Instance.T)
+                // TODO: check if successful
+                SetState(State.End);
             }
             else
                 throw new Exception("bad state");
         }
         public void TakeDemographics()
         {
-            // TODO: at this point try to register a new account
             GameManager.Instance.SetDemographics(age.value, gender.value, education.value);
+            StartCoroutine(GameManager.Instance.TryDemographicsRemote());
             SetState(State.End);
             OnFinished.Invoke(true);
         }
