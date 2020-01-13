@@ -1,10 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic;
 using System;
-using System.IO;
-using System.Linq;
 
 namespace EcoBuilder.UI
 {
@@ -13,7 +10,7 @@ namespace EcoBuilder.UI
         [SerializeField] GridLayoutGroup learningLevels;
         [SerializeField] VerticalLayoutGroup researchLevels;
         [SerializeField] Coin wolfLion;
-        [SerializeField] RegistrationForm form;
+        [SerializeField] Registration form;
         [SerializeField] Toggle reverseDrag;
 
         [SerializeField] Button researchWorld;
@@ -22,33 +19,56 @@ namespace EcoBuilder.UI
         void Start()
         {
             if (GameManager.Instance.AskForLogin)
-            {
                 StartRegistration();
-            }
             else
-            {
-                var team = GameManager.Instance.PlayerTeam;
-                if (team == GameManager.PlayerDetails.Team.Lion)
-                {
-                    // wolfLion.Begin();
-                    wolfLion.InitializeFlipped(true);
-                }
-                else if (team == GameManager.PlayerDetails.Team.Wolf)
-                {
-                    // wolfLion.Begin();
-                    wolfLion.InitializeFlipped(false);
-                }
-                // else {} // do not init coin otherwise
-
                 StartMainMenu();
-            }
+        }
+
+        void StartRegistration()
+        {
+            form.gameObject.SetActive(true);
+            form.OnFinished += RegisteredHandler;
         }
 
         [SerializeField] Levels.Leaderboard leaderboardPrefab;
-        // Dictionary<int, Levels.Leaderboard> leaderboards;
+        void RegisteredHandler(object sender, EventArgs e)
+        {
+            form.OnFinished -= RegisteredHandler;
+            var team = GameManager.Instance.PlayerTeam;
+            if (team == GameManager.PlayerDetails.Team.Lion)
+            {
+                wolfLion.InitializeFlipped(true);
+                StartMainMenu();
+            }
+            else if (team == GameManager.PlayerDetails.Team.Wolf)
+            {
+                wolfLion.InitializeFlipped(false);
+                StartMainMenu();
+            }
+            else
+            {
+                wolfLion.Begin();
+                wolfLion.OnLanded += ChooseTeam;
+            }
+        }
+        void ChooseTeam(bool heads)
+        {
+            wolfLion.OnLanded -= ChooseTeam;
+
+            var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
+            GameManager.Instance.SetTeamLocal(team);
+            GameManager.Instance.SetTeamRemote(s=>print(s)); // TODO: error if not connected
+            wolfLion.OnFinished += EndRegistration;
+        }
+        void EndRegistration()
+        {
+            wolfLion.OnFinished -= EndRegistration;
+            StartMainMenu();
+        }
         void StartMainMenu()
         {
             StartCoroutine(WaitThenShowLogo(.7f));
+
             foreach (var prefab in GameManager.Instance.GetLearningLevelPrefabs())
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
@@ -62,12 +82,10 @@ namespace EcoBuilder.UI
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
                 researchLock.enabled = false; // remove lock
-                // leaderboards = new Dictionary<int, Levels.Leaderboard>();
                 foreach (var prefab in GameManager.Instance.GetResearchLevelPrefabs())
                 {
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
                     var level = leaderboard.GiveLevelPrefab(prefab);
-                    // leaderboards[level.Details.idx] = leaderboard;
 
                     var scores = GameManager.Instance.GetGlobalTop3Scores(level.Details.idx);
                     leaderboard.SetScores(scores.Item1, scores.Item2, scores.Item3);
@@ -75,36 +93,6 @@ namespace EcoBuilder.UI
             }
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             GetComponent<Animator>().SetTrigger("Reveal");
-        }
-        void StartRegistration()
-        {
-            form.gameObject.SetActive(true);
-            form.OnFinished += ShowCoin;
-        }
-        void ShowCoin(bool show)
-        {
-            form.OnFinished -= ShowCoin;
-            if (show)
-            {
-                wolfLion.Begin();
-                wolfLion.OnLanded += ChooseTeam;
-            }
-            else
-            {
-                // team already chosen
-                StartMainMenu();
-            }
-        }
-        void ChooseTeam(bool heads)
-        {
-            wolfLion.OnLanded -= ChooseTeam;
-            GameManager.Instance.SetTeam(heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf);
-            wolfLion.OnFinished += EndRegistration;
-        }
-        void EndRegistration()
-        {
-            wolfLion.OnFinished -= EndRegistration;
-            StartMainMenu();
         }
 
         [SerializeField] GameObject logo;

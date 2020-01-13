@@ -23,18 +23,19 @@ namespace EcoBuilder
         public class PlayerDetails
         {
             public string username;
-            public string password;
+            public string password; // TODO: maybe best to encrypt this?
             public string email;
 
             public int age;
             public int gender;
             public int education;
             
-            public enum Team { None, Wolf, Lion }
+            public enum Team { None=0, Wolf, Lion }
             public Team team = Team.None;
             public bool reverseDrag = true;
+            public bool dontAskForLogin = false;
+
             public Dictionary<int, int> highScores;
-            public bool dontAskForLogin;
         }
         [SerializeField] PlayerDetails player;
         public PlayerDetails.Team PlayerTeam { get { return player.team; } }
@@ -44,32 +45,13 @@ namespace EcoBuilder
         public bool AskForLogin { get { return player.team==0 && !player.dontAskForLogin; } }
 
         static string playerPath;
-        private void InitPlayer()
+        public void InitPlayer()
         {
             // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
 
-            DeletePlayerDetailsLocal();
-            bool loaded = LoadPlayerDetailsLocal();
-            if (!loaded)
-            {
-                player.highScores = new Dictionary<int,int>();
-                player.highScores[learningLevelPrefabs[0].Details.idx] = 1; // unlock first level
-                for (int i=1; i<learningLevelPrefabs.Count; i++)
-                {
-                    if (player.highScores.ContainsKey(learningLevelPrefabs[i].Details.idx))
-                        throw new Exception("two levels with same idx");
-                    else
-                        player.highScores[learningLevelPrefabs[i].Details.idx] = 1; // unlock first level
-                }
-                foreach (var researchLevel in researchLevelPrefabs)
-                {
-                    if (player.highScores.ContainsKey(researchLevel.Details.idx))
-                        throw new Exception("two levels with same idx");
-                    else
-                        player.highScores[researchLevel.Details.idx] = 1; // unlock first level
-                }
-            }
+            // DeletePlayerDetailsLocal();
+            bool loaded = LoadPlayerDetailsLocal(); aldskfjlsdkjfssldkjf
         }
 
 
@@ -79,6 +61,25 @@ namespace EcoBuilder
             return false;
 #endif
 
+            if (player.highScores == null) // no local high scores
+            {
+                player.highScores = new Dictionary<int,int>();
+                player.highScores[learningLevelPrefabs[0].Details.idx] = 0; // unlock first level
+                for (int i=1; i<learningLevelPrefabs.Count; i++)
+                {
+                    if (player.highScores.ContainsKey(learningLevelPrefabs[i].Details.idx))
+                        throw new Exception("two levels with same idx");
+                    else
+                        player.highScores[learningLevelPrefabs[i].Details.idx] = -1;
+                }
+                foreach (var researchLevel in researchLevelPrefabs)
+                {
+                    if (player.highScores.ContainsKey(researchLevel.Details.idx))
+                        throw new Exception("two levels with same idx");
+                    else
+                        player.highScores[researchLevel.Details.idx] = -1;
+                }
+            }
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
@@ -137,43 +138,51 @@ namespace EcoBuilder
 
 
 
-
         ///////////////////
         // web things
-        public void Register(string username, string password, string email)
+        IEnumerator SendHttpPost(string address, WWWForm form, Action<bool> OnCompletion)
+        {
+            using (var p = UnityWebRequest.Post(address, form))
+            {
+                // TODO: shade and skip
+                yield return p.SendWebRequest();
+                if (p.isNetworkError || p.isHttpError)
+                {
+                    // TODO: error and skip
+                    print(p.error);
+                    OnCompletion(false);
+                }
+                else
+                {
+                    // TODO: return string? do login correctly 
+                    print(p.downloadHandler.text);
+                    OnCompletion(true);
+                }
+            }
+        }
+        public void RegisterLocal(string username, string password, string email)
         {
             player.username = username;
             player.password = password;
             player.email = email;
             SavePlayerDetailsLocal();
         }
-        public IEnumerator TryRegisterRemote()
+        public void RegisterRemote(Action<bool> OnCompletion)
         {
             var form = new WWWForm();
             form.AddField("username", Encryption.Encrypt(player.username));
             form.AddField("password", Encryption.Encrypt(player.password));
             form.AddField("email", Encryption.Encrypt(player.email));
-            using (var p = UnityWebRequest.Post("127.0.0.1/ecobuilder/register.php", form))
-            {
-                yield return p.SendWebRequest();
-                if (p.isNetworkError || p.isHttpError)
-                {
-                    print(p.error);
-                }
-                else
-                {
-                    print(p.downloadHandler.text);
-                }
-            }
+            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/register.php", form, OnCompletion));
         }
-        public void SetDemographics(int age, int gender, int education)
+        public void SetDemographicsLocal(int age, int gender, int education)
         {
             player.age = age;
             player.gender = gender;
             player.education = education;
             SavePlayerDetailsLocal();
         }
-        public IEnumerator TryDemographicsRemote()
+        public void SetDemographicsRemote(Action<bool> OnCompletion)
         {
             var form = new WWWForm();
             form.AddField("username", Encryption.Encrypt(player.username));
@@ -181,33 +190,28 @@ namespace EcoBuilder
             form.AddField("age", Encryption.Encrypt(player.age.ToString()));
             form.AddField("gender", Encryption.Encrypt(player.gender.ToString()));
             form.AddField("education", Encryption.Encrypt(player.education.ToString()));
-            using (var p = UnityWebRequest.Post("127.0.0.1/ecobuilder/demographics.php", form))
-            {
-                yield return p.SendWebRequest();
-                if (p.isNetworkError || p.isHttpError)
-                {
-                    print(p.error);
-                }
-                else
-                {
-                    print(p.downloadHandler.text);
-                }
-            }
+            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/demographics.php", form, OnCompletion));
         }
-        public void SetTeam(PlayerDetails.Team team)
+        public void SetTeamLocal(PlayerDetails.Team team)
         {
             player.team = team;
             SavePlayerDetailsLocal();
-            // TODO: try sending details again
         }
-        public bool Login(string username, string password)
+        public void SetTeamRemote(Action<bool> OnCompletion)
         {
-            player.username = username;
-            player.password = password;
+            var form = new WWWForm();
+            form.AddField("username", Encryption.Encrypt(player.username));
+            form.AddField("password", Encryption.Encrypt(player.password));
+            form.AddField("team", Encryption.Encrypt(((int)player.team).ToString()));
+            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/team.php", form, OnCompletion));
+        }
+        public void LoginRemote(string username, string password, Action<bool> OnCompletion)
+        {
+            var form = new WWWForm();
+            form.AddField("username", Encryption.Encrypt(player.username));
+            form.AddField("password", Encryption.Encrypt(player.password));
+            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/login.php", form, OnCompletion));
             SavePlayerDetailsLocal();
-
-            // TODO: fetch high scores from server in a coroutine
-            return true;
         }
         public bool SendEmailReminder(string username)
         {

@@ -3,17 +3,16 @@ using System.Collections;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 
 namespace EcoBuilder.UI
 {
-    public class RegistrationForm : MonoBehaviour
+    public class Registration : MonoBehaviour
     {
-        public event Action<bool> OnFinished;
+        public event EventHandler OnFinished;
 
         [SerializeField] TMPro.TMP_InputField username, password, email;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
-        [SerializeField] Toggle GDPR, askagain;
+        [SerializeField] Toggle GDPR, askAgain;
         [SerializeField] Button loginSubmit, demoSubmit, skipButton, backButton, regButton, loginButton;
         [SerializeField] Sprite tanButton, redButton;
         [SerializeField] Image shade;
@@ -35,9 +34,8 @@ namespace EcoBuilder.UI
                     if (_state == State.Skip)
                     {
                         SetState(State.End);
-                        if (askagain.isOn)
+                        if (askAgain.isOn)
                             GameManager.Instance.DontAskAgainForLogin();
-                        OnFinished.Invoke(false);
                     }
                     else
                     {
@@ -66,6 +64,7 @@ namespace EcoBuilder.UI
                     demoObj.SetActive(true);
                     break;
                 case State.End:
+                    OnFinished?.Invoke(this, EventArgs.Empty);
                     Disappear();
                     break;
             }
@@ -88,8 +87,9 @@ namespace EcoBuilder.UI
             backButton.onClick.AddListener(()=> SetState(State.Start));
             regButton.onClick.AddListener(()=> SetState(State.Register));
             loginButton.onClick.AddListener(()=> SetState(State.Login));
-            username.onValueChanged.AddListener(s=> CheckUsername());
-            GDPR.onValueChanged.AddListener(b=> CheckUsername());
+            username.onValueChanged.AddListener(s=> CheckUsernameEmail());
+            GDPR.onValueChanged.AddListener(b=> CheckUsernameEmail());
+            email.onValueChanged.AddListener(b=> CheckUsernameEmail());
             SetState(State.Start);
             Appear();
         }
@@ -125,11 +125,11 @@ namespace EcoBuilder.UI
                 gameObject.SetActive(false);
         }
 
-        public void CheckUsername()
+        public void CheckUsernameEmail()
         {
             if (_state == State.Register)
             {
-                loginSubmit.interactable = UsernameOkay() && GDPR.isOn;
+                loginSubmit.interactable = UsernameOkay() && EmailOkay() && GDPR.isOn;
             }
             else
             {
@@ -138,7 +138,7 @@ namespace EcoBuilder.UI
         }
         private bool UsernameOkay()
         {
-            return true; // TODO: profanity filter?
+            return username.text.Length > 0; // TODO: profanity filter?
         }
         private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
         private bool EmailOkay()
@@ -149,28 +149,23 @@ namespace EcoBuilder.UI
         {
             if (_state == State.Register)
             {
-                GameManager.Instance.Register(username.text, password.text, email.text);
-                StartCoroutine(GameManager.Instance.TryRegisterRemote());
-                // TODO: check if successful
-                SetState(State.Demographics);
+                GameManager.Instance.RegisterLocal(username.text, password.text, email.text);
+                GameManager.Instance.RegisterRemote(s=>SetState(State.Demographics));
+                // TODO: pause and check if successful
             }
             else if (_state == State.Login)
             {
-                // try to get 
-                bool success = GameManager.Instance.Login(username.text, password.text);
-                // StartCoroutine(GameManager.Instance.T)
-                // TODO: check if successful
-                SetState(State.End);
+                GameManager.Instance.LoginRemote(username.text, password.text, s=>SetState(State.End));
+                // TODO: pause and check if successful
             }
             else
                 throw new Exception("bad state");
         }
         public void TakeDemographics()
         {
-            GameManager.Instance.SetDemographics(age.value, gender.value, education.value);
-            StartCoroutine(GameManager.Instance.TryDemographicsRemote());
-            SetState(State.End);
-            OnFinished.Invoke(true);
+            GameManager.Instance.SetDemographicsLocal(age.value, gender.value, education.value);
+            GameManager.Instance.SetDemographicsRemote(s=>SetState(State.End));
+            // TODO: no need to pause, but mark as 'need to send' later if not
         }
         void Update()
         {

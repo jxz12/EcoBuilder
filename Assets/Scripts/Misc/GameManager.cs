@@ -27,7 +27,6 @@ namespace EcoBuilder
             else if (gameManager != this)
                 throw new Exception("More than one GameManager in scene");
 
-            InitPlayer();
             if (SceneManager.sceneCount == 1) // on startup
             {
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
