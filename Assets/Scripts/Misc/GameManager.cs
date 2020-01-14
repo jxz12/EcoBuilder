@@ -68,7 +68,20 @@ namespace EcoBuilder
             return researchLevelPrefabs;
         }
 
-        public Levels.Level PlayedLevel { get; private set; }
+        private Levels.Level playedLevel = null;
+        public Levels.Level PlayedLevel {
+            get {
+                if (playedLevel == null) // should never happen in real game
+                {
+                    playedLevel = Instantiate(Levels.Level.GetDefaultLevel());
+                    playedLevel.transform.SetParent(PlayParent, false);
+                }
+                return playedLevel;
+            }
+            private set {
+                playedLevel = value;
+            }
+        }
         public void PlayLevel(Levels.Level toPlay)
         {
             if (PlayedLevel != null)

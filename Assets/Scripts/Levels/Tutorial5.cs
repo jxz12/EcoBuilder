@@ -15,12 +15,10 @@ namespace EcoBuilder.Levels
         }
         void ExplainIntro()
         {
-            Detach?.Invoke();
             // ask the user to make a chain of three first
 
-            Action foo = ()=> CheckChainOfHeight(3, ExplainChainThree);
-            nodelink.OnConstraints += foo;
-            Detach = ()=> nodelink.OnConstraints -= foo;
+            DetachSmellyListeners();
+            AttachSmellyListener(nodelink, "OnConstraints", ()=>CheckChainOfHeight(3, ExplainChainThree));
         }
         void CheckChainOfHeight(int heightGoal, Action Todo)
         {
@@ -29,15 +27,13 @@ namespace EcoBuilder.Levels
         }
         void ExplainChainThree()
         {
-            Detach?.Invoke();
             help.SetText("Now make the lowest animal eat the top animal");
             help.Show(true);
-
             // now make them connect the lowest animal to the highest
-            // disallow other actions somehow
-            Action foo = ()=> CheckLoopOfLength(3, ExplainLoopThree);
-            nodelink.OnConstraints += foo;
-            Detach = ()=> nodelink.OnConstraints -= foo;
+            // TODO: disallow other actions somehow
+
+            DetachSmellyListeners();
+            AttachSmellyListener(nodelink, "OnConstraints", ()=>CheckLoopOfLength(3, ExplainLoopThree));
         }
         void CheckLoopOfLength(int lengthGoal, Action Todo)
         {
@@ -46,20 +42,19 @@ namespace EcoBuilder.Levels
         }
         void ExplainLoopThree()
         {
-            Detach?.Invoke();
             help.SetText("Good! Now add another animal to make a loop of 4.");
             help.Show(true);
             // ask them to try and make a loop of 4
 
-            Action foo = ()=> CheckLoopOfLength(4, ExplainLoopFour);
-            nodelink.OnConstraints += foo;
-            Detach = ()=> nodelink.OnConstraints -= foo;
+            DetachSmellyListeners();
+            AttachSmellyListener(nodelink, "OnConstraints", ()=>CheckLoopOfLength(4, ExplainLoopFour));
         }
         void ExplainLoopFour()
         {
-            Detach?.Invoke();
             help.SetText("Yay!");
             help.Show(true);
+
+            DetachSmellyListeners();
         }
         // create another loop attached to the same one
         // task with 

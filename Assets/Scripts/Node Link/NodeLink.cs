@@ -8,15 +8,16 @@ namespace EcoBuilder.NodeLink
 {
     public partial class NodeLink : MonoBehaviour
     {
-        public event Action<int> OnNodeFocused;
+        // called regardless of user
+        public event Action<int> OnFocused;
         public event Action OnUnfocused;
-        public event Action OnEmptyTapped;
         public event Action OnConstraints;
         public event Action OnLinked;
 
-        // called when user does something
+        // called only when user does something
         public event Action<int, int> OnUserLinked;
         public event Action<int, int> OnUserUnlinked;
+        public event Action OnEmptyTapped;
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
@@ -66,7 +67,7 @@ namespace EcoBuilder.NodeLink
                 nodes[idx].Shape(shape);
                 FlashNode(idx);
                 LieDownNode(idx);
-                FocusNode(idx);
+                // FocusNode(idx);
             }
             else if (nodeGrave[idx] != null) // bring back old
             {

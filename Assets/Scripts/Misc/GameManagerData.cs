@@ -23,7 +23,7 @@ namespace EcoBuilder
         public class PlayerDetails
         {
             public string username;
-            public string password; // TODO: maybe best to encrypt this?
+            public string password;
             public string email;
 
             public int age;
@@ -48,10 +48,14 @@ namespace EcoBuilder
         public void InitPlayer()
         {
             // ugh unity annoying so hard-coded
+#if !UNITY_WEBGL
             playerPath = Application.persistentDataPath+"/player.data";
+#else
+            playerPath = null;
+#endif
 
             // DeletePlayerDetailsLocal();
-            bool loaded = LoadPlayerDetailsLocal(); aldskfjlsdkjfssldkjf
+            bool loaded = LoadPlayerDetailsLocal(); 
         }
 
 
@@ -266,9 +270,14 @@ namespace EcoBuilder
 
 
         // This whole structure is necessary because you cannot change prefabs from script when compiled
-        // Ideally we would keep this inside Levels.Level, but that is not possible in a build
+        // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
         public int GetPlayerHighScore(int levelIdx)
         {
+            if (player.highScores==null || !player.highScores.ContainsKey(levelIdx))
+            {
+                return 0;
+                throw new Exception("level not stored in score dict");
+            }
             return player.highScores[levelIdx];
         }
         public Tuple<int,int,int> GetGlobalTop3Scores(int levelIdx)

@@ -33,18 +33,19 @@ namespace EcoBuilder
             inspector.OnIsProducerSet += (i,x)=> constraints.AddType(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
-            inspector.OnConflicted +=      (i)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
-            inspector.OnConflicted +=      (i)=> nodelink.TooltipNode(i, "Identical");
+            inspector.OnConflicted +=    (i,m)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
+            inspector.OnConflicted +=    (i,m)=> nodelink.TooltipNode(i, m);
             inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
-            nodelink.OnNodeFocused += (i)=> inspector.InspectSpecies(i);
-            nodelink.OnUnfocused +=    ()=> inspector.Uninspect();
-            nodelink.OnEmptyTapped +=  ()=> inspector.Unincubate();
-            nodelink.OnConstraints +=  ()=> constraints.DisplayDisjoint(nodelink.Disjoint);
-            nodelink.OnConstraints +=  ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnConstraints +=  ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnConstraints +=  ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
+            inspector.OnUserSpawned += (i)=> nodelink.FocusNode(i);
+            nodelink.OnFocused     +=  (i)=> inspector.InspectSpecies(i);
+            nodelink.OnUnfocused +=     ()=> inspector.Uninspect();
+            nodelink.OnEmptyTapped +=   ()=> inspector.Unincubate();
+            nodelink.OnConstraints +=   ()=> constraints.DisplayDisjoint(nodelink.Disjoint);
+            nodelink.OnConstraints +=   ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
+            nodelink.OnConstraints +=   ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
+            nodelink.OnConstraints +=   ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
 
             model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
@@ -89,11 +90,6 @@ namespace EcoBuilder
             // initialise level //
             //////////////////////
             var level = GameManager.Instance.PlayedLevel;
-            if (level == null) // should never happen in real game
-            {
-                level = Instantiate(Levels.Level.GetDefaultLevel());
-                level.transform.SetParent(GameManager.Instance.PlayParent, false);
-            }
 
             inspector.HideSizeSlider(level.Details.sizeSliderHidden);
             inspector.HideGreedSlider(level.Details.greedSliderHidden);

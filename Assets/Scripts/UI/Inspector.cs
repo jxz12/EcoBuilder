@@ -10,12 +10,12 @@ namespace EcoBuilder.UI
     {
         // give gameobject once, keep a reference here so that it can be changed from here?
         public event Action<int, GameObject> OnSpawned;
+        public event Action<int> OnDespawned;
+        public event Action<int, string> OnConflicted;
+        public event Action<int> OnUnconflicted;
         public event Action<int, bool> OnIsProducerSet;
         public event Action<int, float> OnSizeSet;
         public event Action<int, float> OnGreedSet;
-        public event Action<int> OnConflicted;
-        public event Action<int> OnUnconflicted;
-        public event Action<int> OnDespawned;
 
         public event Action<int, float, float> OnUserSizeSet;
         public event Action<int, float, float> OnUserGreedSet;
@@ -87,13 +87,14 @@ namespace EcoBuilder.UI
             nameField.OnUserNameChanged += s=> SetNameFromInputField(s);
             sizeTrait.OnUserSlid += (x,y)=> SetSizeFromSlider(x, y);
             greedTrait.OnUserSlid += (x,y)=> SetGreedFromSlider(x, y);
-            sizeTrait.AddExternalConflict(x=> CheckSizeConflict(x));
-            greedTrait.AddExternalConflict(x=> CheckGreedConflict(x));
 
-            sizeTrait.OnConflicted += x=> OnConflicted?.Invoke(x);
-            greedTrait.OnConflicted += x=> OnConflicted?.Invoke(x);
-            sizeTrait.OnUnconflicted += x=> OnUnconflicted?.Invoke(x);
-            greedTrait.OnUnconflicted += x=> OnUnconflicted?.Invoke(x);
+            // x here is value to check, and the function returns the idx of the conflict
+            sizeTrait.AddExternalConflict(x=> CheckSizeConflict(x)); 
+            greedTrait.AddExternalConflict(x=> CheckGreedConflict(x));
+            sizeTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical Size");
+            greedTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical Interference");
+            sizeTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
+            greedTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
 
             incubator.OnDropped += ()=> SpawnIncubated();
         }
@@ -208,7 +209,7 @@ namespace EcoBuilder.UI
             OnUnincubated?.Invoke();
             OnUserSpawned?.Invoke(spawnedIdx);
 
-            InspectSpecies(spawnedIdx);
+            // InspectSpecies(spawnedIdx); // will be done by nodelink
             typesAnim.SetBool("Visible", true);
         }
         int CheckSizeConflict(float newSize)
@@ -224,7 +225,7 @@ namespace EcoBuilder.UI
                     s.BodySize == newSize &&
                     s.Greediness == toCheck.Greediness)
                 {
-                    OnConflicted?.Invoke(s.Idx);
+                    // OnConflicted?.Invoke(s.Idx, "Identical");
                     return s.Idx;
                 }
             }
@@ -243,7 +244,7 @@ namespace EcoBuilder.UI
                     s.BodySize == toCheck.BodySize && 
                     s.Greediness == newGreed)
                 {
-                    OnConflicted?.Invoke(s.Idx);
+                    // OnConflicted?.Invoke(s.Idx);
                     return s.Idx;
                 }
             }
@@ -265,10 +266,10 @@ namespace EcoBuilder.UI
                 if (!inspected.Removable)
                     throw new Exception("inspected not removable");
 
-                Bury(inspected);
                 OnUserDespawned?.Invoke(inspected.Idx);
-                inspected = null;
-                GetComponent<Animator>().SetTrigger("Uninspect");
+                Bury(inspected); // nodelink will unfocus in the process
+                // inspected = null;
+                // GetComponent<Animator>().SetTrigger("Uninspect");
             }
             else
             {

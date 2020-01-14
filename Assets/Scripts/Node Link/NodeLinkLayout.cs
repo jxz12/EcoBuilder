@@ -222,7 +222,7 @@ namespace EcoBuilder.NodeLink
             }
             if (botSum > 0)
             {
-                nodes[i].StressPos = new Vector3(topSumX/botSum, nodes[i].StressPos.y, topSumZ/botSum) * centeringMultiplier;
+                nodes[i].StressPos = new Vector3(topSumX/botSum * centeringMultiplier, nodes[i].StressPos.y, topSumZ/botSum * centeringMultiplier);
             }
         }
 
