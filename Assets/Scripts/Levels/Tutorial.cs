@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -62,11 +63,6 @@ namespace EcoBuilder.Levels
             StartLesson();
         }
         protected abstract void StartLesson();
-        protected Action Detach;
-        void OnDestroy()
-        {
-            Detach?.Invoke();
-        }
 
         void Update()
         {
@@ -89,14 +85,61 @@ namespace EcoBuilder.Levels
         {
             GetComponent<Animator>().SetInteger("State", 2);
         }
-        protected Vector2 ScreenPos(Vector2 viewportPos)
-        {
-            return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
-        }
+        // protected Vector2 ScreenPos(Vector2 viewportPos)
+        // {
+        //     return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
+        // }
         public void DestroyMe()
         {
             StopAllCoroutines();
             Destroy(gameObject);
+        }
+        protected Vector2 ScreenPos(Vector2 viewportPos)
+        {
+            return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
+        }
+
+        // protected Action Detach;
+        List<Action> smellyListeners = new List<Action>(); // eww
+        protected void DetachSmellyListeners()
+        {
+            foreach (Action A in smellyListeners)
+            {
+                A();
+            }
+            smellyListeners.Clear();
+        }
+        void OnDestroy()
+        {
+            DetachSmellyListeners();
+        }
+        protected void AttachSmellyListener(object eventSource, string eventName, Action Callback)
+        {
+            var eventInfo = eventSource.GetType().GetEvent(eventName);
+            eventInfo.AddEventHandler(eventSource, Callback);
+            Action Detach = ()=> eventInfo.RemoveEventHandler(eventSource, Callback);
+            smellyListeners.Add(Detach);
+        }
+        protected void AttachSmellyListener<T>(object eventSource, string eventName, Action<T> Callback)
+        {
+            var eventInfo = eventSource.GetType().GetEvent(eventName);
+            eventInfo.AddEventHandler(eventSource, Callback);
+            Action Detach = ()=> eventInfo.RemoveEventHandler(eventSource, Callback);
+            smellyListeners.Add(Detach);
+        }
+        protected void AttachSmellyListener<T1,T2>(object eventSource, string eventName, Action<T1,T2> Callback)
+        {
+            var eventInfo = eventSource.GetType().GetEvent(eventName);
+            eventInfo.AddEventHandler(eventSource, Callback);
+            Action Detach = ()=> eventInfo.RemoveEventHandler(eventSource, Callback);
+            smellyListeners.Add(Detach);
+        }
+        protected void AttachSmellyListener<T1,T2,T3>(object eventSource, string eventName, Action<T1,T2,T3> Callback)
+        {
+            var eventInfo = eventSource.GetType().GetEvent(eventName);
+            eventInfo.AddEventHandler(eventSource, Callback);
+            Action Detach = ()=> eventInfo.RemoveEventHandler(eventSource, Callback);
+            smellyListeners.Add(Detach);
         }
     }
 }

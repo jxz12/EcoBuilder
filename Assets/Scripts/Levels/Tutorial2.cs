@@ -32,7 +32,6 @@ namespace EcoBuilder.Levels
             help.SetSide(false);
             help.SetDistFromTop(.15f);
 
-            Detach?.Invoke();
             
             if (shuffleRoutine != null)
             {
@@ -41,9 +40,8 @@ namespace EcoBuilder.Levels
             }
             StartCoroutine(trackRoutine = Track(plant.transform));
 
-            Action<int> foo = (i)=> ExplainSize();
-            nodelink.OnNodeFocused += foo;
-            Detach = ()=> nodelink.OnNodeFocused -= foo;
+            DetachSmellyListeners();
+            AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
         }
 
         void ExplainSize()
@@ -60,12 +58,9 @@ namespace EcoBuilder.Levels
             }
             StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 40));
 
-            Detach();
-            Action<int> fooo = (i)=> ExplainMetabolism(2);
-            Action foooo = ()=> ExplainIntro();
-            model.OnRescued += fooo;
-            nodelink.OnUnfocused += foooo;
-            Detach = ()=> { model.OnRescued -= fooo; nodelink.OnUnfocused -= foooo; };
+            DetachSmellyListeners();
+            AttachSmellyListener<int>(model, "OnRescued", i=>ExplainMetabolism(2));
+            AttachSmellyListener(nodelink, "OnUnfocused", ExplainIntro);
         }
         void ExplainMetabolism(float delay)
         {
@@ -86,10 +81,8 @@ namespace EcoBuilder.Levels
             }));
 
 
-            Detach();
-            Action<int> foo = (i)=> ExplainInterference();
-            nodelink.OnNodeFocused += foo;
-            Detach = ()=> nodelink.OnNodeFocused -= foo;
+            DetachSmellyListeners();
+            AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainInterference());
         }
         // TODO: remove this entirely
         void ExplainInterference()
@@ -111,20 +104,9 @@ namespace EcoBuilder.Levels
             // StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 90));
             StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 40));
 
-            Detach();
-            // Action<int,float,float> foo = (i,x,y)=> ExplainScore();
-            // inspector.OnUserGreedSet += foo;
-            // Action fooo = ()=> ExplainMetabolism(0);
-            // nodelink.OnUnfocused += fooo;
-            // Detach = ()=> { inspector.OnUserGreedSet -= foo; nodelink.OnUnfocused -= fooo; };
-
-            Action<int> foo = (i)=> ExplainScore();
-            model.OnEndangered += foo;
-            Action fooo = ()=> ExplainMetabolism(0);
-            nodelink.OnUnfocused += fooo;
-            Action<int, float, float> foooo = (i,x,y)=> help.Show(false);
-            inspector.OnUserGreedSet += foooo;
-            Detach = ()=> { model.OnEndangered -= foo; nodelink.OnUnfocused -= fooo; inspector.OnUserGreedSet -= foooo;};
+            DetachSmellyListeners();
+            AttachSmellyListener(nodelink, "OnUnfocused", ()=>ExplainMetabolism(0));
+            AttachSmellyListener<int>(model, "OnEndangered", i=>ExplainScore());
         }
         void ExplainScore()
         {
@@ -151,9 +133,8 @@ namespace EcoBuilder.Levels
             //     help.SetText("Good job! This bar at the top displays your score, and is based on the size and total health of your ecosystem. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
             // }));
 
-            Detach();
-            Action foo = ()=> Finish();
-            GameManager.Instance.PlayedLevel.OnFinished += foo;
+            DetachSmellyListeners();
+            AttachSmellyListener(GameManager.Instance.PlayedLevel, "OnFinished", Finish);
         }
         void Finish()
         {
@@ -174,7 +155,8 @@ namespace EcoBuilder.Levels
             Point();
             while (true)
             {
-                targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                // targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                targetPos = (Vector2)Camera.main.WorldToScreenPoint(tracked.position) + new Vector2(0,-20);
                 yield return null;
             }
         }

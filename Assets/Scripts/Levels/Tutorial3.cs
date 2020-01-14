@@ -21,15 +21,10 @@ namespace EcoBuilder.Levels
             targetZRot = 30;
             help.SetText("Let's put your skills to the test! Here you must add 2 plants and two animals, and must have at least 5 interactions between them. Use this level to If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. Good luck!");
 
-            Detach?.Invoke();
-            
-            Action foo = ()=> ExplainFocus();
-            Action<bool> fooo = (b)=> { targetSize = Vector2.zero; help.Show(false); };
-            Action foooo = ()=> { targetSize = new Vector2(100,100); };
-            score.OnLevelCompletabled += foo;
-            constraints.OnErrorShown += fooo;
-            help.OnUserShown += foooo;
-            Detach = ()=> { score.OnLevelCompletabled -= foo; constraints.OnErrorShown -= fooo; help.OnUserShown -= foooo; };
+            DetachSmellyListeners();
+            AttachSmellyListener(score, "OnLevelCompletabled", ExplainFocus);
+            AttachSmellyListener(help, "OnUserShown", ()=>targetSize = new Vector2(100,100));
+            AttachSmellyListener<bool>(constraints, "OnErrorShown", (b)=>{ targetSize = Vector2.zero; help.Show(false); });
         }
         void ExplainFocus()
         {
@@ -39,7 +34,7 @@ namespace EcoBuilder.Levels
 
             StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! The next few levels will show you something");}));
 
-            Detach();
+            DetachSmellyListeners();
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {

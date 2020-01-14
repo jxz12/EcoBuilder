@@ -30,8 +30,6 @@ namespace EcoBuilder.UI
         }
 
         Stack<Move> undos, redos;
-        // List<string> record;
-                 //type,time,idx,idx2/val
         List<Tuple<int, int, int, int>> record;
         void Awake()
         {
@@ -40,7 +38,6 @@ namespace EcoBuilder.UI
             undoButton.onClick.AddListener(Undo);
             redoButton.onClick.AddListener(Redo);
 
-            // record = new List<string>() { "date: "+DateTime.Now.Ticks+" play: "+Time.time };
             record = new List<Tuple<int,int,int,int>>();
             record.Add(Tuple.Create((int)Move.Type.None, (int)Time.time, -1, -1));
         }
@@ -61,25 +58,21 @@ namespace EcoBuilder.UI
         public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
             PushMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), idx, Move.Type.Spawn));
-            // record.Add("+"+idx+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Spawn, (int)Time.time, idx, -1));
         }
         public void SpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
             PushMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), idx, Move.Type.Despawn));
-            // record.Add("-"+idx+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Despawn, (int)Time.time, idx, -1));
         }
         public void InteractionAdded(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
             PushMove(new Move(()=>Remove(res,con), ()=>Add(res,con), int.MinValue, Move.Type.Link));
-            // record.Add(">"+res+" "+con+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Link, (int)Time.time, res, con));
         }
         public void InteractionRemoved(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
             PushMove(new Move(()=>Add(res,con), ()=>Remove(res,con), int.MinValue, Move.Type.Unlink));
-            // record.Add("<"+res+" "+con+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Unlink, (int)Time.time, res, con));
         }
         public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
@@ -88,7 +81,6 @@ namespace EcoBuilder.UI
                 undos.Pop(); // don't record multiple changes
 
             PushMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, Move.Type.Production));
-            // record.Add("p"+idx+" "+current+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Production, (int)Time.time, idx, current?1:0));
         }
         public void SizeSet(int idx, float prev, float current, Action<int, float> SetSize)
@@ -97,7 +89,6 @@ namespace EcoBuilder.UI
                 undos.Pop();
 
             PushMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, Move.Type.Size));
-            // record.Add("s"+idx+" "+current+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Size, (int)Time.time*1000, idx, (int)current*1000));
         }
         public void GreedSet(int idx, float prev, float current, Action<int, float> SetGreed)
@@ -106,10 +97,8 @@ namespace EcoBuilder.UI
                 undos.Pop();
 
             PushMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
-            // record.Add("g"+idx+" "+current+" "+Time.time);
             record.Add(Tuple.Create((int)Move.Type.Greed, (int)Time.time*1000, idx, (int)current*1000));
         }
-
 
         // connected to buttons
         void Undo()
@@ -124,7 +113,6 @@ namespace EcoBuilder.UI
             if (toUndo.type!=Move.Type.Link && toUndo.type!=Move.Type.Unlink)
                 OnSpeciesUndone.Invoke(toUndo.idx); // to focus when needed
 
-            // record.Add("u");
             record.Add(Tuple.Create((int)Move.Type.Undo, -1, -1, -1));
         }
         void Redo()
@@ -139,7 +127,6 @@ namespace EcoBuilder.UI
             if (toRedo.type!=Move.Type.Link && toRedo.type!=Move.Type.Unlink)
                 OnSpeciesUndone.Invoke(toRedo.idx);
 
-            // record.Add("r");
             record.Add(Tuple.Create((int)Move.Type.Redo, -1, -1, -1));
         }
         public int[,] RecordMoves()

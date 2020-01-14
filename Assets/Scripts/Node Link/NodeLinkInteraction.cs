@@ -52,13 +52,14 @@ namespace EcoBuilder.NodeLink
                 }
             }
             focusedNode = nodes[idx];
+            OnFocused?.Invoke(idx);
         }
         public void SwitchFocus(int idx) // urgh, this is needed because of undoing
         {
             if (focusedNode != nodes[idx] && nodes[idx] != null)
             {
                 FocusNode(idx);
-                OnNodeFocused?.Invoke(idx);
+                // OnNodeFocused?.Invoke(idx);
             }
         }
         Vector3 defaultNodelinkPos;
@@ -75,6 +76,7 @@ namespace EcoBuilder.NodeLink
                 focusedNode.PopOutline();
                 focusedNode = null;
                 focusState = FocusState.Unfocus;
+                OnUnfocused.Invoke();
             }
             else if (focusState == FocusState.SuperFocus)
             {
@@ -292,13 +294,12 @@ namespace EcoBuilder.NodeLink
                     if (pressedNode != null)
                     {
                         FocusNode(pressedNode.Idx);
-                        OnNodeFocused?.Invoke(pressedNode.Idx);
                         pressedNode = null;
                     }
                     else if (focusState == FocusState.Focus)
                     {
                         Unfocus();
-                        OnUnfocused?.Invoke();
+                        // OnUserUnfocused?.Invoke();
                     }
                     else if (focusState == FocusState.Unfocus)
                     {
