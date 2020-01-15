@@ -230,15 +230,6 @@ namespace EcoBuilder.NodeLink
         ////////////
         // effects
 
-        public void RehealthBars(Func<int, float> healths)
-        {
-            foreach (Node no in nodes)
-            {
-                float health = healths(no.Idx);
-                health = Mathf.Max(Mathf.Min(health, 1), 0);
-                no.SetHealth(health);
-            }
-        }
         [SerializeField] float minLinkFlow, maxLinkFlow;
         public void ReflowLinks(Func<int, int, float> flows)
         {

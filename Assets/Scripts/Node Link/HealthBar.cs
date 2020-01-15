@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace EcoBuilder.NodeLink
+namespace EcoBuilder.UI
 {
     public class HealthBar : MonoBehaviour
     {

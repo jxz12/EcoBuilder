@@ -22,15 +22,8 @@ namespace EcoBuilder.NodeLink
 
         GameObject shape;
         MeshRenderer shapeRenderer;
-        HealthBar healthBar;
+        cakeslice.Outline outline;
 
-        cakeslice.Outline outlineHealth, outlineShape; // TODO: may be slow to have 2 of these
-
-        void Awake()
-        {
-            healthBar = GetComponent<HealthBar>();
-            outlineHealth = gameObject.AddComponent<cakeslice.Outline>();
-        }
         public void Init(int idx)
         {
             Idx = idx;
@@ -43,7 +36,7 @@ namespace EcoBuilder.NodeLink
             // transform.position = shapeObject.transform.position;
             shape = shapeObject;
             shapeRenderer = shape.GetComponent<MeshRenderer>();
-            outlineShape = shape.AddComponent<cakeslice.Outline>();
+            outline = shape.AddComponent<cakeslice.Outline>();
 
             shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
@@ -53,10 +46,8 @@ namespace EcoBuilder.NodeLink
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
         public void PushOutline(cakeslice.Outline.Colour colour)
         {
-            outlineShape.enabled = true;
-            outlineShape.colour = colour;
-            outlineHealth.enabled = true;
-            outlineHealth.colour = colour;
+            outline.enabled = true;
+            outline.colour = colour;
             outlines.Push(colour);
         }
         public void PopOutline()
@@ -64,19 +55,17 @@ namespace EcoBuilder.NodeLink
             outlines.Pop();
             if (outlines.Count > 0)
             {
-                outlineShape.colour = outlines.Peek();
-                outlineHealth.colour = outlines.Peek();
+                outline.colour = outlines.Peek();
             }
             else
             {
-                outlineShape.enabled = false;
-                outlineHealth.enabled = false;
+                outline.enabled = false;
             }
         }
-        public void SetHealth(float health)
-        {
-            healthBar.TargetHealth = health;
-        }
+        // public void SetHealth(float health)
+        // {
+        //     healthBar.TargetHealth = health;
+        // }
         public void SetNewParentKeepPos(Transform newParent)
         {
             transform.SetParent(newParent, true);

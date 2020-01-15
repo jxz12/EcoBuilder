@@ -22,22 +22,22 @@ namespace EcoBuilder
         [Serializable]
         public class PlayerDetails
         {
-            public string username;
-            public string password;
-            public string email;
+            public string username = "";
+            public string password = "";
+            public string email = "";
 
-            public int age;
-            public int gender;
-            public int education;
+            public int age = 0;
+            public int gender = 0;
+            public int education = 0;
             
             public enum Team { None=0, Wolf, Lion }
             public Team team = Team.None;
             public bool reverseDrag = true;
             public bool dontAskForLogin = false;
 
-            public Dictionary<int, int> highScores;
+            public Dictionary<int, int> highScores = new Dictionary<int, int>();
         }
-        [SerializeField] PlayerDetails player;
+        [SerializeField] PlayerDetails player = null;
         public PlayerDetails.Team PlayerTeam { get { return player.team; } }
 
         public bool ConstrainTrophic { get { return player.team != GameManager.PlayerDetails.Team.Lion; } }
@@ -53,7 +53,6 @@ namespace EcoBuilder
 #else
             playerPath = null;
 #endif
-
             // DeletePlayerDetailsLocal();
             bool loaded = LoadPlayerDetailsLocal(); 
         }
@@ -65,25 +64,6 @@ namespace EcoBuilder
             return false;
 #endif
 
-            if (player.highScores == null) // no local high scores
-            {
-                player.highScores = new Dictionary<int,int>();
-                player.highScores[learningLevelPrefabs[0].Details.idx] = 0; // unlock first level
-                for (int i=1; i<learningLevelPrefabs.Count; i++)
-                {
-                    if (player.highScores.ContainsKey(learningLevelPrefabs[i].Details.idx))
-                        throw new Exception("two levels with same idx");
-                    else
-                        player.highScores[learningLevelPrefabs[i].Details.idx] = -1;
-                }
-                foreach (var researchLevel in researchLevelPrefabs)
-                {
-                    if (player.highScores.ContainsKey(researchLevel.Details.idx))
-                        throw new Exception("two levels with same idx");
-                    else
-                        player.highScores[researchLevel.Details.idx] = -1;
-                }
-            }
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
@@ -100,10 +80,9 @@ namespace EcoBuilder
         }
         private bool LoadPlayerDetailsLocal()
         {
-            #if UNITY_WEBGL
+#if UNITY_WEBGL
                 return false;
-            #endif
-
+#endif
             BinaryFormatter bf = new BinaryFormatter();
             try
             {
@@ -217,6 +196,11 @@ namespace EcoBuilder
             StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/login.php", form, OnCompletion));
             SavePlayerDetailsLocal();
         }
+        public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
+        {
+            // TODO: get global scores from server
+            return Tuple.Create(14,12,10);
+        }
         public bool SendEmailReminder(string username)
         {
             // TODO:
@@ -256,13 +240,13 @@ namespace EcoBuilder
         public void SavePlayedLevelHighScore(int score)
         {
             int idx = PlayedLevel.Details.idx;
-            if (score > player.highScores[idx])
+            if (!player.highScores.ContainsKey(idx) || score > player.highScores[idx])
                 player.highScores[idx] = score;
 
             if (PlayedLevel.NextLevel != null) // unlock next level
             {
                 int nextIdx = PlayedLevel.NextLevel.Details.idx;
-                if (player.highScores[nextIdx] < 0)
+                if (!player.highScores.ContainsKey(idx) || player.highScores[nextIdx] < 0)
                     player.highScores[nextIdx] = 0; // TODO: animation here to draw eye towards unlock
             }
             SavePlayerDetailsLocal();
@@ -271,22 +255,17 @@ namespace EcoBuilder
 
         // This whole structure is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
-        public int GetPlayerHighScore(int levelIdx)
+        public int GetLocalHighScore(int levelIdx)
         {
-            if (player.highScores==null || !player.highScores.ContainsKey(levelIdx))
+            if (!player.highScores.ContainsKey(levelIdx))
             {
-                return 0;
-                throw new Exception("level not stored in score dict");
+                return -1;
             }
             return player.highScores[levelIdx];
         }
-        public Tuple<int,int,int> GetGlobalTop3Scores(int levelIdx)
-        {
-            // TODO: get global scores from server
-            return Tuple.Create(14,12,10);
-        }
         public void SetDragDirection(bool reversed)
         {
+            // TODO: save on server as well
             player.reverseDrag = reversed;
             SavePlayerDetailsLocal();
         }

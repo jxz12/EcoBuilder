@@ -35,6 +35,7 @@ namespace EcoBuilder
 
         void Start()
         {
+            InitPlayer();
             // TODO: set this to the size of the screen for webgl
 // #if !UNITY_WEBGL
 //             Screen.SetResolution(576, 1024, false);

@@ -102,21 +102,28 @@ namespace EcoBuilder.Levels
         }
         void ExplainFirstEcosystem(float delay)
         {
+            StopAllCoroutines();
             targetSize = new Vector2(0,0);
             help.Show(false);
             nodelink.ForceUnfocus();
 
             smoothTime = .3f;
-            StopAllCoroutines();
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."); }));
+            if (GameManager.Instance.ReverseDragDirection)
+            {
+                StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."); }));
+            }
+            else
+            {
+                StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetText("You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the plant to the animal."); }));
+            }
 
             DetachSmellyListeners();
             AttachSmellyListener<int,int>(nodelink, "OnUserUnlinked", (i,j)=>ExplainRemove1(1));
         }
         void ExplainRemove1(float delay)
         {
+            StopAllCoroutines();
             help.Show(false);
-            // inspector.Uninspect();
             nodelink.ForceUnfocus();
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
@@ -129,11 +136,10 @@ namespace EcoBuilder.Levels
         }
         void ExplainRemove2()
         {
+            StopAllCoroutines(); // stop tracking
             targetAnchor = new Vector2(.5f, 0);
             targetPos = new Vector2(160, 50);
             targetZRot = 450;
-
-            StopAllCoroutines(); // stop tracking
 
             help.Show(true);
             help.SetDistFromTop(.7f);
@@ -161,6 +167,7 @@ namespace EcoBuilder.Levels
         }
         void ExplainFinishCondition(float delay)
         {
+            StopAllCoroutines();
             targetSize = new Vector2(0,0);
             targetZRot = 315;
 
@@ -176,6 +183,7 @@ namespace EcoBuilder.Levels
         }
         void ExplainFinish()
         {
+            StopAllCoroutines();
             targetSize = new Vector2(100,100);
             targetAnchor = rt.anchorMin = rt.anchorMax = new Vector2(1,1);
             targetPos = rt.anchoredPosition = new Vector2(-90,-90);
