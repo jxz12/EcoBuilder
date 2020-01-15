@@ -47,9 +47,8 @@ namespace EcoBuilder
             nodelink.OnConstraints +=   ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=   ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
 
-            model.OnEquilibrium += ()=> nodelink.RehealthBars(i=> model.GetNormalisedAbundance(i));
+            model.OnEquilibrium += ()=> inspector.SetHealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
-            model.OnEquilibrium += ()=> score.DisplayScore(model.Complexity, model.ScoreExplanation());
             model.OnEquilibrium += ()=> constraints.DisplayFeasibility(model.Feasible);
             model.OnEquilibrium += ()=> constraints.DisplayStability(model.Stable);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
@@ -162,7 +161,8 @@ namespace EcoBuilder
             if (!graphSolved && !nodelink.IsCalculating)
             {
                 graphSolved = true;
-#if UNITY_WEBGL // threads are not supported on webgl
+// threads are not supported on webgl
+#if UNITY_WEBGL
                 nodelink.ConstraintsSync();
 #else
                 nodelink.ConstraintsAsync();
@@ -177,10 +177,13 @@ namespace EcoBuilder
                 model.EquilibriumAsync(nodelink.GetTargets);
 #endif
             }
+            // we want the score to update even if the model is calculating
+            score.DisplayScore(model.Complexity, model.ScoreExplanation());
+            // but no events triggered in case of false positive due to being out of sync
             if (atEquilibrium && !model.IsCalculating &&
                 graphSolved && !nodelink.IsCalculating)
             {
-                score.UpdateScore();
+                score.TriggerScoreEvents();
             }
         }
 

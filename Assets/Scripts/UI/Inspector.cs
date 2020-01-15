@@ -489,6 +489,11 @@ namespace EcoBuilder.UI
                 greedTrait.SetValueWithoutCallback(s.Greediness);
             }
         }
+        public void SetHealthBars(Func<int, float> Heath)
+        {
+            // no.GetComponent<HealthBar>().TweenHealth(1f * Time.deltaTime);
+            print("TODO:");
+        }
         public void Hide()
         {
             if (incubated != null)

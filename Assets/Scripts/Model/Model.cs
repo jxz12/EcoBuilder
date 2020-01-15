@@ -200,7 +200,7 @@ namespace EcoBuilder.Model
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
 
-        public float Complexity { get { print(simulation.HoComplexity+" "+simulation.MayComplexity); return (float)simulation.HoComplexity; } }
+        public float Complexity { get { return (float)simulation.HoComplexity; } }
         public bool IsCalculating { get; private set; } = false;
 
                                            // required because this class does not store adjacency

@@ -65,9 +65,6 @@ namespace EcoBuilder.UI
             NormalisedScore = (int)modelScore; // TODO: better normalisation plz
             scoreText.text = NormalisedScore.ToString();
 
-        }
-        void Update()
-        {
             newNumStars = 0;
             if (!constraints.Disjoint &&
                 constraints.Feasible &&
@@ -108,8 +105,11 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
         }
-        public void UpdateScore() // should only be called from outside when ready
+        public void TriggerScoreEvents() // should only be called from outside when ready
         {
+            if (finishDisabled)
+                return;
+
             if (numStars == 0 && newNumStars > 0)
             {
                 OnLevelCompletabled?.Invoke();
@@ -130,8 +130,6 @@ namespace EcoBuilder.UI
             GetComponent<Animator>().enabled = !hidden;
             if (hidden)
                 transform.localPosition = new Vector2(0,1000); // hack
-            // else
-            //     transform.localPosition = Vector2.zero;
         }
         public void HideConstraints(bool hidden=true)
         {

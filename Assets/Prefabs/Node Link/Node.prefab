@@ -10,9 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4190556154803004}
   - component: {fileID: 114609019565973728}
-  - component: {fileID: 111129306768118281}
-  - component: {fileID: 3783708775094416126}
-  - component: {fileID: 6231682510816433693}
   - component: {fileID: -903821243978865509}
   m_Layer: 10
   m_Name: Node
@@ -47,68 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbcce0ab1e920e344aeb923fa4534813, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &111129306768118281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259222370056588}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df028a0d4cf56c94894a84493a5b2ccd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  offset: {x: 0.4, y: -0.4, z: -0.5}
-  width: 0.15
-  height: 0.04
-  depth: 0.02
---- !u!33 &3783708775094416126
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259222370056588}
-  m_Mesh: {fileID: 0}
---- !u!23 &6231682510816433693
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1259222370056588}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 265f57b66b043b64b83c3ea0f720f403, type: 2}
-  - {fileID: 2100000, guid: cb58a06c1fa10014ab8562b837fa8b87, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
 --- !u!135 &-903821243978865509
 SphereCollider:
   m_ObjectHideFlags: 0
