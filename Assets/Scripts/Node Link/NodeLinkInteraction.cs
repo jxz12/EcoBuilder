@@ -42,12 +42,9 @@ namespace EcoBuilder.NodeLink
             }
             else if (focusState == FocusState.SuperFocus)
             {
-                if (focusedNode == nodes[idx])
-                {
+                if (focusedNode == nodes[idx]) {
                     Unfocus();
-                }
-                else // switch superfocused node
-                {
+                } else { // switch superfocused node
                     SuperFocus(idx);
                 }
             }
@@ -86,14 +83,16 @@ namespace EcoBuilder.NodeLink
                     no.State = Node.PositionState.Stress;
                     no.SetNewParentKeepPos(nodesParent);
                 }
-                foreach (Link li in links)
+                foreach (Link li in links) {
                     li.Show(true);
+                }
             }
         }
         public void ForceUnfocus()
         {
-            while (focusState != FocusState.Unfocus)
+            while (focusState != FocusState.Unfocus) {
                 Unfocus();
+            }
         }
 
         public void SuperFocus(int focusIdx)
@@ -105,7 +104,6 @@ namespace EcoBuilder.NodeLink
 
             foreach (Node no in nodes)
             {
-
                 if (no.Idx == focusIdx)
                 {
                     no.State = Node.PositionState.Focus;
@@ -141,10 +139,11 @@ namespace EcoBuilder.NodeLink
             }
             foreach (Link li in links)
             {
-                if (li.Source != nodes[focusIdx] && li.Target != nodes[focusIdx])
+                if (li.Source != nodes[focusIdx] && li.Target != nodes[focusIdx]) {
                     li.Show(false);
-                else
+                } else {
                     li.Show(true);
+                }
             }
 
             // arrange in circle around focus in middle
@@ -154,9 +153,9 @@ namespace EcoBuilder.NodeLink
             int right = System.Math.Max(consumers.Count, resources.Count)*2;
             int left = both.Count;
 
-            if (right+left == 0)
+            if (right+left == 0) {
                 return;
-
+            }
             float range = Mathf.PI * ((float)(right) / (right+left));
             float angle = 0;
             foreach (Node no in consumers.OrderBy(c=>-c.StressPos.x))
@@ -224,11 +223,11 @@ namespace EcoBuilder.NodeLink
             while (Time.time < startTime + duration)
             {
                 float t = (Time.time-startTime) / duration * 2;
-                if (t < 1) 
+                if (t < 1) {
                     graphParent.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
-                else
+                } else {
                     graphParent.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
-
+                }
                 yield return null;
             }
             graphParent.localScale = endZoom;
@@ -245,11 +244,11 @@ namespace EcoBuilder.NodeLink
             while (Time.time < startTime + duration)
             {
                 float t = (Time.time-startTime) / duration * 2;
-                if (t < 1) 
+                if (t < 1) {
                     transform.localPosition = startZoom + (endPan-startZoom)/2f*t*t;
-                else
+                } else {
                     transform.localPosition = startZoom - (endPan-startZoom)/2f*((t-1)*(t-3)-1);
-
+                }
                 yield return null;
             }
             transform.localPosition = endPan;
@@ -438,10 +437,11 @@ namespace EcoBuilder.NodeLink
             if (pressedNode == null)
             {
                 // Rotate the whole graph accordingly
-                if (ped.pointerId == -1)
+                if (ped.pointerId == -1) {
                     UserRotate(ped.delta);
-                else if (Input.touchCount == 1)
+                } else if (Input.touchCount == 1) {
                     UserRotate(ped.delta);
+                }
             }
             if (Input.touchCount == 2) // if pinch/pan
             {
@@ -503,10 +503,12 @@ namespace EcoBuilder.NodeLink
 
                 if (dummyTarget != null)
                 {
-                    if (dummyLink != null)
+                    if (dummyLink != null) {
                         Destroy(dummyLink.gameObject);
-                    if (dummyTarget != null)
+                    }
+                    if (dummyTarget != null) {
                         Destroy(dummyTarget.gameObject);
+                    }
 
                     pressedNode.PopOutline(); // orange outline from drag
                     pressedNode = null;
@@ -529,9 +531,9 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float snapRadiusInches;
         private Node ClosestSnappedNode(PointerEventData ped)
         {
-            if (focusState == FocusState.Frozen)
+            if (focusState == FocusState.Frozen) {
                 return null;
-
+            }
             GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
             Node snappedNode = null;
             if (hoveredObject != null)

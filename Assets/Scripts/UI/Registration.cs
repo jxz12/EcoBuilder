@@ -24,49 +24,49 @@ namespace EcoBuilder.UI
         {
             switch (state)
             {
-                case State.Start:
+            case State.Start:
+                ResetObjects();
+                startObj.SetActive(true);
+                skipButton.image.sprite = tanButton;
+                backButton.interactable = false;
+                break;
+            case State.Skip:
+                if (_state == State.Skip)
+                {
+                    SetState(State.End);
+                    if (askAgain.isOn)
+                        GameManager.Instance.DontAskAgainForLogin();
+                }
+                else
+                {
                     ResetObjects();
-                    startObj.SetActive(true);
-                    skipButton.image.sprite = tanButton;
-                    backButton.interactable = false;
-                    break;
-                case State.Skip:
-                    if (_state == State.Skip)
-                    {
-                        SetState(State.End);
-                        if (askAgain.isOn)
-                            GameManager.Instance.DontAskAgainForLogin();
-                    }
-                    else
-                    {
-                        ResetObjects();
-                        skipObj.SetActive(true);
-                        skipButton.image.sprite = redButton;
-                    }
-                    break;
-                case State.Register:
-                    ResetObjects();
-                    // FIXME: unity is a pile of shit
-                    idObj.SetActive(true);
-                    GDPR.isOn = false;
-                    GDPR.gameObject.SetActive(true);
-                    email.gameObject.SetActive(true);
-                    loginSubmit.interactable = false;
-                    break;
-                case State.Login:
-                    GDPR.gameObject.SetActive(false);
-                    email.gameObject.SetActive(false);
-                    ResetObjects();
-                    idObj.SetActive(true);
-                    break;
-                case State.Demographics:
-                    ResetObjects();
-                    demoObj.SetActive(true);
-                    break;
-                case State.End:
-                    OnFinished?.Invoke(this, EventArgs.Empty);
-                    Disappear();
-                    break;
+                    skipObj.SetActive(true);
+                    skipButton.image.sprite = redButton;
+                }
+                break;
+            case State.Register:
+                ResetObjects();
+                // FIXME: unity is a pile of shit
+                idObj.SetActive(true);
+                GDPR.isOn = false;
+                GDPR.gameObject.SetActive(true);
+                email.gameObject.SetActive(true);
+                loginSubmit.interactable = false;
+                break;
+            case State.Login:
+                GDPR.gameObject.SetActive(false);
+                email.gameObject.SetActive(false);
+                ResetObjects();
+                idObj.SetActive(true);
+                break;
+            case State.Demographics:
+                ResetObjects();
+                demoObj.SetActive(true);
+                break;
+            case State.End:
+                OnFinished?.Invoke(this, EventArgs.Empty);
+                Disappear();
+                break;
             }
             _state = state;
         }
@@ -112,33 +112,32 @@ namespace EcoBuilder.UI
             {
                 float t = (Time.time-startTime)/duration;
                 // quadratic ease in-out
-                if (t < .5f)
+                if (t < .5f) {
                     t = 2*t*t;
-                else
+                } else {
                     t = -1 + (4-2*t)*t;
-
+                }
                 transform.localPosition = Vector3.Lerp(startPos, endPos, t);
                 shade.color = Color.Lerp(startCol, new Color(0,0,0,applyShade?.5f:0), t);
                 yield return null;
             }
-            if (!applyShade)
+            if (!applyShade) {
                 gameObject.SetActive(false);
+            }
         }
 
         public void CheckUsernameEmail()
         {
-            if (_state == State.Register)
-            {
+            if (_state == State.Register) {
                 loginSubmit.interactable = UsernameOkay() && EmailOkay() && GDPR.isOn;
-            }
-            else
-            {
+            } else {
                 loginSubmit.interactable = UsernameOkay();
             }
         }
         private bool UsernameOkay()
         {
-            return username.text.Length > 0; // TODO: profanity filter?
+            print("TODO: profanity filter?");
+            return username.text.Length > 0;
         }
         private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
         private bool EmailOkay()
@@ -150,31 +149,29 @@ namespace EcoBuilder.UI
             if (_state == State.Register)
             {
                 GameManager.Instance.RegisterLocal(username.text, password.text, email.text);
-                GameManager.Instance.RegisterRemote(s=>SetState(State.Demographics));
-                // TODO: pause and check if successful
+                GameManager.Instance.RegisterRemote(b=>{ if (b) SetState(State.Demographics); });
             }
-            else if (_state == State.Login)
-            {
-                GameManager.Instance.LoginRemote(username.text, password.text, s=>SetState(State.End));
-                // TODO: pause and check if successful
+            else if (_state == State.Login) {
+                GameManager.Instance.LoginRemote(username.text, password.text, b=>{ if (b) SetState(State.End); });
             }
-            else
+            else {
                 throw new Exception("bad state");
+            }
         }
         public void TakeDemographics()
         {
             GameManager.Instance.SetDemographicsLocal(age.value, gender.value, education.value);
             GameManager.Instance.SetDemographicsRemote(s=>SetState(State.End));
-            // TODO: no need to pause, but mark as 'need to send' later if not
         }
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                if (username.isFocused)
+                if (username.isFocused) {
                     password.ActivateInputField();
-                else if (password.isFocused)
+                } else if (password.isFocused) {
                     username.ActivateInputField();
+                }
             }
         }
     }

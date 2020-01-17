@@ -19,11 +19,10 @@ namespace EcoBuilder.UI
 
 
         int target1, target2;
-        Color feasibleScoreCol, infeasibleScoreCol;
+        [SerializeField] Color feasibleScoreCol, infeasibleScoreCol;
         void Awake()
         {
             feasibleScoreCol = scoreText.color;
-            infeasibleScoreCol = new Color(.7f,.7f,.7f,.8f); // TODO: magic numbers
             scoreText.color = infeasibleScoreCol;
         }
         public void SetScoreThresholds(int target1, int target2)

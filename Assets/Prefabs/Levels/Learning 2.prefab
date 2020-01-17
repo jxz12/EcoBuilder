@@ -404,13 +404,15 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.introduction
-      value: 
+      value: The animal below is going extinct, even though it has food! Let's fix
+        that. Start by focusing on the plant, by tapping it. A blue outline means
+        that a species or link cannot be removed.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.congratulation
-      value: Well done! You now know all you need to know to build any ecosystem.
-        Try the next level to test your skills!
+      value: Well done! You now know the basics of how to build an ecosystem. The
+        next levels will teach you some real world phenomena!
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -441,7 +443,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.sizes.Array.data[1]
-      value: 0.625
+      value: 0.75
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

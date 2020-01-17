@@ -29,11 +29,12 @@ namespace EcoBuilder
             public int age = 0;
             public int gender = 0;
             public int education = 0;
-            
             public enum Team { None=0, Wolf, Lion }
             public Team team = Team.None;
+
             public bool reverseDrag = true;
             public bool dontAskForLogin = false;
+            public bool syncedRemote = false;
 
             public Dictionary<int, int> highScores = new Dictionary<int, int>();
         }
@@ -114,7 +115,7 @@ namespace EcoBuilder
         }
         public void ResetSaveData()
         {
-            // TODO: something else
+            print("TODO: something else");
             DeletePlayerDetailsLocal();
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
         }
@@ -123,23 +124,20 @@ namespace EcoBuilder
 
         ///////////////////
         // web things
-        IEnumerator SendHttpPost(string address, WWWForm form, Action<bool> OnCompletion)
+        static readonly string server = "127.0.0.1/ecobuilder/";
+        IEnumerator SendHttpPost(string address, WWWForm form, Action<bool, string> OnCompletion)
         {
             using (var p = UnityWebRequest.Post(address, form))
             {
-                // TODO: shade and skip
+                print("TODO: shade and skip/timeout");
                 yield return p.SendWebRequest();
                 if (p.isNetworkError || p.isHttpError)
                 {
-                    // TODO: error and skip
-                    print(p.error);
-                    OnCompletion(false);
+                    OnCompletion(false, p.error);
                 }
                 else
                 {
-                    // TODO: return string? do login correctly 
-                    print(p.downloadHandler.text);
-                    OnCompletion(true);
+                    OnCompletion(true, p.downloadHandler.text);
                 }
             }
         }
@@ -156,7 +154,7 @@ namespace EcoBuilder
             form.AddField("username", Encryption.Encrypt(player.username));
             form.AddField("password", Encryption.Encrypt(player.password));
             form.AddField("email", Encryption.Encrypt(player.email));
-            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/register.php", form, OnCompletion));
+            StartCoroutine(SendHttpPost(server+"register.php", form, (b,s)=>OnCompletion(b)));
         }
         public void SetDemographicsLocal(int age, int gender, int education)
         {
@@ -173,7 +171,8 @@ namespace EcoBuilder
             form.AddField("age", Encryption.Encrypt(player.age.ToString()));
             form.AddField("gender", Encryption.Encrypt(player.gender.ToString()));
             form.AddField("education", Encryption.Encrypt(player.education.ToString()));
-            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/demographics.php", form, OnCompletion));
+            StartCoroutine(SendHttpPost(server+"demographics.php", form, (b,s)=>OnCompletion(b)));
+            print("TODO: no need to pause, but mark as 'need to send' later if not");
         }
         public void SetTeamLocal(PlayerDetails.Team team)
         {
@@ -186,24 +185,42 @@ namespace EcoBuilder
             form.AddField("username", Encryption.Encrypt(player.username));
             form.AddField("password", Encryption.Encrypt(player.password));
             form.AddField("team", Encryption.Encrypt(((int)player.team).ToString()));
-            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/team.php", form, OnCompletion));
+            StartCoroutine(SendHttpPost(server+"team.php", form, (b,s)=>OnCompletion(b)));
+        }
+        public void SetDragDirectionLocal(bool reversed)
+        {
+            player.reverseDrag = reversed;
+            SavePlayerDetailsLocal();
+        }
+        public void SetDragDirectionRemote(Action<bool> OnCompletion)
+        {
+            var form = new WWWForm();
+            form.AddField("username", Encryption.Encrypt(player.username));
+            form.AddField("password", Encryption.Encrypt(player.password));
+            form.AddField("reversed", Encryption.Encrypt(player.reverseDrag?"1":"0"));
+            StartCoroutine(SendHttpPost(server+"drag.php", form, (b,s)=>OnCompletion(b)));
+            print("TODO: save on server as well");
         }
         public void LoginRemote(string username, string password, Action<bool> OnCompletion)
         {
             var form = new WWWForm();
             form.AddField("username", Encryption.Encrypt(player.username));
             form.AddField("password", Encryption.Encrypt(player.password));
-            StartCoroutine(SendHttpPost("127.0.0.1/ecobuilder/login.php", form, OnCompletion));
+            StartCoroutine(SendHttpPost(server+"login.php", form, (b,s)=>{ OnCompletion(b); if (b) ParseScores(s); }));
             SavePlayerDetailsLocal();
+        }
+        void ParseScores(string scores)
+        {
+            print("TODO: parse the scores and place them into player.highScores");
         }
         public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
         {
-            // TODO: get global scores from server
+            print("TODO: get global scores from server");
             return Tuple.Create(14,12,10);
         }
         public bool SendEmailReminder(string username)
         {
-            // TODO:
+            print("TODO:");
             return true;
         }
 
@@ -216,66 +233,53 @@ namespace EcoBuilder
         {
             DeletePlayerDetailsLocal();
         }
-        public void SavePlaythrough(double[,] model, int[,] record)
+
+        // This whole structure is necessary because you cannot change prefabs from script when compiled
+        // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
+        public int GetHighScoreLocal(int levelIdx)
+        {
+            if (!player.highScores.ContainsKey(levelIdx)) {
+                player.highScores[levelIdx] = -1;
+            }
+            return player.highScores[levelIdx];
+        }
+        // returns whether new high score is achieved
+        public void SaveHighScoreLocal(int levelIdx, int score)
+        {
+            if (GetHighScoreLocal(levelIdx) < score) {
+                player.highScores[levelIdx] = score;
+                SavePlayerDetailsLocal();
+            }
+        }
+        public void SavePlaythroughRemote(int levlIdx, int score, double[,] matrix, int[,] actions)
         {
             var bf = new BinaryFormatter();
             var form = new WWWForm();
             form.AddField("idx", PlayedLevel.Details.idx.ToString());
             using (var ms = new MemoryStream())
             {
-                bf.Serialize(ms, model);
-                form.AddBinaryData("model", ms.ToArray());
+                bf.Serialize(ms, matrix);
+                form.AddBinaryData("matrix", ms.ToArray());
             }
 
             using (var ms = new MemoryStream())
             {
-                bf.Serialize(ms, record);
-                form.AddBinaryData("record", ms.ToArray());
+                bf.Serialize(ms, actions);
+                form.AddBinaryData("actions", ms.ToArray());
             }
 
             print("TODO: send actual data");
             // TODO: cut max size of these things if necessary
             //       if sending fails, store locally and try to send next time
         }
-        public void SavePlayedLevelHighScore(int score)
-        {
-            int idx = PlayedLevel.Details.idx;
-            if (!player.highScores.ContainsKey(idx) || score > player.highScores[idx])
-                player.highScores[idx] = score;
-
-            if (PlayedLevel.NextLevel != null) // unlock next level
-            {
-                int nextIdx = PlayedLevel.NextLevel.Details.idx;
-                if (!player.highScores.ContainsKey(idx) || player.highScores[nextIdx] < 0)
-                    player.highScores[nextIdx] = 0; // TODO: animation here to draw eye towards unlock
-            }
-            SavePlayerDetailsLocal();
-        }
-
-
-        // This whole structure is necessary because you cannot change prefabs from script when compiled
-        // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
-        public int GetLocalHighScore(int levelIdx)
-        {
-            if (!player.highScores.ContainsKey(levelIdx))
-            {
-                return -1;
-            }
-            return player.highScores[levelIdx];
-        }
-        public void SetDragDirection(bool reversed)
-        {
-            // TODO: save on server as well
-            player.reverseDrag = reversed;
-            SavePlayerDetailsLocal();
-        }
         public bool IsLearningFinished {
             get {
                 // check if last learning level has been completed
-                if (player.highScores[learningLevelPrefabs[learningLevelPrefabs.Count-1].Details.idx] < 1)
+                if (player.highScores[learningLevelPrefabs[learningLevelPrefabs.Count-1].Details.idx] < 1) {
                     return false;
-                else
+                } else {
                     return true;
+                }
             }
         }
     }

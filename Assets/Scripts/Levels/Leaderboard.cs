@@ -14,7 +14,7 @@ namespace EcoBuilder.Levels
         {
             name = levelPrefab.Details.idx.ToString();
             titleText.text = levelPrefab.Details.title;
-            if (GameManager.Instance.GetPlayerHighScore(levelPrefab.Details.idx) >= 0)
+            if (GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.idx) >= 0)
             {
                 lockShade.SetActive(false);
             }

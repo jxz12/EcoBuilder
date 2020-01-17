@@ -23,11 +23,7 @@ namespace EcoBuilder.Levels
             help.SetText("Let's put your skills to the test! Try to construct the best ecosystem you can, given the constraints shown in the left. Here you must add two plants, four animals, and have at least 6 interactions between them. If you get stuck and do not know why, then you can press and hold this panel to the left to receive an explanation. There is one more rule: any two animals also cannot have the same weight. Good luck!");
 
             DetachSmellyListeners();
-            // start with a simple two species system
-            // then show the effects of interference
-            // then add another species
-            // show the conflicts
-            // explain superfocus
+            print("TODO: 1 start with a simple two species system, 2 then show the effects of interference (examples of exclusion/competition), 3 then add another species and show the conflicts, 4 explain superfocus");
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {

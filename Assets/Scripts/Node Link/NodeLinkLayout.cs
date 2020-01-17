@@ -88,7 +88,7 @@ namespace EcoBuilder.NodeLink
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .4f);
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .4f);
                 }
-                graphScaleTarget -= maxError*.1f; // TODO: magic number
+                graphScaleTarget -= maxError*.1f;
                 graphScaleTarget = Mathf.Min(graphScaleTarget, 1); // don't scale too much
                 graphScale = Mathf.SmoothDamp(graphScale, graphScaleTarget, ref graphScaleVelocity, zoomSmoothTime);
 
@@ -104,7 +104,7 @@ namespace EcoBuilder.NodeLink
                 graphScale = Mathf.SmoothDamp(graphScale, 1, ref graphScaleVelocity, zoomSmoothTime);
             }
             graphParent.localScale = graphScale * Vector3.one;
-            // TODO: magic numbers
+            print("TODO: magic numbers");
         }
         [SerializeField] float zoomSmoothTime;
         float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;
@@ -241,6 +241,7 @@ namespace EcoBuilder.NodeLink
                     d_max = Math.Max(d.Value, d_max);
                 }
             }
+
             foreach (float eta in ExpoSchedule(d_max))
             {
                 FYShuffle(terms);
@@ -260,6 +261,7 @@ namespace EcoBuilder.NodeLink
         private IEnumerable<float> ExpoSchedule(int d_max)
         {
             yield return d_max*d_max;
+            yield return d_max;
             // float eta_max = d_max*d_max;
             // float lambda = Mathf.Log(eta_max) / 9;
             // for (int t=0; t<10; t++)

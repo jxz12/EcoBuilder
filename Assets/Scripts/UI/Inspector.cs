@@ -50,6 +50,7 @@ namespace EcoBuilder.UI
             public bool Removable { get; set; } = true;
 
             public GameObject GObject { get; set; } = null;
+            public HealthBar Health { get; set; } = null;
             public string UserName { get; set; } = null;
 
             public Species(int idx, bool isProducer)
@@ -315,9 +316,9 @@ namespace EcoBuilder.UI
         }
 
 
-        /////////////////////
-        // public stuff
-
+        //////////////////
+        // public stuff //
+        //////////////////
         public void InspectSpecies(int idx)
         {
             if (inspected == null)
@@ -441,6 +442,11 @@ namespace EcoBuilder.UI
             SpawnWithEvents(graveyard[idx]);
             graveyard.Remove(idx);
         }
+        public void DrawHealthBars(Func<int, float> Health)
+        {
+            print("TODO: health bars");
+        }
+        
 
         ///////////////////////////
         // for spawning from level
@@ -488,11 +494,6 @@ namespace EcoBuilder.UI
                 sizeTrait.SetValueWithoutCallback(s.BodySize);
                 greedTrait.SetValueWithoutCallback(s.Greediness);
             }
-        }
-        public void SetHealthBars(Func<int, float> Heath)
-        {
-            // no.GetComponent<HealthBar>().TweenHealth(1f * Time.deltaTime);
-            print("TODO:");
         }
         public void Hide()
         {

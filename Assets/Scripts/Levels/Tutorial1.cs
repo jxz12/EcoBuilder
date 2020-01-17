@@ -28,7 +28,6 @@ namespace EcoBuilder.Levels
             help.SetSide(false);
             help.SetDistFromTop(.2f);
             help.SetWidth(.6f);
-            help.SetText("Welcome to EcoBuilder! Let's build your first ecosystem. Try adding your first species by tapping the leaf in the bottom right.");
             inspector.SetConsumerAvailability(false);
 
             DetachSmellyListeners();
@@ -176,7 +175,6 @@ namespace EcoBuilder.Levels
             // help.SetSide(false, false);
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetText("You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); score.DisableFinish(false); }));
-            // TODO: this breaks if they add the link back before removing species
 
             DetachSmellyListeners();
             AttachSmellyListener(score, "OnLevelCompletabled", ExplainFinish);
