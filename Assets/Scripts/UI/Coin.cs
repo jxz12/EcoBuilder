@@ -30,7 +30,7 @@ namespace EcoBuilder.UI
             button.onClick.RemoveListener(Flip);
             button.interactable = false;
             StartCoroutine(TweenY(button.GetComponent<RectTransform>(), 1, -110));
-            StartCoroutine(WaitThenLand(3)); // TODO: magic number I don't care Unity bad
+            StartCoroutine(WaitThenLand(3));
         }
         public event Action<bool> OnLanded;
         public event Action OnFinished;
@@ -40,7 +40,7 @@ namespace EcoBuilder.UI
             if (heads == null)
                 throw new Exception("coin not flipped");
 
-            // TODO: add a nice glowing effect for this
+            print("TODO: add a nice glowing effect for this");
             button.interactable = true;
             button.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Continue";
             button.onClick.AddListener(Exit);

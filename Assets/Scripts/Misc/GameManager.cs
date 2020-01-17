@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 
@@ -74,8 +75,14 @@ namespace EcoBuilder
             get {
                 if (playedLevel == null) // should never happen in real game
                 {
-                    playedLevel = Instantiate(Levels.Level.GetDefaultLevel());
+#if !UNITY_EDITOR
+                    throw new Exception("should never not have playedlevel set");
+#endif
+                    var defaultLevel = AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Learning 2.prefab");
+                    playedLevel = Instantiate(defaultLevel);
                     playedLevel.transform.SetParent(PlayParent, false);
+                    ShowHelpText(2f, playedLevel.Details.introduction);
+                    // ^basically to put in corner
                 }
                 return playedLevel;
             }

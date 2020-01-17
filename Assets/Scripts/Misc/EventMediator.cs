@@ -47,7 +47,7 @@ namespace EcoBuilder
             nodelink.OnConstraints +=   ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=   ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
 
-            model.OnEquilibrium += ()=> inspector.SetHealthBars(i=> model.GetNormalisedAbundance(i));
+            model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> constraints.DisplayFeasibility(model.Feasible);
             model.OnEquilibrium += ()=> constraints.DisplayStability(model.Stable);
@@ -139,8 +139,9 @@ namespace EcoBuilder
         Levels.Level playedLevel;
         void OnDestroy()
         {
-            if (playedLevel != null) // I think this is ugly
+            if (playedLevel != null) { // I think this is ugly
                 playedLevel.OnFinished -= FinishPlaythrough;
+            }
         }
         void FinishPlaythrough()
         {
@@ -148,10 +149,9 @@ namespace EcoBuilder
             nodelink.Freeze();
             score.CompleteLevel();
 
-            playedLevel.SaveLevel(score.NormalisedScore);
-            double[,] state = model.RecordState();
-            int[,] record = recorder.RecordMoves();
-            GameManager.Instance.SavePlaythrough(state, record);
+            double[,] matrix = model.RecordState();
+            int[,] actions = recorder.RecordMoves();
+            playedLevel.SavePlaythrough(score.NormalisedScore, matrix, actions);
         }
 
         // perform calculations if necessary
@@ -190,14 +190,6 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.A) &&
-                Input.GetKeyDown(KeyCode.S) &&
-                Input.GetKeyDown(KeyCode.D))
-            {
-                double[,] state = model.RecordState();
-                int[,] record = recorder.RecordMoves();
-                GameManager.Instance.SavePlaythrough(state, record);
-            }
             // save a level for convenience
             if (Input.GetKeyDown(KeyCode.Q) &&
                 Input.GetKeyDown(KeyCode.W) &&

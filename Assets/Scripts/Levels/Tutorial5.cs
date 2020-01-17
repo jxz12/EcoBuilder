@@ -30,7 +30,7 @@ namespace EcoBuilder.Levels
             help.SetText("Now make the lowest animal eat the top animal");
             help.Show(true);
             // now make them connect the lowest animal to the highest
-            // TODO: disallow other actions somehow
+            print("TODO: disallow other actions somehow, and add track coroutine");
 
             DetachSmellyListeners();
             AttachSmellyListener(nodelink, "OnConstraints", ()=>CheckLoopOfLength(3, ExplainLoopThree));

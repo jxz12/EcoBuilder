@@ -1738,6 +1738,7 @@ MonoBehaviour:
     greedEditables: 
     targetScore1: 1
     targetScore2: 1
+    alternateScore: 
   tutorial: {fileID: 0}
   landscape: {fileID: 6175307669712771283, guid: 0cfceb57cb70edf4da131289775de31e,
     type: 3}
@@ -2994,7 +2995,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 7c2548d4dbc440e4cac81c9fc3988d6b, type: 2}
+  m_Material: {fileID: 2100000, guid: af7485232731a42408b55532ff50e547, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:

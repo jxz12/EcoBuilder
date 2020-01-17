@@ -1,12 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace EcoBuilder.UI
+namespace EcoBuilder.NodeLink
 {
     public class HealthBar : MonoBehaviour
     {
-        [SerializeField] Vector3 offset;
-        [SerializeField] float width, height, depth;
+        [SerializeField] Vector3 offset = new Vector3(.4f,-.4f,-.5f);
+        [SerializeField] float width=.15f, height=.04f, depth=.02f;
         MeshFilter mf;
 
         List<Vector3> verts;
@@ -86,6 +86,30 @@ namespace EcoBuilder.UI
             verts[6] = new Vector3( mid, height, depth) + offset;
             verts[7] = new Vector3( mid, height,-depth) + offset;
 
+            mf.mesh.SetVertices(verts);
+        }
+        public void Magnify(float magnification)
+        {
+            verts = new List<Vector3>()
+            {
+                magnification * new Vector3(-width,-height,-depth),
+                magnification * new Vector3(-width,-height, depth),
+                magnification * new Vector3(-width, height, depth),
+                magnification * new Vector3(-width, height,-depth),
+
+                magnification * new Vector3( 0,-height,-depth),
+                magnification * new Vector3( 0,-height, depth),
+                magnification * new Vector3( 0, height, depth),
+                magnification * new Vector3( 0, height,-depth),
+
+                magnification * new Vector3( width,-height,-depth),
+                magnification * new Vector3( width,-height, depth),
+                magnification * new Vector3( width, height, depth),
+                magnification * new Vector3( width, height,-depth),
+            };
+            for (int i=0; i<verts.Count; i++)
+                verts[i] += offset;
+            
             mf.mesh.SetVertices(verts);
         }
     }

@@ -18,10 +18,11 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            if (GameManager.Instance.AskForLogin)
+            if (GameManager.Instance.AskForLogin) {
                 StartRegistration();
-            else
+            } else {
                 StartMainMenu();
+            }
         }
 
         void StartRegistration()
@@ -57,7 +58,8 @@ namespace EcoBuilder.UI
 
             var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
             GameManager.Instance.SetTeamLocal(team);
-            GameManager.Instance.SetTeamRemote(s=>print(s)); // TODO: error if not connected
+            GameManager.Instance.SetTeamRemote(s=>print(s));
+            print("TODO: error if not connected");
             wolfLion.OnFinished += EndRegistration;
         }
         void EndRegistration()
@@ -87,7 +89,7 @@ namespace EcoBuilder.UI
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
                     var level = leaderboard.GiveLevelPrefab(prefab);
 
-                    var scores = GameManager.Instance.GetGlobalTop3Scores(level.Details.idx);
+                    var scores = GameManager.Instance.GetTop3ScoresRemote(level.Details.idx);
                     leaderboard.SetScores(scores.Item1, scores.Item2, scores.Item3);
                 }
             }
@@ -107,7 +109,8 @@ namespace EcoBuilder.UI
         }
         public void SetReverseDrag(bool reversed)
         {
-            GameManager.Instance.SetDragDirection(reversed);
+            GameManager.Instance.SetDragDirectionLocal(reversed);
+            GameManager.Instance.SetDragDirectionRemote(b=>print("TODO: set sync=false"));
         }
     }
 }

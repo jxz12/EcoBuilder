@@ -24,92 +24,68 @@ namespace EcoBuilder.Levels
 
             ExplainIntro();
         }
-        IEnumerator trackRoutine;
-        IEnumerator shuffleRoutine;
         void ExplainIntro()
         {
-            help.SetText("The animal below is going extinct, even though it has food! Let's fix that. Start by focusing on the plant, by tapping it. A blue outline means that a species or link cannot be removed.");
+            DetachSmellyListeners();
+            StopAllCoroutines();
             help.SetSide(false);
             help.SetDistFromTop(.15f);
-
             
-            if (shuffleRoutine != null)
-            {
-                StopCoroutine(shuffleRoutine);
-                shuffleRoutine = null;
-            }
-            StartCoroutine(trackRoutine = Track(plant.transform));
+            StartCoroutine(Track(plant.transform));
 
-            DetachSmellyListeners();
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
         }
 
         void ExplainSize()
         {
+            DetachSmellyListeners();
+            StopAllCoroutines();
             help.SetText("You can change the weight of your species by moving this slider. Here, your animal is going extinct because it is not getting enough food. See if you can save it!");
             help.Show(true);
             help.SetSide(true, false);
             help.SetDistFromTop(.01f);
 
-            if (trackRoutine != null)
-            {
-                StopCoroutine(trackRoutine);
-                trackRoutine = null;
-            }
-            StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 40));
+            StartCoroutine(ShuffleOnSlider(3, 40));
 
-            DetachSmellyListeners();
             AttachSmellyListener<int>(model, "OnRescued", i=>ExplainMetabolism(2));
             AttachSmellyListener(nodelink, "OnUnfocused", ExplainIntro);
         }
         void ExplainMetabolism(float delay)
         {
+            DetachSmellyListeners();
+            StopAllCoroutines();
+
             help.Show(false);
             // inspector.Uninspect();
             nodelink.ForceUnfocus();
 
-            if (shuffleRoutine != null)
-            {
-                StopCoroutine(shuffleRoutine);
-                shuffleRoutine = null;
-            }
             smoothTime = .3f;
             targetSize = Vector2.zero;
 
             StartCoroutine(WaitThenDo(delay, ()=>{
-                help.SetText("Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(trackRoutine = Track(animal.transform)); targetSize = new Vector2(100,100);
+                help.SetText("Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100);
             }));
 
-
-            DetachSmellyListeners();
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainInterference());
         }
-        // TODO: remove this entirely
         void ExplainInterference()
         {
+            DetachSmellyListeners();
+            StopAllCoroutines();
             help.Show(false);
-
-            // help.SetText("The other trait you can change is known as 'interference'. The higher the interference, the more a species competes with others of its own species, and so the lower its maximum population. Try changing it to see if you can make the animal go extinct!");
-            // help.Show(true);
-            // inspector.HideGreedSlider(false);
 
             help.SetText("The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. Try changing the animal here in order to make it go extinct again.");
             help.Show(true);
 
-            if (trackRoutine != null)
-            {
-                StopCoroutine(trackRoutine);
-                trackRoutine = null;
-            }
-            // StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 90));
-            StartCoroutine(shuffleRoutine = ShuffleOnSlider(3, 40));
+            StartCoroutine(ShuffleOnSlider(3, 40));
 
-            DetachSmellyListeners();
             AttachSmellyListener(nodelink, "OnUnfocused", ()=>ExplainMetabolism(0));
             AttachSmellyListener<int>(model, "OnEndangered", i=>ExplainScore());
         }
         void ExplainScore()
         {
+            DetachSmellyListeners();
+            StopAllCoroutines();
             help.Show(false);
             targetSize = new Vector2(0,0);
             // targetSize = new Vector2(100,100);
@@ -117,7 +93,6 @@ namespace EcoBuilder.Levels
             // targetPos = new Vector2(100, -50);
             // targetZRot = 45;
             // Point();
-            StopCoroutine(shuffleRoutine);
             smoothTime = .2f;
 
             // inspector.Uninspect();
@@ -125,15 +100,11 @@ namespace EcoBuilder.Levels
             help.SetSide(false,false);
             help.SetDistFromTop(.13f);
 
-            // TODO: fix the explanation tap
+            print("TODO: fix the report card");
             StartCoroutine(WaitThenDo(2, ()=>{
                 help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can tap your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
             }));
-            // StartCoroutine(WaitThenDo(2, ()=>{
-            //     help.SetText("Good job! This bar at the top displays your score, and is based on the size and total health of your ecosystem. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
-            // }));
 
-            DetachSmellyListeners();
             AttachSmellyListener(GameManager.Instance.PlayedLevel, "OnFinished", Finish);
         }
         void Finish()
@@ -155,8 +126,7 @@ namespace EcoBuilder.Levels
             Point();
             while (true)
             {
-                // targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
-                targetPos = (Vector2)Camera.main.WorldToScreenPoint(tracked.position) + new Vector2(0,-20);
+                targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
                 yield return null;
             }
         }

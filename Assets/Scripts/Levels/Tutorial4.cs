@@ -15,8 +15,6 @@ namespace EcoBuilder.Levels
         }
         void ExplainIntro()
         {
-            help.SetText("Now that you are... Let's start with making a simple one with one chain");
-
             DetachSmellyListeners();
             AttachSmellyListener(nodelink, "OnConstraints", ()=>CheckChainOfHeight(1, ExplainChainOfOne));
             AttachSmellyListener(nodelink, "OnConstraints", ()=>LimitNumAnimals(1));
@@ -67,7 +65,7 @@ namespace EcoBuilder.Levels
             nodelink.ForceUnfocus();
             help.Show(false);
             StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! You now understand chains.");}));
-            // TODO: enable mass editing only now?
+            print("TODO: enable mass editing only now?");
 
             DetachSmellyListeners();
         }

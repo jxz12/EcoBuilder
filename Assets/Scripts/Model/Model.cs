@@ -231,7 +231,8 @@ namespace EcoBuilder.Model
         {
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
-            return "TODO:";
+            print("TODO: explain score");
+            return "todo";
         }
 
         // private float total_NormAbund;

@@ -53,9 +53,9 @@ namespace EcoBuilder.NodeLink
 
         public void AddNode(int idx, GameObject shape)
         {
-            if (nodes[idx] != null)
+            if (nodes[idx] != null) {
                 throw new Exception("index " + idx + " already added");
-
+            }
             if (nodes[idx] == null && nodeGrave[idx] == null) // entirely new
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
@@ -64,7 +64,7 @@ namespace EcoBuilder.NodeLink
                 adjacency[idx] = new HashSet<int>();
 
                 // initialise as flashing
-                nodes[idx].Shape(shape);
+                nodes[idx].SetShape(shape);
                 FlashNode(idx);
                 LieDownNode(idx);
                 // FocusNode(idx);
@@ -75,7 +75,7 @@ namespace EcoBuilder.NodeLink
                 nodeGrave.RemoveAt(idx);
 
                 nodes[idx].gameObject.SetActive(true);
-                nodes[idx].Shape(shape); // technically not necessary
+                nodes[idx].SetShape(shape); // technically not necessary
 
                 adjacency[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -99,10 +99,12 @@ namespace EcoBuilder.NodeLink
                     }
                 }
                 // clear linkGrave
-                foreach (int col in links.GetColumnIndicesInRow(idx))
+                foreach (int col in links.GetColumnIndicesInRow(idx)) {
                     linkGrave.RemoveAt(idx, col);
-                foreach (int row in links.GetRowIndicesInColumn(idx))
+                }
+                foreach (int row in links.GetRowIndicesInColumn(idx)) {
                     linkGrave.RemoveAt(row, idx);
+                }
             }
             // nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
             nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle;
@@ -111,13 +113,16 @@ namespace EcoBuilder.NodeLink
 
         public void RemoveNode(int idx)
         {
-            if (nodes[idx] == null)
+            if (nodes[idx] == null) {
                 throw new Exception("no index " + idx);
-            if (focusedNode != null && focusedNode.Idx == idx)
+            }
+            if (focusedNode != null && focusedNode.Idx == idx) {
                 ForceUnfocus();
+            }
 
             // move to graveyard to save for later
-            nodes[idx].gameObject.SetActive(false);
+            // nodes[idx].gameObject.SetActive(false);
+            nodes[idx].Shape.SetActive(false);
             nodeGrave[idx] = nodes[idx];
             nodes.RemoveAt(idx);
 
@@ -132,10 +137,12 @@ namespace EcoBuilder.NodeLink
                 linkGrave[row, idx] = links[row, idx];
             }
             // clear links
-            foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
+            foreach (int col in linkGrave.GetColumnIndicesInRow(idx)) {
                 links.RemoveAt(idx, col);
-            foreach (int row in linkGrave.GetRowIndicesInColumn(idx))
+            }
+            foreach (int row in linkGrave.GetRowIndicesInColumn(idx)) {
                 links.RemoveAt(row, idx);
+            }
 
 
             // prevent memory leak in SGD data structures
@@ -149,16 +156,18 @@ namespace EcoBuilder.NodeLink
         }        
         public void RemoveNodeCompletely(int idx)
         {
-            if (nodeGrave[idx] == null)
+            if (nodeGrave[idx] == null) {
                 throw new Exception("node not in graveyard");
-            
+            }
             Destroy(nodeGrave[idx].gameObject);
             nodeGrave.RemoveAt(idx);
 
-            foreach (int col in linkGrave.GetColumnIndicesInRow(idx).ToArray())
+            foreach (int col in linkGrave.GetColumnIndicesInRow(idx).ToArray()) {
                 linkGrave.RemoveAt(idx, col);
-            foreach (int row in linkGrave.GetRowIndicesInColumn(idx).ToArray())
+            }
+            foreach (int row in linkGrave.GetRowIndicesInColumn(idx).ToArray()) {
                 linkGrave.RemoveAt(row, idx);
+            }
         }
 
         public void AddLink(int i, int j)
@@ -195,11 +204,12 @@ namespace EcoBuilder.NodeLink
                 throw new Exception("no bidirectional links allowed");
             }
 
-            if (adjacency[i].Count == 0)
+            if (adjacency[i].Count == 0) {
                 nodes[i].Disconnected = true;
-            if (adjacency[j].Count == 0)
+            }
+            if (adjacency[j].Count == 0) {
                 nodes[j].Disconnected = true;
-
+            }
             OnLinked?.Invoke();
         }
 
@@ -238,12 +248,9 @@ namespace EcoBuilder.NodeLink
             {
                 int res=li.Source.Idx, con=li.Target.Idx;
                 float flow = flows(res, con);
-                if (flow > 0)
-                {
+                if (flow > 0) {
                     li.TileSpeed = minLinkFlow + flowRange*flow;
-                }
-                else
-                {
+                } else {
                     li.TileSpeed = minLinkFlow;
                 }
             }
@@ -277,9 +284,9 @@ namespace EcoBuilder.NodeLink
         // adds a gameobject like the jump shadow in mario bros.
         public void AddDropShadow(GameObject shadowPrefab)
         {
-            if (shadowPrefab == null)
+            if (shadowPrefab == null) {
                 return;
-
+            }
             var shadow = Instantiate(shadowPrefab);
             shadow.transform.SetParent(nodesParent, false);
             shadow.transform.localPosition = Vector3.zero;
@@ -300,22 +307,23 @@ namespace EcoBuilder.NodeLink
         }
         public void OutlineChain(bool highlighted, cakeslice.Outline.Colour colour)
         {
-            // TODO: check if calculating, and wait until done?
+            print("TODO: check if calculating, and wait until done?");
             if (MaxChain == 0) return;
-            if (highlighted)
-            {
-                foreach (int idx in TallestNodes)
+            if (highlighted) {
+                foreach (int idx in TallestNodes) {
                     nodes[idx].PushOutline(colour);
-            }
-            else
-            {
-                foreach (int idx in TallestNodes)
+                }
+            } else {
+                foreach (int idx in TallestNodes) {
                     nodes[idx].PopOutline();
+                }
             }
         }
         public void OutlineLoop(bool highlighted, cakeslice.Outline.Colour colour)
         {
-            if (MaxLoop == 0) return;
+            if (MaxLoop == 0) {
+                return;
+            }
             if (highlighted)
             {
                 for (int i=0; i<LongestLoop.Count; i++)
@@ -334,9 +342,9 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        // TODO: this is a bit messy and doesn't work if graph is spinning
         public void TooltipNode(int idx, string msg)
         {
+            print("TODO: this is a bit messy and doesn't work if graph is spinning");
             tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
             tooltip.ShowText(msg);
             tooltip.Enable();

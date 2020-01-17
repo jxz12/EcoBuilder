@@ -15,12 +15,14 @@ namespace EcoBuilder.NodeLink
         public Vector3 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
 
+        [SerializeField] float defaultSize = .5f;
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
         public bool Removable { get; set; } = true;
         public bool Disconnected {get; set; } = true;
 
         GameObject shape;
+        public GameObject Shape { get { return shape; } }
         MeshRenderer shapeRenderer;
         cakeslice.Outline outline;
 
@@ -30,7 +32,7 @@ namespace EcoBuilder.NodeLink
             name = idx.ToString();
         }
 
-        public void Shape(GameObject shapeObject)
+        public void SetShape(GameObject shapeObject)
         {
             // drop it in at the point at shapeObject's position
             // transform.position = shapeObject.transform.position;
@@ -53,19 +55,13 @@ namespace EcoBuilder.NodeLink
         public void PopOutline()
         {
             outlines.Pop();
-            if (outlines.Count > 0)
-            {
+            if (outlines.Count > 0) {
                 outline.colour = outlines.Peek();
             }
-            else
-            {
+            else {
                 outline.enabled = false;
             }
         }
-        // public void SetHealth(float health)
-        // {
-        //     healthBar.TargetHealth = health;
-        // }
         public void SetNewParentKeepPos(Transform newParent)
         {
             transform.SetParent(newParent, true);
@@ -115,7 +111,6 @@ namespace EcoBuilder.NodeLink
         {
             transform.localRotation = Quaternion.Euler(0, 0, -90);
         }
-        float defaultSize = .5f; // TODO:
         IEnumerator bounceRoutine;
         public void Bounce()
         {
