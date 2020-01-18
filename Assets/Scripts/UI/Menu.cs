@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using System;
+using System.Collections.Generic;
 
 namespace EcoBuilder.UI
 {
@@ -18,7 +18,7 @@ namespace EcoBuilder.UI
 
         void Start()
         {
-            if (GameManager.Instance.AskForLogin) {
+            if (GameManager.Instance.AskForRegistration) {
                 StartRegistration();
             } else {
                 StartMainMenu();
@@ -28,50 +28,40 @@ namespace EcoBuilder.UI
         void StartRegistration()
         {
             form.gameObject.SetActive(true);
-            form.OnFinished += RegisteredHandler;
+            form.Reveal(StartMainMenu);
         }
-
-        [SerializeField] Levels.Leaderboard leaderboardPrefab;
-        void RegisteredHandler(object sender, EventArgs e)
+        void StartMainMenu()
         {
-            form.OnFinished -= RegisteredHandler;
             var team = GameManager.Instance.PlayerTeam;
+            wolfLion.gameObject.SetActive(true);
             if (team == GameManager.PlayerDetails.Team.Lion)
             {
                 wolfLion.InitializeFlipped(true);
-                StartMainMenu();
+                ShowMainMenu();
             }
             else if (team == GameManager.PlayerDetails.Team.Wolf)
             {
                 wolfLion.InitializeFlipped(false);
-                StartMainMenu();
-            }
-            else
-            {
-                wolfLion.Begin();
-                wolfLion.OnLanded += ChooseTeam;
+                ShowMainMenu();
+            } else {
+                wolfLion.Reveal(ChooseTeam, ShowMainMenu);
             }
         }
         void ChooseTeam(bool heads)
         {
-            wolfLion.OnLanded -= ChooseTeam;
-
             var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
             GameManager.Instance.SetTeamLocal(team);
             GameManager.Instance.SetTeamRemote(s=>print(s));
-            print("TODO: error if not connected");
-            wolfLion.OnFinished += EndRegistration;
         }
-        void EndRegistration()
-        {
-            wolfLion.OnFinished -= EndRegistration;
-            StartMainMenu();
-        }
-        void StartMainMenu()
+
+        [SerializeField] Levels.Leaderboard leaderboardPrefab;
+        [SerializeField] List<Levels.Level> learningLevelPrefabs;
+        [SerializeField] List<Levels.Level> researchLevelPrefabs;
+        void ShowMainMenu()
         {
             StartCoroutine(WaitThenShowLogo(.7f));
 
-            foreach (var prefab in GameManager.Instance.GetLearningLevelPrefabs())
+            foreach (var prefab in learningLevelPrefabs)
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
                 parent.SetParent(learningLevels.transform);
@@ -79,12 +69,12 @@ namespace EcoBuilder.UI
                 var level = Instantiate(prefab, parent);
                 parent.name = level.Details.idx.ToString();
             }
-            if (GameManager.Instance.IsLearningFinished)
+            if (IsLearningFinished())
             {
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
-                researchLock.enabled = false; // remove lock
-                foreach (var prefab in GameManager.Instance.GetResearchLevelPrefabs())
+                researchLock.enabled = false;
+                foreach (var prefab in researchLevelPrefabs)
                 {
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
                     var level = leaderboard.GiveLevelPrefab(prefab);
@@ -94,7 +84,17 @@ namespace EcoBuilder.UI
                 }
             }
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
+            reverseDrag.onValueChanged.AddListener(SetReverseDrag);
             GetComponent<Animator>().SetTrigger("Reveal");
+        }
+        bool IsLearningFinished()
+        {
+            foreach (var level in learningLevelPrefabs) {
+                if (GameManager.Instance.GetHighScoreLocal(level.Details.idx) <= 0) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         [SerializeField] GameObject logo;

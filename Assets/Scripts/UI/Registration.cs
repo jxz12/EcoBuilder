@@ -8,13 +8,11 @@ namespace EcoBuilder.UI
 {
     public class Registration : MonoBehaviour
     {
-        public event EventHandler OnFinished;
-
         [SerializeField] TMPro.TMP_InputField username, password, email;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle GDPR, askAgain;
         [SerializeField] Button loginSubmit, demoSubmit, skipButton, backButton, regButton, loginButton;
-        [SerializeField] Sprite tanButton, redButton;
+        [SerializeField] Sprite greyButton, redButton;
         [SerializeField] Image shade;
 
         [SerializeField] GameObject startObj, skipObj, idObj, demoObj;
@@ -27,26 +25,29 @@ namespace EcoBuilder.UI
             case State.Start:
                 ResetObjects();
                 startObj.SetActive(true);
-                skipButton.image.sprite = tanButton;
+                username.text = password.text = email.text = "";
+                skipButton.image.sprite = greyButton;
                 backButton.interactable = false;
                 break;
             case State.Skip:
-                if (_state == State.Skip)
+                if (_state == State.Skip || _state == State.Demographics)
                 {
-                    SetState(State.End);
-                    if (askAgain.isOn)
+                    if (askAgain.isOn) {
                         GameManager.Instance.DontAskAgainForLogin();
+                    }
+                    SetState(State.End);
                 }
                 else
                 {
                     ResetObjects();
                     skipObj.SetActive(true);
+                    askAgain.isOn = false;
                     skipButton.image.sprite = redButton;
                 }
                 break;
             case State.Register:
                 ResetObjects();
-                // FIXME: unity is a pile of shit
+                // FIXME: unity is very annoying (one frame error crap)
                 idObj.SetActive(true);
                 GDPR.isOn = false;
                 GDPR.gameObject.SetActive(true);
@@ -61,10 +62,11 @@ namespace EcoBuilder.UI
                 break;
             case State.Demographics:
                 ResetObjects();
+                backButton.interactable = false;
                 demoObj.SetActive(true);
                 break;
             case State.End:
-                OnFinished?.Invoke(this, EventArgs.Empty);
+                FinishedCallback.Invoke();
                 Disappear();
                 break;
             }
@@ -90,11 +92,12 @@ namespace EcoBuilder.UI
             username.onValueChanged.AddListener(s=> CheckUsernameEmail());
             GDPR.onValueChanged.AddListener(b=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            SetState(State.Start);
-            Appear();
         }
-        void Appear()
+        Action FinishedCallback;
+        public void Reveal(Action FinishedCallback)
         {
+            this.FinishedCallback = FinishedCallback;
+            SetState(State.Start);
             StartCoroutine(yTween(1,-1000,0,true));
         }
         void Disappear()
@@ -151,10 +154,10 @@ namespace EcoBuilder.UI
                 GameManager.Instance.RegisterLocal(username.text, password.text, email.text);
                 GameManager.Instance.RegisterRemote(b=>{ if (b) SetState(State.Demographics); });
             }
-            else if (_state == State.Login) {
+            else if (_state == State.Login)
+            {
                 GameManager.Instance.LoginRemote(username.text, password.text, b=>{ if (b) SetState(State.End); });
-            }
-            else {
+            } else {
                 throw new Exception("bad state");
             }
         }
@@ -170,6 +173,12 @@ namespace EcoBuilder.UI
                 if (username.isFocused) {
                     password.ActivateInputField();
                 } else if (password.isFocused) {
+                    if (_state == State.Register) {
+                        email.ActivateInputField();
+                    } else {
+                        username.ActivateInputField();
+                    }
+                } else if (email.isFocused) {
                     username.ActivateInputField();
                 }
             }

@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// for web comms
-using UnityEngine.Networking;
-
 // for load/save local
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
@@ -26,10 +23,10 @@ namespace EcoBuilder
             public string password = "";
             public string email = "";
 
-            public int age = 0;
-            public int gender = 0;
-            public int education = 0;
-            public enum Team { None=0, Wolf, Lion }
+            public int age = -1;
+            public int gender = -1;
+            public int education = -1;
+            public enum Team { None=-1, Wolf, Lion }
             public Team team = Team.None;
 
             public bool reverseDrag = true;
@@ -43,7 +40,7 @@ namespace EcoBuilder
 
         public bool ConstrainTrophic { get { return player.team != GameManager.PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
-        public bool AskForLogin { get { return player.team==0 && !player.dontAskForLogin; } }
+        public bool AskForRegistration { get { return player.team==PlayerDetails.Team.None && !player.dontAskForLogin; } }
 
         static string playerPath;
         public void InitPlayer()
@@ -54,20 +51,20 @@ namespace EcoBuilder
 #else
             playerPath = null;
 #endif
-            // DeletePlayerDetailsLocal();
-            bool loaded = LoadPlayerDetailsLocal(); 
+            DeletePlayerDetailsLocal();
+            if (LoadPlayerDetailsLocal() == false)
+            {
+                player = new PlayerDetails();
+            }
         }
-
-
         private bool SavePlayerDetailsLocal()
         {
 #if UNITY_WEBGL
             return false;
 #endif
-
-            BinaryFormatter bf = new BinaryFormatter();
             try
             {
+                BinaryFormatter bf = new BinaryFormatter();
                 FileStream file = File.Create(playerPath);
                 bf.Serialize(file, player);
                 file.Close();
@@ -84,13 +81,12 @@ namespace EcoBuilder
 #if UNITY_WEBGL
                 return false;
 #endif
-            BinaryFormatter bf = new BinaryFormatter();
             try
             {
+                BinaryFormatter bf = new BinaryFormatter();
                 FileStream file = File.Open(playerPath, FileMode.Open);
                 player = (PlayerDetails)bf.Deserialize(file);
                 file.Close();
-
                 return true;
             }
             catch (Exception e)
@@ -104,12 +100,9 @@ namespace EcoBuilder
 #if UNITY_WEBGL
             return;
 #endif
-            try
-            {
+            try {
                 File.Delete(playerPath);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 print("no save file to delete: " + e.Message);
             }
         }
@@ -125,22 +118,7 @@ namespace EcoBuilder
         ///////////////////
         // web things
         static readonly string server = "127.0.0.1/ecobuilder/";
-        IEnumerator SendHttpPost(string address, WWWForm form, Action<bool, string> OnCompletion)
-        {
-            using (var p = UnityWebRequest.Post(address, form))
-            {
-                print("TODO: shade and skip/timeout");
-                yield return p.SendWebRequest();
-                if (p.isNetworkError || p.isHttpError)
-                {
-                    OnCompletion(false, p.error);
-                }
-                else
-                {
-                    OnCompletion(true, p.downloadHandler.text);
-                }
-            }
-        }
+        [SerializeField] UI.Postman pat;
         public void RegisterLocal(string username, string password, string email)
         {
             player.username = username;
@@ -150,11 +128,12 @@ namespace EcoBuilder
         }
         public void RegisterRemote(Action<bool> OnCompletion)
         {
-            var form = new WWWForm();
-            form.AddField("username", Encryption.Encrypt(player.username));
-            form.AddField("password", Encryption.Encrypt(player.password));
-            form.AddField("email", Encryption.Encrypt(player.email));
-            StartCoroutine(SendHttpPost(server+"register.php", form, (b,s)=>OnCompletion(b)));
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "email", player.email }
+            };
+            pat.Post(data, server+"register.php", (b,s)=>OnCompletion(b));
         }
         public void SetDemographicsLocal(int age, int gender, int education)
         {
@@ -165,13 +144,14 @@ namespace EcoBuilder
         }
         public void SetDemographicsRemote(Action<bool> OnCompletion)
         {
-            var form = new WWWForm();
-            form.AddField("username", Encryption.Encrypt(player.username));
-            form.AddField("password", Encryption.Encrypt(player.password));
-            form.AddField("age", Encryption.Encrypt(player.age.ToString()));
-            form.AddField("gender", Encryption.Encrypt(player.gender.ToString()));
-            form.AddField("education", Encryption.Encrypt(player.education.ToString()));
-            StartCoroutine(SendHttpPost(server+"demographics.php", form, (b,s)=>OnCompletion(b)));
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "age", player.age.ToString() },
+                { "gender", player.gender.ToString() },
+                { "education", player.education.ToString() }
+            };
+            pat.Post(data, server+"demographics.php", (b,s)=>OnCompletion(b));
             print("TODO: no need to pause, but mark as 'need to send' later if not");
         }
         public void SetTeamLocal(PlayerDetails.Team team)
@@ -181,11 +161,12 @@ namespace EcoBuilder
         }
         public void SetTeamRemote(Action<bool> OnCompletion)
         {
-            var form = new WWWForm();
-            form.AddField("username", Encryption.Encrypt(player.username));
-            form.AddField("password", Encryption.Encrypt(player.password));
-            form.AddField("team", Encryption.Encrypt(((int)player.team).ToString()));
-            StartCoroutine(SendHttpPost(server+"team.php", form, (b,s)=>OnCompletion(b)));
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "team", ((int)player.team).ToString() }
+            };
+            pat.Post(data, server+"team.php", (b,s)=>OnCompletion(b));
         }
         public void SetDragDirectionLocal(bool reversed)
         {
@@ -195,32 +176,43 @@ namespace EcoBuilder
         public void SetDragDirectionRemote(Action<bool> OnCompletion)
         {
             var form = new WWWForm();
-            form.AddField("username", Encryption.Encrypt(player.username));
-            form.AddField("password", Encryption.Encrypt(player.password));
-            form.AddField("reversed", Encryption.Encrypt(player.reverseDrag?"1":"0"));
-            StartCoroutine(SendHttpPost(server+"drag.php", form, (b,s)=>OnCompletion(b)));
-            print("TODO: save on server as well");
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "reversed", player.reverseDrag? "1":"0" }
+            };
+            pat.Post(data, server+"drag.php", (b,s)=>OnCompletion(b));
         }
         public void LoginRemote(string username, string password, Action<bool> OnCompletion)
         {
             var form = new WWWForm();
-            form.AddField("username", Encryption.Encrypt(player.username));
-            form.AddField("password", Encryption.Encrypt(player.password));
-            StartCoroutine(SendHttpPost(server+"login.php", form, (b,s)=>{ OnCompletion(b); if (b) ParseScores(s); }));
-            SavePlayerDetailsLocal();
+            var data = new Dictionary<string, string>() {
+                { "username", username },
+                { "password", password },
+            };
+            pat.Post(data, server+"login.php", (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b); });
         }
-        void ParseScores(string scores)
+        void ParseLogin(string username, string password, string returned)
         {
-            print("TODO: parse the scores and place them into player.highScores");
+            player.username = username;
+            player.password = password;
+            var toParse = returned.Split(',');
+            player.email = toParse[0];
+            player.age = int.Parse(toParse[1]);
+            player.gender = int.Parse(toParse[2]);
+            player.education = int.Parse(toParse[3]);
+            player.team = (PlayerDetails.Team)int.Parse(toParse[4]);
+            player.reverseDrag = int.Parse(toParse[5])==1? true:false;
+            SavePlayerDetailsLocal();
         }
         public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
         {
             print("TODO: get global scores from server");
             return Tuple.Create(14,12,10);
         }
-        public bool SendEmailReminder(string username)
+        public bool SendPasswordResetEmail(string username)
         {
-            print("TODO:");
+            print("TODO: email page for reset");
             return true;
         }
 
@@ -231,6 +223,7 @@ namespace EcoBuilder
         }
         public void Logout()
         {
+            print("TODO: reset?");
             DeletePlayerDetailsLocal();
         }
 
@@ -271,16 +264,6 @@ namespace EcoBuilder
             print("TODO: send actual data");
             // TODO: cut max size of these things if necessary
             //       if sending fails, store locally and try to send next time
-        }
-        public bool IsLearningFinished {
-            get {
-                // check if last learning level has been completed
-                if (player.highScores[learningLevelPrefabs[learningLevelPrefabs.Count-1].Details.idx] < 1) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
         }
     }
 }
