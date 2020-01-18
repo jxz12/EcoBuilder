@@ -16,8 +16,12 @@ namespace EcoBuilder.UI
 
             button.onClick.AddListener(Flip);
         }
-        public void Begin()
+        Action<bool> LandedCallback;
+        Action FinishedCallback;
+        public void Reveal(Action<bool> LandedCallback, Action FinishedCallback)
         {
+            this.FinishedCallback = FinishedCallback;
+            this.LandedCallback = LandedCallback;
             coinAnim.SetTrigger("Show");
             StartCoroutine(TweenY(button.GetComponent<RectTransform>(), 1, 110));
         }
@@ -32,8 +36,6 @@ namespace EcoBuilder.UI
             StartCoroutine(TweenY(button.GetComponent<RectTransform>(), 1, -110));
             StartCoroutine(WaitThenLand(3));
         }
-        public event Action<bool> OnLanded;
-        public event Action OnFinished;
         IEnumerator WaitThenLand(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -45,7 +47,7 @@ namespace EcoBuilder.UI
             button.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Continue";
             button.onClick.AddListener(Exit);
 
-            OnLanded?.Invoke((bool)heads);
+            LandedCallback.Invoke((bool)heads);
             StartCoroutine(TweenY(button.GetComponent<RectTransform>(), 1, 110));
         }
         void Exit()
@@ -58,7 +60,7 @@ namespace EcoBuilder.UI
             coinAnim.SetTrigger("Exit");
             StartCoroutine(TweenY(button.GetComponent<RectTransform>(), 1, -110));
             StartCoroutine(WaitThenParentToCorner(1));
-            OnFinished.Invoke();
+            FinishedCallback.Invoke();
         }
         [SerializeField] RectTransform corner;
         IEnumerator WaitThenParentToCorner(float delay)

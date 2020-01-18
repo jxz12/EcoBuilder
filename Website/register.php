@@ -1,38 +1,30 @@
 <?php
-	$server = "localhost";
-	$dbName = "ecobuilder";
-	$user = "root";
-	$pass = "";
-	
-	$conn = new mysqli($server, $user, $pass, $dbName);
-	if ($conn->connect_errno)
-	{
-        echo $conn->connect_error;
-        exit();
-    }
+    include 'security.php';
+    $rsa = InitRSA();
+    $username = Decrypt($rsa, $_POST['username']);
+    $password = Decrypt($rsa, $_POST['password']);
+    $email = Decrypt($rsa, $_POST['email']);
 
-    $username = $_POST["username"];
-    $password = $_POST['password'];
+    $sql = InitSQL();
+    $stmt = $sql->prepare('SELECT * FROM players WHERE username=?');
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
+    if ($stmt->fetch() == TRUE) {
+        http_response_code(409);
+        die();
+    }
+    $stmt->close();
 
-    $result = $conn->query("SELECT 1 FROM players WHERE username='".$username."'");
-    if ($result->num_rows != 0)
-    {
-        echo "username taken";
-        exit();
+    // TODO: check for 'ddos' if someone is trying to just fill out the database?
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = $sql->prepare("INSERT INTO players (username, passwordHash, email) VALUES (?,?,?);");
+    $stmt->bind_param('sss', $username, $hashed, $email);
+    $stmt->execute();
+    if ($stmt->affected_rows > 0) {
+        echo 'success!';
+    } else {
+        http_response_code(503); // should never happen if we've gotten this far
+        die();
     }
-    else
-    {
-        $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $result = $conn->query("INSERT INTO players (username, passwordHash)
-                                VALUES ('".$username."','".$hashed."')");
-        if ($result === TRUE)
-        {
-            echo "success!";
-        }
-        else
-        {
-            echo "error";
-        }
-    }
-    $conn->close();
+    $sql->close();
 ?>

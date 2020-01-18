@@ -3,15 +3,13 @@
     $rsa = InitRSA();
     $username = Decrypt($rsa, $_POST["username"]);
     $password = Decrypt($rsa, $_POST["password"]);
-    $age = Decrypt($rsa, $_POST["age"]);
-    $gender = Decrypt($rsa, $_POST["gender"]);
-    $education = Decrypt($rsa, $_POST["education"]);
+    $team = Decrypt($rsa, $_POST["team"]);
 
     $sql = InitSQL();
     VerifyLogin($sql, $username, $password);
 
-    $stmt = $sql->prepare('UPDATE players SET age=?, gender=?, education=? WHERE username=?;');
-    $stmt->bind_param('iiis', $age, $gender, $education, $username);
+    $stmt = $sql->prepare('UPDATE players SET team=? WHERE username=?;');
+    $stmt->bind_param('is', $team, $username);
     $stmt->execute();
     if ($stmt->affected_rows > 0) {
         echo 'success!';
