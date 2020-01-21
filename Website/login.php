@@ -7,7 +7,7 @@
     $sql = InitSQL();
     VerifyLogin($sql, $username, $password);
 
-    $stmt = $sql->prepare('SELECT email, age, gender, education, team, reverseDrag FROM players WHERE username=?;');
+    $stmt = $sql->prepare('SELECT email, age, gender, education, team, reverse_drag FROM players WHERE username=?;');
     $stmt->bind_param('s', $username);
     $stmt->execute();
     $stmt->bind_result($email, $age, $gender, $education, $team, $reversed);

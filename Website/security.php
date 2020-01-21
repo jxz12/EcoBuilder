@@ -31,7 +31,7 @@
     }
     function VerifyLogin($sql, $username, $password)
     {
-        $stmt = $sql->prepare('SELECT passwordHash FROM players WHERE username=?;');
+        $stmt = $sql->prepare('SELECT password_hash FROM players WHERE username=?;');
         $stmt->bind_param('s', $username);
         $stmt->execute();
         $hashed = "";
