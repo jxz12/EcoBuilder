@@ -9,7 +9,7 @@ namespace EcoBuilder.UI
     {
         [SerializeField] GridLayoutGroup learningLevels;
         [SerializeField] VerticalLayoutGroup researchLevels;
-        [SerializeField] Coin wolfLion;
+        // [SerializeField] Coin wolfLion;
         [SerializeField] Registration form;
         [SerializeField] Toggle reverseDrag;
 
@@ -28,27 +28,22 @@ namespace EcoBuilder.UI
         void StartRegistration()
         {
             form.gameObject.SetActive(true);
-            form.Reveal(StartMainMenu);
+            form.Reveal();
+            form.OnFinished += StartMainMenu;
         }
         void StartMainMenu()
         {
+            form.OnFinished -= StartMainMenu;
             var team = GameManager.Instance.PlayerTeam;
-            wolfLion.gameObject.SetActive(true);
-            if (team == GameManager.PlayerDetails.Team.Lion)
-            {
-                wolfLion.InitializeFlipped(true);
-                ShowMainMenu();
+            if (team == GameManager.PlayerDetails.Team.None) {
+                ChooseTeam();
             }
-            else if (team == GameManager.PlayerDetails.Team.Wolf)
-            {
-                wolfLion.InitializeFlipped(false);
-                ShowMainMenu();
-            } else {
-                wolfLion.Reveal(ChooseTeam, ShowMainMenu);
-            }
+            ShowMainMenu();
         }
-        void ChooseTeam(bool heads)
+        void ChooseTeam()
         {
+            // this was previously done by coin, but will now be hidden to the user
+            bool heads = UnityEngine.Random.Range(0, 2) == 0;
             var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
             GameManager.Instance.SetTeamLocal(team);
             GameManager.Instance.SetTeamRemote(s=>print(s));

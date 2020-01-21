@@ -30,7 +30,7 @@ namespace EcoBuilder.UI
         }
 
         Stack<Move> undos, redos;
-        List<Tuple<int, int, int, int>> record;
+        List<string> record;
         void Awake()
         {
             undos = new Stack<Move>();
@@ -38,8 +38,9 @@ namespace EcoBuilder.UI
             undoButton.onClick.AddListener(Undo);
             redoButton.onClick.AddListener(Redo);
 
-            record = new List<Tuple<int,int,int,int>>();
-            record.Add(Tuple.Create((int)Move.Type.None, (int)Time.time, -1, -1));
+            record = new List<string>();
+            RecordAction("");
+            print("TODO: limit the size of the record to something like a million or something");
         }
         void PushMove(Move move)
         {
@@ -47,57 +48,79 @@ namespace EcoBuilder.UI
             foreach (Move redo in redos)
             {
                 // spawned species can never be recovered if previously undone
-                if (redo.type == Move.Type.Spawn)
+                if (redo.type == Move.Type.Spawn) {
                     OnSpeciesMemoryLeak.Invoke(redo.idx);
+                }
             }
             redos.Clear();
             undoButton.interactable = true;
             redoButton.interactable = false;
         }
+        void RecordAction(string action)
+        {
+            record.Add(((int)(Time.time*10)).ToString() + action);
+        }
+        void UpdateAction(string action)
+        {
+            record[record.Count-1] = ((int)(Time.time*10)).ToString() + action;
+        }
 
         public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
             PushMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), idx, Move.Type.Spawn));
-            record.Add(Tuple.Create((int)Move.Type.Spawn, (int)Time.time, idx, -1));
+            RecordAction("+"+idx);
         }
         public void SpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
             PushMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), idx, Move.Type.Despawn));
-            record.Add(Tuple.Create((int)Move.Type.Despawn, (int)Time.time, idx, -1));
+            RecordAction("-"+idx);
         }
         public void InteractionAdded(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
             PushMove(new Move(()=>Remove(res,con), ()=>Add(res,con), int.MinValue, Move.Type.Link));
-            record.Add(Tuple.Create((int)Move.Type.Link, (int)Time.time, res, con));
+            RecordAction("*"+res+","+con);
         }
         public void InteractionRemoved(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
             PushMove(new Move(()=>Add(res,con), ()=>Remove(res,con), int.MinValue, Move.Type.Unlink));
-            record.Add(Tuple.Create((int)Move.Type.Unlink, (int)Time.time, res, con));
+            RecordAction("/"+res+","+con);
         }
+
         public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
         {
-            if (undos.Count > 0 && (undos.Peek().type == Move.Type.Production && undos.Peek().idx == idx))
-                undos.Pop(); // don't record multiple changes
-
             PushMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, Move.Type.Production));
-            record.Add(Tuple.Create((int)Move.Type.Production, (int)Time.time, idx, current?1:0));
+            RecordAction("p"+(current?"1":"0"));
         }
+
+        // the next two only track the latest in a string of actions
+        // to prevent the stack growing really big on swipe
         public void SizeSet(int idx, float prev, float current, Action<int, float> SetSize)
         {
             if (undos.Count > 0 && (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx))
-                undos.Pop();
-
-            PushMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, Move.Type.Size));
-            record.Add(Tuple.Create((int)Move.Type.Size, (int)Time.time*1000, idx, (int)current*1000));
+            {
+                var prevMove = undos.Pop();
+                PushMove(new Move(prevMove.Undo, ()=>SetSize(idx,current), idx, Move.Type.Size));
+                UpdateAction("s"+(int)(current*8));
+            }
+            else
+            {
+                PushMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, Move.Type.Size));
+                RecordAction("s"+(int)(current*8));
+            }
         }
         public void GreedSet(int idx, float prev, float current, Action<int, float> SetGreed)
         {
-            if (undos.Count > 0 && (undos.Peek().type == Move.Type.Greed && undos.Peek().idx == idx))
-                undos.Pop();
-
-            PushMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
-            record.Add(Tuple.Create((int)Move.Type.Greed, (int)Time.time*1000, idx, (int)current*1000));
+            if (undos.Count > 0 && (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx))
+            {
+                var prevMove = undos.Pop();
+                PushMove(new Move(prevMove.Undo, ()=>SetGreed(idx,current), idx, Move.Type.Greed));
+                UpdateAction("g"+(int)(current*8));
+            }
+            else
+            {
+                PushMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
+                RecordAction("g"+(int)(current*8));
+            }
         }
 
         // connected to buttons
@@ -110,10 +133,10 @@ namespace EcoBuilder.UI
             undoButton.interactable = undos.Count > 0;
             redoButton.interactable = true;
 
-            if (toUndo.type!=Move.Type.Link && toUndo.type!=Move.Type.Unlink)
+            if (toUndo.type!=Move.Type.Link && toUndo.type!=Move.Type.Unlink) {
                 OnSpeciesUndone.Invoke(toUndo.idx); // to focus when needed
-
-            record.Add(Tuple.Create((int)Move.Type.Undo, -1, -1, -1));
+            }
+            RecordAction("<");
         }
         void Redo()
         {
@@ -124,25 +147,15 @@ namespace EcoBuilder.UI
             redoButton.interactable = redos.Count > 0;
             undoButton.interactable = true;
 
-            if (toRedo.type!=Move.Type.Link && toRedo.type!=Move.Type.Unlink)
+            if (toRedo.type!=Move.Type.Link && toRedo.type!=Move.Type.Unlink) {
                 OnSpeciesUndone.Invoke(toRedo.idx);
-
-            record.Add(Tuple.Create((int)Move.Type.Redo, -1, -1, -1));
+            }
+            RecordAction(">");
         }
-        public int[,] RecordMoves()
+        public string GetActions()
         {
             GetComponent<Animator>().SetBool("Visible", false);
-
-            var array = new int[record.Count,4];
-            for (int i=0; i<record.Count; i++)
-            {
-                array[i,0] = record[i].Item1;
-                array[i,1] = record[i].Item2;
-                array[i,2] = record[i].Item3;
-                array[i,3] = record[i].Item4;
-                print(array[i,0]+" "+array[i,1]+" "+array[i,2]+" "+array[i,3]);
-            }
-            return array;
+            return string.Join(";", record);
         }
     }
 }

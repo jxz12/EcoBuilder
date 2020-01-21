@@ -11,6 +11,7 @@ namespace EcoBuilder
         [SerializeField] Model.Model model;
 
         [SerializeField] UI.Inspector inspector;
+        [SerializeField] UI.Incubator incubator;
         [SerializeField] UI.MoveRecorder recorder;
         [SerializeField] UI.Score score;
         [SerializeField] UI.Constraints constraints;
@@ -20,9 +21,12 @@ namespace EcoBuilder
             ////////////////////////////////////
             // hook up events between objects //
             ////////////////////////////////////
-            inspector.OnIncubated +=        ()=> nodelink.ForceUnfocus();
-            inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f); // TODO: magic number
-            inspector.OnUnincubated +=      ()=> nodelink.MoveHorizontal(0);
+            incubator.OnIncubated +=  (b)=> inspector.IncubateNew(b);
+            incubator.OnIncubated +=  (b)=> nodelink.ForceUnfocus();
+            incubator.OnIncubated +=  (b)=> nodelink.MoveHorizontal(-.5f);
+            incubator.OnDropped +=     ()=> inspector.SpawnIncubated();
+            incubator.OnUnincubated += ()=> nodelink.MoveHorizontal(0);
+
             inspector.OnSpawned +=       (i,g)=> nodelink.AddNode(i,g);
             inspector.OnSpawned +=       (i,g)=> model.AddSpecies(i);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
@@ -58,8 +62,8 @@ namespace EcoBuilder
             model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnRescued +=    (i)=> nodelink.BounceNode(i);
 
-            constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
-            constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
+            constraints.OnProducersAvailable += (b)=> incubator.SetProducerAvailability(b);
+            constraints.OnConsumersAvailable += (b)=> incubator.SetConsumerAvailability(b);
             constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Cyan);
             constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Cyan);
 
@@ -132,33 +136,28 @@ namespace EcoBuilder
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
 
-            level.OnFinished += FinishPlaythrough;
-            playedLevel = level;
+            level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with tha
             level.StartTutorialIfAvailable();
         }
-        Levels.Level playedLevel;
-        void OnDestroy()
+        void FinishPlaythrough(Levels.Level finished)
         {
-            if (playedLevel != null) { // I think this is ugly
-                playedLevel.OnFinished -= FinishPlaythrough;
+            if (this == null) {
+                finished.OnFinished -= FinishPlaythrough;
+                print("TODO: there must be a more elegant way of dealing with this hanging reference");
+                return;
             }
-        }
-        void FinishPlaythrough()
-        {
-            inspector.Hide();
-            nodelink.Freeze();
-            score.CompleteLevel();
-
-            double[,] matrix = model.RecordState();
-            int[,] actions = recorder.RecordMoves();
-            playedLevel.SavePlaythrough(score.NormalisedScore, matrix, actions);
+            inspector.Finish();
+            nodelink.Finish();
+            score.Finish();
+            GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.NormalisedScore);
+            GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.NormalisedScore, model.GetMatrix(), recorder.GetActions());
         }
 
         // perform calculations if necessary
         bool atEquilibrium = true, graphSolved = true;
         void LateUpdate()
         {
-            if (!graphSolved && !nodelink.IsCalculating)
+            if (!graphSolved && !nodelink.IsCalculatingAsync)
             {
                 graphSolved = true;
 // threads are not supported on webgl
@@ -168,7 +167,7 @@ namespace EcoBuilder
                 nodelink.ConstraintsAsync();
                 #endif
             }
-            if (!atEquilibrium && !model.IsCalculating)
+            if (!atEquilibrium && !model.IsCalculatingAsync)
             {
                 atEquilibrium = true;
 #if UNITY_WEBGL
@@ -180,8 +179,8 @@ namespace EcoBuilder
             // we want the score to update even if the model is calculating
             score.DisplayScore(model.Complexity, model.ScoreExplanation());
             // but no events triggered in case of false positive due to being out of sync
-            if (atEquilibrium && !model.IsCalculating &&
-                graphSolved && !nodelink.IsCalculating)
+            if (atEquilibrium && !model.IsCalculatingAsync &&
+                graphSolved && !nodelink.IsCalculatingAsync)
             {
                 score.TriggerScoreEvents();
             }

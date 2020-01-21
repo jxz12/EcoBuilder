@@ -201,19 +201,19 @@ namespace EcoBuilder.Model
         public bool Stable { get; private set; } = false;
 
         public float Complexity { get { return (float)simulation.HoComplexity; } }
-        public bool IsCalculating { get; private set; } = false;
+        public bool IsCalculatingAsync { get; private set; } = false;
 
                                            // required because this class does not store adjacency
         public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
-            IsCalculating = true;
+            IsCalculatingAsync = true;
             Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
 
             Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
             Stable = await Task.Run(()=> simulation.SolveStability());
 
             TriggerAbundanceEvents();
-            IsCalculating = false;
+            IsCalculatingAsync = false;
             OnEquilibrium.Invoke();
         }
         public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
@@ -231,8 +231,7 @@ namespace EcoBuilder.Model
         {
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
-            print("TODO: explain score");
-            return "todo";
+            return "TODO: explain score better";
         }
 
         // private float total_NormAbund;
@@ -300,8 +299,7 @@ namespace EcoBuilder.Model
             else
                 return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
         }
-
-        public double[,] RecordState()
+        public string GetMatrix()
         {
             return simulation.GetState();
         }

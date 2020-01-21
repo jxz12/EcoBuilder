@@ -30,7 +30,7 @@ namespace EcoBuilder.UI
             this.target1 = target1;
             this.target2 = target2;
         }
-        public void CompleteLevel()
+        public void Finish()
         {
             if (numStars < 1 || numStars > 3)
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");

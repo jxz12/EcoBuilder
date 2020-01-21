@@ -51,9 +51,8 @@ namespace EcoBuilder
 #else
             playerPath = null;
 #endif
-            DeletePlayerDetailsLocal();
-            if (LoadPlayerDetailsLocal() == false)
-            {
+            // DeletePlayerDetailsLocal();
+            if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
         }
@@ -205,6 +204,40 @@ namespace EcoBuilder
             player.reverseDrag = int.Parse(toParse[5])==1? true:false;
             SavePlayerDetailsLocal();
         }
+
+        // This whole framework is necessary because you cannot change prefabs from script when compiled
+        // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
+        public int GetHighScoreLocal(int levelIdx)
+        {
+            if (!player.highScores.ContainsKey(levelIdx)) {
+                player.highScores[levelIdx] = -1;
+            }
+            return player.highScores[levelIdx];
+        }
+        // returns whether new high score is achieved
+        public void SaveHighScoreLocal(int levelIdx, int score)
+        {
+            if (GetHighScoreLocal(levelIdx) < score)
+            {
+                player.highScores[levelIdx] = score;
+                SavePlayerDetailsLocal();
+                print("TODO: congratulation message for getting a high score");
+            }
+        }
+        public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
+        {
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "level_index", levelIdx.ToString() },
+                { "datetime_ticks", DateTime.Now.Ticks.ToString() },
+                { "score", score.ToString() },
+                { "matrix", matrix },
+                { "actions", actions }
+            };
+            print("TODO: mark not synced and then save later (with ticks and stuff), and delete if needed");
+            pat.Post(data, server+"playthrough.php", (b,s)=>{ print(s); });
+        }
         public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
         {
             print("TODO: get global scores from server");
@@ -225,45 +258,6 @@ namespace EcoBuilder
         {
             print("TODO: reset?");
             DeletePlayerDetailsLocal();
-        }
-
-        // This whole structure is necessary because you cannot change prefabs from script when compiled
-        // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
-        public int GetHighScoreLocal(int levelIdx)
-        {
-            if (!player.highScores.ContainsKey(levelIdx)) {
-                player.highScores[levelIdx] = -1;
-            }
-            return player.highScores[levelIdx];
-        }
-        // returns whether new high score is achieved
-        public void SaveHighScoreLocal(int levelIdx, int score)
-        {
-            if (GetHighScoreLocal(levelIdx) < score) {
-                player.highScores[levelIdx] = score;
-                SavePlayerDetailsLocal();
-            }
-        }
-        public void SavePlaythroughRemote(int levlIdx, int score, double[,] matrix, int[,] actions)
-        {
-            var bf = new BinaryFormatter();
-            var form = new WWWForm();
-            form.AddField("idx", PlayedLevel.Details.idx.ToString());
-            using (var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, matrix);
-                form.AddBinaryData("matrix", ms.ToArray());
-            }
-
-            using (var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, actions);
-                form.AddBinaryData("actions", ms.ToArray());
-            }
-
-            print("TODO: send actual data");
-            // TODO: cut max size of these things if necessary
-            //       if sending fails, store locally and try to send next time
         }
     }
 }

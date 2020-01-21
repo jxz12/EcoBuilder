@@ -52,9 +52,10 @@ namespace EcoBuilder.Levels
         [SerializeField] LevelDetails details;
         [SerializeField] Tutorial tutorial;
         [SerializeField] GameObject landscape;
-        [SerializeField] Level nextLevel;
+        [SerializeField] Level nextLevelPrefab;
 
-        public event Action OnThumbnailed, OnCarded, OnFinished;
+        public event Action OnThumbnailed, OnCarded;
+        public event Action<Level> OnFinished;
         public LevelDetails Details { get { return details; } }
         public Tutorial Tutorial { get { return tutorial; } }
         public GameObject Landscape { get { return landscape; } }
@@ -100,13 +101,11 @@ namespace EcoBuilder.Levels
             int score = GameManager.Instance.GetHighScoreLocal(Details.idx);
             highScore.text = score.ToString();
 
-            if (score >= 0)
-            {
+            if (score >= 0) {
                 GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             }
             int numStars = 0;
-            if (score >= 1)
-            {
+            if (score >= 1) {
                 numStars += 1;
             }
             if (score >= details.targetScore1)
@@ -131,11 +130,9 @@ namespace EcoBuilder.Levels
         IEnumerator tweenRoutine;
         IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
         {
-            while (tweenRoutine != null)
-            {
+            while (tweenRoutine != null) {
                 yield return null;
             }
-            print(newParent);
             transform.SetParent(newParent, true);
             transform.localScale = Vector3.one;
 
@@ -227,16 +224,28 @@ namespace EcoBuilder.Levels
         Tutorial teacher;
         public void Play()
         {
-            GameManager.Instance.PlayLevel(this);
-            GameManager.Instance.OnLoaded.AddListener(MoveToCornerOnPlay);
-            print("TODO: loading message!");
+            GameManager.Instance.LoadLevelScene(this);
+            GameManager.Instance.OnLoaded.AddListener(InitLevelScene);
         }
-        void MoveToCornerOnPlay(string sceneName)
+        public void Replay()
         {
-            if (sceneName != "Play")
+            if (NextLevel != null) { // if replay from finish
+                Destroy(NextLevel);
+            }
+            if (teacher != null) { // if tutorial running
+                Destroy(teacher.gameObject);
+            }
+            Play();
+        }
+        void InitLevelScene(string sceneName)
+        {
+            if (sceneName != "Play") {
                 throw new Exception("Play scene not loaded when expected");
-
-            GameManager.Instance.OnLoaded.RemoveListener(MoveToCornerOnPlay);
+            }
+            if (GameManager.Instance.PlayedLevel != this) {
+                throw new Exception("not playing level to be initialised");
+            }
+            GameManager.Instance.OnLoaded.RemoveListener(InitLevelScene);
             thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
             GameManager.Instance.ShowHelpText(2f, details.introduction); // show intro
 
@@ -244,24 +253,32 @@ namespace EcoBuilder.Levels
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
         }
         // necessary because there is no separate 'playing' state
-        // but the card requires something different
+        // but the card requires different buttons
         IEnumerator WaitThenEnableQuitReplay(float waitTime)
         {
-            playButton.gameObject.SetActive(false);
+            playButton.interactable = false;
             yield return new WaitForSeconds(waitTime);
+            EnableQuitReplay();
+        }
+        public void EnableQuitReplay() // only public because of stupidness
+        {
+            playButton.gameObject.SetActive(false);
             quitButton.gameObject.SetActive(true);
             replayButton.gameObject.SetActive(true);
         }
 
+
         public void StartTutorialIfAvailable()
         {
-            if (tutorial != null)
+            if (tutorial != null) {
                 teacher = Instantiate(tutorial, GameManager.Instance.TutParent);
+            }
         }
         void OnDestroy()
         {
-            if (teacher != null)
-                teacher.DestroyMe();
+            if (teacher != null) {
+                Destroy(teacher.gameObject);
+            }
         }
 
         public void BackToMenu()
@@ -272,63 +289,27 @@ namespace EcoBuilder.Levels
         }
         void DestroyWhenMenuLoads(string sceneName)
         {
-            if (sceneName != "Menu")
+            if (sceneName != "Menu") {
                 throw new Exception("Menu scene not loaded when expected");
-
+            }
             GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
             Destroy(gameObject);
         }
 
-
-        public void FinishLevel()
+        public void FinishLevel() // called on button press
         {
-            if (GameManager.Instance.PlayedLevel != this)
+            if (GameManager.Instance.PlayedLevel != this) {
                 throw new Exception("Played level different from one being finished?");
-
-            if (nextLevel != null) {
-                NextLevel = Instantiate(nextLevel, nextLevelParent);
+            }
+            if (nextLevelPrefab != null)
+            {
+                NextLevel = Instantiate(nextLevelPrefab, nextLevelParent);
             } else {
                 print("TODO: credits? reduce width of navigation?");
             }
-            ShowNavigation();
-
-            print("TODO: make the thing show at right height here");
             GameManager.Instance.ShowHelpText(2f, details.congratulation);
-            OnFinished?.Invoke();
-        }
-        public void SavePlaythrough(int score, double[,] matrix, int[,] actions)
-        {
-            GameManager.Instance.SaveHighScoreLocal(details.idx, score);
-            if (score > GameManager.Instance.GetHighScoreLocal(details.idx)) {
-                print("TODO: congratulation message for getting a high score");
-            }
-            if (NextLevel != null) // unlock next level
-            {
-                int nextIdx = NextLevel.Details.idx;
-                if (GameManager.Instance.GetHighScoreLocal(nextIdx) < 0) {
-                    GameManager.Instance.SaveHighScoreLocal(nextIdx, 0);
-                    print("TODO: animation here to draw eye towards unlock");
-                }
-            }
-            GameManager.Instance.SaveHighScoreLocal(Details.idx, score); // updates score and should unlock next level
-        }
-
-
-        public void Replay()
-        {
-            if (NextLevel != null) // if replay from finish
-            {
-                Destroy(NextLevel);
-            }
-            if (teacher != null)
-            {
-                teacher.DestroyMe();
-            }
-            // thumbnailedParent = GameManager.Instance.PlayParent;
-            // ShowThumbnail(1.5f);
-            // GameManager.Instance.PlayLevel(this);
-            // StartCoroutine(WaitThenEnableQuitReplay());
-            Play();
+            ShowNavigation();
+            OnFinished?.Invoke(this);
         }
 
         public static void SaveAsNewPrefab(LevelDetails detail, string name)

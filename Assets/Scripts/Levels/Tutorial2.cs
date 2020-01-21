@@ -10,7 +10,7 @@ namespace EcoBuilder.Levels
         GameObject plant, animal;
         protected override void StartLesson()
         {
-            inspector.HideIncubateButton(true);
+            incubator.HideStartButtons(true);
             inspector.HideRemoveButton(true);
             score.HideScore(true);
             score.HideConstraints(true);
@@ -88,11 +88,6 @@ namespace EcoBuilder.Levels
             StopAllCoroutines();
             help.Show(false);
             targetSize = new Vector2(0,0);
-            // targetSize = new Vector2(100,100);
-            // targetAnchor = new Vector2(.5f,1);
-            // targetPos = new Vector2(100, -50);
-            // targetZRot = 45;
-            // Point();
             smoothTime = .2f;
 
             // inspector.Uninspect();
@@ -105,7 +100,7 @@ namespace EcoBuilder.Levels
                 help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can tap your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
             }));
 
-            AttachSmellyListener(GameManager.Instance.PlayedLevel, "OnFinished", Finish);
+            AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", l=>Finish());
         }
         void Finish()
         {
@@ -114,8 +109,9 @@ namespace EcoBuilder.Levels
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
-            if (seconds > 0)
+            if (seconds > 0) {
                 yield return new WaitForSeconds(seconds);
+            }
             Todo();
         }
         IEnumerator Track(Transform tracked)

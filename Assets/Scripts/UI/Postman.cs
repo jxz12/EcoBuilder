@@ -16,7 +16,7 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI message;
         [SerializeField] float fadeDuration;
 
-        IEnumerator SendPost(string address, WWWForm form, Action<bool, string> OnResponse)
+        IEnumerator SendPost(string address, WWWForm form, Action<bool, string> ResponseCallback)
         {
             message.text = "Loading...";
             using (var p = UnityWebRequest.Post(address, form))
@@ -26,7 +26,7 @@ namespace EcoBuilder.UI
                 {
                     message.text = p.error;
                     print("TODO: don't call this yet");
-                    OnResponse(false, "Could not establish an internet connection");
+                    ResponseCallback(false, "Could not establish an internet connection");
                     Hide();
                 }
                 else if (p.isHttpError)
@@ -42,26 +42,31 @@ namespace EcoBuilder.UI
                     }
                     message.text = p.error;
                     print("TODO: don't call this yet");
-                    OnResponse(false, response);
+                    ResponseCallback(false, response);
                     Hide();
                 }
                 else
                 {
-                    OnResponse(true, p.downloadHandler.text);
+                    ResponseCallback(true, p.downloadHandler.text);
                     message.text = "Success!";
                     Hide();
                 }
             }
         }
         IEnumerator postRoutine = null;
-        public void Post(Dictionary<string, string> letter, string address, Action<bool, string> OnResponse, bool silentFail=false)
+        public void Post(Dictionary<string, string> letter, string address, Action<bool, string> ResponseCallback, bool silentFail=false)
         {
             var form = new WWWForm();
-            foreach (var line in letter) {
-                form.AddField(line.Key, Encrypt(line.Value));
+            foreach (var line in letter)
+            {
+                if (line.Key == "matrix" || line.Key == "actions") {
+                    form.AddField(line.Key, line.Value);
+                } else {
+                    form.AddField(line.Key, Encrypt(line.Value));
+                }
             }
             print("TODO: silent fail");
-            StartCoroutine(postRoutine = SendPost(address, form, OnResponse));
+            StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
             Show();
         }
         // void CancelPost()

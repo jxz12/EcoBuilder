@@ -19,11 +19,10 @@ namespace EcoBuilder.NodeLink
         private List<int> LongestLoop { get; set; }
         public int MaxLoop { get { return LongestLoop==null? 0 : LongestLoop.Count; } }
 
-        public bool IsCalculating { get; private set; } = false;
-
+        public bool IsCalculatingAsync { get; private set; } = false;
         public async void ConstraintsAsync()
         {
-            IsCalculating = true;
+            IsCalculatingAsync = true;
 
             RefreshTrophicAndFindChain();
             await Task.Run(()=> LayoutSGD());
@@ -31,7 +30,7 @@ namespace EcoBuilder.NodeLink
             var inout = JohnsonInOut(); // not async to ensure synchronize state
             LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2));
 
-            IsCalculating = false;
+            IsCalculatingAsync = false;
             OnConstraints.Invoke();
         }
         public void ConstraintsSync()

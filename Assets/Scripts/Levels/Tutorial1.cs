@@ -28,10 +28,10 @@ namespace EcoBuilder.Levels
             help.SetSide(false);
             help.SetDistFromTop(.2f);
             help.SetWidth(.6f);
-            inspector.SetConsumerAvailability(false);
+            incubator.SetConsumerAvailability(false);
 
             DetachSmellyListeners();
-            AttachSmellyListener(inspector, "OnIncubated", ExplainInspector);
+            AttachSmellyListener<bool>(incubator, "OnIncubated", b=>ExplainInspector());
         }
         void ExplainInspector()
         {
@@ -58,8 +58,8 @@ namespace EcoBuilder.Levels
 
             firstSpecies = first;
             firstIdx = idx;
-            inspector.SetConsumerAvailability(true);
-            inspector.SetProducerAvailability(false);
+            incubator.SetConsumerAvailability(true);
+            incubator.SetProducerAvailability(false);
 
             help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by tapping the paw button.");
             help.SetDistFromTop(.02f, false);
@@ -67,8 +67,8 @@ namespace EcoBuilder.Levels
 
             DetachSmellyListeners();
             AttachSmellyListener<int, GameObject>(inspector, "OnSpawned", ExplainInteraction);
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Show(false); targetSize = Vector2.zero; });
-            AttachSmellyListener(inspector, "OnUnincubated", ()=>{ help.Show(true); targetSize = new Vector2(100,100); });
+            AttachSmellyListener<bool>(incubator, "OnIncubated", (b)=>{ help.Show(false); targetSize = Vector2.zero; });
+            AttachSmellyListener(incubator, "OnUnincubated", ()=>{ help.Show(true); targetSize = new Vector2(100,100); });
         }
 
         GameObject secondSpecies;
@@ -94,7 +94,7 @@ namespace EcoBuilder.Levels
             targetSize = new Vector3(100,100);
             targetAnchor = new Vector3(0f,0f);
             targetZRot = 360;
-            inspector.HideIncubateButton();
+            incubator.HideStartButtons();
 
             DetachSmellyListeners();
             AttachSmellyListener<int,int>(nodelink, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
@@ -190,11 +190,11 @@ namespace EcoBuilder.Levels
             help.Show(true);
 
             DetachSmellyListeners();
-            AttachSmellyListener(GameManager.Instance.PlayedLevel, "OnFinished", Finish);
+            AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", Finish);
             AttachSmellyListener(score, "OnLevelIncompletabled", ()=>ExplainFinishCondition(0));
         }
-        Level nextLevel = null;
-        void Finish()
+        Level finishedLevel = null;
+        void Finish(Levels.Level finished)
         {
             targetAnchor = new Vector2(.5f,0);
             targetZRot = 405;
@@ -205,11 +205,9 @@ namespace EcoBuilder.Levels
             help.SetDistFromTop(.1f);
             help.SetWidth(.7f);
 
-            if (nextLevel == null)
-                nextLevel = GameManager.Instance.PlayedLevel.NextLevel;
-
+            finishedLevel = finished;
             DetachSmellyListeners();
-            AttachSmellyListener(nextLevel, "OnCarded", ExplainNextLevel);
+            AttachSmellyListener(finishedLevel.NextLevel, "OnCarded", ExplainNextLevel);
         }
         Canvas onTop;
         void ExplainNextLevel()
@@ -225,7 +223,7 @@ namespace EcoBuilder.Levels
             }
 
             DetachSmellyListeners();
-            AttachSmellyListener(nextLevel, "OnThumbnailed", Finish);
+            AttachSmellyListener(finishedLevel.NextLevel, "OnThumbnailed", ()=>Finish(finishedLevel));
         }
 
         // bool waiting = false;
