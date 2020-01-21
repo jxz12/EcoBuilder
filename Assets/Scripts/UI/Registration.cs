@@ -8,6 +8,8 @@ namespace EcoBuilder.UI
 {
     public class Registration : MonoBehaviour
     {
+        public event Action OnFinished;
+
         [SerializeField] TMPro.TMP_InputField username, password, email;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle GDPR, askAgain;
@@ -66,7 +68,7 @@ namespace EcoBuilder.UI
                 demoObj.SetActive(true);
                 break;
             case State.End:
-                FinishedCallback.Invoke();
+                OnFinished.Invoke();
                 Disappear();
                 break;
             }
@@ -93,10 +95,8 @@ namespace EcoBuilder.UI
             GDPR.onValueChanged.AddListener(b=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
         }
-        Action FinishedCallback;
-        public void Reveal(Action FinishedCallback)
+        public void Reveal()
         {
-            this.FinishedCallback = FinishedCallback;
             SetState(State.Start);
             StartCoroutine(yTween(1,-1000,0,true));
         }

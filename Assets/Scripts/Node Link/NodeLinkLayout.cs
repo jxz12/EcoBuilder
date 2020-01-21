@@ -104,7 +104,6 @@ namespace EcoBuilder.NodeLink
                 graphScale = Mathf.SmoothDamp(graphScale, 1, ref graphScaleVelocity, zoomSmoothTime);
             }
             graphParent.localScale = graphScale * Vector3.one;
-            print("TODO: magic numbers");
         }
         [SerializeField] float zoomSmoothTime;
         float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;

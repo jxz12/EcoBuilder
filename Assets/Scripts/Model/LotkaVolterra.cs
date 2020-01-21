@@ -116,7 +116,7 @@ namespace EcoBuilder.Model
             // find fixed equilibrium point of system
             interaction.Solve(negGrowth, abundance);
 
-            UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
+            // UnityEngine.Debug.Log("A:\n" + MathNetMatStr(interaction));
             // UnityEngine.Debug.Log("b:\n" + MathNetVecStr(negGrowth));
             // UnityEngine.Debug.Log("x:\n" + MathNetVecStr(abundance));
 
@@ -368,27 +368,19 @@ namespace EcoBuilder.Model
         //     return Lambda <= 0;
         // }
 
-        public double[,] GetState()
+        public string GetState()
         {
             // columns:
             // A*x=b
             // n 1 1
 
-            var state = new double[Richness, Richness+2];
-            for (int row=0; row<Richness; row++)
-            {
-                for (int col=0; col<Richness; col++)
-                {
-                    state[row,col] = interaction[row,col];
-                }
-                state[row, Richness] = abundance[row];
-                state[row, Richness+1] = negGrowth[row];
-            }
-            return state;
+            return MathNetMatStr(interaction, "e5") + '\n' +
+                   MathNetVecStr(negGrowth, "e5") + '\n' +
+                   MathNetVecStr(abundance, "e5");
+            // return MathNetMatStr(interaction, "f") + '\n' +
+            //        MathNetVecStr(negGrowth, "f") + '\n' +
+            //        MathNetVecStr(abundance, "f");
         }
-
-
-
 
         /////////////////////
         // helper functions

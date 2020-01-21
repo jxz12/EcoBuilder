@@ -190,7 +190,7 @@ namespace EcoBuilder.NodeLink
         {
             graphParentUnfocused.x = xCoord;
         }
-        public void Freeze()
+        public void Finish()
         {
             ForceUnfocus();
             // StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
@@ -298,7 +298,6 @@ namespace EcoBuilder.NodeLink
                     else if (focusState == FocusState.Focus)
                     {
                         Unfocus();
-                        // OnUserUnfocused?.Invoke();
                     }
                     else if (focusState == FocusState.Unfocus)
                     {

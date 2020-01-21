@@ -14,8 +14,7 @@ namespace EcoBuilder
         private static GameManager gameManager;
         public static GameManager Instance {
             get {
-                if (gameManager == null)
-                {
+                if (gameManager == null) {
                     throw new Exception("No active GameManager");
                 }
                 return gameManager;
@@ -23,13 +22,12 @@ namespace EcoBuilder
         }
         void Awake()
         {
-            if (gameManager == null)
+            if (gameManager == null) {
                 gameManager = this;
-            else if (gameManager != this)
+            } else if (gameManager != this) {
                 throw new Exception("More than one GameManager in scene");
-
-            if (SceneManager.sceneCount == 1) // on startup
-            {
+            }
+            if (SceneManager.sceneCount == 1) { // on startup
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
         }
@@ -42,6 +40,13 @@ namespace EcoBuilder
 //             Screen.SetResolution(576, 1024, false);
 //             Screen.fullScreen = true;
 // #endif
+#if UNITY_EDITOR
+            if (SceneManager.sceneCount >= 2)
+            {
+                PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
+                PlayedLevel.Play();
+            }
+#endif
         }
         public void Quit()
         {
@@ -59,49 +64,27 @@ namespace EcoBuilder
         // functions to persist levels through scenes //
         ////////////////////////////////////////////////
 
-        private Levels.Level playedLevel = null;
-        public Levels.Level PlayedLevel {
-            get {
-                if (playedLevel == null) // should never happen in real game
-                {
-#if !UNITY_EDITOR
-                    throw new Exception("should never not have playedlevel set");
-#endif
-                    var defaultLevel = AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Learning 2.prefab");
-                    playedLevel = Instantiate(defaultLevel);
-                    playedLevel.transform.SetParent(PlayParent, false);
-                    ShowHelpText(2f, playedLevel.Details.introduction);
-                    // ^basically to put in corner
-                }
-                return playedLevel;
-            }
-            private set {
-                playedLevel = value;
-            }
-        }
-        public void PlayLevel(Levels.Level toPlay)
+        public Levels.Level PlayedLevel { get; private set; } = null;
+        public void LoadLevelScene(Levels.Level toPlay)
         {
-            if (PlayedLevel != null)
+            if (PlayedLevel != null) // if in play mode
             {
-                if (PlayedLevel.Details.idx != toPlay.Details.idx)
+                if (PlayedLevel != toPlay)
                 {
                     Destroy(PlayedLevel.gameObject);
                     PlayedLevel = toPlay;
+                } else {
+                    // replay level so no need to destroy
                 }
-                else
-                {
-                    // replay level
-                }
-                // UnloadSceneThenLoadAnother("Play", "Play");
                 StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
             }
             else
             {
                 // play from menu
                 PlayedLevel = toPlay;
-                // UnloadSceneThenLoadAnother("Menu", "Play");
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
+            print("TODO: loading message!");
         }
 
         // for levels to attach to
@@ -132,7 +115,6 @@ namespace EcoBuilder
                     yield return null;
                 }
             }
-            // yield return new WaitForSeconds(1);
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
@@ -148,10 +130,8 @@ namespace EcoBuilder
 
         public void ReturnToMenu()
         {
-            if (PlayedLevel != null)
-            {
-                // Destroy(PlayedLevel.gameObject);
-                PlayedLevel = null;
+            if (PlayedLevel != null) {
+                PlayedLevel = null; // level destroys itself so no need to do it here
             }
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
         }

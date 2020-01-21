@@ -8,38 +8,75 @@ namespace EcoBuilder.UI
     public class Incubator : MonoBehaviour,
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
+        public event Action<bool> OnIncubated;
         public event Action OnDropped;
+        public event Action OnUnincubated;
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
         [SerializeField] float planeDistance;
 
+        [SerializeField] Animator buttonsAnim;
+        [SerializeField] Button producerButton;
+        [SerializeField] Button consumerButton;
+
         void Start()
         {
             GetComponent<Canvas>().worldCamera = Camera.main;
             GetComponent<Canvas>().planeDistance = planeDistance;
-        }
 
-        GameObject incubated;
-        public void Incubate(GameObject toIncubate)
+            producerButton.onClick.AddListener(()=> Incubate(true));
+            consumerButton.onClick.AddListener(()=> Incubate(false));
+        }
+        void Incubate(bool isProducer)
         {
-            // dropZone.SetActive(false);
-            incubated = toIncubate;
-            incubated.transform.SetParent(incubatedParent, false);
+            OnIncubated?.Invoke(isProducer);
             GetComponent<Animator>().SetBool("Droppable", false);
             GetComponent<Animator>().SetTrigger("Incubate");
+            buttonsAnim.SetBool("Visible", false);
         }
         public void Unincubate()
         {
-            Destroy(incubated);
-            incubated = null;
             GetComponent<Animator>().SetTrigger("Unincubate");
+            buttonsAnim.SetBool("Visible", true);
+            Destroy(incubatedObj);
+            incubatedObj = null;
+            OnUnincubated?.Invoke();
         }
-        public void Replace(GameObject replacement)
+
+        GameObject incubatedObj;
+        public void SetIncubatedObject(GameObject toIncubate)
         {
-            Destroy(incubated);
-            incubated = replacement;
-            incubated.transform.SetParent(incubatedParent, false);
+            // dropZone.SetActive(false);
+            incubatedObj = toIncubate;
+            incubatedObj.transform.SetParent(incubatedParent, false);
+        }
+        public void ReplaceIncubatedObject(GameObject replacement)
+        {
+            Destroy(incubatedObj);
+            incubatedObj = replacement;
+            incubatedObj.transform.SetParent(incubatedParent, false);
+        }
+        public void Finish()
+        {
+            if (incubatedObj != null) {
+                Destroy(incubatedObj);
+            }
+            buttonsAnim.SetBool("Visible", false);
+        }
+
+        // for tutorials
+        public void HideStartButtons(bool hidden=true)
+        {
+            buttonsAnim.gameObject.SetActive(!hidden);
+        }
+        public void SetProducerAvailability(bool available)
+        {
+            producerButton.interactable = available;
+        }
+        public void SetConsumerAvailability(bool available)
+        {
+            consumerButton.interactable = available;
         }
 
 
@@ -47,7 +84,7 @@ namespace EcoBuilder.UI
         Vector3 originalPos;
         public void OnBeginDrag(PointerEventData ped)
         {
-            if (incubated != null && ped.rawPointerPress == pickupZone.gameObject)
+            if (incubatedObj != null && ped.rawPointerPress == pickupZone.gameObject)
             {
                 dragging = true;
                 dropZone.raycastTarget = true;
@@ -86,8 +123,10 @@ namespace EcoBuilder.UI
         {
             if (dragging && ped.pointerCurrentRaycast.gameObject == dropZone.gameObject)
             {
-                OnDropped.Invoke();
+                OnDropped?.Invoke();
                 GetComponent<Animator>().SetTrigger("Spawn");
+                buttonsAnim.SetBool("Visible", true);
+                OnUnincubated?.Invoke();
             }
         }
     }

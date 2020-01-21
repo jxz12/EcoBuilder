@@ -28,15 +28,15 @@ namespace EcoBuilder.Levels
         void LimitNumAnimals(int limit)
         {
             if (constraints.GetValue("Paw") >= limit)
-                inspector.SetConsumerAvailability(false);
+                incubator.SetConsumerAvailability(false);
             else
-                inspector.SetConsumerAvailability(true);
+                incubator.SetConsumerAvailability(true);
         }
         void ExplainChainOfOne()
         {
             help.SetText("chain of one done! Now do two");
             help.Show(true);
-            inspector.SetConsumerAvailability(true);
+            incubator.SetConsumerAvailability(true);
             // allow animal again, but only one more
             // ask to make a chain of 2
 

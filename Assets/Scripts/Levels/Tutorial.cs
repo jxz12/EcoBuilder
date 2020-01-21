@@ -8,8 +8,10 @@ namespace EcoBuilder.Levels
 {
     public abstract class Tutorial : MonoBehaviour
     {
+        // smellllly
         protected UI.Help help;
         protected UI.Inspector inspector;
+        protected UI.Incubator incubator;
         protected UI.Score score;
         protected UI.MoveRecorder recorder;
         protected UI.Constraints constraints;
@@ -49,6 +51,8 @@ namespace EcoBuilder.Levels
                 yield return null;
             while ((inspector = FindObjectOfType<UI.Inspector>()) == null)
                 yield return null;
+            while ((incubator = FindObjectOfType<UI.Incubator>()) == null)
+                yield return null;
             while ((score = FindObjectOfType<UI.Score>()) == null)
                 yield return null;
             while ((constraints = FindObjectOfType<UI.Constraints>()) == null)
@@ -85,15 +89,6 @@ namespace EcoBuilder.Levels
         {
             GetComponent<Animator>().SetInteger("State", 2);
         }
-        // protected Vector2 ScreenPos(Vector2 viewportPos)
-        // {
-        //     return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
-        // }
-        public void DestroyMe()
-        {
-            StopAllCoroutines();
-            Destroy(gameObject);
-        }
         protected Vector2 ScreenPos(Vector2 viewportPos)
         {
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
@@ -111,6 +106,7 @@ namespace EcoBuilder.Levels
         }
         void OnDestroy()
         {
+            StopAllCoroutines();
             DetachSmellyListeners();
         }
         protected void AttachSmellyListener(object eventSource, string eventName, Action Callback)
