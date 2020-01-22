@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -56,13 +57,27 @@ namespace EcoBuilder.UI
         {
             StartCoroutine(WaitThenShowLogo(.7f));
 
+            var unlockedIdxs = new HashSet<int>();
+            Action<Levels.Level> CheckUnlocked = (l)=> {
+                if (GameManager.Instance.GetHighScoreLocal(l.Details.idx) >= 0)
+                {
+                    unlockedIdxs.Add(l.Details.idx);
+                    if (l.NextLevelPrefab!=null) {
+                        unlockedIdxs.Add(l.NextLevelPrefab.Details.idx);
+                    }
+                }
+            };
+            var instantiated = new Dictionary<int, Levels.Level>();
             foreach (var prefab in learningLevelPrefabs)
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
                 parent.SetParent(learningLevels.transform);
                 parent.localScale = Vector3.one;
+                parent.name = prefab.Details.idx.ToString();
+                
+                CheckUnlocked(prefab);
                 var level = Instantiate(prefab, parent);
-                parent.name = level.Details.idx.ToString();
+                instantiated[level.Details.idx] = level;
             }
             if (IsLearningFinished())
             {
@@ -71,12 +86,17 @@ namespace EcoBuilder.UI
                 researchLock.enabled = false;
                 foreach (var prefab in researchLevelPrefabs)
                 {
+                    var scores = GameManager.Instance.GetTop3ScoresRemote(prefab.Details.idx);
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
-                    var level = leaderboard.GiveLevelPrefab(prefab);
-
-                    var scores = GameManager.Instance.GetTop3ScoresRemote(level.Details.idx);
                     leaderboard.SetScores(scores.Item1, scores.Item2, scores.Item3);
+
+                    CheckUnlocked(prefab);
+                    var level = leaderboard.GiveLevelPrefab(prefab);
+                    instantiated[level.Details.idx] = level;
                 }
+            }
+            foreach (var idx in unlockedIdxs) {
+                instantiated[idx].Unlock();
             }
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             reverseDrag.onValueChanged.AddListener(SetReverseDrag);

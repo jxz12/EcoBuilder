@@ -51,7 +51,7 @@ namespace EcoBuilder
 #else
             playerPath = null;
 #endif
-            // DeletePlayerDetailsLocal();
+            DeletePlayerDetailsLocal();
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
@@ -195,13 +195,18 @@ namespace EcoBuilder
         {
             player.username = username;
             player.password = password;
-            var toParse = returned.Split(',');
-            player.email = toParse[0];
-            player.age = int.Parse(toParse[1]);
-            player.gender = int.Parse(toParse[2]);
-            player.education = int.Parse(toParse[3]);
-            player.team = (PlayerDetails.Team)int.Parse(toParse[4]);
-            player.reverseDrag = int.Parse(toParse[5])==1? true:false;
+            var details = returned.Split(';');
+            player.team = (PlayerDetails.Team)int.Parse(details[0]);
+            player.reverseDrag = int.Parse(details[1])==1? true:false;
+
+            player.highScores.Clear();
+            for (int i=2; i<details.Length; i++)
+            {
+                var level = details[i].Split(':');
+                int idx = int.Parse(level[0]);
+                int score = int.Parse(level[1]);
+                SaveHighScoreLocal(idx, score);
+            }
             SavePlayerDetailsLocal();
         }
 
@@ -215,14 +220,15 @@ namespace EcoBuilder
             return player.highScores[levelIdx];
         }
         // returns whether new high score is achieved
-        public void SaveHighScoreLocal(int levelIdx, int score)
+        public bool SaveHighScoreLocal(int levelIdx, int score)
         {
             if (GetHighScoreLocal(levelIdx) < score)
             {
                 player.highScores[levelIdx] = score;
                 SavePlayerDetailsLocal();
-                print("TODO: congratulation message for getting a high score");
+                return true;
             }
+            return false;
         }
         public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
         {

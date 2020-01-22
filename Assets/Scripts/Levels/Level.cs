@@ -59,6 +59,7 @@ namespace EcoBuilder.Levels
         public LevelDetails Details { get { return details; } }
         public Tutorial Tutorial { get { return tutorial; } }
         public GameObject Landscape { get { return landscape; } }
+        public Level NextLevelPrefab { get { return nextLevelPrefab; } }
         public Level NextLevel { get; private set; }
 
         // thumbnail
@@ -81,7 +82,7 @@ namespace EcoBuilder.Levels
         // navigation
         [SerializeField] RectTransform nextLevelParent;
 
-        void Start()
+        void Awake()
         {
             int n = Details.numInitSpecies;
             if (n != Details.randomSeeds.Count || n != Details.sizes.Count || n != Details.greeds.Count)
@@ -100,12 +101,8 @@ namespace EcoBuilder.Levels
 
             int score = GameManager.Instance.GetHighScoreLocal(Details.idx);
             highScore.text = score.ToString();
-
-            if (score >= 0) {
-                GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
-            }
             int numStars = 0;
-            if (score >= 1) {
+            if (score >= 0) {
                 numStars += 1;
             }
             if (score >= details.targetScore1)
@@ -119,7 +116,10 @@ namespace EcoBuilder.Levels
                 target2.color = Color.grey;
             }
             starsImage.sprite = starSprites[numStars];
-
+        }
+        public void Unlock()
+        {
+            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
         }
 
         //////////////////////////////
@@ -285,6 +285,7 @@ namespace EcoBuilder.Levels
         {
             print("TODO: 'are you sure' option");
             GameManager.Instance.ReturnToMenu();
+            GameManager.Instance.HideHelpText();
             GameManager.Instance.OnLoaded.AddListener(DestroyWhenMenuLoads);
         }
         void DestroyWhenMenuLoads(string sceneName)
@@ -304,6 +305,7 @@ namespace EcoBuilder.Levels
             if (nextLevelPrefab != null)
             {
                 NextLevel = Instantiate(nextLevelPrefab, nextLevelParent);
+                NextLevel.Unlock();
             } else {
                 print("TODO: credits? reduce width of navigation?");
             }
