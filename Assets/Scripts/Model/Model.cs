@@ -37,28 +37,44 @@ namespace EcoBuilder.Model
                ;
 
         [ReadOnly] [SerializeField]
-        double a_min, a_max;  // calculated at runtime
+        double a_min = 1e-5,
+               a_max = 1;
 
+        [ReadOnly] [SerializeField]
+        float minRealAbund = 2e-10f,
+              maxRealAbund = 1.95f,
+              minRealFlux = 1e-16f,
+              maxRealFlux = 1e-6f;
+
+        private float minLogAbund, maxLogAbund,
+                      minLogFlux, maxLogFlux;
+        void InitScales()
+        {
+            minLogAbund = Mathf.Log10(minRealAbund);
+            maxLogAbund = Mathf.Log10(maxRealAbund);
+            minLogFlux = Mathf.Log10(minRealFlux);
+            maxLogFlux = Mathf.Log10(maxRealFlux);
+        }
+
+        ///////////////////////////////////////////////////////////////////
+        // search rate derivations
         class Species
         {
-            public int Idx { get; private set; }
-            public double BodySize { get; set; }
-            public bool IsProducer { get; set; }
+            public int Idx { get; private set; } = -1;
+            public bool IsProducer { get; set; } = false;
+            public double BodySize { get; set; } = double.NaN;
+            public double Interference { get; set; } = double.NaN;
 
-            public double Metabolism { get; set; }
-            public double Interference { get; set; }
-            public double Efficiency { get; set; }
+            public double Metabolism { get; set; } = double.NaN;
+            public double Efficiency { get; set; } = double.NaN;
 
-            public double Abundance { get; set; } = 1; // init positive
+            public float NormalisedAbundance { get; set; } = -1; // init negative so that heart appears
 
             public Species(int idx)
             {
                 Idx = idx;
             }
         }
-
-        ///////////////////////////////////////////////////////////////////
-        // search rate derivations
         
         // NOTE: THESE ARE NOT MASS-SPECIFIC, THEY ARE INDIVIDUAL-SPECIFIC
         double ActiveCapture(double m_r, double m_c)
@@ -102,8 +118,9 @@ namespace EcoBuilder.Model
         void Awake()
         {
             // calculate bounds for a_ij and set a_ii in the same range
-            a_max = ActiveCapture(kg_max, kg_min) / kg_min;
-            a_min = Grazing(kg_min, kg_max) / kg_max;
+            // a_max = ActiveCapture(kg_max, kg_min) / kg_min;
+            // a_min = Grazing(kg_min, kg_max) / kg_max;
+            // print(a_min+" "+a_max);
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
@@ -111,6 +128,7 @@ namespace EcoBuilder.Model
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
+
             InitScales();
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
@@ -133,11 +151,12 @@ namespace EcoBuilder.Model
                 throw new Exception("does not contain idx " + idx);
 
             Species toRemove = idxToSpecies[idx];
+            // if (toRemove.IsProducer)
+            //     numProducers -= 1;
             simulation.RemoveSpecies(toRemove);
 
             idxToSpecies.Remove(idx);
             speciesToIdx.Remove(toRemove);
-            // AtEquilibrium = false;
         }
 
         public void SetSpeciesIsProducer(int idx, bool isProducer)
@@ -161,73 +180,6 @@ namespace EcoBuilder.Model
         {
             idxToSpecies[idx].Interference = -UnNormaliseOnLogScale(greedNormalised, a_min, a_max);
         }
-
-
-
-
-        /////////////////////////////////////
-        // actual calculations here
-
-        public bool Feasible { get; private set; } = false;
-        public bool Stable { get; private set; } = false;
-        // public bool Nonreactive { get; private set; } = false;
-
-        // public float TotalAbundance { get; private set; } = 0;
-        public float NormalisedFlux { get; private set; } = 0;
-        public float NormalisedComplexity { get; private set; } = 0;
-
-        public bool IsCalculating { get; private set; } = false;
-
-        public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
-        {
-            IsCalculating = true;
-
-            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
-            simulation.BuildInteractionMatrix(map); // not async, in order to keep state consistent
-
-            Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
-            NormalisedFlux = NormaliseFluxScore((float)simulation.TotalFlux);
-            Stable = await Task.Run(()=> simulation.SolveStability());
-            NormalisedComplexity = NormaliseComplexityScore((float)simulation.CalculateMayComplexity());
-            // Nonreactive = await Task.Run(() => simulation.SolveReactivity());
-
-            ShowAbundanceWarnings();
-            IsCalculating = false;
-            OnEquilibrium.Invoke();
-        }
-        public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
-        {
-            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
-            simulation.BuildInteractionMatrix(map);
-
-            Feasible = simulation.SolveFeasibility(map);
-            NormalisedFlux = NormaliseFluxScore((float)simulation.TotalFlux);
-            Stable = simulation.SolveStability();
-            NormalisedComplexity = NormaliseComplexityScore((float)simulation.CalculateMayComplexity());
-            // Nonreactive = simulation.SolveReactivity();
-
-            ShowAbundanceWarnings();
-            OnEquilibrium.Invoke();
-        }
-
-        void ShowAbundanceWarnings()
-        {
-            // show abundance warnings
-            foreach (int i in idxToSpecies.Keys)
-            {
-                Species s = idxToSpecies[i];
-                double newAbundance = simulation.GetSolvedAbundance(s);
-                if (s.Abundance > 0 && newAbundance <= 0)
-                {
-                    OnEndangered.Invoke(i);
-                }
-                if (s.Abundance <= 0 && newAbundance > 0)
-                {
-                    OnRescued.Invoke(i);
-                }
-                s.Abundance = newAbundance;
-            }
-        }
         static double UnNormaliseOnLogScale(double normalised, double minVal, double maxVal)
         {
             // float min = Mathf.Log10(minVal);
@@ -239,85 +191,117 @@ namespace EcoBuilder.Model
             return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
         }
 
-        [ReadOnly] [SerializeField]
-        float minScaledAbundance = 6e-8f,
-              maxScaledAbundance = 2f,
-              minScaledFlux = 1e-18f,
-              maxScaledFlux = 9.2e-7f,
-              minScaledComplexity = 1e-10f,
-              maxScaledComplexity = 7e-3f;
 
-        private float minLogAbund, maxLogAbund,
-                      minLogFlux, maxLogFlux,
-                      minLogPlex, maxLogPlex;
-        void InitScales()
+
+
+        /////////////////////////////////////
+        // actual calculations here
+
+        public bool Feasible { get; private set; } = false;
+        public bool Stable { get; private set; } = false;
+
+        public float Complexity { get { return (float)simulation.HoComplexity; } }
+        public bool IsCalculatingAsync { get; private set; } = false;
+
+                                           // required because this class does not store adjacency
+        public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
         {
-            minLogAbund = Mathf.Log10(minScaledAbundance);
-            maxLogAbund = Mathf.Log10(maxScaledAbundance);
-            minLogFlux = Mathf.Log10(minScaledFlux);
-            maxLogFlux = Mathf.Log10(maxScaledFlux);
-            minLogPlex = Mathf.Log10(minScaledComplexity);
-            maxLogPlex = Mathf.Log10(maxScaledComplexity);
+            IsCalculatingAsync = true;
+            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
+
+            Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
+            Stable = await Task.Run(()=> simulation.SolveStability());
+
+            TriggerAbundanceEvents();
+            IsCalculatingAsync = false;
+            OnEquilibrium.Invoke();
         }
-        
-        public float GetScaledAbundance(int idx)
+        public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
         {
-            float abundance = (float)simulation.GetSolvedAbundance(idxToSpecies[idx]);
-            if (abundance <= 0)
+            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
+
+            Feasible = simulation.SolveFeasibility(map);
+            Stable = simulation.SolveStability();
+
+            TriggerAbundanceEvents();
+            OnEquilibrium.Invoke();
+        }
+
+        public string ScoreExplanation()
+        {
+            // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
+            // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
+            return "TODO: explain score better";
+        }
+
+        // private float total_NormAbund;
+        // private float totalAbund_Norm;
+        private double totalAbund;
+        void TriggerAbundanceEvents()
+        {
+            // total_NormAbund = totalAbund_Norm = 0;
+            totalAbund = 0;
+            // show abundance warnings
+            foreach (int i in idxToSpecies.Keys)
             {
+                Species s = idxToSpecies[i];
+                double realAbund = simulation.GetSolvedAbundance(s);
+
+                float newAbund;
+                if (realAbund <= 0)
+                    newAbund = -1;
+                else if (realAbund <= minRealAbund)
+                    newAbund = 0;
+                else if (realAbund >= maxRealAbund)
+                    newAbund = 1;
+                else
+                    newAbund = (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+
+                if (s.NormalisedAbundance >= 0 && newAbund < 0)
+                    OnEndangered.Invoke(i);
+                if (s.NormalisedAbundance < 0 && newAbund >= 0)
+                    OnRescued.Invoke(i);
+
+                s.NormalisedAbundance = newAbund;
+
+                totalAbund += realAbund;
+                // totalAbund_Norm += (float)realAbund;
+                // if (newAbund >= 0)
+                //     total_NormAbund += newAbund;
+            }
+            // print(totalAbund);
+
+            // if (total_NormAbund == 0)
+            //     total_NormAbund = 1; // to prevent NaN problems in GetNormalisedAbundance
+
+            // if (totalAbund_Norm <= minRealAbund)
+            //     totalAbund_Norm = 0;
+            // else
+            //     totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
+        }
+        public float GetNormalisedAbundance(int idx)
+        {
+                          // calculate proportion first                             multiply by total
+            // float ratio = (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
+            // this is so that total green in health bars adds up to the score
+
+            // return ratio * idxToSpecies.Count / numProducers;
+            // return ratio;
+            return idxToSpecies[idx].NormalisedAbundance;
+        }
+        public float GetNormalisedFlux(int res, int con)
+        {
+            double flux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+            if (flux <= minRealFlux)
                 return 0;
-            }
+            else if (flux >= maxRealFlux)
+                return 1;
             else
-            {
-                return (Mathf.Log10(abundance)-minLogAbund) / (maxLogAbund-minLogAbund);
-            }
+                return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
         }
-        public float GetScaledFlux(int res, int con)
+        public string GetMatrix()
         {
-            float flux = (float)simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
-            if (flux <= 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return (Mathf.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
-            }
-        }
-        float NormaliseFluxScore(float input)
-        {
-            // for flux
-            float normalised = input < maxScaledFlux ?
-                               (Mathf.Log10(input)-minLogFlux) / (maxLogFlux-minLogFlux)
-                             : input/maxScaledFlux;
-
-            return Mathf.Max(normalised, 0);
-        }
-        float NormaliseComplexityScore(float input)
-        {
-            // for complexity
-            float normalised = input < maxScaledComplexity ?
-                               (Mathf.Log10(input)-minLogPlex) / (maxLogPlex-minLogPlex)
-                             : input/maxScaledComplexity;
-            
-            return Mathf.Max(normalised, 0);
-        }
-
-        public Tuple<int, float> GetMostComplexSpecies()
-        {
-            return null;
-        }
-        public Tuple<int, float> GetLeastComplexSpecies()
-        {
-            return null;
-        }
-        public Tuple<int, int, float> GetMostComplexLink()
-        {
-            return null;
-        }
-        public Tuple<int, int, float> GetLeastComplexLink()
-        {
-            return null;
+            return simulation.GetState();
         }
     }
 
@@ -339,7 +323,7 @@ namespace EcoBuilder.Model
                     valueStr = prop.boolValue.ToString();
                     break;
                 case SerializedPropertyType.Float:
-                    valueStr = prop.floatValue.ToString("e1");
+                    valueStr = prop.floatValue.ToString("e2");
                     break;
                 case SerializedPropertyType.String:
                     valueStr = prop.stringValue;

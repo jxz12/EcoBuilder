@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,66 +10,49 @@ namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
-        // TODO: option to highlight tallest species or longest loop on selection
         public bool Disjoint { get; private set; } = false;
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
-        public int MaxChain { get; private set; } = 0;
-        public float MaxTrophic { get; private set; } = 1;
-        public int MaxLoop { get; private set; } = 0;
 
-        public bool IsCalculating { get; private set; } = false;
+        private List<int> TallestNodes { get; set; }
+        public int MaxChain { get; private set; }
+        private List<int> LongestLoop { get; set; }
+        public int MaxLoop { get { return LongestLoop==null? 0 : LongestLoop.Count; } }
 
+        public bool IsCalculatingAsync { get; private set; } = false;
         public async void ConstraintsAsync()
         {
-            IsCalculating = true;
+            IsCalculatingAsync = true;
 
-            RefreshTrophic();
-            var inout = JohnsonInOut(); // not async to synchronize state
-            MaxLoop = await Task.Run(()=> LongestLoop(inout.Item1, inout.Item2));
+            RefreshTrophicAndFindChain();
+            await Task.Run(()=> LayoutSGD());
 
-            IsCalculating = false;
+            var inout = JohnsonInOut(); // not async to ensure synchronize state
+            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2));
+
+            IsCalculatingAsync = false;
             OnConstraints.Invoke();
         }
         public void ConstraintsSync()
         {
-            RefreshTrophic();
+            RefreshTrophicAndFindChain();
+            LayoutSGD();
+
             var inout = JohnsonInOut();
-            MaxLoop = LongestLoop(inout.Item1, inout.Item2);
+            LongestLoop = JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2);
 
             OnConstraints.Invoke();
         }
-        void RefreshTrophic()
-        {
-            etaIteration = 0; // reset SGD
 
-            Disjoint = CheckDisjoint();
-            NumEdges = links.Count();
-
-            HashSet<int> basal = BuildTrophicEquations();
-            var heights = HeightBFS(basal);
-            LaplacianDetZero = (heights.Count != nodes.Count);
-
-            if (focusState == FocusState.SuperFocus)
-                SuperFocus(focusedNode.Idx);
-            else if (focusState == FocusState.SuperAntifocus)
-                SuperAntifocus(focusedNode.Idx);
-
-            MaxChain = 0;
-            foreach (int height in heights.Values)
-                MaxChain = Math.Max(height, MaxChain);
-
-            // MaxTrophic cannot be here as it is always evolving
-        }
 
         ///////////////////////////////////////////////////////
         // for disjoint, chain length, invalidness
 
         bool CheckDisjoint()
         {
-            if (nodes.Count == 0)
+            if (nodes.Count == 0) {
                 return false;
-
+            }
             // pick a random vertex
             int source = nodes.Indices.First();
             var q = new Queue<int>();
@@ -88,12 +72,36 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
-            if (visited.Count != nodes.Count)
+            if (visited.Count != nodes.Count) {
                 return true;
-            else 
+            } else {
                 return false;
+            }
         }
 
+        private void RefreshTrophicAndFindChain()
+        {
+            Disjoint = CheckDisjoint();
+            NumEdges = links.Count();
+
+            HashSet<int> basal = BuildTrophicEquations();
+            var heights = HeightBFS(basal);
+            LaplacianDetZero = (heights.Count != nodes.Count);
+
+            // if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
+            //     SuperFocus(focusedNode.Idx);
+
+            MaxChain = 0;
+            foreach (int height in heights.Values) {
+                MaxChain = Math.Max(height, MaxChain);
+            }
+            TallestNodes = new List<int>();
+            foreach (int idx in heights.Keys) {
+                if (heights[idx] == MaxChain) {
+                    TallestNodes.Add(idx);
+                }
+            }
+        }
 
         private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
         {
@@ -126,25 +134,27 @@ namespace EcoBuilder.NodeLink
         HashSet<int> GetSources()
         {
             var sources = new HashSet<int>();
-            foreach (Node no in nodes)
-                if (links.GetColumnDataCount(no.Idx) == 0) // slow, but WHATEVER
+            foreach (Node no in nodes) {
+                if (links.GetColumnDataCount(no.Idx) == 0) { // slow, but WHATEVER
                     sources.Add(no.Idx);
-            
+                }
+            }
             return sources;
         }
         HashSet<int> GetSinks()
         {
             var sinks = new HashSet<int>();
-            foreach (Node no in nodes)
-                if (links.GetRowDataCount(no.Idx) == 0)
+            foreach (Node no in nodes) {
+                if (links.GetRowDataCount(no.Idx) == 0) {
                     sinks.Add(no.Idx);
-            
+                }
+            }
             return sinks;
         }
 
 
         ///////////////////////////////////
-        // loops
+        // loops with Johnson's algorithm
 
         // ignores 'graveyard' species
         Tuple<Dictionary<int, HashSet<int>>, Dictionary<int, HashSet<int>>> JohnsonInOut()
@@ -165,46 +175,47 @@ namespace EcoBuilder.NodeLink
             return Tuple.Create(incomingCopy, outgoingCopy);
         }
 
-        // very slow, so run async if possible
-        int LongestLoop(Dictionary<int, HashSet<int>> incoming, Dictionary<int, HashSet<int>> outgoing)
+        // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
+        // can be very slow, so run async if possible
+        static List<int> johnsonLongestLoop;
+        static List<int> JohnsonsAlgorithm(IEnumerable<int> indices, Dictionary<int, HashSet<int>> incoming, Dictionary<int, HashSet<int>> outgoing)
         {
-
-			int longestPath = 0;
-            foreach (Node no in nodes)
+            johnsonLongestLoop = new List<int>(); // empty list is no loop
+            foreach (int idx in indices)
             {
-                int idx = no.Idx;
                 // if the strongly connected component is bigger than just the vertex
                 var scc = StronglyConnectedComponent(idx, outgoing, incoming);
 
-                longestPath = Math.Max(longestPath, JohnsonSingleSource(idx, outgoing).Count);
+                // JohnsonSingleSource(idx, outgoing);
+                JohnsonSingleSource(idx, scc);
 
                 // remove node from graph
                 outgoing.Remove(idx);
                 incoming.Remove(idx);
-                foreach (var set in outgoing.Values)
+                foreach (var set in outgoing.Values) {
                     set.Remove(idx);
-                foreach (var set in incoming.Values)
+                }
+                foreach (var set in incoming.Values) {
                     set.Remove(idx);
+                }
             }
-			return longestPath;
+            return new List<int>(johnsonLongestLoop.AsEnumerable().Reverse());
         }
-        Stack<int> johnsonStack;
-        HashSet<int> johnsonSet;
-        Dictionary<int, HashSet<int>> johnsonMap;
-		List<int> johnsonLongestPath;
-        List<int> JohnsonSingleSource(int source, Dictionary<int, HashSet<int>> outgoing)
+        static Stack<int> johnsonStack = new Stack<int>();
+        static HashSet<int> johnsonSet = new HashSet<int>();
+        static Dictionary<int, HashSet<int>> johnsonMap = new Dictionary<int, HashSet<int>>();
+        static void JohnsonSingleSource(int source, Dictionary<int, HashSet<int>> outgoing)
         {
-            johnsonStack = new Stack<int>();
-            johnsonSet = new HashSet<int>();
-            johnsonMap = new Dictionary<int, HashSet<int>>();
-			johnsonLongestPath = new List<int>();
-			foreach (int i in outgoing.Keys)
+            johnsonStack.Clear();
+            johnsonSet.Clear();
+            johnsonMap.Clear();
+			foreach (int i in outgoing.Keys) {
 				johnsonMap[i] = new HashSet<int>();
+            }
 
             JohnsonDFS(source, source, outgoing);
-			return johnsonLongestPath;
         }
-        bool JohnsonDFS(int source, int current, Dictionary<int, HashSet<int>> outgoing)
+        static bool JohnsonDFS(int source, int current, Dictionary<int, HashSet<int>> outgoing)
         {
             bool foundCycle = false;
             johnsonStack.Push(current);
@@ -214,9 +225,9 @@ namespace EcoBuilder.NodeLink
             {
                 if (next == source) // found cycle, so see if it is longest
                 {
-                    if (johnsonStack.Count > johnsonLongestPath.Count)
-						johnsonLongestPath = new List<int>(johnsonStack);
-
+                    if (johnsonStack.Count > johnsonLongestLoop.Count) {
+						johnsonLongestLoop = new List<int>(johnsonStack);
+                    }
                     foundCycle = true;
                 }
                 else if (!johnsonSet.Contains(next))
@@ -226,36 +237,32 @@ namespace EcoBuilder.NodeLink
                 }
             }
             // if found a path to source, then remove from set and (recursively) from map
-            if (foundCycle)
-            {
+            if (foundCycle) {
                 JohnsonUnblock(current);
-            }
-            else
-            {
+            } else {
                 // else do not unblock, add to map so that it will be unblocked in the future
-                foreach (int next in outgoing[current])
-                {
+                foreach (int next in outgoing[current]) {
                     johnsonMap[next].Add(current);
                 }
             }
             johnsonStack.Pop();
             return foundCycle;
         }
-        void JohnsonUnblock(int toUnblock)
+        static void JohnsonUnblock(int toUnblock)
         {
             // recursively unblock everything on path that we are freeing up
             johnsonSet.Remove(toUnblock);
-			foreach (int toAlsoUnblock in johnsonMap[toUnblock])
-			{
-				if (johnsonSet.Contains(toAlsoUnblock))
+			foreach (int toAlsoUnblock in johnsonMap[toUnblock]) {
+				if (johnsonSet.Contains(toAlsoUnblock)) {
 					JohnsonUnblock(toAlsoUnblock);
+                }
 			}
 			johnsonMap[toUnblock].Clear();
         }
 
 
-        // returns the next strongly connected component with more than one vertex
-        Dictionary<int, HashSet<int>> StronglyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing, Dictionary<int, HashSet<int>> incoming)
+        // returns the strongly connected component including idx
+        static Dictionary<int, HashSet<int>> StronglyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing, Dictionary<int, HashSet<int>> incoming)
         {
             var component1 = WeaklyConnectedComponent(idx, outgoing);
             var component2 = WeaklyConnectedComponent(idx, incoming);
@@ -267,15 +274,14 @@ namespace EcoBuilder.NodeLink
                 scc[i] = new HashSet<int>();
                 foreach (int j in outgoing[i])
                 {
-                    if (component1.Contains(j))
-                    {
+                    if (component1.Contains(j)) {
                         scc[i].Add(j);
                     }
                 }
             }
             return scc;
         }
-        HashSet<int> WeaklyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing)
+        static HashSet<int> WeaklyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing)
         {
             var q = new Queue<int>();
             var visited = new HashSet<int>();

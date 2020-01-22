@@ -1,10 +1,20 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
     public class Link : MonoBehaviour
     {
         [SerializeField] LineRenderer lr;
+
+        [SerializeField] float lineWidth;
+        [SerializeField] float curveRatio;
+        [SerializeField] int curveSegments;
+        [SerializeField] float numBalls;
+
+        public bool Curved { get; set; } = false;
+        public float TileSpeed { get; set; } = 0;
+        public bool Removable { get; set; } = true;
 
         private Node source;
         public Node Source {
@@ -33,39 +43,42 @@ namespace EcoBuilder.NodeLink
             outline = gameObject.AddComponent<cakeslice.Outline>();
             // outline.eraseRenderer = true;
             outline.enabled = false;
+            lr.material.SetFloat("_RepeatCount", numBalls);
         }
 
-        public void Outline(int colourIdx=0)
+        Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
+        public void PushOutline(cakeslice.Outline.Colour colour)
         {
-            // outline.eraseRenderer = false;
             outline.enabled = true;
-
-            if (Removable)
-                outline.color = colourIdx;
-            else
-                outline.color = 0;
+            outline.colour = colour;
+            outlines.Push(colour);
         }
-        public void Unoutline()
+        public void PopOutline()
         {
-            if (Removable)
-                // outline.eraseRenderer = true;
+            outlines.Pop();
+            if (outlines.Count > 0)
+                outline.colour = outlines.Peek();
+            else
                 outline.enabled = false;
         }
-        float targetAlpha = 1;
-        public void Show(bool showing = true)
+        bool show = true;
+        public void Show(bool showing=true)
         {
-            targetAlpha = showing? 1 : 0;
+            show = showing;
+            if (showing)
+            {
+                // gameObject.SetActive(true);
+                // outline.enabled = true;
+            }
+            else
+            {
+                // gameObject.SetActive(false);
+                // outline.enabled = false;
+            }
         }
 
-        [SerializeField] float lineWidth;
-        [SerializeField] float curveRatio;
-        [SerializeField] int curveSegments;
-        [SerializeField] float numBalls;
-
-        public bool Curved { get; set; } = false;
-        public float TileSpeed { get; set; } = 0;
-        public bool Removable { get; set; } = true;
-
+        private float tileOffset = 0;
+        private float widthocity, localWidth;
         private void LateUpdate()
         {
             if (Curved)
@@ -94,30 +107,20 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            float width = lineWidth * transform.lossyScale.x;
-            lr.widthMultiplier = width;
+            localWidth = Mathf.SmoothDamp(localWidth, show?lineWidth:0, ref widthocity, .2f);
+            float lossyWidth = transform.lossyScale.x * localWidth;
+            lr.widthMultiplier = lossyWidth;
 
-            // TODO: include length of line so that balls don't get ellipsed
-            // lr.material.SetFloat("_Spacing", (1-NumBalls*lineWidth) / (NumBalls*lineWidth));
-            lr.material.SetFloat("_Spacing", (1-numBalls*width) / (numBalls*width));
-            lr.material.SetFloat("_RepeatCount", numBalls);
+            float height = (Source.transform.position - Target.transform.position).magnitude;
+            lr.material.SetFloat("_Spacing", height/(lossyWidth*numBalls) - 1);
 
             Color c = Target.Col;
-            // if (!Removable)
-            //     c.b = 1;
             lr.startColor = c;
             c = Source.Col;
-            // if (!Removable)
-            //     c.b = 1;
             lr.endColor = c;
-        }
 
-        private float tileOffset = 0;
-        private void FixedUpdate()
-        {
-            tileOffset -= TileSpeed;
+            tileOffset -= TileSpeed * Time.deltaTime;
             lr.material.SetFloat("_Offset", tileOffset);
-            lr.material.SetFloat("_Alpha", Mathf.Lerp(lr.material.GetFloat("_Alpha"), targetAlpha, .1f));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿Shader "Mobile/Species"
+﻿Shader "Mobile/Species Face"
 {
     Properties
     {
@@ -11,7 +11,8 @@
     SubShader
     {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" }
-        ZWrite Off
+        ZWrite On
+        ZTest Less
         Blend SrcAlpha OneMinusSrcAlpha
 
         CGPROGRAM
@@ -29,13 +30,15 @@
  
         void surf (Input IN, inout SurfaceOutput o)
         {
-            half4 c = tex2D(_MainTex, IN.uv_MainTex);
+            half4 c1 = tex2D(_MainTex, IN.uv_MainTex);
             half4 c2 = tex2D(_MainTex2, IN.uv_MainTex);
             half4 c3 = tex2D(_MainTex3, IN.uv_MainTex);
             half4 c4 = tex2D(_MainTex4, IN.uv_MainTex);
 
-            o.Albedo = c.rgb + c2.rgb + c3.rgb + c4.rgb;
-            o.Alpha = c.a + c2.a + c3.a + c4.a;
+            o.Albedo = ( (c1*c1.a*(1-c2.a) + c2.rgb*c2.a)
+                         *(1-c3.a) + c3.rgb*c3.a )
+                       *(1-c4.a) + c4.rgb*c4.a;
+            o.Alpha = c1.a + c2.a + c3.a + c4.a;
         }
         ENDCG
     }

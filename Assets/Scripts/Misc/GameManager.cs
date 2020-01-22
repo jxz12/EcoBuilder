@@ -2,211 +2,152 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using UnityEngine.Events;
 
 namespace EcoBuilder
 {
-    public class GameManager : MonoBehaviour
+    public partial class GameManager : MonoBehaviour
     {
+        // singleton pattern
         private static GameManager gameManager;
         public static GameManager Instance {
             get {
-                if (gameManager == null)
-                {
-                    Debug.LogError("No active GameManager");
-                    // gameManager = new GameObject("Game Manager").AddComponent<GameManager>();
-                    // remove for build
+                if (gameManager == null) {
+                    throw new Exception("No active GameManager");
                 }
                 return gameManager;
             }
         }
         void Awake()
         {
-            if (gameManager == null)
+            if (gameManager == null) {
                 gameManager = this;
-            else if (gameManager != this)
-            {
-                Debug.LogError("Multiple GameManagers, destroying this one");
-                Destroy(gameObject); // this means that there can only ever be one GameObject of this type
+            } else if (gameManager != this) {
+                throw new Exception("More than one GameManager in scene");
             }
-            for (int i = 0; i < numFrames; i++)
-                timeDeltas.Enqueue(0);
+            if (SceneManager.sceneCount == 1) { // on startup
+                StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
+            }
         }
+
         void Start()
         {
-            // Screen.SetResolution(576, 1024, false);
-            // #if !UNITY_WEBGL
-            //     Screen.fullScreen = true;
-            // #endif
+            InitPlayer();
+            // TODO: set this to the size of the screen for webgl
+// #if !UNITY_WEBGL
+//             Screen.SetResolution(576, 1024, false);
+//             Screen.fullScreen = true;
+// #endif
+#if UNITY_EDITOR
+            // if (SceneManager.sceneCount >= 2)
+            // {
+            //     PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
+            //     PlayedLevel.Play();
+            // }
+#endif
+        }
+        public void Quit()
+        {
+            // TODO: send data if possible? and also on every level finish!
+            
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
 
-            if (SceneManager.sceneCount == 1)
-                SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
-        }
-        
-        public void UnloadSceneThenLoadAnother(string toUnload, string another)
+
+        ////////////////////////////////////////////////
+        // functions to persist levels through scenes //
+        ////////////////////////////////////////////////
+
+        public Levels.Level PlayedLevel { get; private set; } = null;
+        public void LoadLevelScene(Levels.Level toPlay)
         {
-            StartCoroutine(UnloadSceneThenLoad(toUnload, another));
-        }
-        event Action OnNewSceneLoaded;
-        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
-        {
-            var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
-            while (!unloading.isDone)
+            if (PlayedLevel != null) // if in play mode
             {
-                yield return null;
-            }
-            var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
-            while (!loading.isDone)
-            {
-                yield return null;
-            }
-            OnNewSceneLoaded?.Invoke();
-        }
-
-
-        [SerializeField] Text fpsText;
-        readonly int numFrames = 10;        
-        Queue<float> timeDeltas = new Queue<float>();
-        float totalTime = 0;
-        private void Update()
-        {
-            float oldDelta = timeDeltas.Dequeue();
-            float newDelta = Time.deltaTime;
-
-            totalTime -= oldDelta;
-            totalTime += newDelta;
-            fpsText.text = (1 / (totalTime / numFrames)).ToString("0");
-
-            timeDeltas.Enqueue(newDelta);
-        }
-
-
-        [SerializeField] Canvas canvas;
-
-        // TODO: move this back into two
-        [SerializeField] RectTransform cardParent, navParent, playParent;
-        public RectTransform CardParent { get { return cardParent; } }
-        public RectTransform NavParent { get { return navParent; } }
-
-        [SerializeField] Level levelPrefab;
-        public Level LoadLevel(string path=null)
-        {
-            var level = Instantiate(levelPrefab);
-            bool successful = level.LoadFromFile(path);
-            if (successful)
-            {
-                return level;
-            }
-            else
-            {
-                Destroy(level);
-                return null;
-            }
-        }
-        public Level GetDefaultLevel() // only for testing
-        {
-            return Instantiate(levelPrefab);
-        }
-
-        public Level PlayedLevel { get; private set; }
-        public void PlayLevel(Level level)
-        {
-            string toUnload = "";
-            if (PlayedLevel != null)
-            {
-                if (PlayedLevel != level)
+                if (PlayedLevel != toPlay)
                 {
                     Destroy(PlayedLevel.gameObject);
-                    PlayedLevel = level;
+                    PlayedLevel = toPlay;
+                } else {
+                    // replay level so no need to destroy
                 }
-                else
-                {
-                    // replay level
-                }
-                if (teaching != null)
-                {
-                    Destroy(teaching.gameObject);
-                }
-                toUnload = "Play";
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
             }
             else
             {
                 // play from menu
-                PlayedLevel = level;
-                toUnload = "Menu";
+                PlayedLevel = toPlay;
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
-            level.SetNewThumbnailParent(playParent, Vector2.zero);
-            level.ShowThumbnail();
-            UnloadSceneThenLoadAnother(toUnload, "Play");
-
+            print("TODO: loading message!");
         }
-        // TODO: make this not so horrible
-        [SerializeField] Tutorials.Tutorial[] tutorials;
-        Tutorials.Tutorial teaching;
-        public void LoadTutorialIfNeeded()
+
+        // for levels to attach to
+        [SerializeField] RectTransform cardParent, playParent, navParent, tutParent;
+        public RectTransform CardParent { get { return cardParent; } }
+        public RectTransform PlayParent { get { return playParent; } }
+        public RectTransform NavParent { get { return navParent; } }
+        public RectTransform TutParent { get { return tutParent; } }
+
+
+        ///////////////////
+        // scene loading //
+        ///////////////////
+        [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
+        [Serializable] public class MyFloatEvent : UnityEvent<float> {}
+        [SerializeField] MyFloatEvent OnLoadingProgress;
+        [Serializable] public class MyStringEvent : UnityEvent<string> {}
+        public MyStringEvent OnLoaded;
+        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
-            if (PlayedLevel.Details.idx < tutorials.Length)
+            OnSceneUnloaded.Invoke();
+            if (toUnload != null)
             {
-                teaching = Instantiate(tutorials[PlayedLevel.Details.idx], canvas.transform, false);
+                var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
+                while (!unloading.isDone)
+                {
+                    OnLoadingProgress?.Invoke(unloading.progress/2);
+                    yield return null;
+                }
             }
-        }
-
-        public void SavePlayedLevel(int numStars, int score)
-        {
-            if (numStars > PlayedLevel.Details.numStars)
-                PlayedLevel.Details.numStars = numStars;
-
-            if (score > PlayedLevel.Details.highScore)
-                PlayedLevel.Details.highScore = score; // TODO: animation
-
-            // unlock next level if not unlocked
-            if (PlayedLevel.NextLevel != null &&
-                PlayedLevel.NextLevel.Details.numStars == -1)
+            if (toLoad != null)
             {
-                // TODO: animation
-                PlayedLevel.NextLevel.Details.numStars = 0;
-                PlayedLevel.NextLevel.SaveToFile();
-                PlayedLevel.NextLevel.Unlock();
+                var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
+                while (!loading.isDone)
+                {
+                    OnLoadingProgress?.Invoke(.5f + loading.progress/2);
+                    yield return null;
+                }
+                OnLoaded?.Invoke(toLoad);
             }
-            PlayedLevel.SaveToFile();
+            OnSceneLoaded?.Invoke();
         }
-
-        [SerializeField] GameObject[] landscapes;
-        public GameObject RandomLandscape()
-        {
-            return Instantiate(landscapes[UnityEngine.Random.Range(0, landscapes.Length)]);
-        }
-
-
-
-        int age, gender, education;
-        public void SetAge(int age)
-        {
-            this.age = age;
-        }
-        public void SetGender(int gender)
-        {
-            this.gender = gender;
-        }
-        public void SetEducation(int education)
-        {
-            this.education = education;
-        }
-        // TODO: username for leaderboards
 
         public void ReturnToMenu()
         {
-            if (teaching != null)
-            {
-                Destroy(teaching.gameObject);
+            if (PlayedLevel != null) {
+                PlayedLevel = null; // level destroys itself so no need to do it here
             }
-            if (PlayedLevel != null)
-            {
-                Destroy(PlayedLevel.gameObject);
-                PlayedLevel = null;
-            }
-            UnloadSceneThenLoadAnother("Play", "Menu");
+            StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
+        }
+
+
+        ///////////////////////////
+        // showing help messages
+
+        [SerializeField] UI.Help helpText;
+        public void ShowHelpText(float delay, string message)
+        {
+            helpText.DelayThenShow(delay, message);
+        }
+        public void HideHelpText()
+        {
+            helpText.Show(false);
         }
     }
 }

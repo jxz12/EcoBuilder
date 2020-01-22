@@ -4,6 +4,8 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace EcoBuilder.Archie
+{
 public class saver : MonoBehaviour
 {
     // a script for exporting procederially generated meshes as an .obj file ( for later use / printing )
@@ -61,4 +63,5 @@ public class saver : MonoBehaviour
         sw.Close();
         Debug.Log("saving done!");
     }
+}
 }

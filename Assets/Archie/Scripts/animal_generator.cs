@@ -7,8 +7,8 @@ using System.Diagnostics; // TIME TESTING
 namespace EcoBuilder.Archie{
     public class animal_generator : ProceduralMeshGenerator
     {
-        [SerializeField] GameObject Animal_Prefab;
-        [SerializeField] Mesh[] Consumer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
+        [SerializeField] GameObject Animal_Prefab, Plant_Prefab;
+        [SerializeField] Mesh[] Consumer_Meshs, Producer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
         static public List<GameObject> generated_consumers = new List<GameObject>();
         static public List<GameObject> generated_producers = new List<GameObject>();
 
@@ -18,20 +18,21 @@ namespace EcoBuilder.Archie{
         void Awake()
         {
             Texy = GetComponent<AnimalTexture>();
-
         }
 
         public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed, float population = -1)
         {
             UnityEngine.Random.InitState(randomSeed);
-            var created_species = Instantiate(Animal_Prefab);
+            GameObject created_species;
             if (!isProducer)
             {
+                created_species = Instantiate(Animal_Prefab);
                 Form_Animal(created_species, bodySize, greediness, randomSeed);
                 generated_consumers.Add(created_species);
             }
             else
             {
+                created_species = Instantiate(Plant_Prefab);
                 Form_Plant(created_species, bodySize, greediness, randomSeed);
                 generated_producers.Add(created_species);
             }
@@ -43,40 +44,59 @@ namespace EcoBuilder.Archie{
             UnityEngine.Random.InitState(randomSeed);
             if (generated_consumers.Contains(species))
             {
-                Form_Animal(species, size, greed, randomSeed, false);
+                Form_Animal(species, size, greed, randomSeed);
             }
             else
             {
-                Form_Plant(species, size, greed, randomSeed, false);
+                Form_Plant(species, size, greed, randomSeed);
                 //re-generate tree
             }
         }
 
-        private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed, bool doFace=true)
+        private void Form_Animal(GameObject animal, float bodySize, float greediness, int randomSeed)
         {
             // give appropriate name
-            animal.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsConsumer[(int)(bodySize*.99f * nounsConsumer.GetLength(0)), UnityEngine.Random.Range(0, nounsConsumer.GetLength(1))];
+            int d0 = UnityEngine.Random.Range(0, adjectives.Length);
+            int d1 = (int)(bodySize*.999f * nounsConsumer.Length);
+            int d2 = UnityEngine.Random.Range(0, nounsConsumer[d1].Length);
+            animal.name = adjectives[d0] + " " + nounsConsumer[d1][d2];
             // assign mesh
-            animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
-            // generate texture and material
-            var yuv_coordinates = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
+            animal.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.999f * Consumer_Meshs.Length)];
+            // animal.transform.localScale = (.4f + .2f*bodySize) * Vector3.one;
 
-            // animal.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
+            // generate texture and material
+            // var yuv = new Vector3(.8f-.5f*bodySize, .4f, .8f*greediness-.4f);
+            // // convert yuv to rgb
+            // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
+            // // scale mesh
+            // animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
+            var lab = new LABColor(70-50*bodySize, 60*greediness, -50);
+            Color rgb = lab.ToColor();
+
+            Texy.Generate_and_Apply(randomSeed, animal.GetComponent<MeshRenderer>(), rgb);
         }
 
 
-        private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed, bool doFace=true)
+        private void Form_Plant(GameObject plant, float bodySize, float greediness, int randomSeed)
         {
             // give appropriate name
-            plant.name = adjectives[UnityEngine.Random.Range(0, adjectives.Length)] + " " + nounsProducer[(int)(bodySize*.99f * nounsProducer.GetLength(0)), UnityEngine.Random.Range(0, nounsProducer.GetLength(1))];
+            int d0 = UnityEngine.Random.Range(0, adjectives.Length);
+            int d1 = (int)(bodySize*.999f * nounsProducer.Length);
+            int d2 = UnityEngine.Random.Range(0, nounsProducer[d1].Length);
+            plant.name = adjectives[d0] + " " + nounsProducer[d1][d2];
             // assign mesh
-            plant.GetComponent<MeshFilter>().mesh = Consumer_Meshs[(int)(bodySize*.99f * Consumer_Meshs.Length)];
-            // generate texture and material
-            var yuv_coordinates = new Vector3(.8f-.5f*bodySize, -.4f, .8f*greediness-.4f);
+            plant.GetComponent<MeshFilter>().mesh = Producer_Meshs[(int)(bodySize*.999f * Producer_Meshs.Length)];
+            // plant.transform.localScale = (.4f + .2f*bodySize) * Vector3.one;
 
-            // plant.GetComponent<MeshRenderer>().material = Texy.Generate_and_Apply(randomSeed, bodySize, yuv_coordinates);
-            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), yuv_coordinates, doFace);
+            // generate texture and material
+            // var yuv = new Vector3(.7f-.7f*bodySize, -.4f, .8f*greediness-.4f);
+            // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
+            // // scale mesh
+            // plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
+            var lab = new LABColor(80-50*bodySize, -80+100*greediness, 50);
+            Color rgb = lab.ToColor();
+
+            Texy.Generate_and_Apply(randomSeed, plant.GetComponent<MeshRenderer>(), rgb);
         }
 
         public static string[] adjectives = new string[]
@@ -101,65 +121,77 @@ namespace EcoBuilder.Archie{
             "Average",
             "Shy",
         };
-        public static string[,] nounsConsumer = new string[,]
+        public static string[][] nounsConsumer = new string[][]
         {
-            {"Rat",
+            new string[]{
+            "Rat",
             "Aardvark",
             "Caterpillar",
-            "Chameleon",
             "Ant",
             "Spider",
             "Wasp",
             "Bumblebee",
             "Beetle"},
 
-            {"Koala",
+            new string[]{
+            "Koala",
             "Chihuahua",
+            "Chameleon",
             "Platypus",
             "Raccoon",
             "Rabbit",
             "Snake",
-            "Rooster",
             "Snake",
             "Rooster"},
 
-            {"Sheep",
+            new string[]{
+            "Sheep",
             "Monkey",
             "Wolverine",
             "Dog",
             "Pig",
-            "Alpaca",
             "Dog",
             "Pig",
             "Alpaca"},
 
-            {"Tiger",
-            "Horse",
-            "Ox",
-            "Velociraptor",
+            new string[]{
             "Tiger",
             "Horse",
             "Ox",
-            "Velociraptor",
+            "Tiger",
+            "Horse",
+            "Ox",
             "Velociraptor"},
 
-            {"Dragon",
+            new string[]{
+            "Dragon",
             "Elephant",
             "Polar Bear",
             "Crocodile",
             "Panda",
             "Bear",
             "Sloth",
-            "Tyrannosaurus Rex",
             "Tyrannosaurus Rex"}
         };
-        public static string[,] nounsProducer = new string[,]
+        public static string[][] nounsProducer = new string[][]
         {
-            {"Grass","Weed"},
-            {"Mushroom","Fern"},
-            {"Bush","Shrub"},
-            {"Willow","Sycamore"},
-            {"Oak","Beech"}
+            new string[]{
+            "Grass",
+            "Weed",
+            "Mushroom",
+            "Fern"},
+
+            new string[]{
+            "Bush",
+            "Shrub",
+            "Berries",
+            "Ivy"},
+
+            new string[]{
+            "Willow",
+            "Sycamore",
+            "Oak",
+            "Beech"}
         };
     }
 }

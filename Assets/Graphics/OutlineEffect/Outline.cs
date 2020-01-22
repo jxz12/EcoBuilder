@@ -34,7 +34,9 @@ namespace cakeslice
     {
         public Renderer Renderer { get; private set; }
 
-        public int color;
+        public enum Colour { Yellow=0, Green=1, Red=2, Blue=3, Orange=4, Cyan=5 }
+        public Colour colour;
+        public int color { get { return (int)colour; } }
         public bool eraseRenderer;
 
         [HideInInspector]

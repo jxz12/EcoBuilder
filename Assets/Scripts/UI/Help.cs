@@ -7,10 +7,9 @@ namespace EcoBuilder.UI
 {
     public class Help : MonoBehaviour
     {
-        [SerializeField] Text text;
         [SerializeField] VerticalLayoutGroup panelLayout;
         [SerializeField] ContentSizeFitter panelFitter;
-        [SerializeField] Text message;
+        [SerializeField] TMPro.TextMeshProUGUI message;
         [SerializeField] Button hideButton, showButton;
 
         public event Action OnUserShown;
@@ -18,21 +17,25 @@ namespace EcoBuilder.UI
         RectTransform rt;
         Vector2 targetPos, targetAnchor;
         Vector2 velocity, anchosity;
-        Vector2 canvasRefRes; // TODO: move this back into pixels lol
+        Rect canvasRect;
         void Awake()
         {
             rt = GetComponent<RectTransform>();
             targetPos = rt.anchoredPosition;
             targetAnchor = rt.anchorMin;
-            canvasRefRes = GetComponentInParent<Canvas>().GetComponent<RectTransform>().sizeDelta;
+            canvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect;
+
+            // prevents scene getting dirty, Unity autolayout sucks
+            message.transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
         }
         void Start()
         {
             hideButton.onClick.AddListener(()=>UserShow(false));
             showButton.onClick.AddListener(()=>UserShow(true));
 
-            DelayThenShow(2);
+            // StartCoroutine(DelayThenShow(2, true));
         }
+        // also because unity autolayout suckssss
         void ForceUpdateLayout()
         {
             Canvas.ForceUpdateCanvases();
@@ -42,23 +45,23 @@ namespace EcoBuilder.UI
         }
         public void SetText(string toSet)
         {
-            text.text = toSet;
+            message.text = toSet;
             ForceUpdateLayout();
         }
-        public void SetDistFromTop(float height, bool damp=true) // 0-1 range
+        public void SetDistFromTop(float normalisedHeight, bool damp=true) // 0-1 range
         {
-            targetPos.y = canvasRefRes.y * -height;
+            targetPos.y = canvasRect.height * -normalisedHeight;
             // rt.anchorMin = rt.anchorMax = 
             if (!damp)
             {
                 rt.anchoredPosition = targetPos;
             }
         }
-        public void SetWidth(float width)
+        public void SetWidth(float normalisedWidth)
         {
             // float x = isLeft? -canvasRefRes.x*width : canvasRefRes.x*width;
             float prevWidth = rt.sizeDelta.x;
-            float newWidth = canvasRefRes.x * width;
+            float newWidth = canvasRect.width * normalisedWidth;
             targetPos.x *= newWidth / prevWidth;
             rt.sizeDelta = new Vector2(newWidth, rt.sizeDelta.y);
 
@@ -105,22 +108,28 @@ namespace EcoBuilder.UI
                 targetPos.x = isLeft? -rt.rect.width : rt.rect.width;
             }
         }
+        public void DelayThenShow(float seconds, string msg)
+        {
+            Show(false);
+            SetText(msg);
+            StartCoroutine(DelayThenShow(seconds, true));
+        }
         void UserShow(bool showing) // to attach to button
         {
             Show(showing);
             OnUserShown?.Invoke();
         }
-        void FixedUpdate()
+        void Update()
         {
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, .15f);
             rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, .15f);
         }
-        public void DelayThenShow(float seconds)
-        {
-            // GetComponent<Animator>().SetTrigger("Reset");
-            // GetComponent<Animator>().SetBool("Show", true);
-            StartCoroutine(DelayThenShow(seconds, true));
-        }
+        // public void DelayThenShow(float seconds)
+        // {
+        //     // GetComponent<Animator>().SetTrigger("Reset");
+        //     // GetComponent<Animator>().SetBool("Show", true);
+        //     StartCoroutine(DelayThenShow(seconds, true));
+        // }
         IEnumerator DelayThenShow(float seconds, bool showing)
         {
             yield return new WaitForSeconds(seconds);

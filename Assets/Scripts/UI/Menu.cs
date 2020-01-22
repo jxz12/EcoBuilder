@@ -1,169 +1,131 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace EcoBuilder.UI
 {
     public class Menu : MonoBehaviour
     {
-        [SerializeField] List<Sprite> starImages;
-        [SerializeField] GridLayoutGroup levelGrid;
-        [SerializeField] Level levelPrefab;
+        [SerializeField] GridLayoutGroup learningLevels;
+        [SerializeField] VerticalLayoutGroup researchLevels;
+        // [SerializeField] Coin wolfLion;
+        [SerializeField] Registration form;
+        [SerializeField] Toggle reverseDrag;
 
-        public void GoToOptions()
+        [SerializeField] Button researchWorld;
+        [SerializeField] Image researchLock;
+
+        void Start()
         {
-            GetComponent<Animator>().SetInteger("Menu Choice", 0);
+            if (GameManager.Instance.AskForRegistration) {
+                StartRegistration();
+            } else {
+                StartMainMenu();
+            }
         }
-        public void GoToMain()
+
+        void StartRegistration()
         {
-            GetComponent<Animator>().SetInteger("Menu Choice", 1);
+            form.gameObject.SetActive(true);
+            form.Reveal();
+            form.OnFinished += StartMainMenu;
         }
-        public void GoToLevels()
+        void StartMainMenu()
         {
-            GetComponent<Animator>().SetInteger("Menu Choice", 2);
+            form.OnFinished -= StartMainMenu;
+            var team = GameManager.Instance.PlayerTeam;
+            if (team == GameManager.PlayerDetails.Team.None) {
+                ChooseTeam();
+            }
+            ShowMainMenu();
         }
-        public void GoToSurvey()
+        void ChooseTeam()
         {
-            GetComponent<Animator>().SetInteger("Menu Choice", 3);
+            // this was previously done by coin, but will now be hidden to the user
+            bool heads = UnityEngine.Random.Range(0, 2) == 0;
+            var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
+            GameManager.Instance.SetTeamLocal(team);
+            GameManager.Instance.SetTeamRemote(s=>print(s));
+        }
+
+        [SerializeField] Levels.Leaderboard leaderboardPrefab;
+        [SerializeField] List<Levels.Level> learningLevelPrefabs;
+        [SerializeField] List<Levels.Level> researchLevelPrefabs;
+        void ShowMainMenu()
+        {
+            StartCoroutine(WaitThenShowLogo(.7f));
+
+            var unlockedIdxs = new HashSet<int>();
+            Action<Levels.Level> CheckUnlocked = (l)=> {
+                if (GameManager.Instance.GetHighScoreLocal(l.Details.idx) >= 0)
+                {
+                    unlockedIdxs.Add(l.Details.idx);
+                    if (l.NextLevelPrefab!=null) {
+                        unlockedIdxs.Add(l.NextLevelPrefab.Details.idx);
+                    }
+                }
+            };
+            var instantiated = new Dictionary<int, Levels.Level>();
+            foreach (var prefab in learningLevelPrefabs)
+            {
+                var parent = new GameObject().AddComponent<RectTransform>();
+                parent.SetParent(learningLevels.transform);
+                parent.localScale = Vector3.one;
+                parent.name = prefab.Details.idx.ToString();
+                
+                CheckUnlocked(prefab);
+                var level = Instantiate(prefab, parent);
+                instantiated[level.Details.idx] = level;
+            }
+            if (IsLearningFinished())
+            {
+                researchWorld.interactable = true;
+                researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
+                researchLock.enabled = false;
+                foreach (var prefab in researchLevelPrefabs)
+                {
+                    var scores = GameManager.Instance.GetTop3ScoresRemote(prefab.Details.idx);
+                    var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
+                    leaderboard.SetScores(scores.Item1, scores.Item2, scores.Item3);
+
+                    CheckUnlocked(prefab);
+                    var level = leaderboard.GiveLevelPrefab(prefab);
+                    instantiated[level.Details.idx] = level;
+                }
+            }
+            foreach (var idx in unlockedIdxs) {
+                instantiated[idx].Unlock();
+            }
+            reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
+            reverseDrag.onValueChanged.AddListener(SetReverseDrag);
+            GetComponent<Animator>().SetTrigger("Reveal");
+        }
+        bool IsLearningFinished()
+        {
+            foreach (var level in learningLevelPrefabs) {
+                if (GameManager.Instance.GetHighScoreLocal(level.Details.idx) <= 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        [SerializeField] GameObject logo;
+        IEnumerator WaitThenShowLogo(float waitSeconds)
+        {
+            yield return new WaitForSeconds(waitSeconds);
+            logo.SetActive(true);
         }
         public void QuitGame()
         {
-            Application.Quit();
+            GameManager.Instance.Quit();
         }
-        List<Level> levels;
-        void Start()
+        public void SetReverseDrag(bool reversed)
         {
-            // PlayerPrefs.DeleteKey("Has Played");
-            if (!PlayerPrefs.HasKey("Has Played"))
-            {
-                DeleteDirectoryLevels();
-                SaveSceneLevels();
-                // GoToSurvey();
-                PlayerPrefs.SetString("Has Played", "yes");
-                PlayerPrefs.Save();
-            }
-            LoadFileLevels();
-
-            // let the grid do the layout first
-            StartCoroutine(EnableGridOneFrame());
-        }
-        IEnumerator EnableGridOneFrame()
-        {
-            levelGrid.enabled = true;
-            foreach (Level level in levels)
-            {
-                level.enabled = false;
-            }
-            yield return null;
-            foreach (Level level in levels)
-            {
-                // print(level.transform.position);
-                level.SetNewThumbnailParent(levelGrid.GetComponent<RectTransform>(), level.transform.localPosition);
-                level.enabled = true;
-            }
-            levelGrid.enabled = false;
-        }
-
-        public void ResetSaveData()
-        {
-            PlayerPrefs.DeleteKey("Has Played"); // uncomment for building levels
-            GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
-        }
-        public void UnlockAllLevels()
-        {
-            foreach (Level l in levels)
-            {
-                if (l.Details.numStars == -1)
-                {
-                    l.Details.numStars = 0;
-                    l.SaveToFile();
-                }
-            }
-            GameManager.Instance.UnloadSceneThenLoadAnother("Menu", "Menu");
-        }
-
-
-        // destroys scene levels
-        void LoadFileLevels(bool destroyLoaded=true)
-        {
-            if (destroyLoaded)
-            {
-                foreach (Level level in levelGrid.transform.GetComponentsInChildren<Level>())
-                {
-                    Destroy(level.gameObject);
-                }
-            }
-
-            levels = new List<Level>();
-            foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
-                                                 .Where(s=> s.EndsWith(".gd", StringComparison.OrdinalIgnoreCase)))
-            {
-                Level newLevel = Instantiate(levelPrefab);
-                bool successful = newLevel.LoadFromFile(filepath);
-                if (successful)
-                {
-                    levels.Add(newLevel);
-                }
-                else
-                {
-                    Destroy(newLevel.gameObject);
-                }
-            }
-            levels = new List<Level>(levels.OrderBy(x=>x.Details.idx));
-            for (int i=0; i<levels.Count-1; i++)
-            {
-                levels[i].transform.SetParent(levelGrid.transform, false);
-                levels[i].transform.SetAsLastSibling();
-                // levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
-            }
-            levels[levels.Count-1].transform.SetParent(levelGrid.transform, false);
-        }
-        void SaveSceneLevels()
-        {
-            levels = new List<Level>(levelGrid.transform.GetComponentsInChildren<Level>().OrderBy(x=>x.Details.idx));
-            for (int i=0; i<levels.Count; i++)
-            {
-                levels[i].Details.savefilePath = Application.persistentDataPath + "/" + levels[i].Details.idx + ".gd";
-            }
-            for (int i=0; i<levels.Count-1; i++)
-            {
-                levels[i].Details.nextLevelPath = levels[i+1].Details.savefilePath;
-                levels[i].SaveToFile();
-            }
-            levels[levels.Count-1].SaveToFile();
-        }
-        void DeleteDirectoryLevels()
-        {
-            foreach (string filepath in Directory.GetFiles(Application.persistentDataPath)
-                                                 .Where(s=> s.EndsWith(".gd", StringComparison.OrdinalIgnoreCase)))
-            {
-                try
-                {
-                    File.Delete(filepath);
-                }
-                catch (Exception e)
-                {
-                    print("could not delete save file " + e);
-                }
-            }
-        }
-
-
-        public void SetPlayerAge(int age)
-        {
-            GameManager.Instance.SetAge(age);
-        }
-        public void SetPlayerGender(int gender)
-        {
-            GameManager.Instance.SetGender(gender);
-        }
-        public void SetPlayerEducation(int education)
-        {
-            GameManager.Instance.SetEducation(education);
+            GameManager.Instance.SetDragDirectionLocal(reversed);
+            GameManager.Instance.SetDragDirectionRemote(b=>print("TODO: set sync=false"));
         }
     }
 }

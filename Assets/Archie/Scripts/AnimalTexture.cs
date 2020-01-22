@@ -23,62 +23,32 @@ namespace EcoBuilder.Archie
             return A[UnityEngine.Random.Range(0, A.Length)];
         }
 
-        private Matrix4x4 yuv_to_rgb;
-        public void Awake()
-        {
-            // set up yuv rgb conversion matrix
-            yuv_to_rgb = new Matrix4x4();
-            yuv_to_rgb.SetColumn(0, new Vector4
-            (
-                1,
-                1,
-                1,
-                0
-            ));
-            yuv_to_rgb.SetColumn(1, new Vector4
-            (
-                0,
-                -0.39465f,
-                2.03211f,
-                0
-            ));
-            yuv_to_rgb.SetColumn(2, new Vector4
-            (
-                1.13983f,
-                -0.58060f,
-                0,
-                0
-            ));
-            yuv_to_rgb.SetColumn(3, new Vector4
-            (
-                0,
-                0,
-                0,
-                0
-            ));
-        }
+        public static Matrix4x4 yuv_to_rgb = new Matrix4x4(
+            new Vector4(1,1,1,0),
+            new Vector4(0, -0.39465f, 2.03211f, 0),
+            new Vector4(1.13983f, -0.58060f, 0, 0),
+            new Vector4( 0, 0, 0, 0)
+        );
 
-        public void Generate_and_Apply(int seed, MeshRenderer speciesMesh, Vector3 yuv, bool doFace)
+        public void Generate_and_Apply(int seed, MeshRenderer speciesMesh, Color col)
         {
             // seed random number
             UnityEngine.Random.InitState(seed);
 
-            // convert yuv to rgb
-            Color rgb_background_colour = (Vector4)(yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1); // MultiplyVector takes a Vector3 as its argument
+            speciesMesh.materials[0].SetColor("_Color", col);
 
-            speciesMesh.materials[0].SetColor("_Color", rgb_background_colour);
-            if (!doFace)
-                return;
+            if (speciesMesh.materials.Length > 1)
+            {
+                var eyes = pick_random(EyeTextures);
+                var nose = pick_random(NoseTextures);
+                var mouth = pick_random(MouthTextures);
+                var cheek = pick_random(CheeckTextures);
 
-            var eyes = pick_random(EyeTextures);
-            var nose = pick_random(NoseTextures);
-            var mouth = pick_random(MouthTextures);
-            var cheek = pick_random(CheeckTextures);
-
-            speciesMesh.materials[1].SetTexture("_MainTex", eyes);
-            speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
-            speciesMesh.materials[1].SetTexture("_MainTex3", nose);
-            // speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
+                speciesMesh.materials[1].SetTexture("_MainTex", eyes);
+                speciesMesh.materials[1].SetTexture("_MainTex2", mouth);
+                speciesMesh.materials[1].SetTexture("_MainTex3", nose);
+                speciesMesh.materials[1].SetTexture("_MainTex4", cheek);
+            }
 
             // speciesMesh.materials[2].SetTexture("_MainTex", mouth);
             // speciesMesh.materials[3].SetTexture("_MainTex", nose);
