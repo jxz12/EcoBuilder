@@ -41,11 +41,11 @@ namespace EcoBuilder
 //             Screen.fullScreen = true;
 // #endif
 #if UNITY_EDITOR
-            if (SceneManager.sceneCount >= 2)
-            {
-                PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
-                PlayedLevel.Play();
-            }
+            // if (SceneManager.sceneCount >= 2)
+            // {
+            //     PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
+            //     PlayedLevel.Play();
+            // }
 #endif
         }
         public void Quit()
@@ -144,6 +144,10 @@ namespace EcoBuilder
         public void ShowHelpText(float delay, string message)
         {
             helpText.DelayThenShow(delay, message);
+        }
+        public void HideHelpText()
+        {
+            helpText.Show(false);
         }
     }
 }

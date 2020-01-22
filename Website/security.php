@@ -36,7 +36,7 @@
         $stmt->execute();
         $hashed = "";
         $stmt->bind_result($hashed);
-        if ($stmt->fetch() != true)
+        if ($stmt->fetch() != TRUE)
         {
             http_response_code(401);
             exit();

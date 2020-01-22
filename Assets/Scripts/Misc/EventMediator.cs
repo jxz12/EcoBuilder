@@ -149,7 +149,10 @@ namespace EcoBuilder
             inspector.Finish();
             nodelink.Finish();
             score.Finish();
-            GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.NormalisedScore);
+            bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.NormalisedScore);
+            if (highscore) {
+                print("TODO: congratulation message for getting a high score");
+            }
             GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.NormalisedScore, model.GetMatrix(), recorder.GetActions());
         }
 

@@ -1736,13 +1736,13 @@ MonoBehaviour:
     superfocusAllowed: 1
     sizeEditables: 
     greedEditables: 
-    targetScore1: 1
-    targetScore2: 1
+    targetScore1: 0
+    targetScore2: 0
     alternateScore: 
   tutorial: {fileID: 0}
   landscape: {fileID: 6175307669712771283, guid: 0cfceb57cb70edf4da131289775de31e,
     type: 3}
-  nextLevel: {fileID: 0}
+  nextLevelPrefab: {fileID: 0}
   starsImage: {fileID: 3298662015200627692}
   starSprites:
   - {fileID: 21300000, guid: a4a5ee8f85028754cae13ef78bf29dea, type: 3}

@@ -10,6 +10,7 @@ namespace EcoBuilder.UI
     {
         public event Action OnFinished;
 
+        [SerializeField] TMPro.TextMeshProUGUI loginText, registerText;
         [SerializeField] TMPro.TMP_InputField username, password, email;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle GDPR, askAgain;
@@ -17,7 +18,7 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite greyButton, redButton;
         [SerializeField] Image shade;
 
-        [SerializeField] GameObject startObj, skipObj, idObj, demoObj;
+        [SerializeField] GameObject[] startObj, idObj, demoObj, skipObj;
         public enum State { Null=-1, Start=0, Skip=1, Register=2, Login=3, Demographics=4, End=5 };
         private State _state = State.Null;
         public void SetState(State state)
@@ -25,11 +26,34 @@ namespace EcoBuilder.UI
             switch (state)
             {
             case State.Start:
-                ResetObjects();
-                startObj.SetActive(true);
+                ShowObjects(startObj);
                 username.text = password.text = email.text = "";
                 skipButton.image.sprite = greyButton;
                 backButton.interactable = false;
+                break;
+            case State.Register:
+                ShowObjects(idObj);
+                GDPR.isOn = false;
+                GDPR.gameObject.SetActive(true);
+                email.gameObject.SetActive(true);
+                loginSubmit.interactable = false;
+                loginText.gameObject.SetActive(false);
+                registerText.gameObject.SetActive(true);
+                break;
+            case State.Login:
+                ShowObjects(idObj);
+                GDPR.gameObject.SetActive(false);
+                email.gameObject.SetActive(false);
+                loginText.gameObject.SetActive(true);
+                registerText.gameObject.SetActive(false);
+                break;
+            case State.Demographics:
+                ShowObjects(demoObj);
+                backButton.interactable = false;
+                break;
+            case State.End:
+                OnFinished.Invoke();
+                Disappear();
                 break;
             case State.Skip:
                 if (_state == State.Skip || _state == State.Demographics)
@@ -41,45 +65,31 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    ResetObjects();
-                    skipObj.SetActive(true);
+                    SetActives(skipObj, true);
                     askAgain.isOn = false;
                     skipButton.image.sprite = redButton;
                 }
                 break;
-            case State.Register:
-                ResetObjects();
-                // FIXME: unity is very annoying (one frame error crap)
-                idObj.SetActive(true);
-                GDPR.isOn = false;
-                GDPR.gameObject.SetActive(true);
-                email.gameObject.SetActive(true);
-                loginSubmit.interactable = false;
-                break;
-            case State.Login:
-                GDPR.gameObject.SetActive(false);
-                email.gameObject.SetActive(false);
-                ResetObjects();
-                idObj.SetActive(true);
-                break;
-            case State.Demographics:
-                ResetObjects();
-                backButton.interactable = false;
-                demoObj.SetActive(true);
-                break;
-            case State.End:
-                OnFinished.Invoke();
-                Disappear();
-                break;
             }
             _state = state;
         }
+        private void ShowObjects(GameObject[] objects)
+        {
+            ResetObjects();
+            SetActives(objects, true);
+        }
+        private void SetActives(GameObject[] objects, bool actives)
+        {
+            foreach (var go in objects) {
+                go.SetActive(actives);
+            }
+        }
         private void ResetObjects()
         {
-            startObj.SetActive(false);
-            skipObj.SetActive(false);
-            idObj.SetActive(false);
-            demoObj.SetActive(false);
+            SetActives(startObj, false);
+            SetActives(idObj, false);
+            SetActives(demoObj, false);
+            SetActives(skipObj, false);
             backButton.interactable = true;
         }
 
@@ -92,8 +102,9 @@ namespace EcoBuilder.UI
             regButton.onClick.AddListener(()=> SetState(State.Register));
             loginButton.onClick.AddListener(()=> SetState(State.Login));
             username.onValueChanged.AddListener(s=> CheckUsernameEmail());
-            GDPR.onValueChanged.AddListener(b=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
+            password.onSubmit.AddListener(s=> LoginOrRegister());
+            GDPR.onValueChanged.AddListener(b=> CheckUsernameEmail());
         }
         public void Reveal()
         {
@@ -171,14 +182,14 @@ namespace EcoBuilder.UI
             if (Input.GetKeyDown(KeyCode.Tab))
             {
                 if (username.isFocused) {
-                    password.ActivateInputField();
-                } else if (password.isFocused) {
-                    if (_state == State.Register) {
-                        email.ActivateInputField();
+                    if (_state == State.Login) {
+                        password.ActivateInputField();
                     } else {
-                        username.ActivateInputField();
+                        email.ActivateInputField();
                     }
                 } else if (email.isFocused) {
+                    password.ActivateInputField();
+                } else if (password.isFocused) {
                     username.ActivateInputField();
                 }
             }
