@@ -11,15 +11,35 @@ namespace EcoBuilder.UI
         public event Action OnFinished;
 
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText;
-        [SerializeField] TMPro.TMP_InputField username, password, email;
+        [SerializeField] TMPro.TMP_InputField username, password, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
-        [SerializeField] Toggle GDPR, askAgain;
-        [SerializeField] Button loginSubmit, demoSubmit, skipButton, backButton, regButton, loginButton;
+        [SerializeField] Toggle consent, askAgain;
+        [SerializeField] Button loginSubmit, resetSubmit, demoSubmit, skipButton, backButton, regButton, loginButton, privacyButton, forgotButton;
         [SerializeField] Sprite greyButton, redButton;
         [SerializeField] Image shade;
 
-        [SerializeField] GameObject[] startObj, idObj, demoObj, skipObj;
-        public enum State { Null=-1, Start=0, Skip=1, Register=2, Login=3, Demographics=4, End=5 };
+        void Start()
+        {
+            loginSubmit.onClick.AddListener(()=> LoginOrRegister());
+            demoSubmit.onClick.AddListener(()=> TakeDemographics());
+            skipButton.onClick.AddListener(()=> SetState(State.Skip));
+            backButton.onClick.AddListener(()=> SetState(State.Start));
+            regButton.onClick.AddListener(()=> SetState(State.Register));
+            loginButton.onClick.AddListener(()=> SetState(State.Login));
+            forgotButton.onClick.AddListener(()=> SetState(State.Reset));
+            resetSubmit.onClick.AddListener(()=> GameManager.Instance.SendPasswordResetEmail(recipient.text, b=>print("TODO: enable some text to show sent")));
+            username.onValueChanged.AddListener(s=> CheckUsernameEmail());
+            email.onValueChanged.AddListener(b=> CheckUsernameEmail());
+            password.onSubmit.AddListener(s=> LoginOrRegister()); // enter/return pressed
+            // consent.onValueChanged.AddListener(b=> CheckUsernameEmail());
+            privacyButton.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
+
+            SetState(State.Start);
+            StartCoroutine(yTween(1,-1000,0,true));
+        }
+
+        [SerializeField] GameObject[] startObj, idObj, resetObj, demoObj, skipObj;
+        public enum State { Null=-1, Start=0, Skip=1, Register=2, Login=3, Reset=4, Demographics=5, End=6 };
         private State _state = State.Null;
         public void SetState(State state)
         {
@@ -33,8 +53,8 @@ namespace EcoBuilder.UI
                 break;
             case State.Register:
                 ShowObjects(idObj);
-                GDPR.isOn = false;
-                GDPR.gameObject.SetActive(true);
+                consent.gameObject.SetActive(false);
+                forgotButton.gameObject.SetActive(false);
                 email.gameObject.SetActive(true);
                 loginSubmit.interactable = false;
                 loginText.gameObject.SetActive(false);
@@ -42,18 +62,18 @@ namespace EcoBuilder.UI
                 break;
             case State.Login:
                 ShowObjects(idObj);
-                GDPR.gameObject.SetActive(false);
+                consent.gameObject.SetActive(false);
                 email.gameObject.SetActive(false);
                 loginText.gameObject.SetActive(true);
                 registerText.gameObject.SetActive(false);
                 break;
+            case State.Reset:
+                ShowObjects(resetObj);
+                skipButton.interactable = false;
+                break;
             case State.Demographics:
                 ShowObjects(demoObj);
                 backButton.interactable = false;
-                break;
-            case State.End:
-                OnFinished.Invoke();
-                Disappear();
                 break;
             case State.Skip:
                 if (_state == State.Skip || _state == State.Demographics)
@@ -69,6 +89,10 @@ namespace EcoBuilder.UI
                     askAgain.isOn = false;
                     skipButton.image.sprite = redButton;
                 }
+                break;
+            case State.End:
+                OnFinished.Invoke();
+                StartCoroutine(yTween(1,0,-1000,false));
                 break;
             }
             _state = state;
@@ -88,33 +112,13 @@ namespace EcoBuilder.UI
         {
             SetActives(startObj, false);
             SetActives(idObj, false);
+            SetActives(resetObj, false);
             SetActives(demoObj, false);
             SetActives(skipObj, false);
             backButton.interactable = true;
+            skipButton.interactable = true;
         }
 
-        void Start()
-        {
-            loginSubmit.onClick.AddListener(()=> LoginOrRegister());
-            demoSubmit.onClick.AddListener(()=> TakeDemographics());
-            skipButton.onClick.AddListener(()=> SetState(State.Skip));
-            backButton.onClick.AddListener(()=> SetState(State.Start));
-            regButton.onClick.AddListener(()=> SetState(State.Register));
-            loginButton.onClick.AddListener(()=> SetState(State.Login));
-            username.onValueChanged.AddListener(s=> CheckUsernameEmail());
-            email.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            password.onSubmit.AddListener(s=> LoginOrRegister());
-            GDPR.onValueChanged.AddListener(b=> CheckUsernameEmail());
-        }
-        public void Reveal()
-        {
-            SetState(State.Start);
-            StartCoroutine(yTween(1,-1000,0,true));
-        }
-        void Disappear()
-        {
-            StartCoroutine(yTween(1,0,-1000,false));
-        }
         IEnumerator yTween(float duration, float yStart, float yEnd, bool applyShade)
         {
             Color startCol = new Color(0,0,0,applyShade?0:.5f);
@@ -140,10 +144,10 @@ namespace EcoBuilder.UI
             }
         }
 
-        public void CheckUsernameEmail()
+        void CheckUsernameEmail()
         {
             if (_state == State.Register) {
-                loginSubmit.interactable = UsernameOkay() && EmailOkay() && GDPR.isOn;
+                loginSubmit.interactable = UsernameOkay() && EmailOkay();// && consent.isOn;
             } else {
                 loginSubmit.interactable = UsernameOkay();
             }
@@ -158,7 +162,8 @@ namespace EcoBuilder.UI
         {
             return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text);
         }
-        public void LoginOrRegister()
+
+        void LoginOrRegister()
         {
             if (_state == State.Register)
             {
@@ -172,7 +177,7 @@ namespace EcoBuilder.UI
                 throw new Exception("bad state");
             }
         }
-        public void TakeDemographics()
+        void TakeDemographics()
         {
             GameManager.Instance.SetDemographicsLocal(age.value, gender.value, education.value);
             GameManager.Instance.SetDemographicsRemote(s=>SetState(State.End));

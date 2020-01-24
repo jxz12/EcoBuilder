@@ -36,7 +36,7 @@ namespace EcoBuilder.UI
                     {
                     case 401: response = "Invalid username or password"; break;
                     case 404: response = "Server URL could not be found"; break;
-                    case 409: response = "Username already taken"; break;
+                    case 409: response = "Username or email already taken"; break;
                     case 503: response = "Could not connect to database"; break;
                     default: response = "Could not connect to server"; break;
                     }

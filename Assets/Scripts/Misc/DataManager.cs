@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -116,7 +115,7 @@ namespace EcoBuilder
 
         ///////////////////
         // web things
-        static readonly string server = "127.0.0.1/ecobuilder/";
+        static readonly string serverURL = "127.0.0.1/ecobuilder/";
         [SerializeField] UI.Postman pat;
         public void RegisterLocal(string username, string password, string email)
         {
@@ -132,7 +131,7 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "email", player.email }
             };
-            pat.Post(data, server+"register.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"register.php", (b,s)=>OnCompletion(b));
         }
         public void SetDemographicsLocal(int age, int gender, int education)
         {
@@ -150,7 +149,7 @@ namespace EcoBuilder
                 { "gender", player.gender.ToString() },
                 { "education", player.education.ToString() }
             };
-            pat.Post(data, server+"demographics.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"demographics.php", (b,s)=>OnCompletion(b));
             print("TODO: no need to pause, but mark as 'need to send' later if not");
         }
         public void SetTeamLocal(PlayerDetails.Team team)
@@ -165,7 +164,7 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "team", ((int)player.team).ToString() }
             };
-            pat.Post(data, server+"team.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"team.php", (b,s)=>OnCompletion(b));
         }
         public void SetDragDirectionLocal(bool reversed)
         {
@@ -174,22 +173,20 @@ namespace EcoBuilder
         }
         public void SetDragDirectionRemote(Action<bool> OnCompletion)
         {
-            var form = new WWWForm();
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
                 { "reversed", player.reverseDrag? "1":"0" }
             };
-            pat.Post(data, server+"drag.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"drag.php", (b,s)=>OnCompletion(b));
         }
         public void LoginRemote(string username, string password, Action<bool> OnCompletion)
         {
-            var form = new WWWForm();
             var data = new Dictionary<string, string>() {
                 { "username", username },
                 { "password", password },
             };
-            pat.Post(data, server+"login.php", (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b); });
+            pat.Post(data, serverURL+"login.php", (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b); });
         }
         void ParseLogin(string username, string password, string returned)
         {
@@ -208,6 +205,13 @@ namespace EcoBuilder
                 SaveHighScoreLocal(idx, score);
             }
             SavePlayerDetailsLocal();
+        }
+        public void SendPasswordResetEmail(string recipient, Action<bool> OnCompletion)
+        {
+            var data = new Dictionary<string, string>() {
+                { "recipient", recipient },
+            };
+            pat.Post(data, serverURL+"resetup.php", (b,s)=>{ print(s); });
         }
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
@@ -242,17 +246,16 @@ namespace EcoBuilder
                 { "actions", actions }
             };
             print("TODO: mark not synced and then save later (with ticks and stuff), and delete if needed");
-            pat.Post(data, server+"playthrough.php", (b,s)=>{ print(s); });
+            pat.Post(data, serverURL+"playthrough.php", (b,s)=>{ print(s); });
         }
         public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
         {
             print("TODO: get global scores from server");
             return Tuple.Create(14,12,10);
         }
-        public bool SendPasswordResetEmail(string username)
+        public void OpenPrivacyPolicyInBrowser()
         {
-            print("TODO: email page for reset");
-            return true;
+            Application.OpenURL(serverURL+"GDPR_Privacy_Notice.htm");
         }
 
         public void DontAskAgainForLogin()

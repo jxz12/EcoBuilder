@@ -29,7 +29,6 @@ namespace EcoBuilder.UI
         void StartRegistration()
         {
             form.gameObject.SetActive(true);
-            form.Reveal();
             form.OnFinished += StartMainMenu;
         }
         void StartMainMenu()
@@ -126,6 +125,10 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.SetDragDirectionLocal(reversed);
             GameManager.Instance.SetDragDirectionRemote(b=>print("TODO: set sync=false"));
+        }
+        public void OpenPrivacyPolicy()
+        {
+            GameManager.Instance.OpenPrivacyPolicyInBrowser();
         }
     }
 }
