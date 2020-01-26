@@ -54,7 +54,7 @@ namespace EcoBuilder.UI
             }
         }
         IEnumerator postRoutine = null;
-        public void Post(Dictionary<string, string> letter, string address, Action<bool, string> ResponseCallback, bool silentFail=false)
+        public void Post(Dictionary<string, string> letter, string address, Action<bool, string> ResponseCallback)
         {
             var form = new WWWForm();
             foreach (var line in letter)
@@ -65,9 +65,12 @@ namespace EcoBuilder.UI
                     form.AddField(line.Key, Encrypt(line.Value));
                 }
             }
-            print("TODO: silent fail");
-            StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
-            Show();
+            print("TODO: store the file if the team is none or if the connection is down");
+            if (GameManager.Instance.PlayerTeam != GameManager.PlayerDetails.Team.None)
+            {
+                StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
+                Show();
+            }
         }
         // void CancelPost()
         // {
@@ -83,7 +86,7 @@ namespace EcoBuilder.UI
             group.blocksRaycasts = true;
             group.interactable = true;
             group.alpha = 1;
-            print("TODO: nice loading icon");
+            print("TODO: silent fail and move this to a refresh thing in the corner");
         }
         public void Hide()
         {

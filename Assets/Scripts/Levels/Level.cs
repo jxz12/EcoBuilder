@@ -102,7 +102,7 @@ namespace EcoBuilder.Levels
             int score = GameManager.Instance.GetHighScoreLocal(Details.idx);
             highScore.text = score.ToString();
             int numStars = 0;
-            if (score >= 0) {
+            if (score > 0) {
                 numStars += 1;
             }
             if (score >= details.targetScore1)

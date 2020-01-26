@@ -13,7 +13,7 @@ namespace EcoBuilder.Levels
         protected UI.Inspector inspector;
         protected UI.Incubator incubator;
         protected UI.Score score;
-        protected UI.MoveRecorder recorder;
+        protected UI.Recorder recorder;
         protected UI.Constraints constraints;
         protected NodeLink.NodeLink nodelink;
         protected Model.Model model;
@@ -57,7 +57,7 @@ namespace EcoBuilder.Levels
                 yield return null;
             while ((constraints = FindObjectOfType<UI.Constraints>()) == null)
                 yield return null;
-            while ((recorder = FindObjectOfType<UI.MoveRecorder>()) == null)
+            while ((recorder = FindObjectOfType<UI.Recorder>()) == null)
                 yield return null;
             while ((nodelink = FindObjectOfType<NodeLink.NodeLink>()) == null)
                 yield return null;

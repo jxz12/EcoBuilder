@@ -22,7 +22,7 @@ namespace EcoBuilder.UI
             if (GameManager.Instance.AskForRegistration) {
                 StartRegistration();
             } else {
-                StartMainMenu();
+                ShowMainMenu();
             }
         }
 
@@ -34,19 +34,7 @@ namespace EcoBuilder.UI
         void StartMainMenu()
         {
             form.OnFinished -= StartMainMenu;
-            var team = GameManager.Instance.PlayerTeam;
-            if (team == GameManager.PlayerDetails.Team.None) {
-                ChooseTeam();
-            }
             ShowMainMenu();
-        }
-        void ChooseTeam()
-        {
-            // this was previously done by coin, but will now be hidden to the user
-            bool heads = UnityEngine.Random.Range(0, 2) == 0;
-            var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
-            GameManager.Instance.SetTeamLocal(team);
-            GameManager.Instance.SetTeamRemote(s=>print(s));
         }
 
         [SerializeField] Levels.Leaderboard leaderboardPrefab;
@@ -66,6 +54,7 @@ namespace EcoBuilder.UI
                     }
                 }
             };
+            unlockedIdxs.Add(learningLevelPrefabs[0].Details.idx); // always unlock first level
             var instantiated = new Dictionary<int, Levels.Level>();
             foreach (var prefab in learningLevelPrefabs)
             {

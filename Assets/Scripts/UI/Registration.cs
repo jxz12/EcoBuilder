@@ -73,6 +73,7 @@ namespace EcoBuilder.UI
                 break;
             case State.Demographics:
                 ShowObjects(demoObj);
+                ChooseTeam(); // only select a team if registerng
                 backButton.interactable = false;
                 break;
             case State.Skip:
@@ -85,7 +86,7 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
-                    SetActives(skipObj, true);
+                    ShowObjects(skipObj);
                     askAgain.isOn = false;
                     skipButton.image.sprite = redButton;
                 }
@@ -96,6 +97,14 @@ namespace EcoBuilder.UI
                 break;
             }
             _state = state;
+        }
+        void ChooseTeam()
+        {
+            // this was previously done by coin, but will now be hidden to the user
+            bool heads = UnityEngine.Random.Range(0, 2) == 0;
+            var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
+            GameManager.Instance.SetTeamLocal(team);
+            GameManager.Instance.SetTeamRemote(s=>print(s));
         }
         private void ShowObjects(GameObject[] objects)
         {

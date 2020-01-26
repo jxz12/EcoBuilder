@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace EcoBuilder.UI
 {
-    public class MoveRecorder : MonoBehaviour
+    public class Recorder : MonoBehaviour
     {
         public event Action<int> OnSpeciesUndone;
         public event Action<int> OnSpeciesMemoryLeak;

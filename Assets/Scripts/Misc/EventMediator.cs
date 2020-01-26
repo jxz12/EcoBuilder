@@ -12,7 +12,7 @@ namespace EcoBuilder
 
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.Incubator incubator;
-        [SerializeField] UI.MoveRecorder recorder;
+        [SerializeField] UI.Recorder recorder;
         [SerializeField] UI.Score score;
         [SerializeField] UI.Constraints constraints;
 
