@@ -25,7 +25,6 @@ namespace EcoBuilder.UI
                 if (p.isNetworkError)
                 {
                     message.text = p.error;
-                    print("TODO: don't call this yet");
                     ResponseCallback(false, "Could not establish an internet connection");
                     Hide();
                 }
@@ -34,14 +33,14 @@ namespace EcoBuilder.UI
                     string response;
                     switch (p.responseCode)
                     {
-                    case 401: response = "Invalid username or password"; break;
-                    case 404: response = "Server URL could not be found"; break;
-                    case 409: response = "Username or email already taken"; break;
-                    case 503: response = "Could not connect to database"; break;
-                    default: response = "Could not connect to server"; break;
+                    case 401: response = "Invalid username or password (401)"; break;
+                    case 404: response = "Server URL could not be found (404)"; break;
+                    case 409: response = "Username or email already taken (409)"; break;
+                    case 412: response = "Request sent too soon (412)"; break;
+                    case 503: response = "Could not connect to database (503)"; break;
+                    default: response = "Could not connect to server ("+p.responseCode+")"; break;
                     }
                     message.text = p.error;
-                    print("TODO: don't call this yet");
                     ResponseCallback(false, response);
                     Hide();
                 }
@@ -59,18 +58,18 @@ namespace EcoBuilder.UI
             var form = new WWWForm();
             foreach (var line in letter)
             {
-                if (line.Key == "matrix" || line.Key == "actions") {
+                if (line.Key == "matrix" || line.Key == "actions") { // don't encrypt these as they break encryption
                     form.AddField(line.Key, line.Value);
                 } else {
                     form.AddField(line.Key, Encrypt(line.Value));
                 }
             }
             print("TODO: store the file if the team is none or if the connection is down");
-            if (GameManager.Instance.PlayerTeam != GameManager.PlayerDetails.Team.None)
-            {
+            // if (GameManager.Instance.PlayerTeam != GameManager.PlayerDetails.Team.None)
+            // {
                 StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
                 Show();
-            }
+            // }
         }
         // void CancelPost()
         // {

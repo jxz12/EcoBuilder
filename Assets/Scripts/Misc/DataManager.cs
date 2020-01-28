@@ -115,7 +115,8 @@ namespace EcoBuilder
 
         ///////////////////
         // web things
-        static readonly string serverURL = "127.0.0.1/ecobuilder/";
+        // static readonly string serverURL = "127.0.0.1/ecobuilder/";
+        static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
         [SerializeField] UI.Postman pat;
         public void RegisterLocal(string username, string password, string email)
         {

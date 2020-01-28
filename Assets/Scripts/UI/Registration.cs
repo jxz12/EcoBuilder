@@ -30,8 +30,9 @@ namespace EcoBuilder.UI
             resetSubmit.onClick.AddListener(()=> GameManager.Instance.SendPasswordResetEmail(recipient.text, b=>print("TODO: enable some text to show sent")));
             username.onValueChanged.AddListener(s=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            password.onSubmit.AddListener(s=> LoginOrRegister()); // enter/return pressed
             // consent.onValueChanged.AddListener(b=> CheckUsernameEmail());
+            recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
+            password.onSubmit.AddListener(s=> LoginOrRegister()); // enter/return pressed
             privacyButton.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
 
             SetState(State.Start);
@@ -163,13 +164,16 @@ namespace EcoBuilder.UI
         }
         private bool UsernameOkay()
         {
-            print("TODO: profanity filter?");
             return username.text.Length > 0;
         }
         private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
         private bool EmailOkay()
         {
             return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text);
+        }
+        void CheckResetRecipient()
+        {
+            resetSubmit.interactable = !string.IsNullOrEmpty(recipient.text);
         }
 
         void LoginOrRegister()
