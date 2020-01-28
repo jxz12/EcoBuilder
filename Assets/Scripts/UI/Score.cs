@@ -55,11 +55,11 @@ namespace EcoBuilder.UI
         {
             report.SetMessage(explanation);
 
-            if (newModelScore > modelScore)
+            if (newModelScore > modelScore) {
                 scoreText.color = Color.green;
-            else if (newModelScore < modelScore)
+            } else if (newModelScore < modelScore) {
                 scoreText.color = Color.red;
-
+            }
             modelScore = newModelScore;
             NormalisedScore = (int)modelScore; // TODO: better normalisation plz
             scoreText.text = NormalisedScore.ToString();
@@ -73,6 +73,7 @@ namespace EcoBuilder.UI
                 constraints.IsSatisfied("Chain") &&
                 constraints.IsSatisfied("Loop"))
             {
+                NormalisedScore += 1; // TODO: careful about this
                 newNumStars += 1;
 
                 if (NormalisedScore >= target1)

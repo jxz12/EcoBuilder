@@ -63,7 +63,7 @@ namespace EcoBuilder.UI
                 if (line.Key == "__address__") { // reserved for URL
                     continue;
                 } else if (line.Key == "__matrix__" || line.Key == "__actions__") { // don't encrypt these as they break my pitiful decryption
-                    form.AddField(line.Key, line.Value);
+                    form.AddField(line.Key.Substring(2, line.Key.Length-4), line.Value);
                 } else {
                     form.AddField(line.Key, Encrypt(line.Value));
                 }

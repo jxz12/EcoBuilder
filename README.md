@@ -1,4 +1,4 @@
-DO PLANET and TRY SEND SAVED and RESEARCH HIGHSCORES
+DO PLANET and TRY SEND SAVED and SCORE and RESEARCH HIGHSCORES
 
 # Menu
 add helper text for everything

@@ -196,7 +196,6 @@ namespace EcoBuilder.Levels
                 throw new Exception("more than one navigation?");
 
             StartCoroutine(TweenToZeroPosFrom(1f, GameManager.Instance.NavParent));
-
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
 
@@ -284,7 +283,6 @@ namespace EcoBuilder.Levels
 
         public void BackToMenu()
         {
-            print("TODO: 'are you sure' option");
             GameManager.Instance.ReturnToMenu();
             GameManager.Instance.HideHelpText();
             GameManager.Instance.OnLoaded.AddListener(DestroyWhenMenuLoads);

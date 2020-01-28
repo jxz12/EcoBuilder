@@ -197,6 +197,7 @@ namespace EcoBuilder.UI
         {
             if (success) {
                 SetState(_state==State.Register? State.Demographics : State.End);
+                errorText.text = "Done!";
             } else {
                 loginSubmit.interactable = true;
                 errorText.text = msg;

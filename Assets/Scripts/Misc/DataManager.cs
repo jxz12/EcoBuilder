@@ -194,6 +194,7 @@ namespace EcoBuilder
         }
         void ParseLogin(string username, string password, string returned)
         {
+            print(returned);
             player.username = username;
             player.password = password;
             var details = returned.Split(';');
@@ -251,7 +252,7 @@ namespace EcoBuilder
                 { "__actions__", actions },
                 { "__address__", serverURL+"playthrough.php" },
             };
-            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            OnCompletion += (b,s)=> { print(s); if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
         private void SavePost(Dictionary<string, string> data)
