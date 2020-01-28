@@ -44,11 +44,8 @@ namespace EcoBuilder
         public void InitPlayer()
         {
             // ugh unity annoying so hard-coded
-#if !UNITY_WEBGL
             playerPath = Application.persistentDataPath+"/player.data";
-#else
-            playerPath = null;
-#endif
+
             DeletePlayerDetailsLocal();
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
@@ -69,7 +66,7 @@ namespace EcoBuilder
             }
             catch (Exception e)
             {
-                Debug.LogError("error: " + e.Message);
+                Debug.LogError("could not save player: " + e.Message);
                 return false;
             }
         }
@@ -88,7 +85,7 @@ namespace EcoBuilder
             }
             catch (Exception e)
             {
-                print("handled exception: " + e.Message);
+                Debug.LogWarning("could not load player: " + e.Message);
                 return false;
             }
         }
@@ -100,7 +97,7 @@ namespace EcoBuilder
             try {
                 File.Delete(playerPath);
             } catch (Exception e) {
-                print("no save file to delete: " + e.Message);
+                Debug.LogError("could not delete player: " + e.Message);
             }
         }
         public void ResetSaveData()
@@ -129,9 +126,10 @@ namespace EcoBuilder
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
-                { "email", player.email }
+                { "email", player.email },
+                { "__address__", serverURL+"register.php" },
             };
-            pat.Post(data, serverURL+"register.php", OnCompletion);
+            pat.Post(data, OnCompletion);
         }
         public void SetDemographicsLocal(int age, int gender, int education)
         {
@@ -147,10 +145,11 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "age", player.age.ToString() },
                 { "gender", player.gender.ToString() },
-                { "education", player.education.ToString() }
+                { "education", player.education.ToString() },
+                { "__address__", serverURL+"demographics.php" },
             };
-            pat.Post(data, serverURL+"demographics.php", OnCompletion);
-            print("TODO: no need to pause, but mark as 'need to send' later if not");
+            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            pat.Post(data, OnCompletion);
         }
         public void SetTeamLocal(PlayerDetails.Team team)
         {
@@ -162,9 +161,11 @@ namespace EcoBuilder
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
-                { "team", ((int)player.team).ToString() }
+                { "team", ((int)player.team).ToString() },
+                { "__address__", serverURL+"team.php" },
             };
-            pat.Post(data, serverURL+"team.php", OnCompletion);
+            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            pat.Post(data, OnCompletion);
         }
         public void SetDragDirectionLocal(bool reversed)
         {
@@ -176,17 +177,20 @@ namespace EcoBuilder
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
-                { "reversed", player.reverseDrag? "1":"0" }
+                { "reversed", player.reverseDrag? "1":"0" },
+                { "__address__", serverURL+"login.php" },
             };
-            pat.Post(data, serverURL+"drag.php", OnCompletion);
+            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            pat.Post(data, OnCompletion);
         }
         public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", username },
                 { "password", password },
+                { "__address__", serverURL+"login.php" },
             };
-            pat.Post(data, serverURL+"login.php", (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
+            pat.Post(data, (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
         }
         void ParseLogin(string username, string password, string returned)
         {
@@ -210,8 +214,9 @@ namespace EcoBuilder
         {
             var data = new Dictionary<string, string>() {
                 { "recipient", recipient },
+                { "__address__", serverURL+"resetup.php" },
             };
-            pat.Post(data, serverURL+"resetup.php", OnCompletion);
+            pat.Post(data, OnCompletion);
         }
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
@@ -242,10 +247,33 @@ namespace EcoBuilder
                 { "level_index", levelIdx.ToString() },
                 { "datetime_ticks", DateTime.Now.Ticks.ToString() },
                 { "score", score.ToString() },
-                { "matrix", matrix },
-                { "actions", actions }
+                { "__matrix__", matrix },
+                { "__actions__", actions },
+                { "__address__", serverURL+"playthrough.php" },
             };
-            pat.Post(data, serverURL+"playthrough.php", OnCompletion);
+            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            pat.Post(data, OnCompletion);
+        }
+        private void SavePost(Dictionary<string, string> data)
+        {
+#if UNITY_WEBGL
+            return;
+#endif
+            try
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                string path = Application.persistentDataPath+"/"+DateTime.Now.Ticks.ToString();
+                while (File.Exists(path + ".post")) {
+                    path += "_"; // in case there is somehow more than one file made with the same timestamp
+                }
+                FileStream file = File.Create(path+".post");
+                bf.Serialize(file, data);
+                file.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("could not save post: " + e.Message);
+            }
         }
         public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
         {

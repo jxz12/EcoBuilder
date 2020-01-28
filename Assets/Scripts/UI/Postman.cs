@@ -12,7 +12,6 @@ namespace EcoBuilder.UI
     public class Postman : MonoBehaviour
     {
         [SerializeField] CanvasGroup group;
-        // [SerializeField] Button cancel, retry;
         [SerializeField] TMPro.TextMeshProUGUI message;
         [SerializeField] float fadeDuration;
 
@@ -53,29 +52,25 @@ namespace EcoBuilder.UI
             }
         }
         IEnumerator postRoutine = null;
-        public void Post(Dictionary<string, string> letter, string address, Action<bool, string> ResponseCallback)
+        public void Post(Dictionary<string, string> letter, Action<bool, string> ResponseCallback)
         {
             var form = new WWWForm();
+            if (!letter.ContainsKey("__address__")) {
+                throw new Exception("no __address__ given to send to");
+            }
             foreach (var line in letter)
             {
-                if (line.Key == "matrix" || line.Key == "actions") { // don't encrypt these as they break encryption
+                if (line.Key == "__address__") { // reserved for URL
+                    continue;
+                } else if (line.Key == "__matrix__" || line.Key == "__actions__") { // don't encrypt these as they break my pitiful decryption
                     form.AddField(line.Key, line.Value);
                 } else {
                     form.AddField(line.Key, Encrypt(line.Value));
                 }
             }
-            print("TODO: store the form+address as a file if the team is none or if the connection is down");
-            StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
+            StartCoroutine(postRoutine = SendPost(letter["__address__"], form, ResponseCallback));
             Show();
         }
-        // void CancelPost()
-        // {
-        //     if (postRoutine == null) {
-        //         throw new Exception("no routine running");
-        //     }
-        //     StopCoroutine(postRoutine);
-        //     Hide();
-        // }
         
         public void Show()
         {
@@ -87,7 +82,7 @@ namespace EcoBuilder.UI
         public void Hide()
         {
             group.interactable = false;
-            // StartCoroutine(FadeAway(fadeDuration));
+            StartCoroutine(FadeAway(fadeDuration));
         }
 
         IEnumerator FadeAway(float duration)

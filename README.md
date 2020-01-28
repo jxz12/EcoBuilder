@@ -1,4 +1,4 @@
-DO PLANET AND REG LOADING
+DO PLANET and TRY SEND SAVED and RESEARCH HIGHSCORES
 
 # Menu
 add helper text for everything
