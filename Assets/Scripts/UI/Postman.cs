@@ -12,7 +12,7 @@ namespace EcoBuilder.UI
     public class Postman : MonoBehaviour
     {
         [SerializeField] CanvasGroup group;
-        [SerializeField] Button cancel, retry;
+        // [SerializeField] Button cancel, retry;
         [SerializeField] TMPro.TextMeshProUGUI message;
         [SerializeField] float fadeDuration;
 
@@ -25,7 +25,7 @@ namespace EcoBuilder.UI
                 if (p.isNetworkError)
                 {
                     message.text = p.error;
-                    ResponseCallback(false, "Could not establish an internet connection");
+                    ResponseCallback?.Invoke(false, "Could not establish an internet connection");
                     Hide();
                 }
                 else if (p.isHttpError)
@@ -41,12 +41,12 @@ namespace EcoBuilder.UI
                     default: response = "Could not connect to server ("+p.responseCode+")"; break;
                     }
                     message.text = p.error;
-                    ResponseCallback(false, response);
+                    ResponseCallback?.Invoke(false, response);
                     Hide();
                 }
                 else
                 {
-                    ResponseCallback(true, p.downloadHandler.text);
+                    ResponseCallback?.Invoke(true, p.downloadHandler.text);
                     message.text = "Success!";
                     Hide();
                 }
@@ -64,12 +64,9 @@ namespace EcoBuilder.UI
                     form.AddField(line.Key, Encrypt(line.Value));
                 }
             }
-            print("TODO: store the file if the team is none or if the connection is down");
-            // if (GameManager.Instance.PlayerTeam != GameManager.PlayerDetails.Team.None)
-            // {
-                StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
-                Show();
-            // }
+            print("TODO: store the form+address as a file if the team is none or if the connection is down");
+            StartCoroutine(postRoutine = SendPost(address, form, ResponseCallback));
+            Show();
         }
         // void CancelPost()
         // {
@@ -90,7 +87,7 @@ namespace EcoBuilder.UI
         public void Hide()
         {
             group.interactable = false;
-            StartCoroutine(FadeAway(fadeDuration));
+            // StartCoroutine(FadeAway(fadeDuration));
         }
 
         IEnumerator FadeAway(float duration)

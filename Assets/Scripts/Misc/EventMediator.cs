@@ -137,7 +137,6 @@ namespace EcoBuilder
             }
 
             level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with tha
-            level.StartTutorialIfAvailable();
         }
         void FinishPlaythrough(Levels.Level finished)
         {
@@ -153,7 +152,7 @@ namespace EcoBuilder
             if (highscore) {
                 print("TODO: congratulation message for getting a high score");
             }
-            GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.NormalisedScore, model.GetMatrix(), recorder.GetActions());
+            GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.NormalisedScore, model.GetMatrix(), recorder.GetActions(), null);
         }
 
         // perform calculations if necessary

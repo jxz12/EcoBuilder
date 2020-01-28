@@ -240,7 +240,7 @@ GameObject:
   - component: {fileID: 6257852118201395556}
   - component: {fileID: 7439519437894096}
   m_Layer: 0
-  m_Name: Reg Textinput
+  m_Name: Reg Input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -307,7 +307,7 @@ MonoBehaviour:
     m_DisabledTrigger: Disabled
   m_Interactable: 1
   m_TargetGraphic: {fileID: 8130343266404729252}
-  m_TextViewport: {fileID: 0}
+  m_TextViewport: {fileID: 3274976136358914853}
   m_TextComponent: {fileID: 1411763771127535410}
   m_Placeholder: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}

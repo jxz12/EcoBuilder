@@ -30,7 +30,6 @@ namespace EcoBuilder
 
             public bool reverseDrag = true;
             public bool dontAskForLogin = false;
-            public bool syncedRemote = false;
 
             public Dictionary<int, int> highScores = new Dictionary<int, int>();
         }
@@ -115,8 +114,8 @@ namespace EcoBuilder
 
         ///////////////////
         // web things
-        // static readonly string serverURL = "127.0.0.1/ecobuilder/";
-        static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+        static readonly string serverURL = "127.0.0.1/ecobuilder/";
+        // static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
         [SerializeField] UI.Postman pat;
         public void RegisterLocal(string username, string password, string email)
         {
@@ -125,14 +124,14 @@ namespace EcoBuilder
             player.email = email;
             SavePlayerDetailsLocal();
         }
-        public void RegisterRemote(Action<bool> OnCompletion)
+        public void RegisterRemote(Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
                 { "email", player.email }
             };
-            pat.Post(data, serverURL+"register.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"register.php", OnCompletion);
         }
         public void SetDemographicsLocal(int age, int gender, int education)
         {
@@ -141,7 +140,7 @@ namespace EcoBuilder
             player.education = education;
             SavePlayerDetailsLocal();
         }
-        public void SetDemographicsRemote(Action<bool> OnCompletion)
+        public void SetDemographicsRemote(Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -150,7 +149,7 @@ namespace EcoBuilder
                 { "gender", player.gender.ToString() },
                 { "education", player.education.ToString() }
             };
-            pat.Post(data, serverURL+"demographics.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"demographics.php", OnCompletion);
             print("TODO: no need to pause, but mark as 'need to send' later if not");
         }
         public void SetTeamLocal(PlayerDetails.Team team)
@@ -158,36 +157,36 @@ namespace EcoBuilder
             player.team = team;
             SavePlayerDetailsLocal();
         }
-        public void SetTeamRemote(Action<bool> OnCompletion)
+        public void SetTeamRemote(Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
                 { "team", ((int)player.team).ToString() }
             };
-            pat.Post(data, serverURL+"team.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"team.php", OnCompletion);
         }
         public void SetDragDirectionLocal(bool reversed)
         {
             player.reverseDrag = reversed;
             SavePlayerDetailsLocal();
         }
-        public void SetDragDirectionRemote(Action<bool> OnCompletion)
+        public void SetDragDirectionRemote(Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
                 { "reversed", player.reverseDrag? "1":"0" }
             };
-            pat.Post(data, serverURL+"drag.php", (b,s)=>OnCompletion(b));
+            pat.Post(data, serverURL+"drag.php", OnCompletion);
         }
-        public void LoginRemote(string username, string password, Action<bool> OnCompletion)
+        public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", username },
                 { "password", password },
             };
-            pat.Post(data, serverURL+"login.php", (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b); });
+            pat.Post(data, serverURL+"login.php", (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
         }
         void ParseLogin(string username, string password, string returned)
         {
@@ -207,12 +206,12 @@ namespace EcoBuilder
             }
             SavePlayerDetailsLocal();
         }
-        public void SendPasswordResetEmail(string recipient, Action<bool> OnCompletion)
+        public void SendPasswordResetEmail(string recipient, Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "recipient", recipient },
             };
-            pat.Post(data, serverURL+"resetup.php", (b,s)=>{ print(s); });
+            pat.Post(data, serverURL+"resetup.php", OnCompletion);
         }
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
@@ -235,7 +234,7 @@ namespace EcoBuilder
             }
             return false;
         }
-        public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
+        public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions, Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -246,8 +245,7 @@ namespace EcoBuilder
                 { "matrix", matrix },
                 { "actions", actions }
             };
-            print("TODO: mark not synced and then save later (with ticks and stuff), and delete if needed");
-            pat.Post(data, serverURL+"playthrough.php", (b,s)=>{ print(s); });
+            pat.Post(data, serverURL+"playthrough.php", OnCompletion);
         }
         public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
         {

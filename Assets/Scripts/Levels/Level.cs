@@ -148,11 +148,11 @@ namespace EcoBuilder.Levels
             {
                 float t = (Time.time-startTime)/duration;
                 // quadratic ease in-out
-                if (t < .5f)
+                if (t < .5f) {
                     t = 2*t*t;
-                else
+                } else {
                     t = -1 + (4-2*t)*t;
-
+                }
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 yield return null;
             }
@@ -251,6 +251,7 @@ namespace EcoBuilder.Levels
 
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
+            StartTutorialIfAvailable();
         }
         // necessary because there is no separate 'playing' state
         // but the card requires different buttons

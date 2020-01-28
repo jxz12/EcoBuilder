@@ -42,11 +42,10 @@ namespace EcoBuilder.UI
         [SerializeField] List<Levels.Level> researchLevelPrefabs;
         void ShowMainMenu()
         {
-            StartCoroutine(WaitThenShowLogo(.7f));
-
             var unlockedIdxs = new HashSet<int>();
+            unlockedIdxs.Add(learningLevelPrefabs[0].Details.idx); // always unlock first level
             Action<Levels.Level> CheckUnlocked = (l)=> {
-                if (GameManager.Instance.GetHighScoreLocal(l.Details.idx) >= 0)
+                if (GameManager.Instance.GetHighScoreLocal(l.Details.idx) > 0)
                 {
                     unlockedIdxs.Add(l.Details.idx);
                     if (l.NextLevelPrefab!=null) {
@@ -54,7 +53,6 @@ namespace EcoBuilder.UI
                     }
                 }
             };
-            unlockedIdxs.Add(learningLevelPrefabs[0].Details.idx); // always unlock first level
             var instantiated = new Dictionary<int, Levels.Level>();
             foreach (var prefab in learningLevelPrefabs)
             {
@@ -89,6 +87,8 @@ namespace EcoBuilder.UI
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             reverseDrag.onValueChanged.AddListener(SetReverseDrag);
             GetComponent<Animator>().SetTrigger("Reveal");
+
+            StartCoroutine(WaitThenShowLogo(.7f));
         }
         bool IsLearningFinished()
         {
@@ -113,7 +113,7 @@ namespace EcoBuilder.UI
         public void SetReverseDrag(bool reversed)
         {
             GameManager.Instance.SetDragDirectionLocal(reversed);
-            GameManager.Instance.SetDragDirectionRemote(b=>print("TODO: set sync=false"));
+            GameManager.Instance.SetDragDirectionRemote(null);
         }
         public void OpenPrivacyPolicy()
         {

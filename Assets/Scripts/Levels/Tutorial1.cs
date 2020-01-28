@@ -190,11 +190,11 @@ namespace EcoBuilder.Levels
             help.Show(true);
 
             DetachSmellyListeners();
-            AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", Finish);
+            AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", ExplainNavigation);
             AttachSmellyListener(score, "OnLevelIncompletabled", ()=>ExplainFinishCondition(0));
         }
         Level finishedLevel = null;
-        void Finish(Levels.Level finished)
+        void ExplainNavigation(Levels.Level finished)
         {
             targetAnchor = new Vector2(.5f,0);
             targetZRot = 405;
@@ -220,17 +220,19 @@ namespace EcoBuilder.Levels
                 onTop = gameObject.AddComponent<Canvas>();
                 onTop.overrideSorting = true;
                 onTop.sortingOrder = 3;
+                // no need to remove this if undone because on top is always okay
             }
 
             DetachSmellyListeners();
-            AttachSmellyListener(finishedLevel.NextLevel, "OnThumbnailed", ()=>Finish(finishedLevel));
+            AttachSmellyListener(finishedLevel.NextLevel, "OnThumbnailed", ()=>ExplainNavigation(finishedLevel));
         }
 
         // bool waiting = false;
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {
-            if (seconds > 0)
+            if (seconds > 0) {
                 yield return new WaitForSeconds(seconds);
+            }
             Todo();
         }
         IEnumerator Shuffle(Transform grab, Transform drop, float time)
