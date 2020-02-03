@@ -67,14 +67,13 @@ namespace EcoBuilder.NodeLink
                 nodes[idx].SetShape(shape);
                 FlashNode(idx);
                 LieDownNode(idx);
-                // FocusNode(idx);
             }
             else if (nodeGrave[idx] != null) // bring back old
             {
                 nodes[idx] = nodeGrave[idx];
                 nodeGrave.RemoveAt(idx);
 
-                nodes[idx].gameObject.SetActive(true);
+                nodes[idx].Hide(false);
                 nodes[idx].SetShape(shape); // technically not necessary
 
                 adjacency[idx] = new HashSet<int>();
@@ -121,8 +120,7 @@ namespace EcoBuilder.NodeLink
             }
 
             // move to graveyard to save for later
-            // nodes[idx].gameObject.SetActive(false);
-            nodes[idx].Shape.SetActive(false);
+            nodes[idx].Hide(true);
             nodeGrave[idx] = nodes[idx];
             nodes.RemoveAt(idx);
 
@@ -308,7 +306,9 @@ namespace EcoBuilder.NodeLink
         public void OutlineChain(bool highlighted, cakeslice.Outline.Colour colour)
         {
             print("TODO: check if calculating, and wait until done?");
-            if (MaxChain == 0) return;
+            if (MaxChain == 0) {
+                return;
+            }
             if (highlighted) {
                 foreach (int idx in TallestNodes) {
                     nodes[idx].PushOutline(colour);

@@ -51,6 +51,7 @@ namespace EcoBuilder
             nodelink.OnConstraints +=   ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
             nodelink.OnConstraints +=   ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
 
+            model.OnEquilibrium += ()=> score.UpdateScore(model.GetNormalisedComplexity(), model.GetComplexityExplanation());
             model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> constraints.DisplayFeasibility(model.Feasible);
@@ -102,9 +103,12 @@ namespace EcoBuilder
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
             nodelink.AddDropShadow(level.Landscape);
 
-            score.SetScoreThresholds(level.Details.targetScore1, level.Details.targetScore2);
+            if (level.Details.alternateScore != "") {
+                score.UseConstraintAsScoreInstead(level.Details.alternateScore);
+            }
+            score.SetStarThresholds(level.Details.targetScore1, level.Details.targetScore2);
             score.OnLevelCompletabled +=   ()=> level.ShowFinishFlag();
-            score.OnLevelIncompletabled += ()=> level.ShowThumbnail();
+            // score.OnLevelIncompletabled += ()=> level.ShowThumbnail();
 
             constraints.Constrain("Leaf", level.Details.numProducers);
             constraints.Constrain("Paw", level.Details.numConsumers);
@@ -136,7 +140,7 @@ namespace EcoBuilder
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
 
-            level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with tha
+            level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with that
         }
         void FinishPlaythrough(Levels.Level finished)
         {
@@ -148,17 +152,26 @@ namespace EcoBuilder
             inspector.Finish();
             nodelink.Finish();
             score.Finish();
-            bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.NormalisedScore);
+            bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.HighestScore);
             if (highscore) {
                 print("TODO: congratulation message for getting a high score");
             }
-            GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.NormalisedScore, model.GetMatrix(), recorder.GetActions(), null);
+            GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
         }
 
         // perform calculations if necessary
         bool atEquilibrium = true, graphSolved = true;
         void LateUpdate()
         {
+            if (!atEquilibrium && !model.IsCalculatingAsync)
+            {
+                atEquilibrium = true;
+#if UNITY_WEBGL
+                model.EquilibriumSync(nodelink.GetTargets);
+#else
+                model.EquilibriumAsync(nodelink.GetTargets);
+#endif
+            }
             if (!graphSolved && !nodelink.IsCalculatingAsync)
             {
                 graphSolved = true;
@@ -169,22 +182,12 @@ namespace EcoBuilder
                 nodelink.ConstraintsAsync();
                 #endif
             }
-            if (!atEquilibrium && !model.IsCalculatingAsync)
-            {
-                atEquilibrium = true;
-#if UNITY_WEBGL
-                model.EquilibriumSync(nodelink.GetTargets);
-#else
-                model.EquilibriumAsync(nodelink.GetTargets);
-#endif
-            }
             // we want the score to update even if the model is calculating
-            score.DisplayScore(model.Complexity, model.ScoreExplanation());
             // but no events triggered in case of false positive due to being out of sync
             if (atEquilibrium && !model.IsCalculatingAsync &&
                 graphSolved && !nodelink.IsCalculatingAsync)
             {
-                score.TriggerScoreEvents();
+                score.UpdateStars();
             }
         }
 

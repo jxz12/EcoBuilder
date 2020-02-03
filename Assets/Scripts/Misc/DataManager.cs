@@ -138,7 +138,7 @@ namespace EcoBuilder
             player.education = education;
             SavePlayerDetailsLocal();
         }
-        public void SetDemographicsRemote(Action<bool, string> OnCompletion)
+        public void SetDemographicsRemote()
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -148,7 +148,7 @@ namespace EcoBuilder
                 { "education", player.education.ToString() },
                 { "__address__", serverURL+"demographics.php" },
             };
-            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
         public void SetTeamLocal(PlayerDetails.Team team)
@@ -156,7 +156,7 @@ namespace EcoBuilder
             player.team = team;
             SavePlayerDetailsLocal();
         }
-        public void SetTeamRemote(Action<bool, string> OnCompletion)
+        public void SetTeamRemote()
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -164,7 +164,7 @@ namespace EcoBuilder
                 { "team", ((int)player.team).ToString() },
                 { "__address__", serverURL+"team.php" },
             };
-            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
         public void SetDragDirectionLocal(bool reversed)
@@ -172,7 +172,7 @@ namespace EcoBuilder
             player.reverseDrag = reversed;
             SavePlayerDetailsLocal();
         }
-        public void SetDragDirectionRemote(Action<bool, string> OnCompletion)
+        public void SetDragDirectionRemote()
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -180,7 +180,7 @@ namespace EcoBuilder
                 { "reversed", player.reverseDrag? "1":"0" },
                 { "__address__", serverURL+"login.php" },
             };
-            OnCompletion += (b,s)=> { if (!b) SavePost(data); };
+            Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
         public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
@@ -194,7 +194,6 @@ namespace EcoBuilder
         }
         void ParseLogin(string username, string password, string returned)
         {
-            print(returned);
             player.username = username;
             player.password = password;
             var details = returned.Split(';');
@@ -240,7 +239,7 @@ namespace EcoBuilder
             }
             return false;
         }
-        public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions, Action<bool, string> OnCompletion)
+        public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -252,9 +251,56 @@ namespace EcoBuilder
                 { "__actions__", actions },
                 { "__address__", serverURL+"playthrough.php" },
             };
-            OnCompletion += (b,s)=> { print(s); if (!b) SavePost(data); };
+            Action<bool, string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
+
+        // used to store leaderboards once fetched
+        public void GetLeaderboardRemote(int levelIdx, Action<bool, string> OnCompletion)
+        {
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "level_index", levelIdx.ToString() },
+                { "n_scores", "3" },
+            };
+            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboard(s, levelIdx); OnCompletion(b,s); });
+        }
+        private Dictionary<int, Tuple<string,string>> cachedRemoteleaderboards = new Dictionary<int, Tuple<string, string>>();
+        private void ParseLeaderboard(string returned, int levelIdx)
+        {
+            var details = returned.Split(';');
+            int globalMedian = int.Parse(details[0]);
+
+            var names = new string[3];
+            var scores = new int[3];
+            for (int i=0; i<3; i++)
+            {
+                if (details.Length >= i+1)
+                {
+                    var split = details[i+1].Split(':');
+                    names[i] = split[0];
+                    scores[i] = int.Parse(split[1]);
+                }
+                else
+                {
+                    names[i] = "n/a";
+                    scores[i] = 0;
+                }
+            }
+            string nameStr = names[0]+"\n"+names[1]+"\n"+name[2]+"\nYou\nWorld Average";
+            string scoreStr = scores[0]+"\n"+scores[1]+"\n"+scores[2]+"\n"+GetHighScoreLocal(levelIdx)+"\n"+globalMedian;
+
+            cachedRemoteleaderboards[levelIdx] = Tuple.Create(nameStr, scoreStr);
+        }
+        public Tuple<string,string> GetLeaderboardLocal(int level_idx)
+        {
+            return cachedRemoteleaderboards[level_idx];
+        }
+
+
+
+
         private void SavePost(Dictionary<string, string> data)
         {
 #if UNITY_WEBGL
@@ -275,11 +321,6 @@ namespace EcoBuilder
             {
                 Debug.LogError("could not save post: " + e.Message);
             }
-        }
-        public Tuple<int,int,int> GetTop3ScoresRemote(int levelIdx)
-        {
-            print("TODO: get global scores from server");
-            return Tuple.Create(14,12,10);
         }
         public void OpenPrivacyPolicyInBrowser()
         {

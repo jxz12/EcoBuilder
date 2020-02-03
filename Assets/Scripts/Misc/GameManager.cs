@@ -41,23 +41,30 @@ namespace EcoBuilder
 //             Screen.fullScreen = true;
 // #endif
 #if UNITY_EDITOR
-            // if (SceneManager.sceneCount >= 2)
-            // {
-            //     PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
-            //     PlayedLevel.Play();
-            // }
+            for (int i=0; i<SceneManager.sceneCount; i++)
+            {
+                if (SceneManager.GetSceneAt(i).name == "Play")
+                {
+                    PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
+                    PlayedLevel.Play(); // should cause replay behaviour
+                    break;
+                }
+            }
 #endif
         }
         public void Quit()
         {
-            // TODO: send data if possible? and also on every level finish!
-            
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif
         }
+        void OnDestroy()
+        {
+            print("TODO: send data if possible? and also on every level finish?");
+        }
+            
 
 
         ////////////////////////////////////////////////
@@ -67,7 +74,7 @@ namespace EcoBuilder
         public Levels.Level PlayedLevel { get; private set; } = null;
         public void LoadLevelScene(Levels.Level toPlay)
         {
-            if (PlayedLevel != null) // if in play mode
+            if (PlayedLevel != null) // if playing already
             {
                 if (PlayedLevel != toPlay)
                 {
@@ -84,7 +91,6 @@ namespace EcoBuilder
                 PlayedLevel = toPlay;
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
-            print("TODO: loading message!");
         }
 
         // for levels to attach to

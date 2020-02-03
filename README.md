@@ -1,11 +1,14 @@
-DO PLANET and TRY SEND SAVED and SCORE and RESEARCH HIGHSCORES
+dad,
+claim moneys
 
 # Menu
 add helper text for everything
-check for android/ios signal for connection back online
 make icons for reversing drag direction
 
 # Learning world
+give congratulation and unfocus on 1 star
+give extra confetti for new high score
+
 (level 1 is nodes+links+undo, level 2 is dynamics+score, level 3 is constraints+focus)
 (level 4+5 is exclusion, level 6+7 is apparent, level 8+9 is variants (combinations))
 (level 10 is edges, level 11 is chain, level 12 is loop, 13-15 are variants)
@@ -13,7 +16,7 @@ make icons for reversing drag direction
 # Research world
 make menu splash button interactable and show help when pressed
 change score bar (in an aesthetic way) to show which constraint measured
-remove the finish flag option and simply have the high score track the max so far
+finish the tutorials
 verify high scores by checking matrices
 
 # Other
@@ -34,6 +37,6 @@ The species with the... is...
 
 3 hours Friday, week 13th
 2 hours Thursday 1 Friday, week 20th
+2 hours Thursday 1 Friday, week 27th
 
-Quantum blog
 Phone Simulator

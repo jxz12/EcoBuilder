@@ -43,7 +43,6 @@ namespace EcoBuilder.UI
         void ShowMainMenu()
         {
             var unlockedIdxs = new HashSet<int>();
-            unlockedIdxs.Add(learningLevelPrefabs[0].Details.idx); // always unlock first level
             Action<Levels.Level> CheckUnlocked = (l)=> {
                 if (GameManager.Instance.GetHighScoreLocal(l.Details.idx) > 0)
                 {
@@ -53,6 +52,7 @@ namespace EcoBuilder.UI
                     }
                 }
             };
+            unlockedIdxs.Add(learningLevelPrefabs[0].Details.idx); // always unlock first level
             var instantiated = new Dictionary<int, Levels.Level>();
             foreach (var prefab in learningLevelPrefabs)
             {
@@ -67,17 +67,16 @@ namespace EcoBuilder.UI
             }
             if (IsLearningFinished())
             {
+                unlockedIdxs.Add(researchLevelPrefabs[0].Details.idx); // always unlock first level
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
                 researchLock.enabled = false;
                 foreach (var prefab in researchLevelPrefabs)
                 {
-                    var scores = GameManager.Instance.GetTop3ScoresRemote(prefab.Details.idx);
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
-                    leaderboard.SetScores(scores.Item1, scores.Item2, scores.Item3);
-
                     CheckUnlocked(prefab);
                     var level = leaderboard.GiveLevelPrefab(prefab);
+                    GameManager.Instance.GetLeaderboardRemote(prefab.Details.idx, leaderboard.SetScoreFromGameManagerCache);
                     instantiated[level.Details.idx] = level;
                 }
             }
@@ -113,7 +112,7 @@ namespace EcoBuilder.UI
         public void SetReverseDrag(bool reversed)
         {
             GameManager.Instance.SetDragDirectionLocal(reversed);
-            GameManager.Instance.SetDragDirectionRemote(null);
+            GameManager.Instance.SetDragDirectionRemote();
         }
         public void OpenPrivacyPolicy()
         {

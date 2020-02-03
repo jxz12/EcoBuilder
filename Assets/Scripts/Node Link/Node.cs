@@ -44,6 +44,11 @@ namespace EcoBuilder.NodeLink
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
         }
+        public void Hide(bool hidden)
+        {
+            shape.SetActive(!hidden);
+            GetComponent<Collider>().enabled = !hidden;
+        }
 
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
         public void PushOutline(cakeslice.Outline.Colour colour)

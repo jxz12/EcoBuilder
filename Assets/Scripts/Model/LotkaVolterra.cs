@@ -137,13 +137,13 @@ namespace EcoBuilder.Model
             bool feasible = true;
             for (int i=0; i<n; i++)
             {
-                if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i]))
+                if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i]) || abundance[i] < 0) {
                     abundance[i] = 0;
-
+                }
                 TotalAbundance += abundance[i];
-
-                if (abundance[i] <= 0)
+                if (abundance[i] <= 0) {
                     feasible = false;
+                }
             }
             return feasible;
         }
@@ -408,7 +408,7 @@ namespace EcoBuilder.Model
             int n = vec.Count;
             for (int i=0; i<n; i++)
             {
-                    sb.Append(vec[i].ToString(formatter) + " ");
+                sb.Append(vec[i].ToString(formatter) + " ");
             }
             sb.Remove(sb.Length - 1, 1);
             return sb.ToString();

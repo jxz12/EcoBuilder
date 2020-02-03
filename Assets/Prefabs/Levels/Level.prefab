@@ -1663,8 +1663,8 @@ MonoBehaviour:
     superfocusAllowed: 1
     sizeEditables: 
     greedEditables: 
-    targetScore1: 0
-    targetScore2: 0
+    targetScore1: 50
+    targetScore2: 100
     alternateScore: 
   tutorial: {fileID: 0}
   landscape: {fileID: 6175307669712771283, guid: 0cfceb57cb70edf4da131289775de31e,

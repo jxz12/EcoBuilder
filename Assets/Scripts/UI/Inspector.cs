@@ -415,6 +415,10 @@ namespace EcoBuilder.UI
         }
         public void DrawHealthBars(Func<int, float> Health)
         {
+            foreach (int idx in spawnedSpecies.Keys)
+            {
+                Health(idx);
+            }
             print("TODO: health bars");
         }
         

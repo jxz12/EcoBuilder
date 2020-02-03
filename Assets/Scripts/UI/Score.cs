@@ -7,7 +7,7 @@ namespace EcoBuilder.UI
 {
     public class Score : MonoBehaviour
     {
-        public event Action OnLevelCompletabled, OnLevelIncompletabled;
+        public event Action OnLevelCompletabled;
 
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraints constraints;
@@ -25,20 +25,22 @@ namespace EcoBuilder.UI
             feasibleScoreCol = scoreText.color;
             scoreText.color = infeasibleScoreCol;
         }
-        public void SetScoreThresholds(int target1, int target2)
+        public void SetStarThresholds(int target1, int target2)
         {
             this.target1 = target1;
             this.target2 = target2;
         }
         public void Finish()
         {
-            if (numStars < 1 || numStars > 3)
+            if (HighestStars < 1 || HighestStars > 3) {
                 throw new Exception("cannot pass with less than 0 or more than 3 stars");
+            }
 
             GetComponent<Animator>().SetBool("Visible", false);
             star1.SetTrigger("Confetti");
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");
+            print("TODO: another confetti for constraint score instead");
 
             constraints.Show(false);
         }
@@ -47,24 +49,26 @@ namespace EcoBuilder.UI
 		//////////////////////
 		// score calculation
 
-        public int NormalisedScore { get; private set; }
-        float modelScore;
-        int numStars, newNumStars;
-        string scoreExplanation = null;
-        public void DisplayScore(float newModelScore, string explanation)
+        public int HighestScore { get; private set; } = 0;
+        public int HighestStars { get; private set; } = 0;
+        int currentScore;
+        float normalisedScore;
+        public void UpdateScore(float newNormalisedScore, string explanation)
         {
-            report.SetMessage(explanation);
-
-            if (newModelScore > modelScore) {
-                scoreText.color = Color.green;
-            } else if (newModelScore < modelScore) {
-                scoreText.color = Color.red;
+            if (newNormalisedScore > normalisedScore) {
+                scoreText.color = new Color(.2f,.8f,.2f);
+            } else if (newNormalisedScore < normalisedScore) {
+                scoreText.color = new Color(.9f,.1f,.1f);
             }
-            modelScore = newModelScore;
-            NormalisedScore = (int)modelScore; // TODO: better normalisation plz
-            scoreText.text = NormalisedScore.ToString();
+            normalisedScore = newNormalisedScore;
 
-            newNumStars = 0;
+            currentScore = (int)(normalisedScore * 1000);
+            scoreText.text = currentScore.ToString();
+            report.SetMessage(explanation);
+        }
+        public void UpdateStars()
+        {
+            int newNumStars = 0;
             if (!constraints.Disjoint &&
                 constraints.Feasible &&
                 constraints.IsSatisfied("Leaf") &&
@@ -73,27 +77,21 @@ namespace EcoBuilder.UI
                 constraints.IsSatisfied("Chain") &&
                 constraints.IsSatisfied("Loop"))
             {
-                NormalisedScore += 1; // TODO: careful about this
                 newNumStars += 1;
 
-                if (NormalisedScore >= target1)
+                if (currentScore >= target1)
                 {
                     newNumStars += 1;
-                    if (NormalisedScore >= target2)
-                    {
+                    if (currentScore >= target2) {
                         newNumStars += 1;
                     }
                 }
-                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .1f*Time.deltaTime);
+                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .3f*Time.deltaTime);
             }
             else
             {
                 scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, 3f*Time.deltaTime);
             }
-            star1.SetBool("Filled", newNumStars>=1);
-            star2.SetBool("Filled", newNumStars>=2);
-            star3.SetBool("Filled", newNumStars==3);
-
             if (newNumStars < 2)
             {
                 scoreTargetText.text = target1.ToString();
@@ -104,23 +102,22 @@ namespace EcoBuilder.UI
                 scoreTargetText.text = target2.ToString();
                 scoreTargetImage.sprite = targetSprite2;
             }
-        }
-        public void TriggerScoreEvents() // should only be called from outside when ready
-        {
-            if (finishDisabled)
-                return;
 
-            if (numStars == 0 && newNumStars > 0)
+            if (!finishDisabled && HighestStars == 0 && newNumStars > 0)
             {
                 OnLevelCompletabled?.Invoke();
             }
-            else if (numStars > 0 && newNumStars == 0)
-            {
-                OnLevelIncompletabled?.Invoke();
-            }
-            numStars = newNumStars;
+            HighestStars = Math.Max(HighestStars, newNumStars);
+            HighestScore = Math.Max(HighestScore, currentScore);
+            star1.SetBool("Filled", HighestStars>=1);
+            star2.SetBool("Filled", HighestStars>=2);
+            star3.SetBool("Filled", HighestStars==3);
         }
-
+        public void UseConstraintAsScoreInstead(string constraintName)
+        {
+            constraints.GetValue(constraintName);
+            print("TODO: this");
+        }
 
         ///////////////////////
         // stuff for tutorials

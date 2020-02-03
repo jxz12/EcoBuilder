@@ -44,17 +44,13 @@ namespace EcoBuilder.Model
         float minRealAbund = 2e-10f,
               maxRealAbund = 1.95f,
               minRealFlux = 1e-16f,
-              maxRealFlux = 1e-6f;
+              maxRealFlux = 1e-6f,
+              minRealPlex = 2.1e-5f, // TODO: calculate actual values
+              maxRealPlex = 6.3e-3f;
 
         private float minLogAbund, maxLogAbund,
-                      minLogFlux, maxLogFlux;
-        void InitScales()
-        {
-            minLogAbund = Mathf.Log10(minRealAbund);
-            maxLogAbund = Mathf.Log10(maxRealAbund);
-            minLogFlux = Mathf.Log10(minRealFlux);
-            maxLogFlux = Mathf.Log10(maxRealFlux);
-        }
+                      minLogFlux, maxLogFlux,
+                      minLogPlex, maxLogPlex;
 
         ///////////////////////////////////////////////////////////////////
         // search rate derivations
@@ -68,7 +64,8 @@ namespace EcoBuilder.Model
             public double Metabolism { get; set; } = double.NaN;
             public double Efficiency { get; set; } = double.NaN;
 
-            public float NormalisedAbundance { get; set; } = -1; // init negative so that heart appears
+            public bool Endangered { get; set; } = true; // initialise extinct so heart appears
+            public float NormalisedAbundance { get; set; } = 0;
 
             public Species(int idx)
             {
@@ -128,8 +125,12 @@ namespace EcoBuilder.Model
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
-
-            InitScales();
+            minLogAbund = Mathf.Log10(minRealAbund);
+            maxLogAbund = Mathf.Log10(maxRealAbund);
+            minLogFlux = Mathf.Log10(minRealFlux);
+            maxLogFlux = Mathf.Log10(maxRealFlux);
+            minLogPlex = Mathf.Log10(minRealPlex);
+            maxLogPlex = Mathf.Log10(maxRealPlex);
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
         Dictionary<Species, int> speciesToIdx = new Dictionary<Species, int>();
@@ -151,8 +152,6 @@ namespace EcoBuilder.Model
                 throw new Exception("does not contain idx " + idx);
 
             Species toRemove = idxToSpecies[idx];
-            // if (toRemove.IsProducer)
-            //     numProducers -= 1;
             simulation.RemoveSpecies(toRemove);
 
             idxToSpecies.Remove(idx);
@@ -199,8 +198,6 @@ namespace EcoBuilder.Model
 
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
-
-        public float Complexity { get { return (float)simulation.HoComplexity; } }
         public bool IsCalculatingAsync { get; private set; } = false;
 
                                            // required because this class does not store adjacency
@@ -209,10 +206,9 @@ namespace EcoBuilder.Model
             IsCalculatingAsync = true;
             Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
 
-            Feasible = await Task.Run(() => simulation.SolveFeasibility(map));
+            Feasible = await Task.Run(()=> simulation.SolveFeasibility(map));
             Stable = await Task.Run(()=> simulation.SolveStability());
 
-            TriggerAbundanceEvents();
             IsCalculatingAsync = false;
             OnEquilibrium.Invoke();
         }
@@ -223,82 +219,59 @@ namespace EcoBuilder.Model
             Feasible = simulation.SolveFeasibility(map);
             Stable = simulation.SolveStability();
 
-            TriggerAbundanceEvents();
             OnEquilibrium.Invoke();
         }
+        public float GetNormalisedAbundance(int idx)
+        {
+            Species s = idxToSpecies[idx];
+            double realAbund = simulation.GetSolvedAbundance(s);
 
-        public string ScoreExplanation()
+            if (!s.Endangered && realAbund <= 0) {
+                OnEndangered.Invoke(idx);
+            }
+            if (s.Endangered && realAbund > 0) {
+                OnRescued.Invoke(idx);
+            }
+            s.Endangered = realAbund <= 0;
+
+            if (realAbund <= minRealAbund) {
+                return 0;
+            } else if (realAbund >= maxRealAbund) {
+                return 1;
+            } else {
+                return (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+            }
+        }
+        public float GetNormalisedFlux(int res, int con)
+        {
+            double realFlux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
+            if (realFlux <= minRealFlux) {
+                return 0;
+            } else if (realFlux >= maxRealFlux) {
+                return 1;
+            } else {
+                return (float)(Math.Log10(realFlux)-minLogFlux) / (maxLogFlux-minLogFlux);
+            }
+        }
+        public float GetNormalisedComplexity()
+        {
+            double realPlex = simulation.HoComplexity;
+            // print("ho "+realPlex.ToString("e2"));
+            if (realPlex < minRealPlex) {
+                return 0;
+            } else if (realPlex <= maxRealPlex) {
+                return (float)(Math.Log10(realPlex)-minLogPlex) / (maxLogPlex-minLogPlex);
+            } else {
+                return (float)(realPlex / maxRealPlex);
+            }
+        }
+        public string GetComplexityExplanation()
         {
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
             // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
             return "TODO: explain score better";
         }
 
-        // private float total_NormAbund;
-        // private float totalAbund_Norm;
-        private double totalAbund;
-        void TriggerAbundanceEvents()
-        {
-            // total_NormAbund = totalAbund_Norm = 0;
-            totalAbund = 0;
-            // show abundance warnings
-            foreach (int i in idxToSpecies.Keys)
-            {
-                Species s = idxToSpecies[i];
-                double realAbund = simulation.GetSolvedAbundance(s);
-
-                float newAbund;
-                if (realAbund <= 0)
-                    newAbund = -1;
-                else if (realAbund <= minRealAbund)
-                    newAbund = 0;
-                else if (realAbund >= maxRealAbund)
-                    newAbund = 1;
-                else
-                    newAbund = (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
-
-                if (s.NormalisedAbundance >= 0 && newAbund < 0)
-                    OnEndangered.Invoke(i);
-                if (s.NormalisedAbundance < 0 && newAbund >= 0)
-                    OnRescued.Invoke(i);
-
-                s.NormalisedAbundance = newAbund;
-
-                totalAbund += realAbund;
-                // totalAbund_Norm += (float)realAbund;
-                // if (newAbund >= 0)
-                //     total_NormAbund += newAbund;
-            }
-            // print(totalAbund);
-
-            // if (total_NormAbund == 0)
-            //     total_NormAbund = 1; // to prevent NaN problems in GetNormalisedAbundance
-
-            // if (totalAbund_Norm <= minRealAbund)
-            //     totalAbund_Norm = 0;
-            // else
-            //     totalAbund_Norm = (Mathf.Log10(totalAbund_Norm)-minLogAbund) / (maxLogAbund-minLogAbund);
-        }
-        public float GetNormalisedAbundance(int idx)
-        {
-                          // calculate proportion first                             multiply by total
-            // float ratio = (idxToSpecies[idx].NormalisedAbundance / total_NormAbund) * totalAbund_Norm;
-            // this is so that total green in health bars adds up to the score
-
-            // return ratio * idxToSpecies.Count / numProducers;
-            // return ratio;
-            return idxToSpecies[idx].NormalisedAbundance;
-        }
-        public float GetNormalisedFlux(int res, int con)
-        {
-            double flux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
-            if (flux <= minRealFlux)
-                return 0;
-            else if (flux >= maxRealFlux)
-                return 1;
-            else
-                return (float)(Math.Log10(flux)-minLogFlux) / (maxLogFlux-minLogFlux);
-        }
         public string GetMatrix()
         {
             return simulation.GetState();

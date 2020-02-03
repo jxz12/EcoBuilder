@@ -105,7 +105,7 @@ namespace EcoBuilder.UI
             bool heads = UnityEngine.Random.Range(0, 2) == 0;
             var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
             GameManager.Instance.SetTeamLocal(team);
-            GameManager.Instance.SetTeamRemote(null);
+            GameManager.Instance.SetTeamRemote();
         }
         private void ShowObjectsOnly(GameObject[] objects)
         {
@@ -206,7 +206,7 @@ namespace EcoBuilder.UI
         void TakeDemographics()
         {
             GameManager.Instance.SetDemographicsLocal(age.value, gender.value, education.value);
-            GameManager.Instance.SetDemographicsRemote(null);
+            GameManager.Instance.SetDemographicsRemote();
             SetState(State.End);
         }
         void SendResetEmail()

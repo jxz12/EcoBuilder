@@ -224,7 +224,23 @@ namespace EcoBuilder.Levels
         public void Play()
         {
             GameManager.Instance.LoadLevelScene(this);
-            GameManager.Instance.OnLoaded.AddListener(InitLevelScene);
+            GameManager.Instance.OnLoaded.AddListener(LevelSceneLoadedCallback);
+        }
+        void LevelSceneLoadedCallback(string sceneName)
+        {
+            if (sceneName != "Play") {
+                throw new Exception("Play scene not loaded when expected");
+            }
+            if (GameManager.Instance.PlayedLevel != this) {
+                throw new Exception("not playing level to be initialised");
+            }
+            GameManager.Instance.OnLoaded.RemoveListener(LevelSceneLoadedCallback);
+            thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
+            GameManager.Instance.ShowHelpText(2f, details.introduction); // show intro
+
+            ShowThumbnail(1.5f);
+            StartCoroutine(WaitThenEnableQuitReplay(1.5f));
+            StartTutorialIfAvailable();
         }
         public void Replay()
         {
@@ -235,22 +251,6 @@ namespace EcoBuilder.Levels
                 Destroy(teacher.gameObject);
             }
             Play();
-        }
-        void InitLevelScene(string sceneName)
-        {
-            if (sceneName != "Play") {
-                throw new Exception("Play scene not loaded when expected");
-            }
-            if (GameManager.Instance.PlayedLevel != this) {
-                throw new Exception("not playing level to be initialised");
-            }
-            GameManager.Instance.OnLoaded.RemoveListener(InitLevelScene);
-            thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
-            GameManager.Instance.ShowHelpText(2f, details.introduction); // show intro
-
-            ShowThumbnail(1.5f);
-            StartCoroutine(WaitThenEnableQuitReplay(1.5f));
-            StartTutorialIfAvailable();
         }
         // necessary because there is no separate 'playing' state
         // but the card requires different buttons

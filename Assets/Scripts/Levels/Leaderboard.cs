@@ -6,7 +6,7 @@ namespace EcoBuilder.Levels
     public class Leaderboard : MonoBehaviour
     {
         [SerializeField] RectTransform levelParent;
-        [SerializeField] TMPro.TextMeshProUGUI titleText, scoreText;
+        [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;
         [SerializeField] GameObject lockShade;
 
         public Level LevelToPlay { get { return levelParent.GetComponentInChildren<Level>(); } }
@@ -20,9 +20,13 @@ namespace EcoBuilder.Levels
             }
             return Instantiate(levelPrefab, levelParent);
         }
-        public void SetScores(int first, int second, int third)
+        public void SetScoreFromGameManagerCache(bool successful, string msg)
         {
-            scoreText.text = "#1 "+first+"\n#2 "+second+"\n#3 "+third;
+            if (successful) {
+                var scores = GameManager.Instance.GetLeaderboardLocal(LevelToPlay.Details.idx);
+                nameText.text = scores.Item1;
+                scoreText.text = scores.Item2;
+            }
         }
     }
 }

@@ -21,11 +21,13 @@ namespace EcoBuilder.NodeLink
         Node focusedNode = null;
         public void FocusNode(int idx) // called on click
         {
+            print(idx);
             if (focusedNode != nodes[idx])
             {
                 nodes[idx].PushOutline(cakeslice.Outline.Colour.Yellow);
-                if (focusedNode != null) // focus switched
+                if (focusedNode != null) { // focus switched
                     focusedNode.PopOutline();
+                }
             }
 
             if (focusState == FocusState.Unfocus)
@@ -535,9 +537,9 @@ namespace EcoBuilder.NodeLink
             }
             GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
             Node snappedNode = null;
-            if (hoveredObject != null)
+            if (hoveredObject != null) {
                 snappedNode = hoveredObject.GetComponent<Node>();
-
+            }
             if (snappedNode != null)
             {
                 return snappedNode;
@@ -548,7 +550,7 @@ namespace EcoBuilder.NodeLink
                 float closestDist = float.MaxValue;
                 float snapRadiusPxls = snapRadiusInches * (Screen.dpi==0? 72:Screen.dpi);
                 float sqRadius = snapRadiusPxls * snapRadiusPxls;
-                foreach (Node no in nodes)
+                foreach (Node no in nodes.Where(n=>n.gameObject.activeSelf))
                 {
                     Vector2 screenPos = Camera.main.WorldToScreenPoint(no.transform.position);
 
