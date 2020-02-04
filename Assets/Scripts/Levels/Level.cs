@@ -215,8 +215,6 @@ namespace EcoBuilder.Levels
             Destroy(onTop);
         }
 
-
-
         ///////////////////////
         // Scene changing
 
@@ -236,7 +234,7 @@ namespace EcoBuilder.Levels
             }
             GameManager.Instance.OnLoaded.RemoveListener(LevelSceneLoadedCallback);
             thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
-            GameManager.Instance.ShowHelpText(2f, details.introduction); // show intro
+            GameManager.Instance.ShowHelpText(details.introduction, 2f); // show intro
 
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
@@ -308,7 +306,6 @@ namespace EcoBuilder.Levels
             } else {
                 print("TODO: credits? reduce width of navigation?");
             }
-            GameManager.Instance.ShowHelpText(2f, details.congratulation);
             ShowNavigation();
             OnFinished?.Invoke(this);
         }

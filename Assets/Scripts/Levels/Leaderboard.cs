@@ -18,15 +18,25 @@ namespace EcoBuilder.Levels
             {
                 lockShade.SetActive(false);
             }
+            int playerScore = GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.idx);
+            nameText.text = "loading...\n\nyou";
+            scoreText.text = "\n\n\n" + playerScore;
             return Instantiate(levelPrefab, levelParent);
         }
-        public void SetScoreFromGameManagerCache(bool successful, string msg)
+        public void SetFromGameManagerCache()
         {
-            if (successful) {
-                var scores = GameManager.Instance.GetLeaderboardLocal(LevelToPlay.Details.idx);
-                nameText.text = scores.Item1;
-                scoreText.text = scores.Item2;
+            nameText.text = "";
+            scoreText.text = "";
+
+            var cached = GameManager.Instance.GetCachedLeaderboard(LevelToPlay.Details.idx);
+            for (int i=0; i<3; i++)
+            {
+                nameText.text += (i+1) + " " + (cached.names.Count>i? cached.names[i] : "n/a") + "\n";
+                scoreText.text += (cached.scores.Count>i? cached.scores[i].ToString() : "") + "\n";
             }
+            nameText.text += "you\nworld average";
+            int playerScore = GameManager.Instance.GetHighScoreLocal(LevelToPlay.Details.idx);
+            scoreText.text += playerScore + "\n" + cached.median;
         }
     }
 }

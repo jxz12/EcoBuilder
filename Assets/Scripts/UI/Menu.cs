@@ -60,11 +60,12 @@ namespace EcoBuilder.UI
                 parent.SetParent(learningLevels.transform);
                 parent.localScale = Vector3.one;
                 parent.name = prefab.Details.idx.ToString();
-                
-                CheckUnlocked(prefab);
+
+                CheckUnlocked.Invoke(prefab);
                 var level = Instantiate(prefab, parent);
                 instantiated[level.Details.idx] = level;
             }
+            Action SetResearchLeaderboards = null;
             if (IsLearningFinished())
             {
                 unlockedIdxs.Add(researchLevelPrefabs[0].Details.idx); // always unlock first level
@@ -74,15 +75,19 @@ namespace EcoBuilder.UI
                 foreach (var prefab in researchLevelPrefabs)
                 {
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
-                    CheckUnlocked(prefab);
+                    CheckUnlocked.Invoke(prefab);
                     var level = leaderboard.GiveLevelPrefab(prefab);
-                    GameManager.Instance.GetLeaderboardRemote(prefab.Details.idx, leaderboard.SetScoreFromGameManagerCache);
                     instantiated[level.Details.idx] = level;
+                    SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
                 }
             }
             foreach (var idx in unlockedIdxs) {
                 instantiated[idx].Unlock();
             }
+
+            print("TODO: more than just top 3 levels");
+            GameManager.Instance.CacheLeaderboardsRemote(3, SetResearchLeaderboards);
+
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             reverseDrag.onValueChanged.AddListener(SetReverseDrag);
             GetComponent<Animator>().SetTrigger("Reveal");
@@ -91,6 +96,9 @@ namespace EcoBuilder.UI
         }
         bool IsLearningFinished()
         {
+#if UNITY_EDITOR
+            return true;
+#endif
             foreach (var level in learningLevelPrefabs) {
                 if (GameManager.Instance.GetHighScoreLocal(level.Details.idx) <= 0) {
                     return false;

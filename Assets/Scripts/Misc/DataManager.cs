@@ -34,8 +34,8 @@ namespace EcoBuilder
             public Dictionary<int, int> highScores = new Dictionary<int, int>();
         }
         [SerializeField] PlayerDetails player = null;
-        public PlayerDetails.Team PlayerTeam { get { return player.team; } }
 
+        public bool LoggedIn { get { return player.team != PlayerDetails.Team.None; } }
         public bool ConstrainTrophic { get { return player.team != GameManager.PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.None && !player.dontAskForLogin; } }
@@ -46,7 +46,9 @@ namespace EcoBuilder
             // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
 
+#if UNITY_EDITOR
             DeletePlayerDetailsLocal();
+#endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
@@ -111,6 +113,9 @@ namespace EcoBuilder
 
         ///////////////////
         // web things
+        //  the first few functions must have a successful response to continue
+        //  other ones can be saved by SavePost()
+        // 
         static readonly string serverURL = "127.0.0.1/ecobuilder/";
         // static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
         [SerializeField] UI.Postman pat;
@@ -128,6 +133,41 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "email", player.email },
                 { "__address__", serverURL+"register.php" },
+            };
+            pat.Post(data, OnCompletion);
+        }
+        public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
+        {
+            var data = new Dictionary<string, string>() {
+                { "username", username },
+                { "password", password },
+                { "__address__", serverURL+"login.php" },
+            };
+            pat.Post(data, (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
+        }
+        void ParseLogin(string username, string password, string returned)
+        {
+            player.username = username;
+            player.password = password;
+            var details = returned.Split(';');
+            player.team = (PlayerDetails.Team)int.Parse(details[0]);
+            player.reverseDrag = int.Parse(details[1])==1? true:false;
+
+            player.highScores.Clear();
+            for (int i=2; i<details.Length; i++)
+            {
+                var level = details[i].Split(':');
+                int idx = int.Parse(level[0]);
+                int score = int.Parse(level[1]);
+                SaveHighScoreLocal(idx, score);
+            }
+            SavePlayerDetailsLocal();
+        }
+        public void SendPasswordResetEmail(string recipient, Action<bool, string> OnCompletion)
+        {
+            var data = new Dictionary<string, string>() {
+                { "recipient", recipient },
+                { "__address__", serverURL+"resetup.php" },
             };
             pat.Post(data, OnCompletion);
         }
@@ -167,6 +207,9 @@ namespace EcoBuilder
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
+
+
+
         public void SetDragDirectionLocal(bool reversed)
         {
             player.reverseDrag = reversed;
@@ -174,48 +217,14 @@ namespace EcoBuilder
         }
         public void SetDragDirectionRemote()
         {
+            print("TODO: don't send if no login");
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
                 { "reversed", player.reverseDrag? "1":"0" },
-                { "__address__", serverURL+"login.php" },
+                { "__address__", serverURL+"drag.php" },
             };
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
-            pat.Post(data, OnCompletion);
-        }
-        public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
-        {
-            var data = new Dictionary<string, string>() {
-                { "username", username },
-                { "password", password },
-                { "__address__", serverURL+"login.php" },
-            };
-            pat.Post(data, (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
-        }
-        void ParseLogin(string username, string password, string returned)
-        {
-            player.username = username;
-            player.password = password;
-            var details = returned.Split(';');
-            player.team = (PlayerDetails.Team)int.Parse(details[0]);
-            player.reverseDrag = int.Parse(details[1])==1? true:false;
-
-            player.highScores.Clear();
-            for (int i=2; i<details.Length; i++)
-            {
-                var level = details[i].Split(':');
-                int idx = int.Parse(level[0]);
-                int score = int.Parse(level[1]);
-                SaveHighScoreLocal(idx, score);
-            }
-            SavePlayerDetailsLocal();
-        }
-        public void SendPasswordResetEmail(string recipient, Action<bool, string> OnCompletion)
-        {
-            var data = new Dictionary<string, string>() {
-                { "recipient", recipient },
-                { "__address__", serverURL+"resetup.php" },
-            };
             pat.Post(data, OnCompletion);
         }
 
@@ -241,6 +250,7 @@ namespace EcoBuilder
         }
         public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
         {
+            print("TODO: don't send if not logged in");
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
@@ -255,51 +265,74 @@ namespace EcoBuilder
             pat.Post(data, OnCompletion);
         }
 
-        // used to store leaderboards once fetched
-        public void GetLeaderboardRemote(int levelIdx, Action<bool, string> OnCompletion)
+
+        /////////////////////////////////////////////
+        // used to cache 
+        // tuple Item1 is names, Item2 is scores
+        public class LeaderboardCache
+        {
+            public int idx;
+            public int median;
+            public List<string> names;
+            public List<int> scores;
+            public LeaderboardCache(int idx) {
+                this.idx = idx;
+            }
+        }
+        // only leaderboard does not require a login
+        public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
         {
             var data = new Dictionary<string, string>() {
-                { "username", player.username },
-                { "password", player.password },
-                { "level_index", levelIdx.ToString() },
-                { "n_scores", "3" },
+                { "n_scores", n_scores.ToString() }, // will always have 3 scores, median, and yours
+                { "__address__", serverURL+"leaderboards.php" },
             };
-            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboard(s, levelIdx); OnCompletion(b,s); });
+            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion(); });
         }
-        private Dictionary<int, Tuple<string,string>> cachedRemoteleaderboards = new Dictionary<int, Tuple<string, string>>();
-        private void ParseLeaderboard(string returned, int levelIdx)
+        private Dictionary<int, LeaderboardCache> cachedLeaderboards;
+        private void ParseLeaderboards(string returned)
         {
-            var details = returned.Split(';');
-            int globalMedian = int.Parse(details[0]);
-
-            var names = new string[3];
-            var scores = new int[3];
-            for (int i=0; i<3; i++)
+            print("TODO: save to file for cache too");
+            cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
+            var levels = returned.Split(';');
+            foreach (var level in levels)
             {
-                if (details.Length >= i+1)
+                var scores = level.Split(',');
+                var header = scores[0].Split(':');
+
+                var toCache = new LeaderboardCache(int.Parse(header[0]));
+                toCache.median = int.Parse(header[1]);
+                toCache.names = new List<string>();
+                toCache.scores = new List<int>();
+
+                for (int i=1; i<scores.Length; i++)
                 {
-                    var split = details[i+1].Split(':');
-                    names[i] = split[0];
-                    scores[i] = int.Parse(split[1]);
+                    var score = scores[i].Split(':');
+                    toCache.names.Add(score[0]);
+                    toCache.scores.Add(int.Parse(score[1]));
                 }
-                else
-                {
-                    names[i] = "n/a";
-                    scores[i] = 0;
+
+                if (cachedLeaderboards.ContainsKey(toCache.idx)) {
+                    throw new Exception("level index already cached");
                 }
+                cachedLeaderboards[toCache.idx] = toCache;
             }
-            string nameStr = names[0]+"\n"+names[1]+"\n"+name[2]+"\nYou\nWorld Average";
-            string scoreStr = scores[0]+"\n"+scores[1]+"\n"+scores[2]+"\n"+GetHighScoreLocal(levelIdx)+"\n"+globalMedian;
-
-            cachedRemoteleaderboards[levelIdx] = Tuple.Create(nameStr, scoreStr);
         }
-        public Tuple<string,string> GetLeaderboardLocal(int level_idx)
+        public LeaderboardCache GetCachedLeaderboard(int level_idx)
         {
-            return cachedRemoteleaderboards[level_idx];
+            return cachedLeaderboards[level_idx];
         }
-
-
-
+        // // but this one does
+        // public void GetLevelRankRemote(int levelIdx, Action<int> OnCompletion)
+        // {
+        //     var data = new Dictionary<string, string>() {
+        //         { "username", player.username },
+        //         { "password", player.password },
+        //         { "level_index", levelIdx.ToString() },
+        //         { "__address__", serverURL+"rank.php" },
+        //     };
+        //     pat.Post(data, (b,s)=>{ print(s); if (b) OnCompletion(int.Parse(s)); });
+        // }
+        // TODO: just do world average for now!!! SQL is too annoying
 
         private void SavePost(Dictionary<string, string> data)
         {

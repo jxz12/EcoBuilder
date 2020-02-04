@@ -8,6 +8,7 @@ make icons for reversing drag direction
 # Learning world
 give congratulation and unfocus on 1 star
 give extra confetti for new high score
+world average if connected on completion
 
 (level 1 is nodes+links+undo, level 2 is dynamics+score, level 3 is constraints+focus)
 (level 4+5 is exclusion, level 6+7 is apparent, level 8+9 is variants (combinations))

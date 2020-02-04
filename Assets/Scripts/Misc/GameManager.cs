@@ -147,7 +147,7 @@ namespace EcoBuilder
         // showing help messages
 
         [SerializeField] UI.Help helpText;
-        public void ShowHelpText(float delay, string message)
+        public void ShowHelpText(string message, float delay=0)
         {
             helpText.DelayThenShow(delay, message);
         }

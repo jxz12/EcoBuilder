@@ -8,6 +8,7 @@ namespace EcoBuilder.UI
     public class Score : MonoBehaviour
     {
         public event Action OnLevelCompletabled;
+        public event Action OnThreeStarsAchieved;
 
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Constraints constraints;
@@ -103,9 +104,11 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
 
-            if (!finishDisabled && HighestStars == 0 && newNumStars > 0)
-            {
+            if (!finishDisabled && HighestStars == 0 && newNumStars > 0) {
                 OnLevelCompletabled?.Invoke();
+            }
+            if (!finishDisabled && HighestStars <= 2 && newNumStars == 3) {
+                OnThreeStarsAchieved?.Invoke();
             }
             HighestStars = Math.Max(HighestStars, newNumStars);
             HighestScore = Math.Max(HighestScore, currentScore);

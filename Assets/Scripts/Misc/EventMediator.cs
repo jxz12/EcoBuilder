@@ -103,13 +103,6 @@ namespace EcoBuilder
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
             nodelink.AddDropShadow(level.Landscape);
 
-            if (level.Details.alternateScore != "") {
-                score.UseConstraintAsScoreInstead(level.Details.alternateScore);
-            }
-            score.SetStarThresholds(level.Details.targetScore1, level.Details.targetScore2);
-            score.OnLevelCompletabled +=   ()=> level.ShowFinishFlag();
-            // score.OnLevelIncompletabled += ()=> level.ShowThumbnail();
-
             constraints.Constrain("Leaf", level.Details.numProducers);
             constraints.Constrain("Paw", level.Details.numConsumers);
             constraints.Constrain("Count", level.Details.minEdges);
@@ -139,6 +132,17 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
+
+            if (level.Details.alternateScore != "") {
+                score.UseConstraintAsScoreInstead(level.Details.alternateScore);
+            }
+            score.SetStarThresholds(level.Details.targetScore1, level.Details.targetScore2);
+            score.OnLevelCompletabled += ()=> level.ShowFinishFlag();
+            score.OnLevelCompletabled += ()=> nodelink.ForceUnfocus();
+            score.OnLevelCompletabled += ()=> GameManager.Instance.ShowHelpText(level.Details.congratulation);
+
+            score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
+            score.OnThreeStarsAchieved += ()=> GameManager.Instance.ShowHelpText("You got all three stars, well done! TODO: better end screen with 'new high score' and 'world average'");
 
             level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with that
         }

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Security.Cryptography;
 using System.Text;

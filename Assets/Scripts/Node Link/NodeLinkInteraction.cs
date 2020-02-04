@@ -21,7 +21,6 @@ namespace EcoBuilder.NodeLink
         Node focusedNode = null;
         public void FocusNode(int idx) // called on click
         {
-            print(idx);
             if (focusedNode != nodes[idx])
             {
                 nodes[idx].PushOutline(cakeslice.Outline.Colour.Yellow);
