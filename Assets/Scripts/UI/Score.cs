@@ -63,12 +63,16 @@ namespace EcoBuilder.UI
             }
             normalisedScore = newNormalisedScore;
 
+            print("TODO: deal with possible score of 0?");
             currentScore = (int)(normalisedScore * 1000);
             scoreText.text = currentScore.ToString();
             report.SetMessage(explanation);
         }
         public void UpdateStars()
         {
+            if (starsDisabled) {
+                return;
+            }
             int newNumStars = 0;
             if (!constraints.Disjoint &&
                 constraints.Feasible &&
@@ -104,10 +108,12 @@ namespace EcoBuilder.UI
                 scoreTargetImage.sprite = targetSprite2;
             }
 
-            if (!finishDisabled && HighestStars == 0 && newNumStars > 0) {
+            // do not set off events yet if finish is disabled
+            if (HighestStars == 0 && newNumStars > 0) {
                 OnLevelCompletabled?.Invoke();
             }
-            if (!finishDisabled && HighestStars <= 2 && newNumStars == 3) {
+            // always call onthreestarsachieved second
+            if (HighestStars <= 2 && newNumStars == 3) {
                 OnThreeStarsAchieved?.Invoke();
             }
             HighestStars = Math.Max(HighestStars, newNumStars);
@@ -122,23 +128,25 @@ namespace EcoBuilder.UI
             print("TODO: this");
         }
 
+        bool starsDisabled;
+        public void DisableStarCalculation(bool disabled)
+        {
+            starsDisabled = disabled;
+        }
+
         ///////////////////////
         // stuff for tutorials
 
         public void HideScore(bool hidden=true)
         {
             GetComponent<Animator>().enabled = !hidden;
-            if (hidden)
+            if (hidden) {
                 transform.localPosition = new Vector2(0,1000); // hack
+            }
         }
         public void HideConstraints(bool hidden=true)
         {
             constraints.gameObject.SetActive(!hidden);
-        }
-        bool finishDisabled = false;
-        public void DisableFinish(bool disabled=true)
-        {
-            finishDisabled = disabled;
         }
     }
 }

@@ -12,8 +12,8 @@ namespace EcoBuilder.Levels
             inspector.HideRemoveButton();
             score.HideScore(true);
             score.HideConstraints(true);
-            score.DisableFinish(true);
             recorder.gameObject.SetActive(false);
+            score.DisableStarCalculation(true);
 
             ExplainIntro();
         }
@@ -174,10 +174,12 @@ namespace EcoBuilder.Levels
             help.Show(false);
             // help.SetSide(false, false);
 
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetText("You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); score.DisableFinish(false); }));
+            StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetText("You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"); }));
 
             DetachSmellyListeners();
             AttachSmellyListener(score, "OnLevelCompletabled", ExplainFinish);
+
+            score.DisableStarCalculation(false); 
         }
         void ExplainFinish()
         {
@@ -186,24 +188,23 @@ namespace EcoBuilder.Levels
             targetAnchor = rt.anchorMin = rt.anchorMax = new Vector2(1,1);
             targetPos = rt.anchoredPosition = new Vector2(-90,-90);
 
-            help.SetText("Well done! Tap this button to finish the level.");
-            help.Show(true);
+            // this should be taken care of by EventMediator
+            // help.SetText("Well done! Tap this button to finish the level.");
+            // help.Show(true);
 
             DetachSmellyListeners();
-            AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", ExplainNavigation);
-            AttachSmellyListener(score, "OnLevelIncompletabled", ()=>ExplainFinishCondition(0));
+            AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", l=>ExplainNavigation(l, 2f));
         }
         Level finishedLevel = null;
-        void ExplainNavigation(Levels.Level finished)
+        void ExplainNavigation(Levels.Level finished, float delay)
         {
             targetAnchor = new Vector2(.5f,0);
             targetZRot = 405;
             targetPos = new Vector2(140, 70);
             smoothTime = .5f;
 
-            help.SetSide(false, false);
-            help.SetDistFromTop(.1f);
-            help.SetWidth(.7f);
+            help.Show(false);
+            StartCoroutine(WaitThenDo(delay, ()=> { help.SetSide(false, false); help.Show(true); help.SetDistFromTop(.6f); help.SetText("Great! You can access the next level by tapping it here."); }));
 
             finishedLevel = finished;
             DetachSmellyListeners();
@@ -224,7 +225,7 @@ namespace EcoBuilder.Levels
             }
 
             DetachSmellyListeners();
-            AttachSmellyListener(finishedLevel.NextLevel, "OnThumbnailed", ()=>ExplainNavigation(finishedLevel));
+            AttachSmellyListener(finishedLevel.NextLevel, "OnThumbnailed", ()=>ExplainNavigation(finishedLevel, 0));
         }
 
         // bool waiting = false;

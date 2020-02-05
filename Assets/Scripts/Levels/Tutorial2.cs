@@ -14,7 +14,7 @@ namespace EcoBuilder.Levels
             inspector.HideRemoveButton(true);
             score.HideScore(true);
             score.HideConstraints(true);
-            score.DisableFinish(true);
+            score.DisableStarCalculation(true);
             targetSize = new Vector2(100,100);
             targetZRot = 45;
 
@@ -97,7 +97,7 @@ namespace EcoBuilder.Levels
 
             print("TODO: fix the report card");
             StartCoroutine(WaitThenDo(2, ()=>{
-                help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can tap your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableFinish(false);
+                help.SetText("Good job! This bar at the top displays your score, and is based on the size and health of your ecosystem. You can tap your score to get a detailed report of what is coming from where. Getting enough points will earn you more stars – good luck!"); help.Show(true); score.HideScore(false); score.DisableStarCalculation(false);
             }));
             AttachSmellyListener<Levels.Level>(GameManager.Instance.PlayedLevel, "OnFinished", l=>Finish());
         }

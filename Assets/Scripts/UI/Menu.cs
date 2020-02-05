@@ -10,12 +10,13 @@ namespace EcoBuilder.UI
     {
         [SerializeField] GridLayoutGroup learningLevels;
         [SerializeField] VerticalLayoutGroup researchLevels;
-        // [SerializeField] Coin wolfLion;
         [SerializeField] Registration form;
         [SerializeField] Toggle reverseDrag;
 
         [SerializeField] Button researchWorld;
         [SerializeField] Image researchLock;
+
+        [SerializeField] Button quit, logout, createAccount, deleteAccount;
 
         void Start()
         {
@@ -24,6 +25,9 @@ namespace EcoBuilder.UI
             } else {
                 ShowMainMenu();
             }
+#if UNITY_WEBGL
+            quit.gameObject.SetActive(false);
+#endif
         }
 
         void StartRegistration()
@@ -85,14 +89,16 @@ namespace EcoBuilder.UI
                 instantiated[idx].Unlock();
             }
 
-            print("TODO: more than just top 3 levels");
+            print("TODO: more than just top 3 scores on scroll");
             GameManager.Instance.CacheLeaderboardsRemote(3, SetResearchLeaderboards);
 
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
-            reverseDrag.onValueChanged.AddListener(SetReverseDrag);
             GetComponent<Animator>().SetTrigger("Reveal");
 
             StartCoroutine(WaitThenShowLogo(.7f));
+            createAccount.gameObject.SetActive(!GameManager.Instance.LoggedIn);
+            logout.gameObject.SetActive(GameManager.Instance.LoggedIn);
+            deleteAccount.gameObject.SetActive(GameManager.Instance.LoggedIn);
         }
         bool IsLearningFinished()
         {
@@ -117,10 +123,24 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.Quit();
         }
+        public void DeleteAccount()
+        {
+            GameManager.Instance.DeleteAccountRemote((b,s)=> print(s));
+        }
+        public void CreateAccount()
+        {
+            GameManager.Instance.CreateAccount();
+        }
+        public void LogOut()
+        {
+            GameManager.Instance.LogOut();
+        }
         public void SetReverseDrag(bool reversed)
         {
             GameManager.Instance.SetDragDirectionLocal(reversed);
-            GameManager.Instance.SetDragDirectionRemote();
+            if (GameManager.Instance.LoggedIn) {
+                GameManager.Instance.SetDragDirectionRemote();
+            }
         }
         public void OpenPrivacyPolicy()
         {

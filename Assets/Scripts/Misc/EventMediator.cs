@@ -139,10 +139,9 @@ namespace EcoBuilder
             score.SetStarThresholds(level.Details.targetScore1, level.Details.targetScore2);
             score.OnLevelCompletabled += ()=> level.ShowFinishFlag();
             score.OnLevelCompletabled += ()=> nodelink.ForceUnfocus();
-            score.OnLevelCompletabled += ()=> GameManager.Instance.ShowHelpText(level.Details.congratulation);
-
+            score.OnLevelCompletabled += ()=> GameManager.Instance.ShowHelpText(level.Details.completedMessage);
             score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
-            score.OnThreeStarsAchieved += ()=> GameManager.Instance.ShowHelpText("You got all three stars, well done! TODO: better end screen with 'new high score' and 'world average'");
+            score.OnThreeStarsAchieved += ()=> GameManager.Instance.ShowHelpText(level.Details.threeStarsMessage);
 
             level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with that
         }
@@ -156,11 +155,15 @@ namespace EcoBuilder
             inspector.Finish();
             nodelink.Finish();
             score.Finish();
+            recorder.Finish();
             bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.HighestScore);
             if (highscore) {
                 print("TODO: congratulation message for getting a high score");
             }
-            GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
+            if (GameManager.Instance.LoggedIn) {
+                GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
+            }
+            Destroy(gameObject);
         }
 
         // perform calculations if necessary

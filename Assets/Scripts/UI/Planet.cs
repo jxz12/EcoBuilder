@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
 {
-    public class Planet : MonoBehaviour, IDragHandler, IPointerClickHandler
+    public class Planet : MonoBehaviour, IDragHandler
     {
         Animator anim;
         void Awake()
@@ -48,11 +48,6 @@ namespace EcoBuilder.UI
         public void OnDrag(PointerEventData ped)
         {
             rotationTarget -= ped.delta.x * .1f;
-        }
-        public void OnPointerClick(PointerEventData ped)
-        {
-            GameManager.Instance.Logout(); // FIXME:
-            print("logged out!");
         }
     }
 }

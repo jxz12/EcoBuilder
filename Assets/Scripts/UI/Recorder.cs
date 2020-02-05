@@ -154,8 +154,11 @@ namespace EcoBuilder.UI
         }
         public string GetActions()
         {
-            GetComponent<Animator>().SetBool("Visible", false);
             return string.Join(";", record);
+        }
+        public void Finish()
+        {
+            GetComponent<Animator>().SetBool("Visible", false);
         }
     }
 }

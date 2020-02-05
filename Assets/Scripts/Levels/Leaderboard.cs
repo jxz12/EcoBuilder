@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace EcoBuilder.Levels
 {
@@ -19,16 +18,18 @@ namespace EcoBuilder.Levels
                 lockShade.SetActive(false);
             }
             int playerScore = GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.idx);
-            nameText.text = "loading...\n\nyou";
+            nameText.text = "loading high scores...\n\n\nyour score";
             scoreText.text = "\n\n\n" + playerScore;
             return Instantiate(levelPrefab, levelParent);
         }
         public void SetFromGameManagerCache()
         {
+            var cached = GameManager.Instance.GetCachedLeaderboard(LevelToPlay.Details.idx);
+            if (cached == null) {
+                return;
+            }
             nameText.text = "";
             scoreText.text = "";
-
-            var cached = GameManager.Instance.GetCachedLeaderboard(LevelToPlay.Details.idx);
             for (int i=0; i<3; i++)
             {
                 nameText.text += (i+1) + " " + (cached.names.Count>i? cached.names[i] : "n/a") + "\n";

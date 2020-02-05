@@ -30,11 +30,11 @@ namespace EcoBuilder
             if (SceneManager.sceneCount == 1) { // on startup
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
+            InitPlayer();
         }
 
         void Start()
         {
-            InitPlayer();
             // TODO: set this to the size of the screen for webgl
 // #if !UNITY_WEBGL
 //             Screen.SetResolution(576, 1024, false);
@@ -149,7 +149,13 @@ namespace EcoBuilder
         [SerializeField] UI.Help helpText;
         public void ShowHelpText(string message, float delay=0)
         {
-            helpText.DelayThenShow(delay, message);
+            helpText.SetText(message);
+            if (delay == 0) {
+                helpText.Show(true);
+            } else {
+                helpText.Show(false);
+                helpText.DelayThenShow(delay);
+            }
         }
         public void HideHelpText()
         {

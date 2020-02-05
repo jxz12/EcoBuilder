@@ -13,34 +13,42 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;
         [SerializeField] TMPro.TMP_InputField username, password, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
-        [SerializeField] Toggle consent, askAgain;
-        [SerializeField] Button loginSubmit, resetSubmit, demoSubmit, skipButton, backButton, regButton, loginButton, privacyButton, forgotButton;
+        [SerializeField] Toggle termsConsent, emailConsent, askAgain;
+        [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, privacyOpen, forgotGoto;
+        [SerializeField] Button loginSubmit, resetSubmit, gdprSubmit, demoSubmit;
+
         [SerializeField] Sprite greyButtonSprite, redButtonSprite;
         [SerializeField] Image shade;
 
         void Start()
         {
-            loginSubmit.onClick.AddListener(LoginOrRegister);
-            demoSubmit.onClick.AddListener(TakeDemographics);
-            resetSubmit.onClick.AddListener(SendResetEmail);
             skipButton.onClick.AddListener(()=> SetState(State.Skip));
             backButton.onClick.AddListener(()=> SetState(State.Start));
-            regButton.onClick.AddListener(()=> SetState(State.Register));
-            loginButton.onClick.AddListener(()=> SetState(State.Login));
-            forgotButton.onClick.AddListener(()=> SetState(State.Reset));
+            regGoto.onClick.AddListener(()=> SetState(State.Register));
+            loginGoto.onClick.AddListener(()=> SetState(State.Login));
+            forgotGoto.onClick.AddListener(()=> SetState(State.Reset));
+
+            loginSubmit.onClick.AddListener(LoginOrRegister);
+            gdprSubmit.onClick.AddListener(TakeGDPR);
+            demoSubmit.onClick.AddListener(TakeDemographics);
+            resetSubmit.onClick.AddListener(SendResetEmail);
+            cancelButton.onClick.AddListener(CancelRegistration);
+
             username.onValueChanged.AddListener(s=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            // consent.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
             password.onSubmit.AddListener(s=> LoginOrRegister());
-            privacyButton.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
+            recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
+
+            termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
+            privacyOpen.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
 
             SetState(State.Start);
             StartCoroutine(yTween(1,-1000,0,true));
         }
 
-        [SerializeField] GameObject[] startObj, idObj, resetObj, demoObj, skipObj; // required because hierarchy with sub-layout components causes strange frames
-        public enum State { Null=-1, Start=0, Skip=1, Register=2, Login=3, Reset=4, Demographics=5, End=6 };
+        [SerializeField] GameObject[] startObj, idObj, gdprObj, resetObj, demoObj, skipObj; // required because hierarchy with sub-layout components causes strange frames
+        [SerializeField] GameObject navObj;
+        public enum State { Null, Start, Skip, Register, Login, GDPR, Reset, Demographics, End };
         private State _state = State.Null;
         public void SetState(State state)
         {
@@ -49,13 +57,17 @@ namespace EcoBuilder.UI
             case State.Start:
                 ShowObjectsOnly(startObj);
                 username.text = password.text = email.text = "";
+                termsConsent.isOn = emailConsent.isOn = askAgain.isOn = false;
                 skipButton.image.sprite = greyButtonSprite;
-                backButton.interactable = false;
+                backButton.interactable = false; 
+                if (_state == State.GDPR) {
+                    errorText.gameObject.SetActive(true);
+                    errorText.text = "Account deleted!";
+                }
                 break;
             case State.Register:
                 ShowObjectsOnly(idObj);
-                consent.gameObject.SetActive(false);
-                forgotButton.gameObject.SetActive(false);
+                forgotGoto.gameObject.SetActive(false);
                 email.gameObject.SetActive(true);
                 loginSubmit.interactable = false;
                 loginText.gameObject.SetActive(false);
@@ -63,10 +75,16 @@ namespace EcoBuilder.UI
                 break;
             case State.Login:
                 ShowObjectsOnly(idObj);
-                consent.gameObject.SetActive(false);
                 email.gameObject.SetActive(false);
                 loginText.gameObject.SetActive(true);
                 registerText.gameObject.SetActive(false);
+                break;
+            case State.GDPR:
+                ShowObjectsOnly(gdprObj);
+                skipButton.interactable = false;
+                backButton.interactable = false;
+                emailConsent.gameObject.SetActive(email.text != "");
+                navObj.SetActive(false);
                 break;
             case State.Reset:
                 ShowObjectsOnly(resetObj);
@@ -74,7 +92,6 @@ namespace EcoBuilder.UI
                 break;
             case State.Demographics:
                 ShowObjectsOnly(demoObj);
-                ChooseTeam(); // only select a team if registerng
                 backButton.interactable = false;
                 break;
             case State.Skip:
@@ -88,7 +105,6 @@ namespace EcoBuilder.UI
                 else
                 {
                     ShowObjectsOnly(skipObj);
-                    askAgain.isOn = false;
                     skipButton.image.sprite = redButtonSprite;
                 }
                 break;
@@ -98,14 +114,6 @@ namespace EcoBuilder.UI
                 break;
             }
             _state = state;
-        }
-        void ChooseTeam()
-        {
-            // this was previously done by coin, but will now be hidden to the user
-            bool heads = UnityEngine.Random.Range(0, 2) == 0;
-            var team = heads? GameManager.PlayerDetails.Team.Lion : GameManager.PlayerDetails.Team.Wolf;
-            GameManager.Instance.SetTeamLocal(team);
-            GameManager.Instance.SetTeamRemote();
         }
         private void ShowObjectsOnly(GameObject[] objects)
         {
@@ -122,12 +130,15 @@ namespace EcoBuilder.UI
         {
             SetActives(startObj, false);
             SetActives(idObj, false);
+            SetActives(gdprObj, false);
             SetActives(resetObj, false);
             SetActives(demoObj, false);
             SetActives(skipObj, false);
             backButton.interactable = true;
             skipButton.interactable = true;
+            cancelButton.interactable = true;
             errorText.gameObject.SetActive(false);
+            navObj.SetActive(true);
         }
 
         IEnumerator yTween(float duration, float yStart, float yEnd, bool applyShade)
@@ -158,7 +169,7 @@ namespace EcoBuilder.UI
         void CheckUsernameEmail()
         {
             if (_state == State.Register) {
-                loginSubmit.interactable = UsernameOkay() && EmailOkay();// && consent.isOn;
+                loginSubmit.interactable = UsernameOkay() && EmailOkay();
             } else {
                 loginSubmit.interactable = UsernameOkay();
             }
@@ -196,17 +207,33 @@ namespace EcoBuilder.UI
         void LoggedinCallback(bool success, string msg)
         {
             if (success) {
-                SetState(_state==State.Register? State.Demographics : State.End);
+                SetState(_state==State.Register? State.GDPR : State.End);
                 errorText.text = "Done!";
             } else {
                 loginSubmit.interactable = true;
-                errorText.text = msg;
+                errorText.text = "Error: " + msg;
+            }
+        }
+        void TakeGDPR()
+        {
+            gdprSubmit.interactable = false;
+            errorText.gameObject.SetActive(true);
+            errorText.text = "Connecting...";
+            GameManager.Instance.SetGDPRRemote(emailConsent.isOn, GDPRCallback);
+        }
+        void GDPRCallback(bool success, string msg)
+        {
+            if (success) {
+                SetState(State.Demographics);
+                errorText.text = "Done!";
+            } else {
+                gdprSubmit.interactable = true;
+                errorText.text = "Error: " + msg;
             }
         }
         void TakeDemographics()
         {
-            GameManager.Instance.SetDemographicsLocal(age.value, gender.value, education.value);
-            GameManager.Instance.SetDemographicsRemote();
+            GameManager.Instance.SetDemographicsRemote(age.value, gender.value, education.value);
             SetState(State.End);
         }
         void SendResetEmail()
@@ -225,8 +252,25 @@ namespace EcoBuilder.UI
                 errorText.text = msg;
             }
         }
+        void CancelRegistration()
+        {
+            cancelButton.interactable = false;
+            errorText.gameObject.SetActive(true);
+            errorText.text = "Deleting account";
+            GameManager.Instance.DeleteAccountRemote(DeleteCallback);
+        }
+        void DeleteCallback(bool success, string msg)
+        {
+            if (success) {
+                SetState(State.Start);
+            } else {
+                cancelButton.interactable = true;
+                errorText.text = "Error: " + msg;
+            }
+        }
         void Update()
         {
+            // TODO: shift+tab
             if (Input.GetKeyDown(KeyCode.Tab))
             {
                 if (username.isFocused) {

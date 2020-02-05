@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace EcoBuilder.UI
+namespace EcoBuilder
 {
     public class Postman : MonoBehaviour
     {
@@ -23,10 +23,10 @@ namespace EcoBuilder.UI
                 if (p.isNetworkError)
                 {
                     message.text = p.error;
-                    ResponseCallback?.Invoke(false, "Could not establish an internet connection");
+                    ResponseCallback?.Invoke(false, p.error);
                     Hide();
                 }
-                else if (p.isHttpError)
+                else if (p.isHttpError) // got to server but error occurred there
                 {
                     string response;
                     switch (p.responseCode)
@@ -35,9 +35,11 @@ namespace EcoBuilder.UI
                     case 404: response = "Server URL could not be found (404)"; break;
                     case 409: response = "Username or email already taken (409)"; break;
                     case 412: response = "Request sent too soon (412)"; break;
+                    case 500: response = "Internal server error (500)\nPlease try again later"; break;
                     case 503: response = "Could not connect to database (503)"; break;
                     default: response = "Could not connect to server ("+p.responseCode+")"; break;
                     }
+                    print(p.downloadHandler.text);
                     message.text = p.error;
                     ResponseCallback?.Invoke(false, response);
                     Hide();
@@ -61,10 +63,8 @@ namespace EcoBuilder.UI
             {
                 if (line.Key == "__address__") { // reserved for URL
                     continue;
-                } else if (line.Key == "__matrix__" || line.Key == "__actions__") { // don't encrypt these as they break my pitiful decryption
-                    form.AddField(line.Key.Substring(2, line.Key.Length-4), line.Value);
                 } else {
-                    form.AddField(line.Key, Encrypt(line.Value));
+                    form.AddField(line.Key, line.Value);
                 }
             }
             StartCoroutine(postRoutine = SendPost(letter["__address__"], form, ResponseCallback));
@@ -76,7 +76,6 @@ namespace EcoBuilder.UI
             group.blocksRaycasts = true;
             group.interactable = true;
             group.alpha = 1;
-            print("TODO: silent fail and move this to a refresh thing in the corner");
         }
         public void Hide()
         {

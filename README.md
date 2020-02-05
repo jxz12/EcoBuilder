@@ -2,6 +2,7 @@ dad,
 claim moneys
 
 # Menu
+delete account and log out/in
 add helper text for everything
 make icons for reversing drag direction
 

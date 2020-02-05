@@ -5,7 +5,7 @@ using UnityEngine;
 // for load/save local
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-
+using System.Text;
 
 namespace EcoBuilder
 {
@@ -16,7 +16,7 @@ namespace EcoBuilder
         /////////////////////
 
         [Serializable]
-        public class PlayerDetails
+        class PlayerDetails
         {
             public string username = "";
             public string password = "";
@@ -25,20 +25,20 @@ namespace EcoBuilder
             public int age = -1;
             public int gender = -1;
             public int education = -1;
-            public enum Team { None=-1, Wolf, Lion }
-            public Team team = Team.None;
+            public enum Team { Unassigned=-1, Wolf, Lion, NeverAsk }
+            public Team team = Team.Unassigned;
 
+            public bool newsletterConsent = true;
             public bool reverseDrag = true;
-            public bool dontAskForLogin = false;
 
             public Dictionary<int, int> highScores = new Dictionary<int, int>();
         }
         [SerializeField] PlayerDetails player = null;
 
-        public bool LoggedIn { get { return player.team != PlayerDetails.Team.None; } }
-        public bool ConstrainTrophic { get { return player.team != GameManager.PlayerDetails.Team.Lion; } }
+        public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
+        public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
-        public bool AskForRegistration { get { return player.team==PlayerDetails.Team.None && !player.dontAskForLogin; } }
+        public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
 
         static string playerPath;
         public void InitPlayer()
@@ -47,11 +47,12 @@ namespace EcoBuilder
             playerPath = Application.persistentDataPath+"/player.data";
 
 #if UNITY_EDITOR
-            DeletePlayerDetailsLocal();
+            // DeletePlayerDetailsLocal();
 #endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
+            print("TODO: send data periodically");
         }
         private bool SavePlayerDetailsLocal()
         {
@@ -98,32 +99,24 @@ namespace EcoBuilder
 #endif
             try {
                 File.Delete(playerPath);
+                player = new PlayerDetails();
             } catch (Exception e) {
                 Debug.LogError("could not delete player: " + e.Message);
             }
         }
-        public void ResetSaveData()
-        {
-            print("TODO: something else");
-            DeletePlayerDetailsLocal();
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
-        }
-
 
 
         ///////////////////
-        // web things
-        //  the first few functions must have a successful response to continue
-        //  other ones can be saved by SavePost()
-        // 
+        // web form things
+
         static readonly string serverURL = "127.0.0.1/ecobuilder/";
         // static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
-        [SerializeField] UI.Postman pat;
+        [SerializeField] Postman pat;
         public void RegisterLocal(string username, string password, string email)
         {
             player.username = username;
-            player.password = password;
-            player.email = email;
+            player.password = Postman.Encrypt(password);
+            player.email = Postman.Encrypt(email);
             SavePlayerDetailsLocal();
         }
         public void RegisterRemote(Action<bool, string> OnCompletion)
@@ -132,12 +125,47 @@ namespace EcoBuilder
                 { "username", player.username },
                 { "password", player.password },
                 { "email", player.email },
+
+                // these two are potentially set from someone who did not create an account at first
+                { "reversed", player.reverseDrag? "1":"0" },
+                { "scores", ComposeRegistrationScores() },
+
                 { "__address__", serverURL+"register.php" },
             };
             pat.Post(data, OnCompletion);
         }
+        string ComposeRegistrationScores()
+        {
+            if (player.highScores.Count == 0) {
+                return "";
+            }
+            var sb = new StringBuilder();
+            foreach (var kvp in player.highScores)
+            {
+                sb.Append(kvp.Key).Append(':').Append(kvp.Value).Append(';');
+            }
+            sb.Length -= 1;
+            return sb.ToString();
+        }
+        public void SetGDPRRemote(bool emailConsent, Action<bool, string> OnCompletion)
+        {
+            // this was previously done by coin, but will now be hidden to the user
+            bool heads = UnityEngine.Random.Range(0, 2) == 0;
+            player.team = heads? PlayerDetails.Team.Lion : PlayerDetails.Team.Wolf;
+
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "team", ((int)player.team).ToString() },
+                { "newsletter", emailConsent? "1":"0" },
+                { "__address__", serverURL+"gdpr.php" },
+            };
+            pat.Post(data, OnCompletion);
+        }
+
         public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
         {
+            password = Postman.Encrypt(password);
             var data = new Dictionary<string, string>() {
                 { "username", username },
                 { "password", password },
@@ -166,49 +194,37 @@ namespace EcoBuilder
         public void SendPasswordResetEmail(string recipient, Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
-                { "recipient", recipient },
+                { "recipient", Postman.Encrypt(recipient) },
                 { "__address__", serverURL+"resetup.php" },
             };
             pat.Post(data, OnCompletion);
         }
-        public void SetDemographicsLocal(int age, int gender, int education)
-        {
-            player.age = age;
-            player.gender = gender;
-            player.education = education;
-            SavePlayerDetailsLocal();
-        }
-        public void SetDemographicsRemote()
+        public void DeleteAccountRemote(Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
-                { "age", player.age.ToString() },
-                { "gender", player.gender.ToString() },
-                { "education", player.education.ToString() },
+                { "__address__", serverURL+"delete.php" },
+            };
+            pat.Post(data, OnCompletion);
+        }
+
+        //////////////////////////////////////////////
+        // things that can be saved and posted later
+
+        public void SetDemographicsRemote(int age, int gender, int education)
+        {
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "age", age.ToString() },
+                { "gender", gender.ToString() },
+                { "education", education.ToString() },
                 { "__address__", serverURL+"demographics.php" },
             };
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
-        public void SetTeamLocal(PlayerDetails.Team team)
-        {
-            player.team = team;
-            SavePlayerDetailsLocal();
-        }
-        public void SetTeamRemote()
-        {
-            var data = new Dictionary<string, string>() {
-                { "username", player.username },
-                { "password", player.password },
-                { "team", ((int)player.team).ToString() },
-                { "__address__", serverURL+"team.php" },
-            };
-            Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
-            pat.Post(data, OnCompletion);
-        }
-
-
 
         public void SetDragDirectionLocal(bool reversed)
         {
@@ -217,7 +233,6 @@ namespace EcoBuilder
         }
         public void SetDragDirectionRemote()
         {
-            print("TODO: don't send if no login");
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
@@ -233,7 +248,7 @@ namespace EcoBuilder
         public int GetHighScoreLocal(int levelIdx)
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
-                player.highScores[levelIdx] = 0;
+                return 0;
             }
             return player.highScores[levelIdx];
         }
@@ -250,15 +265,14 @@ namespace EcoBuilder
         }
         public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
         {
-            print("TODO: don't send if not logged in");
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
                 { "level_index", levelIdx.ToString() },
                 { "datetime_ticks", DateTime.Now.Ticks.ToString() },
                 { "score", score.ToString() },
-                { "__matrix__", matrix },
-                { "__actions__", actions },
+                { "matrix", matrix },
+                { "actions", actions },
                 { "__address__", serverURL+"playthrough.php" },
             };
             Action<bool, string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
@@ -266,9 +280,9 @@ namespace EcoBuilder
         }
 
 
-        /////////////////////////////////////////////
-        // used to cache 
-        // tuple Item1 is names, Item2 is scores
+        ///////////////////////////////////////////////////////////////////
+        // used to cache results from startup in case player goes into tube
+        // TODO: save to file as well in case startup in tube
         public class LeaderboardCache
         {
             public int idx;
@@ -283,7 +297,7 @@ namespace EcoBuilder
         public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
         {
             var data = new Dictionary<string, string>() {
-                { "n_scores", n_scores.ToString() }, // will always have 3 scores, median, and yours
+                { "n_scores", n_scores.ToString() },
                 { "__address__", serverURL+"leaderboards.php" },
             };
             pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion(); });
@@ -291,7 +305,6 @@ namespace EcoBuilder
         private Dictionary<int, LeaderboardCache> cachedLeaderboards;
         private void ParseLeaderboards(string returned)
         {
-            print("TODO: save to file for cache too");
             cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
             var levels = returned.Split(';');
             foreach (var level in levels)
@@ -319,20 +332,11 @@ namespace EcoBuilder
         }
         public LeaderboardCache GetCachedLeaderboard(int level_idx)
         {
+            if (cachedLeaderboards == null) {
+                return null;
+            }
             return cachedLeaderboards[level_idx];
         }
-        // // but this one does
-        // public void GetLevelRankRemote(int levelIdx, Action<int> OnCompletion)
-        // {
-        //     var data = new Dictionary<string, string>() {
-        //         { "username", player.username },
-        //         { "password", player.password },
-        //         { "level_index", levelIdx.ToString() },
-        //         { "__address__", serverURL+"rank.php" },
-        //     };
-        //     pat.Post(data, (b,s)=>{ print(s); if (b) OnCompletion(int.Parse(s)); });
-        // }
-        // TODO: just do world average for now!!! SQL is too annoying
 
         private void SavePost(Dictionary<string, string> data)
         {
@@ -355,20 +359,27 @@ namespace EcoBuilder
                 Debug.LogError("could not save post: " + e.Message);
             }
         }
-        public void OpenPrivacyPolicyInBrowser()
-        {
-            Application.OpenURL(serverURL+"GDPR_Privacy_Notice.htm");
-        }
-
         public void DontAskAgainForLogin()
         {
-            player.dontAskForLogin = true;
-            SavePlayerDetailsLocal();
+            player.team = PlayerDetails.Team.NeverAsk;
         }
-        public void Logout()
+        public void CreateAccount()
         {
-            print("TODO: reset?");
+            if (player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion) {
+                throw new Exception("should not have option to create account");
+            }
+            // note that this function purposefully does not delete the player in order to keep their highscore info
+            player.team = PlayerDetails.Team.Unassigned;
+            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        public void LogOut()
+        {
             DeletePlayerDetailsLocal();
+            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        public void OpenPrivacyPolicyInBrowser()
+        {
+            Application.OpenURL(serverURL+"GDPR_Privacy_Notice.html");
         }
     }
 }

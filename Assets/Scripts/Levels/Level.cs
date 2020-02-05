@@ -15,7 +15,8 @@ namespace EcoBuilder.Levels
         public string title;
         public string description;
         public string introduction;
-        public string congratulation;
+        public string completedMessage;
+        public string threeStarsMessage;
 
         // constraints
         public int numProducers;
@@ -117,15 +118,11 @@ namespace EcoBuilder.Levels
             }
             starsImage.sprite = starSprites[numStars];
         }
-        public void Unlock()
-        {
-            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
-        }
 
         //////////////////////////////
         // animations states
 
-        enum State { Locked=-1, Thumbnail=0, Card=1, FinishFlag=2, Navigation=3, Leaving=4 }
+        enum State { Thumbnail=0, Card=1, FinishFlag=2, Navigation=3, Leaving=4 }
 
         IEnumerator tweenRoutine;
         IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
@@ -158,6 +155,11 @@ namespace EcoBuilder.Levels
             }
         }
 
+        public void Unlock()
+        {
+            GetComponent<Animator>().SetTrigger("Unlock");
+        }
+
         Transform thumbnailedParent;
         public void ShowThumbnail()
         {
@@ -172,32 +174,41 @@ namespace EcoBuilder.Levels
         }
         public void ShowCard()
         {
-            if (GameManager.Instance.CardParent.childCount > 1)
+            if (GameManager.Instance.CardParent.childCount > 1) {
                 throw new Exception("more than one card?");
-            if (GameManager.Instance.CardParent.childCount == 1)
+            }
+            if (GameManager.Instance.CardParent.childCount == 1) {
                 GameManager.Instance.CardParent.GetComponentInChildren<Level>().ShowThumbnail();
-
+            }
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             StartCoroutine(TweenToZeroPosFrom(.5f, GameManager.Instance.CardParent));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
             OnCarded?.Invoke();
         }
+
         public void ShowFinishFlag()
         {
+            Instantiate(fireworks, transform);
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
-            Instantiate(fireworks, transform);
         }
         // called when game is ended
         public void ShowNavigation()
         {
-            if (GameManager.Instance.NavParent.transform.childCount > 0)
+            if (GameManager.Instance.NavParent.transform.childCount > 0) {
                 throw new Exception("more than one navigation?");
-
+            }
             StartCoroutine(TweenToZeroPosFrom(1f, GameManager.Instance.NavParent));
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
+        public void UnlockNextLevel() // because of silly animator gameobject active stuff
+        {
+            if (NextLevel != null) {
+                NextLevel.Unlock();
+            }
+        }
+
 
         // a hack to keep the card on top of the other thumbnails
         Canvas onTop;
@@ -265,7 +276,6 @@ namespace EcoBuilder.Levels
             replayButton.gameObject.SetActive(true);
         }
 
-
         public void StartTutorialIfAvailable()
         {
             if (tutorial != null) {
@@ -293,28 +303,24 @@ namespace EcoBuilder.Levels
             GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
             Destroy(gameObject);
         }
-
         public void FinishLevel() // called on button press
         {
             if (GameManager.Instance.PlayedLevel != this) {
                 throw new Exception("Played level different from one being finished?");
             }
-            if (nextLevelPrefab != null)
-            {
+            if (nextLevelPrefab != null) {
                 NextLevel = Instantiate(nextLevelPrefab, nextLevelParent);
-                NextLevel.Unlock();
             } else {
                 print("TODO: credits? reduce width of navigation?");
             }
             ShowNavigation();
             OnFinished?.Invoke(this);
         }
-
         public static void SaveAsNewPrefab(LevelDetails detail, string name)
         {
-            #if !UNITY_EDITOR
+#if !UNITY_EDITOR
             throw new Exception("cannot save level outside editor");
-            #endif
+#endif
 
             var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
             // var level = PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));

@@ -99,20 +99,15 @@ namespace EcoBuilder.UI
         public void Show(bool showing)
         {
             // GetComponent<Animator>().SetBool("Show", showing);
-            if (showing)
-            {
+            if (showing) {
                 targetPos.x = 0;
-            }
-            else
-            {
+            } else {
                 targetPos.x = isLeft? -rt.rect.width : rt.rect.width;
             }
         }
-        public void DelayThenShow(float seconds, string msg)
+        public void DelayThenShow(float delay)
         {
-            Show(false);
-            SetText(msg);
-            StartCoroutine(DelayThenShow(seconds, true));
+            StartCoroutine(DelayThenShow(delay, true));
         }
         void UserShow(bool showing) // to attach to button
         {
@@ -124,12 +119,6 @@ namespace EcoBuilder.UI
             rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, .15f);
             rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, .15f);
         }
-        // public void DelayThenShow(float seconds)
-        // {
-        //     // GetComponent<Animator>().SetTrigger("Reset");
-        //     // GetComponent<Animator>().SetBool("Show", true);
-        //     StartCoroutine(DelayThenShow(seconds, true));
-        // }
         IEnumerator DelayThenShow(float seconds, bool showing)
         {
             yield return new WaitForSeconds(seconds);
