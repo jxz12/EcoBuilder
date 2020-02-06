@@ -11,18 +11,21 @@ namespace EcoBuilder.UI
         [SerializeField] ContentSizeFitter panelFitter;
         [SerializeField] TMPro.TextMeshProUGUI message;
         [SerializeField] Button hideButton, showButton;
+        [SerializeField] Image arrow;
 
         public event Action OnUserShown;
 
         RectTransform rt;
-        Vector2 targetPos, targetAnchor;
-        Vector2 velocity, anchosity;
+        Vector2 targetAnchor, targetPivot;
+        Vector2 anchosity, pivosity;
+        float width, targetWidth, widthocity;
         Rect canvasRect;
         void Awake()
         {
             rt = GetComponent<RectTransform>();
-            targetPos = rt.anchoredPosition;
+            targetPivot = rt.pivot;
             targetAnchor = rt.anchorMin;
+            targetWidth = rt.sizeDelta.x;
             canvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect;
 
             // prevents scene getting dirty, Unity autolayout sucks
@@ -30,12 +33,10 @@ namespace EcoBuilder.UI
         }
         void Start()
         {
-            hideButton.onClick.AddListener(()=>UserShow(false));
-            showButton.onClick.AddListener(()=>UserShow(true));
-
-            // StartCoroutine(DelayThenShow(2, true));
+            hideButton.onClick.AddListener(Toggle);
+            showButton.onClick.AddListener(Toggle);
         }
-        // also because unity autolayout suckssss
+        // because unity autolayout suckssss with the text box thing
         void ForceUpdateLayout()
         {
             Canvas.ForceUpdateCanvases();
@@ -43,86 +44,113 @@ namespace EcoBuilder.UI
             panelLayout.SetLayoutVertical();
             panelFitter.SetLayoutVertical();
         }
-        public void SetText(string toSet)
+        public void SetPixelWidth(float pixelWidth, bool damp=true)
         {
-            message.text = toSet;
+            targetWidth = pixelWidth;
+            if (!damp) {
+                rt.sizeDelta = new Vector2(targetWidth, rt.sizeDelta.y);
+            }
             ForceUpdateLayout();
         }
-        public void SetDistFromTop(float normalisedHeight, bool damp=true) // 0-1 range
+        public void SetAnchorHeight(float normalisedHeight, bool damp=true) // 0-1 range
         {
-            targetPos.y = canvasRect.height * -normalisedHeight;
-            // rt.anchorMin = rt.anchorMax = 
-            if (!damp)
-            {
-                rt.anchoredPosition = targetPos;
+            targetAnchor = new Vector2(rt.anchorMin.x, normalisedHeight);
+            if (!damp) {
+                rt.anchorMin = rt.anchorMin = targetAnchor;
             }
         }
-        public void SetWidth(float normalisedWidth)
+        public void SetPivotHeight(float normalisedHeight, bool damp=true)
         {
-            // float x = isLeft? -canvasRefRes.x*width : canvasRefRes.x*width;
-            float prevWidth = rt.sizeDelta.x;
-            float newWidth = canvasRect.width * normalisedWidth;
-            targetPos.x *= newWidth / prevWidth;
-            rt.sizeDelta = new Vector2(newWidth, rt.sizeDelta.y);
-
-            ForceUpdateLayout();
+            targetPivot.y = normalisedHeight;
+            if (!damp) {
+                rt.pivot = new Vector2(rt.pivot.x, targetPivot.y);
+            }
         }
-        bool isLeft;
+
         public void SetSide(bool left, bool damp=true)
         {
-            if (left == isLeft)
+            if (left && targetAnchor.x==0 || !left && targetAnchor.x==1) {
                 return;
-
-            var rt = GetComponent<RectTransform>();
+            }
             if (left)
             {
-                targetAnchor = new Vector2(0,1);
+                targetAnchor = new Vector2(0, rt.anchorMin.y);
                 transform.localScale = new Vector3(-1,1,1);
                 message.transform.localScale = new Vector3(-1,1,1);
                 hideButton.transform.localScale = new Vector3(-1,1,1);
             }
             else
             {
-                targetAnchor = new Vector2(1,1);
+                targetAnchor = new Vector2(1, rt.anchorMin.y);
                 transform.localScale = new Vector3(1,1,1);
                 message.transform.localScale = new Vector3(1,1,1);
                 hideButton.transform.localScale = new Vector3(1,1,1);
             }
-            targetPos.x = -targetPos.x;
             if (!damp)
             {
-                rt.anchoredPosition = targetPos;
                 rt.anchorMin = rt.anchorMax = targetAnchor;
             }
-            isLeft = left;
         }
         public void Show(bool showing)
         {
-            // GetComponent<Animator>().SetBool("Show", showing);
-            if (showing) {
-                targetPos.x = 0;
-            } else {
-                targetPos.x = isLeft? -rt.rect.width : rt.rect.width;
+            // only toggle if needed
+            if (targetPivot.x==0 && showing || targetPivot.x==1 && !showing) {
+                Toggle(); 
             }
         }
-        public void DelayThenShow(float delay)
+        public void Toggle()
         {
-            StartCoroutine(DelayThenShow(delay, true));
+            // flips pivot to opposite of current state
+            if (targetPivot.x == 1) {
+                targetPivot.x = 0;
+                arrow.transform.rotation = Quaternion.Euler(0,0,-90);
+            } else {
+                targetPivot.x = 1;
+                arrow.transform.rotation = Quaternion.Euler(0,0,90);
+            }
         }
+
+
+        public void SetText(string toSet)
+        {
+            message.text = toSet;
+            ForceUpdateLayout();
+        }
+        public void DelayThenSet(float delay, string delayedMessage)
+        {
+            StopAllCoroutines();
+            StartCoroutine(DelayThenSetRoutine(delay, delayedMessage));
+        }
+        IEnumerator DelayThenSetRoutine(float delay, string delayedMessage)
+        {
+            yield return new WaitForSeconds(delay);
+            SetText(delayedMessage);
+        }
+        public void DelayThenSetAndShow(float delay, string delayedMessage)
+        {
+            StopAllCoroutines();
+            StartCoroutine(DelayThenShowRoutine(delay, delayedMessage));
+        }
+        IEnumerator DelayThenShowRoutine(float delay, string delayedMessage)
+        {
+            yield return new WaitForSeconds(delay);
+            SetText(delayedMessage);
+            Show(true);
+        }
+
         void UserShow(bool showing) // to attach to button
         {
             Show(showing);
             OnUserShown?.Invoke();
         }
+        [SerializeField] float smoothTime = .15f;
         void Update()
         {
-            rt.anchoredPosition = Vector2.SmoothDamp(rt.anchoredPosition, targetPos, ref velocity, .15f);
-            rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, .15f);
-        }
-        IEnumerator DelayThenShow(float seconds, bool showing)
-        {
-            yield return new WaitForSeconds(seconds);
-            Show(showing);
+            rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);
+            rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
+
+            width = Mathf.SmoothDamp(width, targetWidth, ref widthocity, smoothTime);
+            rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
         }
     }
 }

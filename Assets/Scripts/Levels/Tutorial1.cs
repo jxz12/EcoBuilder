@@ -25,9 +25,6 @@ namespace EcoBuilder.Levels
             targetAnchor = new Vector2(1,0);
             targetZRot = 315;
 
-            help.SetSide(false);
-            help.SetDistFromTop(.2f);
-            help.SetWidth(.6f);
             incubator.SetConsumerAvailability(false);
 
             DetachSmellyListeners();
@@ -42,7 +39,7 @@ namespace EcoBuilder.Levels
             help.SetText("Here you can choose a new name for your species. You can then introduce it by dragging it into the world.");
             help.Show(true);
             help.SetSide(true);
-            help.SetDistFromTop(.1f);
+            help.SetAnchorHeight(.5f);
 
             DetachSmellyListeners();
             AttachSmellyListener<int, GameObject>(inspector, "OnSpawned", ExplainSpawn);
@@ -62,7 +59,7 @@ namespace EcoBuilder.Levels
             incubator.SetProducerAvailability(false);
 
             help.SetText("Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species. Now try adding an animal by tapping the paw button.");
-            help.SetDistFromTop(.02f, false);
+            help.SetAnchorHeight(.95f, false);
             help.Show(true);
 
             DetachSmellyListeners();
@@ -127,7 +124,7 @@ namespace EcoBuilder.Levels
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
 
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetDistFromTop(.3f); help.SetText("You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
+            StartCoroutine(WaitThenDo(delay, ()=> { help.Show(true); help.SetAnchorHeight(.7f); help.SetText("You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."); targetSize = new Vector3(100,100); targetZRot = 360; }));
             StartCoroutine(Track(secondSpecies.transform));
 
             DetachSmellyListeners();
@@ -141,7 +138,8 @@ namespace EcoBuilder.Levels
             targetZRot = 450;
 
             help.Show(true);
-            help.SetDistFromTop(.7f);
+            help.SetPivotHeight(0);
+            help.SetAnchorHeight(.2f);
             help.SetText("And tap this skull button to remove the species.");
 
             DetachSmellyListeners();
@@ -154,7 +152,8 @@ namespace EcoBuilder.Levels
             targetZRot = 405;
 
             help.Show(false);
-            help.SetDistFromTop(.2f);
+            help.SetPivotHeight(1);
+            help.SetAnchorHeight(.8f);
             targetSize = new Vector2(100,100);
             targetPos = new Vector2(40, 120);
             recorder.gameObject.SetActive(true); 
@@ -170,7 +169,7 @@ namespace EcoBuilder.Levels
             targetSize = new Vector2(0,0);
             targetZRot = 315;
 
-            help.SetDistFromTop(.05f);
+            help.SetAnchorHeight(.95f);
             help.Show(false);
             // help.SetSide(false, false);
 
@@ -204,7 +203,7 @@ namespace EcoBuilder.Levels
             smoothTime = .5f;
 
             help.Show(false);
-            StartCoroutine(WaitThenDo(delay, ()=> { help.SetSide(false, false); help.Show(true); help.SetDistFromTop(.6f); help.SetText("Great! You can access the next level by tapping it here."); }));
+            StartCoroutine(WaitThenDo(delay, ()=> { help.SetSide(false, false); help.Show(true); help.SetPivotHeight(0); help.SetAnchorHeight(.4f); help.SetText("Great! You can access the next level by tapping it here."); }));
 
             finishedLevel = finished;
             DetachSmellyListeners();

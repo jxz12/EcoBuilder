@@ -9,8 +9,6 @@ namespace EcoBuilder.Levels
     {
         protected override void StartLesson()
         {
-            // targetSize = new Vector2(100,100);
-
             ExplainIntro();
         }
         void ExplainIntro()
@@ -27,9 +25,8 @@ namespace EcoBuilder.Levels
         }
         void ExplainFocus()
         {
-            // inspector.Uninspect();
             nodelink.ForceUnfocus();
-            help.SetDistFromTop(.2f);
+            help.SetAnchorHeight(.8f);
 
             StartCoroutine(WaitThenDo(2, ()=>{ help.Show(true); help.SetText("Well done! The next few levels will show you something");}));
 

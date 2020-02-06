@@ -5,10 +5,10 @@ using System.Collections.Generic;
 namespace EcoBuilder
 {
     // this class handles communication between all the top level components
-    public class EventMediator : MonoBehaviour
+    public class PlayManager : MonoBehaviour
     {
-        [SerializeField] NodeLink.NodeLink nodelink;
         [SerializeField] Model.Model model;
+        [SerializeField] NodeLink.NodeLink nodelink;
 
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.Incubator incubator;
@@ -139,10 +139,11 @@ namespace EcoBuilder
             score.SetStarThresholds(level.Details.targetScore1, level.Details.targetScore2);
             score.OnLevelCompletabled += ()=> level.ShowFinishFlag();
             score.OnLevelCompletabled += ()=> nodelink.ForceUnfocus();
-            score.OnLevelCompletabled += ()=> GameManager.Instance.ShowHelpText(level.Details.completedMessage);
+            score.OnLevelCompletabled += ()=> GameManager.Instance.SetHelpText(level.Details.completedMessage, true, .5f, true);
             score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
-            score.OnThreeStarsAchieved += ()=> GameManager.Instance.ShowHelpText(level.Details.threeStarsMessage);
+            score.OnThreeStarsAchieved += ()=> GameManager.Instance.SetHelpText(level.Details.threeStarsMessage, true, .5f, true);
 
+            GameManager.Instance.SetHelpText(level.Details.introduction, true, 2f, true);
             level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with that
         }
         void FinishPlaythrough(Levels.Level finished)

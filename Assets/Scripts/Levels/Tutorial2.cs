@@ -28,11 +28,8 @@ namespace EcoBuilder.Levels
         {
             DetachSmellyListeners();
             StopAllCoroutines();
-            help.SetSide(false);
-            help.SetDistFromTop(.15f);
             
             StartCoroutine(Track(plant.transform));
-
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
         }
 
@@ -43,7 +40,7 @@ namespace EcoBuilder.Levels
             help.SetText("You can change the weight of your species by moving this slider. Here, your animal is going extinct because it is not getting enough food. See if you can save it!");
             help.Show(true);
             help.SetSide(true, false);
-            help.SetDistFromTop(.01f);
+            help.SetAnchorHeight(.95f);
 
             StartCoroutine(ShuffleOnSlider(3, 40));
 
@@ -63,7 +60,7 @@ namespace EcoBuilder.Levels
             targetSize = Vector2.zero;
 
             StartCoroutine(WaitThenDo(delay, ()=>{
-                help.SetText("Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."); help.SetWidth(.75f); help.Show(true); help.SetDistFromTop(.03f); StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100);
+                help.SetText("Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."); help.SetPixelWidth(600); help.Show(true); StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100);
             }));
 
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainInterference());
@@ -93,7 +90,7 @@ namespace EcoBuilder.Levels
             // inspector.Uninspect();
             nodelink.ForceUnfocus();
             help.SetSide(false,false);
-            help.SetDistFromTop(.13f);
+            help.SetAnchorHeight(.9f);
 
             print("TODO: fix the report card");
             StartCoroutine(WaitThenDo(2, ()=>{
@@ -103,8 +100,9 @@ namespace EcoBuilder.Levels
         }
         void Finish()
         {
-            help.SetWidth(.7f);
-            help.SetDistFromTop(.25f);
+            // should be dealt with by PlayManager
+            // help.SetPixel(.7f);
+            // help.SetDistFromTop(.25f);
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {

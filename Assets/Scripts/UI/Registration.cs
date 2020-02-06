@@ -8,6 +8,8 @@ namespace EcoBuilder.UI
 {
     public class Registration : MonoBehaviour
     {
+        // NOTE: none of the functionality of this class is in UnityEvents!
+        //       don't ask me why I chose to do it this way and opposite in Menu
         public event Action OnFinished;
 
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;

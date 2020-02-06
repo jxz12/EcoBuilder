@@ -35,7 +35,8 @@ namespace EcoBuilder
 
         void Start()
         {
-            // TODO: set this to the size of the screen for webgl
+            print("TODO: set this to the dependent on screen size for webgl");
+            print("TODO: disable full screen for desktop?!");
 // #if !UNITY_WEBGL
 //             Screen.SetResolution(576, 1024, false);
 //             Screen.fullScreen = true;
@@ -147,14 +148,26 @@ namespace EcoBuilder
         // showing help messages
 
         [SerializeField] UI.Help helpText;
-        public void ShowHelpText(string message, float delay=0)
+        public void SetHelpText(string message, bool show=false, float delay=0, bool resetPosition=false)
         {
-            helpText.SetText(message);
-            if (delay == 0) {
-                helpText.Show(true);
+            if (!show) {
+                if (delay > 0) {
+                    helpText.Show(false);
+                }
+                helpText.DelayThenSet(delay, message);
             } else {
-                helpText.Show(false);
-                helpText.DelayThenShow(delay);
+                if (delay <= 0) {
+                    helpText.Show(false);
+                }
+                helpText.DelayThenSetAndShow(delay, message);
+            }
+
+            if (resetPosition)
+            {
+                helpText.SetSide(false);
+                helpText.SetPivotHeight(1);
+                helpText.SetAnchorHeight(.9f);
+                helpText.SetPixelWidth(400);
             }
         }
         public void HideHelpText()

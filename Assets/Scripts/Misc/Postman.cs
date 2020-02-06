@@ -76,13 +76,13 @@ namespace EcoBuilder
             group.blocksRaycasts = true;
             group.interactable = true;
             group.alpha = 1;
+            GetComponent<Animator>().enabled = true;
         }
         public void Hide()
         {
             group.interactable = false;
             StartCoroutine(FadeAway(fadeDuration));
         }
-
         IEnumerator FadeAway(float duration)
         {
             group.interactable = false;
@@ -94,6 +94,7 @@ namespace EcoBuilder
             }
             group.blocksRaycasts = false;
             group.alpha = 0;
+            GetComponent<Animator>().enabled = false;
         }
 
         //////////////////////

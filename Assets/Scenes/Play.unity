@@ -2915,7 +2915,7 @@ GameObject:
   - component: {fileID: 1080646977}
   - component: {fileID: 1080646976}
   m_Layer: 0
-  m_Name: Mediator
+  m_Name: Play Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2930,11 +2930,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1080646975}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b0d9275ecaed2f45871eb6e00dfa432, type: 3}
+  m_Script: {fileID: 11500000, guid: 836819089357c2b43af2ecaee25b03f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodelink: {fileID: 1082250983}
   model: {fileID: 26841758}
+  nodelink: {fileID: 1082250983}
   inspector: {fileID: 1168393887}
   incubator: {fileID: 1297594225}
   recorder: {fileID: 87083486}

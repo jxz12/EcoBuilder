@@ -245,7 +245,6 @@ namespace EcoBuilder.Levels
             }
             GameManager.Instance.OnLoaded.RemoveListener(LevelSceneLoadedCallback);
             thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
-            GameManager.Instance.ShowHelpText(details.introduction, 2f); // show intro
 
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));

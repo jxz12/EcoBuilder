@@ -2,8 +2,6 @@ dad,
 claim moneys
 
 # Menu
-delete account and log out/in
-add helper text for everything
 make icons for reversing drag direction
 
 # Learning world
@@ -18,7 +16,7 @@ world average if connected on completion
 # Research world
 make menu splash button interactable and show help when pressed
 change score bar (in an aesthetic way) to show which constraint measured
-finish the tutorials
+finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other

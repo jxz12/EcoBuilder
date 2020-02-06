@@ -39,6 +39,7 @@ namespace EcoBuilder
         public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
+        public string Username { get { return player.username; } }
 
         static string playerPath;
         public void InitPlayer()
@@ -300,7 +301,7 @@ namespace EcoBuilder
                 { "n_scores", n_scores.ToString() },
                 { "__address__", serverURL+"leaderboards.php" },
             };
-            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion(); });
+            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
         }
         private Dictionary<int, LeaderboardCache> cachedLeaderboards;
         private void ParseLeaderboards(string returned)
