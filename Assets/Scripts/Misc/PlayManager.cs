@@ -95,58 +95,53 @@ namespace EcoBuilder
             //////////////////////
             var level = GameManager.Instance.PlayedLevel;
 
-            inspector.HideSizeSlider(level.Details.sizeSliderHidden);
-            inspector.HideGreedSlider(level.Details.greedSliderHidden);
-            inspector.AllowConflicts(level.Details.conflictsAllowed);
-            nodelink.AllowSuperfocus = level.Details.superfocusAllowed;
+            inspector.HideSizeSlider(level.SizeSliderHidden);
+            inspector.HideGreedSlider(level.GreedSliderHidden);
+            inspector.AllowConflicts(level.ConflictsAllowed);
+            nodelink.AllowSuperfocus = level.SuperfocusAllowed;
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
-            nodelink.AddDropShadow(level.Landscape);
 
-            constraints.Constrain("Leaf", level.Details.numProducers);
-            constraints.Constrain("Paw", level.Details.numConsumers);
-            constraints.Constrain("Count", level.Details.minEdges);
-            constraints.Constrain("Chain", level.Details.minChain);
-            constraints.Constrain("Loop", level.Details.minLoop);
+            constraints.Constrain("Leaf", level.NumProducers);
+            constraints.Constrain("Paw", level.NumConsumers);
+            constraints.Constrain("Count", level.MinEdges);
+            constraints.Constrain("Chain", level.MinChain);
+            constraints.Constrain("Loop", level.MinLoop);
 
-            for (int i=0; i<level.Details.numInitSpecies; i++)
+            for (int i=0; i<level.NumInitSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,
-                    level.Details.plants[i],
-                    level.Details.sizes[i],
-                    level.Details.greeds[i],
-                    level.Details.randomSeeds[i],
-                    level.Details.sizeEditables[i],
-                    level.Details.greedEditables[i]);
+                    level.Plants[i],
+                    level.Sizes[i],
+                    level.Greeds[i],
+                    level.RandomSeeds[i],
+                    level.Editables[i]);
 
                 inspector.SetSpeciesRemovable(i, false);
                 nodelink.SetIfNodeRemovable(i, false);
                 nodelink.OutlineNode(i, cakeslice.Outline.Colour.Blue);
             }
-            for (int ij=0; ij<level.Details.numInteractions; ij++)
+            for (int ij=0; ij<level.NumInitInteractions; ij++)
             {
-                int i = level.Details.resources[ij];
-                int j = level.Details.consumers[ij];
+                int i = level.Resources[ij];
+                int j = level.Consumers[ij];
 
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
 
-            if (level.Details.alternateScore != "") {
-                score.UseConstraintAsScoreInstead(level.Details.alternateScore);
-            }
-            score.SetStarThresholds(level.Details.targetScore1, level.Details.targetScore2);
-            score.OnLevelCompletabled += ()=> level.ShowFinishFlag();
-            score.OnLevelCompletabled += ()=> nodelink.ForceUnfocus();
-            score.OnLevelCompletabled += ()=> GameManager.Instance.SetHelpText(level.Details.completedMessage, true, .5f, true);
+            score.SetStarThresholds(level.Metric, level.TargetScore1, level.TargetScore2);
+            score.OnLevelCompletabled +=  ()=> level.ShowFinishFlag();
+            score.OnLevelCompletabled +=  ()=> nodelink.ForceUnfocus();
+            score.OnLevelCompletabled +=  ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, level.CompletedMessage);
             score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
-            score.OnThreeStarsAchieved += ()=> GameManager.Instance.SetHelpText(level.Details.threeStarsMessage, true, .5f, true);
+            score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, level.ThreeStarsMessage);
 
-            GameManager.Instance.SetHelpText(level.Details.introduction, true, 2f, true);
+            GameManager.Instance.HelpText.DelayThenShow(2, level.Introduction);
             level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with that
         }
-        void FinishPlaythrough(Levels.Level finished)
+        void FinishPlaythrough(Level finished)
         {
             if (this == null) {
                 finished.OnFinished -= FinishPlaythrough;
@@ -157,12 +152,13 @@ namespace EcoBuilder
             nodelink.Finish();
             score.Finish();
             recorder.Finish();
-            bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Details.idx, score.HighestScore);
+
+            bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Idx, score.HighestScore);
             if (highscore) {
-                print("TODO: congratulation message for getting a high score");
+                print("TODO: congratulation on high score on level complete screen");
             }
             if (GameManager.Instance.LoggedIn) {
-                GameManager.Instance.SavePlaythroughRemote(finished.Details.idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
+                GameManager.Instance.SavePlaythroughRemote(finished.Idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
             }
             Destroy(gameObject);
         }
@@ -207,13 +203,11 @@ namespace EcoBuilder
                 Input.GetKeyDown(KeyCode.W) &&
                 Input.GetKeyDown(KeyCode.E))
             {
-                var details = new Levels.LevelDetails();
-                details.plants = new List<bool>();
-                details.randomSeeds = new List<int>();
-                details.sizes = new List<float>();
-                details.greeds = new List<float>();
-                details.sizeEditables = new List<bool>();
-                details.greedEditables = new List<bool>();
+                var plants = new List<bool>();
+                var randomSeeds = new List<int>();
+                var sizes = new List<float>();
+                var greeds = new List<float>();
+                var editables = new List<bool>();
 
                 var squishedIdxs = new Dictionary<int, int>();
                 int counter = 0;
@@ -221,31 +215,30 @@ namespace EcoBuilder
                 {
                     int idx = kvp.Key;
                     UI.Inspector.Species s = kvp.Value;
-                    details.plants.Add(s.IsProducer);
-                    details.randomSeeds.Add(s.RandomSeed);
-                    details.sizes.Add(s.BodySize);
-                    details.greeds.Add(s.Greediness);
-                    details.sizeEditables.Add(s.SizeEditable);
-                    details.greedEditables.Add(s.GreedEditable);
+                    plants.Add(s.IsProducer);
+                    randomSeeds.Add(s.RandomSeed);
+                    sizes.Add(s.BodySize);
+                    greeds.Add(s.Greediness);
+                    editables.Add(s.Editable);
 
                     squishedIdxs[idx] = counter++;
                 }
-                details.numInitSpecies = squishedIdxs.Count;
+                int numInitSpecies = squishedIdxs.Count;
                 
-                details.resources = new List<int>();
-                details.consumers = new List<int>();
-                details.numInteractions = 0;
+                var resources = new List<int>();
+                var consumers = new List<int>();
+                int numInteractions = 0;
                 foreach (var kvp in inspector.GetSpeciesInfo())
                 {
                     int i = kvp.Key;
                     foreach (int j in nodelink.GetTargets(i))
                     {
-                        details.resources.Add(squishedIdxs[i]);
-                        details.consumers.Add(squishedIdxs[j]);
-                        details.numInteractions += 1;
+                        resources.Add(squishedIdxs[i]);
+                        consumers.Add(squishedIdxs[j]);
+                        numInteractions += 1;
                     }
                 }
-                Levels.Level.SaveAsNewPrefab(details, DateTime.Now.Ticks.ToString());
+                Level.SaveToNewPrefab(DateTime.Now.Ticks.ToString(), plants, randomSeeds, sizes, greeds, editables);
             }
         }
 #endif

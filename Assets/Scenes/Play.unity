@@ -2930,7 +2930,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1080646975}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 836819089357c2b43af2ecaee25b03f4, type: 3}
+  m_Script: {fileID: 11500000, guid: ec16fc0a52020fa4ca2105b65740fad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   model: {fileID: 26841758}
@@ -3011,8 +3011,6 @@ MonoBehaviour:
   heartPrefab: {fileID: 1364553399587929248, guid: 54acd8ed4289f5249a546f4ee8973fd1,
     type: 3}
   skullPrefab: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
-    type: 3}
-  confettiPrefab: {fileID: 1404063831746591855, guid: 0373f08e386ba4dd7b8216868a67e36a,
     type: 3}
   minLinkFlow: 0.1
   maxLinkFlow: 0.5
@@ -4006,8 +4004,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1412613650}
-  - component: {fileID: 1412613652}
-  - component: {fileID: 1412613651}
   m_Layer: 0
   m_Name: Unfocused
   m_TagString: Untagged
@@ -4029,53 +4025,6 @@ Transform:
   m_Father: {fileID: 1082250980}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &1412613651
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1412613649}
-  m_Enabled: 0
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
---- !u!33 &1412613652
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1412613649}
-  m_Mesh: {fileID: 4300004, guid: 558302ad04b31f042a1fa9f5b6bbfee8, type: 3}
 --- !u!1 &1422893140
 GameObject:
   m_ObjectHideFlags: 0

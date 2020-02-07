@@ -1,13 +1,18 @@
-dad,
+dad
 claim moneys
+
+
+MAKE LAYOUT DETERMINISTIC
+DO UI HEALTH BARS
+don't outline species unless they're non editable too
 
 # Menu
 make icons for reversing drag direction
 
 # Learning world
-give congratulation and unfocus on 1 star
 give extra confetti for new high score
-world average if connected on completion
+world average and rank if connected on completion
+at least one level about keystone species
 
 (level 1 is nodes+links+undo, level 2 is dynamics+score, level 3 is constraints+focus)
 (level 4+5 is exclusion, level 6+7 is apparent, level 8+9 is variants (combinations))
@@ -35,8 +40,20 @@ This was made up of X nodes, and X edges
 The species with the... is...
 (extra info on click such as stability (eigenvalue), nonreactive)
 
-3 hours Friday, week 13th
-2 hours Thursday 1 Friday, week 20th
-2 hours Thursday 1 Friday, week 27th
+3 hours Friday,            week 13th Jan
+2 hours Thursday 1 Friday, week 20th Jan
+2 hours Thursday 1 Friday, week 27th Jan
+2 hours Thursday 1 Friday, week 3rd Feb
 
 Phone Simulator
+
+
+
+
+
+
+
+
+
+
+This level is the same as the last one, but you are not allowed to edit the existing species! You are however allowed to add one of your own. Good luck!

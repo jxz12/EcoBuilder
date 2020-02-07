@@ -22,7 +22,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
-        [SerializeField] Effect heartPrefab, skullPrefab, confettiPrefab;
+        [SerializeField] Effect heartPrefab, skullPrefab;
 
         void Start()
         {

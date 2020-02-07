@@ -37,8 +37,7 @@ namespace EcoBuilder.UI
             public bool IsProducer { get; set; }
             public float BodySize { get; set; } = -1;
             public float Greediness { get; set; } = -1;
-            public bool SizeEditable { get; set; } = true;
-            public bool GreedEditable { get; set; } = true;
+            public bool Editable { get; set; } = true;
             public bool Removable { get; set; } = true;
 
             public GameObject GObject { get; set; } = null;
@@ -324,8 +323,7 @@ namespace EcoBuilder.UI
             greedTrait.SetValueWithoutCallback(inspected.Greediness);
 
             // nameField.Interactable = false;
-            sizeTrait.Interactable  = inspected.SizeEditable;
-            greedTrait.Interactable = inspected.GreedEditable;
+            sizeTrait.Interactable  = greedTrait.Interactable = inspected.Editable;
             refroveButton.interactable = inspected.Removable;
 
             // uuggghhh
@@ -353,7 +351,7 @@ namespace EcoBuilder.UI
         }
 
         // for loading from level
-        public void SpawnNotIncubated(int idx, bool isProducer, float size, float greed, int randomSeed, bool sizeEditable, bool greedEditable)
+        public void SpawnNotIncubated(int idx, bool isProducer, float size, float greed, int randomSeed, bool editable)
         {
             if (spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx)) {
                 throw new Exception("idx already added");
@@ -370,8 +368,7 @@ namespace EcoBuilder.UI
             var toSpawn = new Species(idx, isProducer, randomSeed);
             toSpawn.BodySize = sizeTrait.SetValueWithoutCallback(size);
             toSpawn.Greediness = greedTrait.SetValueWithoutCallback(greed);
-            toSpawn.SizeEditable = sizeEditable;
-            toSpawn.GreedEditable = greedEditable;
+            toSpawn.Editable = editable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, size, greed, randomSeed);
             
             SpawnWithNonUserEvents(toSpawn);

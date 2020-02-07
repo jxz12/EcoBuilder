@@ -43,52 +43,71 @@ namespace EcoBuilder.UI
         {
             form.OnFinished -= StartMainMenuFromReg;
             ShowMainMenu();
-            ShowHelpDelay(splashHelp, 2f);
+            GameManager.Instance.HelpText.DelayThenShow(2, splashHelp);
         }
 
-        [SerializeField] Levels.Leaderboard leaderboardPrefab;
-        [SerializeField] List<Levels.Level> learningLevelPrefabs;
-        [SerializeField] List<Levels.Level> researchLevelPrefabs;
+        [SerializeField] UI.Leaderboard leaderboardPrefab;
+        [SerializeField] Level firstLearningLevel;
+        [SerializeField] Level firstResearchLevel;
         void ShowMainMenu()
         {
             // instantiate all levels and unlock ones that can be played
             var unlockedIdxs = new HashSet<int>();
-            Action<Levels.Level> CheckUnlocked = (l)=> {
-                if (GameManager.Instance.GetHighScoreLocal(l.Details.idx) > 0)
+            int collectedStars = 0;
+            int totalStars = 0;
+
+            // lol
+            Action<Level, Level> CheckUnlocked = (level,next)=> {
+                int score = GameManager.Instance.GetHighScoreLocal(level.Idx);
+                // always unlock None levels (should be first)
+                if (score > 0 || level.Metric == Level.ScoreMetric.None)
                 {
-                    unlockedIdxs.Add(l.Details.idx);
-                    if (l.NextLevelPrefab!=null) {
-                        unlockedIdxs.Add(l.NextLevelPrefab.Details.idx);
+                    unlockedIdxs.Add(level.Idx);
+                    if (next!=null) {
+                        unlockedIdxs.Add(next.Idx);
                     }
                 }
+                if (level.Metric != Level.ScoreMetric.None)
+                {
+                    if (score > 0) collectedStars += 1;
+                    if (score > level.TargetScore1) collectedStars += 1;
+                    if (score > level.TargetScore2) collectedStars += 1;
+                    totalStars += 3;
+                }
             };
-            unlockedIdxs.Add(learningLevelPrefabs[0].Details.idx); // always unlock first level
-            var instantiated = new Dictionary<int, Levels.Level>();
-            foreach (var prefab in learningLevelPrefabs)
+            var instantiated = new Dictionary<int, Level>();
+            Level prefab = firstLearningLevel;
+            while (prefab != null)
             {
+                CheckUnlocked.Invoke(prefab, prefab.NextLevelPrefab);
+
                 var parent = new GameObject().AddComponent<RectTransform>();
+                var level = Instantiate(prefab, parent);
+                instantiated[level.Idx] = level;
+
                 parent.SetParent(learningLevels.transform);
                 parent.localScale = Vector3.one;
-                parent.name = prefab.Details.idx.ToString();
+                parent.name = prefab.Idx.ToString();
 
-                CheckUnlocked.Invoke(prefab);
-                var level = Instantiate(prefab, parent);
-                instantiated[level.Details.idx] = level;
+                prefab = prefab.NextLevelPrefab;
             }
             Action SetResearchLeaderboards = null;
             if (IsLearningFinished())
             {
-                unlockedIdxs.Add(researchLevelPrefabs[0].Details.idx); // always unlock first level
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
                 researchLock.enabled = false;
-                foreach (var prefab in researchLevelPrefabs)
+                prefab = firstResearchLevel;
+                while (prefab != null)
                 {
+                    CheckUnlocked.Invoke(prefab, prefab.NextLevelPrefab);
+
                     var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
-                    CheckUnlocked.Invoke(prefab);
                     var level = leaderboard.GiveLevelPrefab(prefab);
-                    instantiated[level.Details.idx] = level;
+                    instantiated[level.Idx] = level;
                     SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
+
+                    prefab = prefab.NextLevelPrefab;
                 }
             }
             foreach (var idx in unlockedIdxs) {
@@ -102,7 +121,7 @@ namespace EcoBuilder.UI
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             if (GameManager.Instance.LoggedIn)
             {
-                accountStatus.text = "Hello, " + GameManager.Instance.Username + "! You have achieved TODO: out of TODO: stars.";
+                accountStatus.text = "Hello, " + GameManager.Instance.Username + "! You have collected " + collectedStars + " out of " + totalStars + " stars.";
                 createAccount.gameObject.SetActive(false);
                 logout.gameObject.SetActive(true);
                 deleteAccount.gameObject.SetActive(true);
@@ -120,10 +139,12 @@ namespace EcoBuilder.UI
         }
         bool IsLearningFinished()
         {
-            foreach (var level in learningLevelPrefabs) {
-                if (GameManager.Instance.GetHighScoreLocal(level.Details.idx) <= 0) {
+            var prefab = firstLearningLevel;
+            while (prefab != null) {
+                if (GameManager.Instance.GetHighScoreLocal(prefab.Idx) <= 0) {
                     return false;
                 }
+                prefab = prefab.NextLevelPrefab;
             }
             return true;
         }
@@ -165,29 +186,41 @@ namespace EcoBuilder.UI
             GameManager.Instance.OpenPrivacyPolicyInBrowser();
         }
         [SerializeField] string splashHelp;
+        [SerializeField] string lockHelp;
         public void ResetHelpToSplash()
         {
-            GameManager.Instance.SetHelpText(splashHelp, false, 0, true);
+            GameManager.Instance.HelpText.Message = splashHelp;
+            GameManager.Instance.HelpText.ResetPosition();
         }
-        public void ResetHelpToSplashDelay(float delay)
+        public void SetHelpHeight(float height)
         {
-            GameManager.Instance.SetHelpText(splashHelp, false, delay, true);
+            GameManager.Instance.HelpText.SetAnchorHeight(height);
+        }
+        public void ToggleLockHelp()
+        {
+            if (!GameManager.Instance.HelpText.Showing || GameManager.Instance.HelpText.Message != lockHelp)
+            {
+                GameManager.Instance.HelpText.Message = lockHelp;
+                GameManager.Instance.HelpText.Showing = true;
+            }
+            else
+            {
+                GameManager.Instance.HelpText.DelayThenSet(.15f, splashHelp);
+                GameManager.Instance.HelpText.Showing = false;
+            }
         }
         public void SetHelp(string message)
         {
-            GameManager.Instance.SetHelpText(message);
+            GameManager.Instance.HelpText.Message = message;
         }
         public void ShowHelp(string message)
         {
-            GameManager.Instance.SetHelpText(message, true, 0);
+            GameManager.Instance.HelpText.Message = message;
+            GameManager.Instance.HelpText.Showing = true;
         }
         public void HideHelp()
         {
-            GameManager.Instance.HideHelpText();
-        }
-        public void ShowHelpDelay(string message, float delay)
-        {
-            GameManager.Instance.SetHelpText(message, true, delay);
+            GameManager.Instance.HelpText.Showing = false;
         }
     }
 }

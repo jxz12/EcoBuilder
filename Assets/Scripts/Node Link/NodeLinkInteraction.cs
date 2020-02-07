@@ -197,7 +197,6 @@ namespace EcoBuilder.NodeLink
             // StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
             // StartCoroutine(TweenPan(defaultNodelinkPos, 2));
 
-            Instantiate(confettiPrefab, transform);
             focusState = FocusState.Frozen;
         }
 

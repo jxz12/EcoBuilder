@@ -46,7 +46,7 @@ namespace EcoBuilder
             {
                 if (SceneManager.GetSceneAt(i).name == "Play")
                 {
-                    PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Levels.Level>("Assets/Prefabs/Levels/Level.prefab"));
+                    PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab"));
                     PlayedLevel.Play(); // should cause replay behaviour
                     break;
                 }
@@ -72,8 +72,8 @@ namespace EcoBuilder
         // functions to persist levels through scenes //
         ////////////////////////////////////////////////
 
-        public Levels.Level PlayedLevel { get; private set; } = null;
-        public void LoadLevelScene(Levels.Level toPlay)
+        public Level PlayedLevel { get; private set; } = null;
+        public void LoadLevelScene(Level toPlay)
         {
             if (PlayedLevel != null) // if playing already
             {
@@ -148,31 +148,6 @@ namespace EcoBuilder
         // showing help messages
 
         [SerializeField] UI.Help helpText;
-        public void SetHelpText(string message, bool show=false, float delay=0, bool resetPosition=false)
-        {
-            if (!show) {
-                if (delay > 0) {
-                    helpText.Show(false);
-                }
-                helpText.DelayThenSet(delay, message);
-            } else {
-                if (delay <= 0) {
-                    helpText.Show(false);
-                }
-                helpText.DelayThenSetAndShow(delay, message);
-            }
-
-            if (resetPosition)
-            {
-                helpText.SetSide(false);
-                helpText.SetPivotHeight(1);
-                helpText.SetAnchorHeight(.9f);
-                helpText.SetPixelWidth(400);
-            }
-        }
-        public void HideHelpText()
-        {
-            helpText.Show(false);
-        }
+        public UI.Help HelpText { get { return helpText; } }
     }
 }

@@ -54,7 +54,7 @@ namespace EcoBuilder.UI
         }
         public void SetAnchorHeight(float normalisedHeight, bool damp=true) // 0-1 range
         {
-            targetAnchor = new Vector2(rt.anchorMin.x, normalisedHeight);
+            targetAnchor = new Vector2(targetAnchor.x, normalisedHeight);
             if (!damp) {
                 rt.anchorMin = rt.anchorMin = targetAnchor;
             }
@@ -74,14 +74,14 @@ namespace EcoBuilder.UI
             }
             if (left)
             {
-                targetAnchor = new Vector2(0, rt.anchorMin.y);
+                targetAnchor = new Vector2(0, targetAnchor.y);
                 transform.localScale = new Vector3(-1,1,1);
                 message.transform.localScale = new Vector3(-1,1,1);
                 hideButton.transform.localScale = new Vector3(-1,1,1);
             }
             else
             {
-                targetAnchor = new Vector2(1, rt.anchorMin.y);
+                targetAnchor = new Vector2(1, targetAnchor.y);
                 transform.localScale = new Vector3(1,1,1);
                 message.transform.localScale = new Vector3(1,1,1);
                 hideButton.transform.localScale = new Vector3(1,1,1);
@@ -91,11 +91,13 @@ namespace EcoBuilder.UI
                 rt.anchorMin = rt.anchorMax = targetAnchor;
             }
         }
-        public void Show(bool showing)
-        {
-            // only toggle if needed
-            if (targetPivot.x==0 && showing || targetPivot.x==1 && !showing) {
-                Toggle(); 
+        public bool Showing {
+            get { return targetPivot.x==1; }
+            set {
+                // only toggle if needed
+                if (!Showing && value || Showing && !value) {
+                    Toggle(); 
+                }
             }
         }
         public void Toggle()
@@ -110,11 +112,9 @@ namespace EcoBuilder.UI
             }
         }
 
-
-        public void SetText(string toSet)
-        {
-            message.text = toSet;
-            ForceUpdateLayout();
+        public string Message {
+            get { return message.text; }
+            set { message.text = value; ForceUpdateLayout(); }
         }
         public void DelayThenSet(float delay, string delayedMessage)
         {
@@ -124,9 +124,9 @@ namespace EcoBuilder.UI
         IEnumerator DelayThenSetRoutine(float delay, string delayedMessage)
         {
             yield return new WaitForSeconds(delay);
-            SetText(delayedMessage);
+            Message = delayedMessage;
         }
-        public void DelayThenSetAndShow(float delay, string delayedMessage)
+        public void DelayThenShow(float delay, string delayedMessage)
         {
             StopAllCoroutines();
             StartCoroutine(DelayThenShowRoutine(delay, delayedMessage));
@@ -134,13 +134,20 @@ namespace EcoBuilder.UI
         IEnumerator DelayThenShowRoutine(float delay, string delayedMessage)
         {
             yield return new WaitForSeconds(delay);
-            SetText(delayedMessage);
-            Show(true);
+            Message = delayedMessage;
+            Showing = true;
+        }
+        public void ResetPosition()
+        {
+            SetSide(false);
+            SetPivotHeight(1);
+            SetAnchorHeight(.9f);
+            SetPixelWidth(400);
         }
 
         void UserShow(bool showing) // to attach to button
         {
-            Show(showing);
+            Showing = showing;
             OnUserShown?.Invoke();
         }
         [SerializeField] float smoothTime = .15f;
@@ -148,6 +155,8 @@ namespace EcoBuilder.UI
         {
             rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);
             rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
+
+            print(targetAnchor);
 
             width = Mathf.SmoothDamp(width, targetWidth, ref widthocity, smoothTime);
             rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);

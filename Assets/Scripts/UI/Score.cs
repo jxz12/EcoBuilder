@@ -26,11 +26,13 @@ namespace EcoBuilder.UI
             feasibleScoreCol = scoreText.color;
             scoreText.color = infeasibleScoreCol;
         }
-        public void SetStarThresholds(int target1, int target2)
+        public void SetStarThresholds(Level.ScoreMetric metric, int target1, int target2)
         {
+            print("TODO: this");
             this.target1 = target1;
             this.target2 = target2;
         }
+
         public void Finish()
         {
             if (HighestStars < 1 || HighestStars > 3) {
@@ -121,11 +123,6 @@ namespace EcoBuilder.UI
             star1.SetBool("Filled", HighestStars>=1);
             star2.SetBool("Filled", HighestStars>=2);
             star3.SetBool("Filled", HighestStars==3);
-        }
-        public void UseConstraintAsScoreInstead(string constraintName)
-        {
-            constraints.GetValue(constraintName);
-            print("TODO: this");
         }
 
         bool starsDisabled;

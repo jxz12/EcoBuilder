@@ -10336,25 +10336,17 @@ MonoBehaviour:
   accountStatus: {fileID: 1102366218}
   leaderboardPrefab: {fileID: 4572556234428649128, guid: 735adf69c2a9f44829ae10f108922aba,
     type: 3}
-  learningLevelPrefabs:
-  - {fileID: 1744894759364357133, guid: c2e2e7070b5713f478704ab422e6101e, type: 3}
-  - {fileID: 7136175409206580721, guid: c52b7a4c873c8ca489c2166a6679fb81, type: 3}
-  - {fileID: 6359706992194124060, guid: e54ba88d3a339a64ea6ad3a506d42e4e, type: 3}
-  - {fileID: 8665813143970102708, guid: acbf7472b3cb4824d983e588660fcb1a, type: 3}
-  - {fileID: 1800796938296571500, guid: 145f5128eb4d03b4c8e8ea330b9b94d8, type: 3}
-  - {fileID: 6446573934160891793, guid: 5c984fcf41280d9418405047b6219966, type: 3}
-  - {fileID: 4638591380250888387, guid: 3ad9bc409dd604f4281cba80dbfa1967, type: 3}
-  - {fileID: 9017930297857637813, guid: c0849be9243494d4aa6f26c03ede3927, type: 3}
-  - {fileID: 4757400319804186248, guid: b33185e6d510747a1bd22fa74a562b6f, type: 3}
-  researchLevelPrefabs:
-  - {fileID: 2385526102536167791, guid: c01d5755e33f04300a832e0278947112, type: 3}
-  - {fileID: 7969209065543887064, guid: 490bc508d5df445ceb2542cffa8e5109, type: 3}
-  - {fileID: 6080721006150228512, guid: 29fd0b2bf413945489ce00470b06feb9, type: 3}
+  firstLearningLevel: {fileID: 1744894759364357133, guid: c2e2e7070b5713f478704ab422e6101e,
+    type: 3}
+  firstResearchLevel: {fileID: 7864806509372148198, guid: 333e9416c36f6cf4e9bd7be6e915f335,
+    type: 3}
   logo: {fileID: 557722612}
   splashHelp: Welcome to EcoBuilder! This help message will be available throughout
     the game to guide you through your journey. If it goes away, simply tap the green
     arrow to the left of this text. Settings can be reached by tapping the gear button
     at the bottom of the screen.
+  lockHelp: The Research World contains more difficult levels designed to be a real
+    challenge! It is accessible once you complete all of the levels in Learning World.
 --- !u!95 &1876726436
 Animator:
   serializedVersion: 3
@@ -10789,7 +10781,7 @@ GameObject:
   - component: {fileID: 2089097228}
   - component: {fileID: 2089097230}
   - component: {fileID: 2089097229}
-  - component: {fileID: 2089097231}
+  - component: {fileID: 2089097232}
   m_Layer: 0
   m_Name: Lock
   m_TagString: Untagged
@@ -10852,7 +10844,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2089097227}
   m_CullTransparentMesh: 0
---- !u!114 &2089097231
+--- !u!114 &2089097232
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10861,44 +10853,51 @@ MonoBehaviour:
   m_GameObject: {fileID: 2089097227}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Delegates:
-  - eventID: 2
-    callback:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1876726435}
-          m_MethodName: ShowHelp
-          m_Mode: 5
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0.15
-            m_StringArgument: The Research World contains more difficult levels designed
-              to be a real challenge! It is accessible once you complete all of the
-              levels in Learning World.
-            m_BoolArgument: 0
-          m_CallState: 2
-  - eventID: 3
-    callback:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1876726435}
-          m_MethodName: ResetHelpToSplashDelay
-          m_Mode: 4
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0.15
-            m_StringArgument: The Research World contains more difficult levels designed
-              to be a real challenge! It is accessible once you complete all of the
-              levels in Learning World.
-            m_BoolArgument: 0
-          m_CallState: 2
+  m_Navigation:
+    m_Mode: 3
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 2089097229}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1876726435}
+        m_MethodName: ToggleLockHelp
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &2094718329
 GameObject:
   m_ObjectHideFlags: 0
