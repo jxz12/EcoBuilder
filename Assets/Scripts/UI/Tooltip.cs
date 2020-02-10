@@ -15,10 +15,11 @@ namespace EcoBuilder.UI
 
         void Update()
         {
-            if (visible)
+            if (visible) {
                 transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, scaleLerp);
-            else
+            } else {
                 transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, scaleLerp);
+            }
         }
         public void SetPos(Vector2 screenPos)
         {

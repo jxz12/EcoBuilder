@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace EcoBuilder.UI
@@ -135,15 +136,13 @@ namespace EcoBuilder.UI
                         }
                     }
                 }
-                if (availablePairs.Count > 0)
-                {
-                    UnityEngine.Random.InitState(incubated.RandomSeed);
-                    var chosenPair = availablePairs[UnityEngine.Random.Range(0, availablePairs.Count)];
-                    incubated.BodySize = chosenPair.Item1;
-                    incubated.Greediness = chosenPair.Item2;
-                } else {
-                    throw new Exception("Somehow filled up all niches! Or both traits have fixed initial sizes but conflicts aren't allowed.");
-                }
+                Assert.IsTrue(availablePairs.Count > 0, "Somehow filled up all niches! Or both traits have fixed initial sizes but conflicts aren't allowed.");
+
+                UnityEngine.Random.InitState(incubated.RandomSeed);
+                var chosenPair = availablePairs[UnityEngine.Random.Range(0, availablePairs.Count)];
+                incubated.BodySize = chosenPair.Item1;
+                incubated.Greediness = chosenPair.Item2;
+
                 sizeTrait.SetValueWithoutCallback(incubated.BodySize);
                 greedTrait.SetValueWithoutCallback(incubated.Greediness);
             }
@@ -189,6 +188,8 @@ namespace EcoBuilder.UI
         }
         void RefreshOrRemove() // only called on inspected or incubated
         {
+            Assert.IsTrue(incubated!=null || inspected!=null, "nothing incubated or inspected");
+
             if (incubated != null)
             {
                 RandomiseIncubatedTraits();
@@ -200,8 +201,7 @@ namespace EcoBuilder.UI
             }
             else if (inspected != null)
             {
-                if (!inspected.Removable)
-                    throw new Exception("inspected not removable");
+                Assert.IsTrue(inspected.Removable, $"trying to remove {inspected.Idx} but not removable");
 
                 OnUserDespawned?.Invoke(inspected.Idx);
                 Bury(inspected);
@@ -209,10 +209,6 @@ namespace EcoBuilder.UI
                 // nodelink will unfocus in the process so don't need these
                 // inspected = null;
                 // GetComponent<Animator>().SetTrigger("Uninspect");
-            }
-            else
-            {
-                throw new Exception("nothing incubated or inspected");
             }
         }
         void SetNameFromInputField(string newName)
@@ -261,11 +257,10 @@ namespace EcoBuilder.UI
         int nextIdx=0;
         public void IncubateNew(bool isProducer)
         {
+            Assert.IsNull(incubated, "already incubating");
+
             if (inspected != null) {
                 inspected = null;
-            }
-            if (incubated != null) {
-                throw new Exception("already incubating");
             }
             while (spawnedSpecies.ContainsKey(nextIdx) || graveyard.ContainsKey(nextIdx)) {
                 nextIdx += 1;
@@ -290,9 +285,8 @@ namespace EcoBuilder.UI
         }
         public void SpawnIncubated()
         {
-            if (incubated == null) {
-                throw new Exception("nothing incubated");
-            }
+            Assert.IsNotNull(incubated, "nothing incubated to spawn");
+
             SpawnWithNonUserEvents(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
@@ -353,18 +347,11 @@ namespace EcoBuilder.UI
         // for loading from level
         public void SpawnNotIncubated(int idx, bool isProducer, float size, float greed, int randomSeed, bool editable)
         {
-            if (spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx)) {
-                throw new Exception("idx already added");
-            }
-            if (inspected != null) {
-                throw new Exception("somehow inspecting??");
-            }
-            if (size < 0 || size > 1) {
-                throw new Exception("size not in bounds");
-            }
-            if (greed < 0 || greed > 1) {
-                throw new Exception("greed not in bounds");
-            }
+            Assert.IsFalse(spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx), "idx already added");
+            Assert.IsNull(inspected, "somehow inspecting??");
+            Assert.IsFalse(size < 0 || size > 1, "size not in bounds");
+            Assert.IsFalse(greed < 0 || greed > 1, "greed not in bounds");
+
             var toSpawn = new Species(idx, isProducer, randomSeed);
             toSpawn.BodySize = sizeTrait.SetValueWithoutCallback(size);
             toSpawn.Greediness = greedTrait.SetValueWithoutCallback(greed);
@@ -381,9 +368,8 @@ namespace EcoBuilder.UI
         // for un/redo
         public void Despawn(int idx)
         {
-            if (!spawnedSpecies.ContainsKey(idx)) {
-                throw new Exception("idx not spawned");
-            }
+            Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");
+
             if (spawnedSpecies[idx] == inspected)
             {
                 GetComponent<Animator>().SetTrigger("Uninspect");
@@ -393,9 +379,8 @@ namespace EcoBuilder.UI
         }
         public void DespawnCompletely(int idx)
         {
-            if (!graveyard.ContainsKey(idx)) {
-                throw new Exception("idx not in graveyard");
-            }
+            Assert.IsTrue(graveyard.ContainsKey(idx), "idx not in graveyard");
+
             if (graveyard[idx].GObject != null) { // this check is probably not necessary, but why not
                 Destroy(graveyard[idx].GObject);
             }
@@ -403,9 +388,8 @@ namespace EcoBuilder.UI
         }
         public void Respawn(int idx)
         {
-            if (!graveyard.ContainsKey(idx)) {
-                throw new Exception("idx not in graveyard");
-            }
+            Assert.IsTrue(graveyard.ContainsKey(idx), "idx not in graveyard");
+
             graveyard[idx].GObject.SetActive(true);
             SpawnWithNonUserEvents(graveyard[idx]);
             graveyard.Remove(idx);
@@ -424,9 +408,8 @@ namespace EcoBuilder.UI
         // for spawning from level
         public void SetIsProducer(int idx, bool isProducer)
         {
-            if (!spawnedSpecies.ContainsKey(idx)) {
-                throw new Exception("idx not spawned");
-            }
+            Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");
+
             Species s = spawnedSpecies[idx];
             s.IsProducer = isProducer;
             OnIsProducerSet?.Invoke(idx, isProducer);
@@ -434,9 +417,8 @@ namespace EcoBuilder.UI
         }
         public void SetSize(int idx, float size)
         {
-            if (!spawnedSpecies.ContainsKey(idx)) {
-                throw new Exception("idx not spawned");
-            }
+            Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");
+
             Species s = spawnedSpecies[idx];
             s.BodySize = size;
             OnSizeSet?.Invoke(idx, size);
@@ -450,9 +432,8 @@ namespace EcoBuilder.UI
         }
         public void SetGreed(int idx, float greed)
         {
-            if (!spawnedSpecies.ContainsKey(idx)) {
-                throw new Exception("idx not spawned");
-            }
+            Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");
+
             Species s = spawnedSpecies[idx];
             s.Greediness = greed;
             OnGreedSet?.Invoke(idx, greed);

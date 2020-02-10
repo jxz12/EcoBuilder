@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace EcoBuilder.UI
@@ -18,7 +18,6 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite targetSprite1, targetSprite2;
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
 
-
         int target1, target2;
         [SerializeField] Color feasibleScoreCol, infeasibleScoreCol;
         void Awake()
@@ -28,16 +27,14 @@ namespace EcoBuilder.UI
         }
         public void SetStarThresholds(Level.ScoreMetric metric, int target1, int target2)
         {
-            print("TODO: this");
+            print("TODO: different metrics");
             this.target1 = target1;
             this.target2 = target2;
         }
 
         public void Finish()
         {
-            if (HighestStars < 1 || HighestStars > 3) {
-                throw new Exception("cannot pass with less than 0 or more than 3 stars");
-            }
+            Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
             GetComponent<Animator>().SetBool("Visible", false);
             star1.SetTrigger("Confetti");
@@ -76,13 +73,7 @@ namespace EcoBuilder.UI
                 return;
             }
             int newNumStars = 0;
-            if (!constraints.Disjoint &&
-                constraints.Feasible &&
-                constraints.IsSatisfied("Leaf") &&
-                constraints.IsSatisfied("Paw") &&
-                constraints.IsSatisfied("Count") &&
-                constraints.IsSatisfied("Chain") &&
-                constraints.IsSatisfied("Loop"))
+            if (constraints.AllSatisfied())
             {
                 newNumStars += 1;
 

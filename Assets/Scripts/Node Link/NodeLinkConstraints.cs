@@ -1,16 +1,14 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-
-// for heavy calculations
-using System.Threading.Tasks;
+using SparseMatrix;
 
 namespace EcoBuilder.NodeLink
 {
 	public partial class NodeLink
 	{
-        public bool Disjoint { get; private set; } = false;
+        public int NumComponents { get; private set; } = 0;
         public int NumEdges { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
 
@@ -19,209 +17,284 @@ namespace EcoBuilder.NodeLink
         private List<int> LongestLoop { get; set; }
         public int MaxLoop { get { return LongestLoop==null? 0 : LongestLoop.Count; } }
 
-        public bool IsCalculatingAsync { get; private set; } = false;
-        public async void ConstraintsAsync()
+
+        //////////////////////////////////////////////////////////////
+        // to separate components in layout and calculate disjointness
+
+        // returns number of connected components (undirected)
+        private static Dictionary<int, int> components = new Dictionary<int, int>();
+        private int SeparateComponents()
         {
-            IsCalculatingAsync = true;
-
-            RefreshTrophicAndFindChain();
-            await Task.Run(()=> LayoutSGD());
-
-            var inout = JohnsonInOut(); // not async to ensure synchronize state
-            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2));
-
-            IsCalculatingAsync = false;
-            OnConstraints.Invoke();
-        }
-        public void ConstraintsSync()
-        {
-            RefreshTrophicAndFindChain();
-            LayoutSGD();
-
-            var inout = JohnsonInOut();
-            LongestLoop = JohnsonsAlgorithm(nodes.Indices, inout.Item1, inout.Item2);
-
-            OnConstraints.Invoke();
-        }
-
-
-        ///////////////////////////////////////////////////////
-        // for disjoint, chain length, invalidness
-
-        bool CheckDisjoint()
-        {
-            if (nodes.Count == 0) {
-                return false;
-            }
-            // pick a random vertex
-            int source = nodes.Indices.First();
+            components.Clear();
             var q = new Queue<int>();
-            var visited = new HashSet<int>();
-
-            q.Enqueue(source);
-            visited.Add(source);
-            while (q.Count > 0)
+            int ncc = 0;
+            foreach (int source in nodes.Indices)
             {
-                int current = q.Dequeue();
-                foreach (int next in adjacency[current])
+                if (components.ContainsKey(source)) {
+                    continue;
+                }
+                components[source] = ncc;
+                q.Clear();
+                
+                q.Enqueue(source);
+                while (q.Count > 0)
                 {
-                    if (!visited.Contains(next))
+                    int prev = q.Dequeue();
+                    foreach (int next in undirected[prev])
                     {
-                        q.Enqueue(next);
-                        visited.Add(next);
+                        if (!components.ContainsKey(next))
+                        {
+                            Assert.IsFalse(components.ContainsKey(next), $"{next} already in explored component");
+                            components[next] = ncc;
+                            q.Enqueue(next);
+                        }
                     }
                 }
+                ncc += 1;
             }
-            if (visited.Count != nodes.Count) {
-                return true;
-            } else {
-                return false;
+            if (ncc <= 1) { // don't change layout if ncc is 0 or 1
+                return ncc;
             }
+
+            // min and max for each component
+            var ranges = new float[ncc, 2];
+            for (int i=0; i<ncc; i++)
+            {
+                ranges[i,0] = float.MaxValue;
+                ranges[i,1] = float.MinValue;
+            }
+            foreach (int idx in nodes.Indices)
+            {
+                int cc = components[idx];
+                var pos = nodes[idx].StressPos;
+                ranges[cc,0] = Mathf.Min(ranges[cc,0], pos.x);
+                ranges[cc,1] = Mathf.Max(ranges[cc,1], pos.x);
+            }
+            var offsets = new float[ncc];
+            offsets[0] = -ranges[0,0]; // move first CC to start at x=0
+            float cumul = ranges[0,1] - ranges[0,0]; // end of CC range
+            for (int i=1; i<ncc; i++)
+            {
+                offsets[i] = cumul - ranges[i,0] + 1;
+                cumul += ranges[i,1] - ranges[i,0] + 1;
+            }
+
+            // place in order on x axis
+            foreach (int idx in nodes.Indices)
+            {
+                int cc = components[idx];
+                Vector2 pos = nodes[idx].StressPos;
+                nodes[idx].StressPos = new Vector2(pos.x+offsets[cc], pos.y);
+            }
+            return ncc;
         }
 
-        private void RefreshTrophicAndFindChain()
-        {
-            Disjoint = CheckDisjoint();
-            NumEdges = links.Count();
+        ///////////////////////////////////////////////////////////////////////
+        // for trophic level calculation (and chain length as a consequence)
 
+        private int RefreshTrophicAndFindChain(int nIterGS=0)
+        {
             HashSet<int> basal = BuildTrophicEquations();
+            for (int i=0; i<nIterGS; i++) {
+                TrophicGaussSeidel();
+            }
+
             var heights = HeightBFS(basal);
             LaplacianDetZero = (heights.Count != nodes.Count);
 
+            print("TODO: reorder superfocus");
             // if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
             //     SuperFocus(focusedNode.Idx);
 
-            MaxChain = 0;
+            int maxChain = 0;
             foreach (int height in heights.Values) {
-                MaxChain = Math.Max(height, MaxChain);
+                maxChain = Math.Max(height, maxChain);
             }
             TallestNodes = new List<int>();
             foreach (int idx in heights.Keys) {
-                if (heights[idx] == MaxChain) {
+                if (heights[idx] == maxChain) {
                     TallestNodes.Add(idx);
                 }
             }
+            return maxChain;
         }
 
+        public bool ConstrainTrophic { private get; set; }
+        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector here
+        private SparseVector<float> trophicLevels = new SparseVector<float>();
+
+        // update the system of linear equations (Laplacian)
+        // return set of roots to the tree
+        private HashSet<int> BuildTrophicEquations()
+        {
+            foreach (int i in nodes.Indices) {
+                trophicA[i] = 0;
+            }
+            foreach (var ij in links.IndexPairs)
+            {
+                int res=ij.Item1, con=ij.Item2;
+                trophicA[con] += 1f;
+            }
+
+            var basal = new HashSet<int>();
+            foreach (int i in nodes.Indices)
+            {
+                if (trophicA[i] != 0) {
+                    trophicA[i] = -1f / trophicA[i]; // ensures diagonal dominance
+                } else {
+                    basal.Add(i);
+                }
+            }
+            return basal;
+        }
+
+        // tightly optimised gauss-seidel iteration because of the simplicity of the laplacian
+        void TrophicGaussSeidel()
+        {
+            SparseVector<float> temp = new SparseVector<float>();
+            foreach (var ij in links.IndexPairs)
+            {
+                int res = ij.Item1, con = ij.Item2;
+                temp[con] += trophicA[con] * trophicLevels[res];
+            }
+            float maxTrophic = 0;
+            foreach (int i in nodes.Indices)
+            {
+                trophicLevels[i] = (1 - temp[i]);
+                maxTrophic = Mathf.Max(trophicLevels[i], maxTrophic);
+            }
+            float trophicScaling = 1;
+            if (maxTrophic > MaxChain+1)
+            {
+                trophicScaling = (MaxChain+1) / maxTrophic;
+            }
+            foreach (Node no in nodes)
+            {
+                Vector2 newPos = no.StressPos;
+                // newPos.y = Mathf.Lerp(newPos.y, trophicScaling * (trophicLevels[no.Idx]-1), .1f);
+                newPos.y = trophicScaling * (trophicLevels[no.Idx]-1);
+                no.StressPos = newPos;
+            }
+        }
+
+        // different BFS because it is directed
         private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
         {
-            var visited = new Dictionary<int, int>();
+            var d = new Dictionary<int, int>();
             var q = new Queue<int>();
             foreach (int source in sources)
             {
                 q.Enqueue(source);
-                visited[source] = 0;
+                d[source] = 0;
             }
             while (q.Count > 0)
             {
-                int current = q.Dequeue();
-                foreach (int next in links.GetColumnIndicesInRow(current))
+                int prev = q.Dequeue();
+                foreach (int next in links.GetColumnIndicesInRow(prev))
                 {
-                    if (!visited.ContainsKey(next))
+                    if (!d.ContainsKey(next))
                     {
                         q.Enqueue(next);
-                        visited[next] = visited[current] + 1;
+                        d[next] = d[prev] + 1;
                     }
+                    // int d_prev;
+                    // if (!d.TryGetValue(next, out d_prev))
+                    // {
+                    //     d[next] = d_prev + 1;
+                    //     q.Enqueue(next);
+                    // }
                 }
             }
-            return visited;
+            return d;
         }
-
-
-        ////////////////////////
-        // for basal/apex
-
-        HashSet<int> GetSources()
-        {
-            var sources = new HashSet<int>();
-            foreach (Node no in nodes) {
-                if (links.GetColumnDataCount(no.Idx) == 0) { // slow, but WHATEVER
-                    sources.Add(no.Idx);
-                }
-            }
-            return sources;
-        }
-        HashSet<int> GetSinks()
-        {
-            var sinks = new HashSet<int>();
-            foreach (Node no in nodes) {
-                if (links.GetRowDataCount(no.Idx) == 0) {
-                    sinks.Add(no.Idx);
-                }
-            }
-            return sinks;
-        }
-
 
         ///////////////////////////////////
         // loops with Johnson's algorithm
 
         // ignores 'graveyard' species
-        Tuple<Dictionary<int, HashSet<int>>, Dictionary<int, HashSet<int>>> JohnsonInOut()
+        
+        static Dictionary<int, HashSet<int>> johnsonIncoming = new Dictionary<int, HashSet<int>>();
+        static Dictionary<int, HashSet<int>> johnsonOutgoing = new Dictionary<int, HashSet<int>>();
+        static void JohnsonInOut(IEnumerable<int> indices, IEnumerable<Tuple<int, int>> indexPairs)
         {
-            var incomingCopy = new Dictionary<int, HashSet<int>>();
-            var outgoingCopy = new Dictionary<int, HashSet<int>>();
-            foreach (int i in nodes.Indices)
+            // a function to initialise outgoing and incoming edges for johnson's algorithm below
+            var oldIndices = new HashSet<int>(johnsonIncoming.Keys);
+            foreach (int i in indices)
             {
-                incomingCopy[i] = new HashSet<int>();
-                outgoingCopy[i] = new HashSet<int>();
+                HashSet<int> incoming, outgoing;
+                johnsonIncoming.TryGetValue(i, out incoming);
+                johnsonOutgoing.TryGetValue(i, out outgoing);
+                if (incoming == null) {
+                    johnsonIncoming[i] = new HashSet<int>();
+                } else {
+                    incoming.Clear();
+                }
+                if (outgoing == null) {
+                    johnsonOutgoing[i] = new HashSet<int>();
+                } else {
+                    outgoing.Clear();
+                }
+                oldIndices.Remove(i);
             }
-            foreach (var ij in links.IndexPairs)
+            // remove 'leaked' indices in case node is removed
+            foreach (int i in oldIndices)
+            {
+                johnsonIncoming.Remove(i);
+                johnsonOutgoing.Remove(i);
+            }
+            foreach (var ij in indexPairs)
             {
                 int i=ij.Item1, j=ij.Item2;
-                incomingCopy[j].Add(i);
-                outgoingCopy[i].Add(j);
+                johnsonIncoming[j].Add(i);
+                johnsonOutgoing[i].Add(j);
             }
-            return Tuple.Create(incomingCopy, outgoingCopy);
         }
 
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
         // can be very slow, so run async if possible
         static List<int> johnsonLongestLoop;
-        static List<int> JohnsonsAlgorithm(IEnumerable<int> indices, Dictionary<int, HashSet<int>> incoming, Dictionary<int, HashSet<int>> outgoing)
+        static List<int> JohnsonsAlgorithm(IEnumerable<int> indices)
         {
-            johnsonLongestLoop = new List<int>(); // empty list is no loop
+            var johnsonLongestLoop = new List<int>(); // empty list is no loop
             foreach (int idx in indices)
             {
-                // if the strongly connected component is bigger than just the vertex
-                var scc = StronglyConnectedComponent(idx, outgoing, incoming);
-
-                // JohnsonSingleSource(idx, outgoing);
-                JohnsonSingleSource(idx, scc);
+                // ensure the strongly connected component is bigger than just the vertex
+                JohnsonSCC(idx);
+                JohnsonSingleSource(idx);
 
                 // remove node from graph
-                outgoing.Remove(idx);
-                incoming.Remove(idx);
-                foreach (var set in outgoing.Values) {
+                johnsonOutgoing.Remove(idx);
+                johnsonIncoming.Remove(idx);
+                foreach (var set in johnsonOutgoing.Values) {
                     set.Remove(idx);
                 }
-                foreach (var set in incoming.Values) {
+                foreach (var set in johnsonIncoming.Values) {
                     set.Remove(idx);
                 }
             }
-            return new List<int>(johnsonLongestLoop.AsEnumerable().Reverse());
+            return new List<int>(johnsonLongestLoop); // reverse order because of stack, but who cares
         }
         static Stack<int> johnsonStack = new Stack<int>();
         static HashSet<int> johnsonSet = new HashSet<int>();
         static Dictionary<int, HashSet<int>> johnsonMap = new Dictionary<int, HashSet<int>>();
-        static void JohnsonSingleSource(int source, Dictionary<int, HashSet<int>> outgoing)
+        static void JohnsonSingleSource(int source)
         {
             johnsonStack.Clear();
             johnsonSet.Clear();
             johnsonMap.Clear();
-			foreach (int i in outgoing.Keys) {
+			foreach (int i in johnsonOutgoing.Keys) {
 				johnsonMap[i] = new HashSet<int>();
             }
 
-            JohnsonDFS(source, source, outgoing);
+            JohnsonDFS(source, source);
         }
-        static bool JohnsonDFS(int source, int current, Dictionary<int, HashSet<int>> outgoing)
+        static bool JohnsonDFS(int source, int current)
         {
             bool foundCycle = false;
             johnsonStack.Push(current);
             johnsonSet.Add(current);
 
-            foreach (int next in outgoing[current])
+            foreach (int next in johnsonOutgoing[current])
             {
                 if (next == source) // found cycle, so see if it is longest
                 {
@@ -233,7 +306,7 @@ namespace EcoBuilder.NodeLink
                 else if (!johnsonSet.Contains(next))
                 {
                     // if a cycle is found in any descendants, then no need to search again
-                    foundCycle |= JohnsonDFS(source, next, outgoing);
+                    foundCycle |= JohnsonDFS(source, next);
                 }
             }
             // if found a path to source, then remove from set and (recursively) from map
@@ -241,7 +314,7 @@ namespace EcoBuilder.NodeLink
                 JohnsonUnblock(current);
             } else {
                 // else do not unblock, add to map so that it will be unblocked in the future
-                foreach (int next in outgoing[current]) {
+                foreach (int next in johnsonOutgoing[current]) {
                     johnsonMap[next].Add(current);
                 }
             }
@@ -262,24 +335,24 @@ namespace EcoBuilder.NodeLink
 
 
         // returns the strongly connected component including idx
-        static Dictionary<int, HashSet<int>> StronglyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing, Dictionary<int, HashSet<int>> incoming)
+        static Dictionary<int, HashSet<int>> johnsonSCC = new Dictionary<int, HashSet<int>>();
+        static void JohnsonSCC(int idx)
         {
-            var component1 = WeaklyConnectedComponent(idx, outgoing);
-            var component2 = WeaklyConnectedComponent(idx, incoming);
+            var component1 = WeaklyConnectedComponent(idx, johnsonOutgoing);
+            var component2 = WeaklyConnectedComponent(idx, johnsonIncoming);
             component1.IntersectWith(component2);
 
-            var scc = new Dictionary<int, HashSet<int>>();
+            johnsonSCC.Clear();
             foreach (int i in component1)
             {
-                scc[i] = new HashSet<int>();
-                foreach (int j in outgoing[i])
+                johnsonSCC[i] = new HashSet<int>();
+                foreach (int j in johnsonOutgoing[i])
                 {
                     if (component1.Contains(j)) {
-                        scc[i].Add(j);
+                        johnsonSCC[i].Add(j);
                     }
                 }
             }
-            return scc;
         }
         static HashSet<int> WeaklyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing)
         {

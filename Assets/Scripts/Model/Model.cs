@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 // for heavy calculations
 using System.Threading.Tasks;
 
@@ -96,17 +98,12 @@ namespace EcoBuilder.Model
         // MAKES THINGS MASS-SPECIFIC
         double CalculateForaging(Species resource, Species consumer)
         {
-            if (!resource.IsProducer && !consumer.IsProducer)
-            {
+            Assert.IsFalse(consumer.IsProducer, "producers cannot have prey");
+
+            if (!resource.IsProducer) {
                 return ActiveCapture(resource.BodySize, consumer.BodySize) / consumer.BodySize;
-            }
-            else if (resource.IsProducer && !consumer.IsProducer)
-            {
+            } else {
                 return Grazing(resource.BodySize, consumer.BodySize) / consumer.BodySize;
-            }
-            else
-            {
-                throw new Exception("impossible foraging");
             }
         }
         
@@ -137,8 +134,7 @@ namespace EcoBuilder.Model
 
         public void AddSpecies(int idx)
         {
-            if (idxToSpecies.ContainsKey(idx))
-                throw new Exception("already contains idx " + idx);
+            Assert.IsFalse(idxToSpecies.ContainsKey(idx), "already contains idx " + idx);
 
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
@@ -148,8 +144,7 @@ namespace EcoBuilder.Model
         }
         public void RemoveSpecies(int idx)
         {
-            if (!idxToSpecies.ContainsKey(idx))
-                throw new Exception("does not contain idx " + idx);
+            Assert.IsTrue(idxToSpecies.ContainsKey(idx), "does not contain idx " + idx);
 
             Species toRemove = idxToSpecies[idx];
             simulation.RemoveSpecies(toRemove);

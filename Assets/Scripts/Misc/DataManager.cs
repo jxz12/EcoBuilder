@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 // for load/save local
 using System.Runtime.Serialization.Formatters.Binary;
@@ -36,7 +37,8 @@ namespace EcoBuilder
         [SerializeField] PlayerDetails player = null;
 
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
-        public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
+        // public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
+        public bool ConstrainTrophic { get { return false; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
@@ -287,9 +289,9 @@ namespace EcoBuilder
         public class LeaderboardCache
         {
             public int idx;
-            public int median;
-            public List<string> names;
-            public List<int> scores;
+            public int median = 0;
+            public List<string> names = new List<string>();
+            public List<int> scores = new List<int>();
             public LeaderboardCache(int idx) {
                 this.idx = idx;
             }
@@ -298,8 +300,7 @@ namespace EcoBuilder
         public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
         {
             var data = new Dictionary<string, string>() {
-                { "n_scores", n_scores.ToString() },
-                { "__address__", serverURL+"leaderboards.php" },
+                { "n_scores", n_scores.ToString() }, { "__address__", serverURL+"leaderboards.php" },
             };
             pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
         }
@@ -315,19 +316,14 @@ namespace EcoBuilder
 
                 var toCache = new LeaderboardCache(int.Parse(header[0]));
                 toCache.median = int.Parse(header[1]);
-                toCache.names = new List<string>();
-                toCache.scores = new List<int>();
-
                 for (int i=1; i<scores.Length; i++)
                 {
                     var score = scores[i].Split(':');
                     toCache.names.Add(score[0]);
                     toCache.scores.Add(int.Parse(score[1]));
                 }
+                Assert.IsFalse(cachedLeaderboards.ContainsKey(toCache.idx), "level index already cached");
 
-                if (cachedLeaderboards.ContainsKey(toCache.idx)) {
-                    throw new Exception("level index already cached");
-                }
                 cachedLeaderboards[toCache.idx] = toCache;
             }
         }
@@ -335,6 +331,10 @@ namespace EcoBuilder
         {
             if (cachedLeaderboards == null) {
                 return null;
+            }
+            if (!cachedLeaderboards.ContainsKey(level_idx))
+            {
+                cachedLeaderboards[level_idx] = new LeaderboardCache(level_idx);
             }
             return cachedLeaderboards[level_idx];
         }

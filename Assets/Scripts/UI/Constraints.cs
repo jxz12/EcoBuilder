@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System;
@@ -40,6 +41,20 @@ namespace EcoBuilder.UI
             // prevents scene getting dirty, Unity autolayout sucks
             GetComponent<VerticalLayoutGroup>().enabled = true;
             GetComponent<ContentSizeFitter>().enabled = true;
+        }
+        private bool IsSatisfied(string name)
+        {
+            return constraints[name].value >= constraints[name].threshold;
+        }
+        public bool AllSatisfied()
+        {
+            return !Disjoint &&
+                   Feasible &&
+                   IsSatisfied("Leaf") &&
+                   IsSatisfied("Paw") &&
+                   IsSatisfied("Count") &&
+                   IsSatisfied("Chain") &&
+                   IsSatisfied("Loop");
         }
 
         HashSet<int> producers = new HashSet<int>();
@@ -84,9 +99,9 @@ namespace EcoBuilder.UI
 
             }
         }
-        public void DisplayDisjoint(bool isDisjoint)
+        public void DisplayNumComponents(int numComponents)
         {
-            Disjoint = isDisjoint;
+            Disjoint = numComponents <= 1;
         }
         public void DisplayNumEdges(int numEdges)
         {
@@ -109,10 +124,6 @@ namespace EcoBuilder.UI
 			Stable = isStable;
         }
 
-        public bool IsSatisfied(string name)
-        {
-            return constraints[name].value >= constraints[name].threshold;
-        }
         public void Show(bool visible)
         {
             GetComponent<Animator>().SetBool("Visible", visible);
@@ -175,8 +186,8 @@ namespace EcoBuilder.UI
 
                 bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraints["Chain"].counter.rectTransform, Input.mousePosition);
                 bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraints["Loop"].counter.rectTransform, Input.mousePosition);
-                if (overChain && overLoop)
-                    throw new Exception("cannot highlight both chains and loops");
+
+                Assert.IsFalse(overChain && overLoop, "cannot highlight both chain and loop");
 
                 // always unhighlight first to clear highlighting
                 if (chainHovered && !overChain)
@@ -225,26 +236,27 @@ namespace EcoBuilder.UI
         public bool Disjoint { get; private set; }
         string Error()
         {
-            if (constraints["Paw"].value==0 && constraints["Leaf"].value==0)
+            if (constraints["Paw"].value==0 && constraints["Leaf"].value==0) {
                 return "Your ecosystem is empty.";
-            if (!IsSatisfied("Leaf"))
+            } else if (!IsSatisfied("Leaf")) {
                 return "You have not added enough plants.";
-            if (!IsSatisfied("Paw"))
+            } else if (!IsSatisfied("Paw")) {
                 return "You have not added enough animals.";
-            if (!Feasible)
+            } else if (!Feasible) {
                 return "At least one species is going extinct.";
-            if (Disjoint)
+            } else if (Disjoint) {
                 return "Your network is not connected.";
-            // if (!stable)
+            // } else if (!stable) {
             //     return "Your ecosystem is not stable.";
-            if (!IsSatisfied("Count"))
+            } else if (!IsSatisfied("Count")) {
                 return "You have not added enough links.";
-            if (!IsSatisfied("Chain"))
+            } else if (!IsSatisfied("Chain")) {
                 return "Your web is not tall enough.";
-            if (!IsSatisfied("Loop"))
+            } else if (!IsSatisfied("Loop")) {
                 return "You do not have a long enough loop.";
-            else
+            } else {
                 return "Your ecosystem has no errors!";
+            }
         }
     }
 }

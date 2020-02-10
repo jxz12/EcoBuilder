@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
@@ -11,22 +11,17 @@ namespace EcoBuilder
     public partial class GameManager : MonoBehaviour
     {
         // singleton pattern
-        private static GameManager gameManager;
+        private static GameManager _gameManager;
         public static GameManager Instance {
             get {
-                if (gameManager == null) {
-                    throw new Exception("No active GameManager");
-                }
-                return gameManager;
+                Assert.IsNotNull(_gameManager, "No active GameManager");
+                return _gameManager;
             }
         }
         void Awake()
         {
-            if (gameManager == null) {
-                gameManager = this;
-            } else if (gameManager != this) {
-                throw new Exception("More than one GameManager in scene");
-            }
+            Assert.IsNull(_gameManager, "More than one GameManager in scene");
+            _gameManager = this;
             if (SceneManager.sceneCount == 1) { // on startup
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }

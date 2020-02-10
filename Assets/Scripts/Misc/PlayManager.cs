@@ -43,13 +43,13 @@ namespace EcoBuilder
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
             inspector.OnUserSpawned += (i)=> nodelink.FocusNode(i);
-            nodelink.OnFocused     +=  (i)=> inspector.InspectSpecies(i);
+            nodelink.OnFocused +=      (i)=> inspector.InspectSpecies(i);
             nodelink.OnUnfocused +=     ()=> inspector.Uninspect();
             nodelink.OnEmptyTapped +=   ()=> inspector.Unincubate();
-            nodelink.OnConstraints +=   ()=> constraints.DisplayDisjoint(nodelink.Disjoint);
-            nodelink.OnConstraints +=   ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnConstraints +=   ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnConstraints +=   ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
+            nodelink.OnLayedOut +=      ()=> constraints.DisplayNumComponents(nodelink.NumComponents);
+            nodelink.OnLayedOut +=      ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
+            nodelink.OnLayedOut +=      ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
+            nodelink.OnLayedOut +=      ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
 
             model.OnEquilibrium += ()=> score.UpdateScore(model.GetNormalisedComplexity(), model.GetComplexityExplanation());
             model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> model.GetNormalisedAbundance(i));
@@ -65,18 +65,18 @@ namespace EcoBuilder
 
             constraints.OnProducersAvailable += (b)=> incubator.SetProducerAvailability(b);
             constraints.OnConsumersAvailable += (b)=> incubator.SetConsumerAvailability(b);
-            constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Cyan);
-            constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Cyan);
+            constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
+            constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
 
             inspector.OnSpawned +=       (i,g)=> atEquilibrium = false;
-            inspector.OnSpawned +=       (i,g)=> graphSolved = false;
+            inspector.OnSpawned +=       (i,g)=> graphDrawn = false;
             inspector.OnDespawned +=       (i)=> atEquilibrium = false;
-            inspector.OnDespawned +=       (i)=> graphSolved = false;
+            inspector.OnDespawned +=       (i)=> graphDrawn = false;
             inspector.OnIsProducerSet += (i,x)=> atEquilibrium = false;
             inspector.OnSizeSet +=       (i,x)=> atEquilibrium = false;
             inspector.OnGreedSet +=      (i,x)=> atEquilibrium = false;
             nodelink.OnLinked +=            ()=> atEquilibrium = false;
-            nodelink.OnLinked +=            ()=> graphSolved = false;
+            nodelink.OnLinked +=            ()=> graphDrawn = false;
 
             inspector.OnUserSpawned +=      (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
@@ -123,8 +123,8 @@ namespace EcoBuilder
             }
             for (int ij=0; ij<level.NumInitInteractions; ij++)
             {
-                int i = level.Resources[ij];
-                int j = level.Consumers[ij];
+                int i = level.Sources[ij];
+                int j = level.Targets[ij];
 
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
@@ -164,7 +164,8 @@ namespace EcoBuilder
         }
 
         // perform calculations if necessary
-        bool atEquilibrium = true, graphSolved = true;
+        // LateUpdate to ensure all changes are done
+        bool atEquilibrium = true, graphDrawn = true;
         void LateUpdate()
         {
             if (!atEquilibrium && !model.IsCalculatingAsync)
@@ -176,20 +177,20 @@ namespace EcoBuilder
                 model.EquilibriumAsync(nodelink.GetTargets);
 #endif
             }
-            if (!graphSolved && !nodelink.IsCalculatingAsync)
+            if (!graphDrawn && !nodelink.IsCalculatingAsync)
             {
-                graphSolved = true;
+                graphDrawn = true;
 // threads are not supported on webgl
 #if UNITY_WEBGL
-                nodelink.ConstraintsSync();
+                nodelink.LayoutSync();
 #else
-                nodelink.ConstraintsAsync();
+                nodelink.LayoutAsync();
                 #endif
             }
             // we want the score to update even if the model is calculating
             // but no events triggered in case of false positive due to being out of sync
             if (atEquilibrium && !model.IsCalculatingAsync &&
-                graphSolved && !nodelink.IsCalculatingAsync)
+                graphDrawn && !nodelink.IsCalculatingAsync)
             {
                 score.UpdateStars();
             }

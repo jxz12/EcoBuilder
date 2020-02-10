@@ -10,6 +10,7 @@ namespace EcoBuilder.UI
         Animator anim;
         void Awake()
         {
+            print("TODO: make this persistent across the whole game");
             anim = GetComponent<Animator>();
         }
 

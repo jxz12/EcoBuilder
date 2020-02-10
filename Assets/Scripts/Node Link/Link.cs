@@ -56,25 +56,16 @@ namespace EcoBuilder.NodeLink
         public void PopOutline()
         {
             outlines.Pop();
-            if (outlines.Count > 0)
+            if (outlines.Count > 0) {
                 outline.colour = outlines.Peek();
-            else
+            } else {
                 outline.enabled = false;
+            }
         }
         bool show = true;
         public void Show(bool showing=true)
         {
             show = showing;
-            if (showing)
-            {
-                // gameObject.SetActive(true);
-                // outline.enabled = true;
-            }
-            else
-            {
-                // gameObject.SetActive(false);
-                // outline.enabled = false;
-            }
         }
 
         private float tileOffset = 0;

@@ -141,7 +141,7 @@ namespace EcoBuilder.UI
         {
             SetSide(false);
             SetPivotHeight(1);
-            SetAnchorHeight(.9f);
+            SetAnchorHeight(.85f);
             SetPixelWidth(400);
         }
 
@@ -155,8 +155,6 @@ namespace EcoBuilder.UI
         {
             rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);
             rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
-
-            print(targetAnchor);
 
             width = Mathf.SmoothDamp(width, targetWidth, ref widthocity, smoothTime);
             rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
+using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 
 namespace EcoBuilder.UI
@@ -37,8 +37,7 @@ namespace EcoBuilder.UI
         }
         public IEnumerable<float> PossibleInitialValues {
             get {
-                if (!slider.wholeNumbers)
-                    throw new Exception("not whole numbers");
+                Assert.IsTrue(slider.wholeNumbers, "not whole numbers");
 
                 if (!RandomiseInitialValue)
                 {
@@ -71,8 +70,7 @@ namespace EcoBuilder.UI
         }
         public float SetValueWithoutCallback(float normalizedValue)
         {
-            if (dragging)
-                throw new Exception("should not be dragging while setting value externally");
+            Assert.IsFalse(dragging, "should not be dragging while setting value externally");
 
             slider.normalizedValue = normalizedValue;
             currentValue = slider.normalizedValue;
@@ -83,12 +81,11 @@ namespace EcoBuilder.UI
         float toSnapBack = -1;
         private void UserChangeValue()
         {
-            if (!dragging)
+            if (!dragging) {
                 return; 
-
+            }
             float newValue = slider.normalizedValue;
-            if (conflict >= 0)
-            {
+            if (conflict >= 0) {
                 OnUnconflicted?.Invoke(conflict);
             }
             conflict = FindConflict(newValue);

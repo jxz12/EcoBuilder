@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace EcoBuilder.UI
@@ -39,8 +40,7 @@ namespace EcoBuilder.UI
         IEnumerator WaitThenLand(float delay)
         {
             yield return new WaitForSeconds(delay);
-            if (heads == null)
-                throw new Exception("coin not flipped");
+            Assert.IsTrue(heads!=null, "coin not flipped");
 
             print("TODO: add a nice glowing effect for this");
             button.interactable = true;
@@ -52,8 +52,7 @@ namespace EcoBuilder.UI
         }
         void Exit()
         {
-            if (heads == null)
-                throw new Exception("coin not flipped");
+            Assert.IsTrue(heads!=null, "coin not flipped");
 
             button.interactable = false;
             button.onClick.RemoveListener(Exit);
@@ -92,11 +91,11 @@ namespace EcoBuilder.UI
             {
                 float t = (Time.time-startTime)/duration;
                 // quadratic ease in-out
-                if (t < .5f)
+                if (t < .5f) {
                     t = 2*t*t;
-                else
+                } else {
                     t = -1 + (4-2*t)*t;
-
+                }
                 toMove.anchoredPosition = Vector2.Lerp(startPos, endPos, t);
                 yield return null;
             }

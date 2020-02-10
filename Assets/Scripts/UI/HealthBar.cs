@@ -4,6 +4,6 @@ namespace EcoBuilder.UI
 {
     public class HealthBar : MonoBehaviour
     {
-
+        // TODO:
     }
 }

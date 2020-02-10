@@ -1686,8 +1686,7 @@ MonoBehaviour:
     type: 3}
   confettiPrefab: {fileID: 2354476291600607311, guid: b9e80853802ac784aa11b54c39acefdf,
     type: 3}
-  tutorialPrefab: {fileID: -6166227172242910326, guid: 31236afd9db66324386895d088cf380c,
-    type: 3}
+  tutorialPrefab: {fileID: 0}
 --- !u!95 &8998872397350653752
 Animator:
   serializedVersion: 3

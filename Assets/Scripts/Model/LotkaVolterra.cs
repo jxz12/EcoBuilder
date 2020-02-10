@@ -32,9 +32,9 @@ namespace EcoBuilder.Model
 
         public void AddSpecies(T species)
         {
-            if (externToIntern.ContainsKey(species))
+            if (externToIntern.ContainsKey(species)) {
                 throw new Exception("Ecosystem has that species already");
-
+            }
             int n = internToExtern.Count;
 
             externToIntern[species] = n;
@@ -43,17 +43,17 @@ namespace EcoBuilder.Model
         }
         public void RemoveSpecies(T species)
         {
-            if (!externToIntern.ContainsKey(species))
+            if (!externToIntern.ContainsKey(species)) {
                 throw new Exception("Ecosystem does not have that species");
-
+            }
             int n = internToExtern.Count;
 
             // O(n) but that's okay, as it shifts indices as required
             internToExtern.Remove(species);
             externToIntern.Clear();
-            for (int i=0; i<n-1; i++)
+            for (int i=0; i<n-1; i++) {
                 externToIntern[internToExtern[i]] = i;
-
+            }
             ResizeMatrices(n-1);
         }
 
@@ -74,11 +74,7 @@ namespace EcoBuilder.Model
                 community = Matrix<double>.Build.Dense(n, n);
                 hermitian = Matrix<double>.Build.Dense(n, n);
             }
-            // else
-            // {
-            //     interaction = flux = community = hermitian = null;
-            //     abundance = negGrowth = null;
-            // }
+            // else keep as previous size
         }
 
         public int Richness { get { return internToExtern.Count; } }
@@ -165,9 +161,9 @@ namespace EcoBuilder.Model
         // Depends on A and b being correct
         void BuildCommunityMatrix()
         {
-            if (Richness == 0)
+            if (Richness == 0) {
                 return;
-
+            }
             // calculates every element of the Jacobian, evaluated at equilibrium point
             community.Clear();
             int n = Richness;
@@ -188,10 +184,12 @@ namespace EcoBuilder.Model
                 
                 // Cramer's rule to simplify the above commented
                 community[i,i] = interaction[i,i] * abundance[i];
-                for (int j=0; j<i; j++)
+                for (int j=0; j<i; j++) {
                     community[i,j] = interaction[i,j] * abundance[i];
-                for (int j=i+1; j<n; j++)
+                }
+                for (int j=i+1; j<n; j++) {
                     community[i,j] = interaction[i,j] * abundance[i];
+                }
             }
         }
 
@@ -218,11 +216,12 @@ namespace EcoBuilder.Model
 
         static double CalculateMayComplexity(Matrix<double> community)
         {
-            if (community == null)
-                return 0;
-            if (community.RowCount != community.ColumnCount)
+            if (community.RowCount != community.ColumnCount) {
                 throw new Exception("community matrix malformed");
-
+            }
+            if (community == null) {
+                return 0;
+            }
             int n = community.RowCount;
             double meanDiag = 0;
             double meanOffDiag = 0;
@@ -239,9 +238,9 @@ namespace EcoBuilder.Model
                     }
                 }
             }
-            if (numOffDiag == 0)
+            if (numOffDiag == 0) {
                 return 0;
-
+            }
             meanDiag /= n;
             meanOffDiag /= numOffDiag; // only account for non zeros
 
@@ -271,11 +270,12 @@ namespace EcoBuilder.Model
         }
         static double CalculateTangComplexity(Matrix<double> community)
         {
-            if (community == null)
-                return 0;
-            if (community.RowCount != community.ColumnCount)
+            if (community.RowCount != community.ColumnCount) {
                 throw new Exception("community matrix malformed");
-
+            }
+            if (community == null) {
+                return 0;
+            }
             int n = community.RowCount;
             double meanDiag = 0;
             double meanOffDiag = 0;

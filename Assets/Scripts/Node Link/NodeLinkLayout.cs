@@ -14,13 +14,13 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodes()
         {
-            if (!tweenNodes)
+            if (!tweenNodes) {
                 return;
-
+            }
             if (focusState != FocusState.SuperFocus)
             {
                 // get average of all positions, and center
-                Vector3 centroid;
+                Vector2 centroid;
                 if (focusState == FocusState.Focus)
                 {
                     centroid = focusedNode.StressPos;
@@ -33,7 +33,7 @@ namespace EcoBuilder.NodeLink
                     centroid = Vector3.zero;
                     foreach (Node no in nodes)
                     {
-                        Vector3 pos = no.StressPos;
+                        Vector2 pos = no.StressPos;
                         centroid += pos;
                     }
                     centroid /= nodes.Count;
@@ -45,18 +45,20 @@ namespace EcoBuilder.NodeLink
                 if (ConstrainTrophic)
                 {
                     centroid.y = 0;
-                    foreach (Node no in nodes)
+                    foreach (Node no in nodes) {
                         no.StressPos -= centroid;
+                    }
                 }
                 else
                 {
                     float minY = float.MaxValue;
-                    foreach (Node no in nodes)
+                    foreach (Node no in nodes) {
                         minY = Mathf.Min(no.StressPos.y, minY);
-
+                    }
                     centroid.y = minY;
-                    foreach (Node no in nodes)
+                    foreach (Node no in nodes) {
                         no.StressPos -= centroid;
+                    }
                 }
             }
             else // superfocused
@@ -75,6 +77,9 @@ namespace EcoBuilder.NodeLink
             }
         }
 
+        [SerializeField] float zoomSmoothTime;
+        float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;
+        Vector3 panVelocity;
         void TweenZoom()
         {
             if (focusState == FocusState.Unfocus || focusState == FocusState.Frozen)
@@ -105,10 +110,6 @@ namespace EcoBuilder.NodeLink
             }
             graphParent.localScale = graphScale * Vector3.one;
         }
-        [SerializeField] float zoomSmoothTime;
-        float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;
-        Vector3 panVelocity;
-
 
         float xDefaultRotation;
         float yRotation=0, yTargetRotation=0, yRotationVelocity=0;
@@ -131,169 +132,124 @@ namespace EcoBuilder.NodeLink
             graphParent.transform.localRotation = Quaternion.Euler(xRotation,0,0);
         }
 
-        /////////////////////////////
-        // for stress-based layout //
-        /////////////////////////////
-        private Queue<int> todoBFS = new Queue<int>();
-
-        private void LayoutNextQueuedNode()
-        {
-            if (nodes.Count == 0 || focusState == FocusState.SuperFocus)
-                return;
-
-            int i = todoBFS.Dequeue(); // only do one vertex at a time
-            var d_j = ShortestPathsBFS(i);
-
-            if (ConstrainTrophic && !LaplacianDetZero)
-            {
-                TrophicGaussSeidel();
-                LayoutMajorizationHorizontal(i, d_j);
-            }
-            else
-            {
-                LayoutMajorization(i, d_j);
-            }
-            todoBFS.Enqueue(i);
-        }
-        [SerializeField] float centeringMultiplier;
-        private void LayoutMajorization(int i, Dictionary<int, int> d_j)
-        {
-            Vector3 X_i = nodes[i].StressPos;
-            float topSumX = 0, topSumY = 0, topSumZ = 0, botSum=0;
-            foreach (int j in nodes.Indices)
-            {
-                if (i == j)
-                    continue;
-                
-                Vector3 X_j = nodes[j].StressPos;
-                float mag = (X_i - X_j).magnitude;
-                if (d_j.ContainsKey(j))
-                {
-                    float d_ij = d_j[j];
-                    float w_ij = 1f / (d_ij * d_ij);
-
-                    topSumX += w_ij * (X_j.x + (d_ij*(X_i.x - X_j.x))/mag);
-                    topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
-                    topSumZ += w_ij * (X_j.z + (d_ij*(X_i.z - X_j.z))/mag);
-                    botSum += w_ij;
-                }
-                else if (mag < 1) // apply dwyer separation constraint
-                {
-                    Vector3 r = ((mag-1)/2) * ((X_i-X_j)/mag);
-                    nodes[i].StressPos -= r;
-                    nodes[j].StressPos += r;
-                }
-            }
-            if (botSum > 0)
-            {
-                nodes[i].StressPos = new Vector3(topSumX/botSum, topSumY/botSum, topSumZ/botSum) * centeringMultiplier;
-            }
-        }
-        private void LayoutMajorizationHorizontal(int i, Dictionary<int, int> d_j)
-        {
-            float topSumX = 0, /*topSumY = 0,*/ topSumZ = 0, botSum=0;
-            Vector3 X_i = nodes[i].StressPos;
-            foreach (int j in nodes.Indices)
-            {
-                if (i == j)
-                    continue;
-                
-                Vector3 X_j = nodes[j].StressPos;
-                float mag = (X_i - X_j).magnitude;
-                if (d_j.ContainsKey(j))
-                {
-                    float d_ij = d_j[j];
-                    float w_ij = 1f / (d_ij * d_ij);
-
-                    topSumX += w_ij * (X_j.x + (d_ij*(X_i.x - X_j.x))/mag);
-                    // topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
-                    topSumZ += w_ij * (X_j.z + (d_ij*(X_i.z - X_j.z))/mag);
-                    botSum += w_ij;
-                }
-                else if (mag < 1) // apply dwyer separation constraint
-                {
-                    Vector3 r = ((mag-1)/2) * ((X_i-X_j)/mag);
-                    r.y = 0; // constrain y position
-                    nodes[i].StressPos -= r;
-                    nodes[j].StressPos += r;
-                }
-            }
-            if (botSum > 0)
-            {
-                nodes[i].StressPos = new Vector3(topSumX/botSum * centeringMultiplier, nodes[i].StressPos.y, topSumZ/botSum * centeringMultiplier);
-            }
-        }
-
         ////////////////////////////
-        // refresh layout with SGD
+        // init layout with SGD
+        // also calculate number of components
 
-        private void LayoutSGD()
+        // for SGD
+        struct StressTerm {
+            public int i, j;
+            public float d, w;
+        }
+        static List<StressTerm> terms = new List<StressTerm>();
+        static List<Vector2> pos = new List<Vector2>();
+        static Dictionary<int, int> squished = new Dictionary<int, int>();
+        static List<int> unsquished = new List<int>();
+
+        // for BFS
+        static List<int> sgdSources = new List<int>();
+        static List<int> sgdTargets = new List<int>();
+
+        private void LayoutSGD(int seed=0)
         {
-            var terms = new List<Tuple<int,int,int>>();
-            int d_max = 0;
+            pos.Clear(); // node positions
+            squished.Clear();
+            unsquished.Clear();
+
+            var rand = new System.Random(seed);
             foreach (int i in nodes.Indices)
             {
-                var d_j = ShortestPathsBFS(i);
-                foreach (var d in d_j.Where(foo=> foo.Key!=i))
-                {
-                    terms.Add(Tuple.Create(i, d.Key, d.Value));
-                    d_max = Math.Max(d.Value, d_max);
-                }
+                squished[i] = unsquished.Count;
+                unsquished.Add(i);
+                pos.Add(new Vector2((float)rand.NextDouble(), (float)rand.NextDouble()));
             }
-
-            foreach (float eta in ExpoSchedule(d_max))
+            sgdSources.Clear();
+            sgdTargets.Clear();
+            foreach (int i in nodes.Indices)
             {
-                FYShuffle(terms);
-                foreach (var term in terms)
+                sgdSources.Add(sgdTargets.Count);
+                foreach (int j in undirected[i])
                 {
-                    int i = term.Item1, j = term.Item2, d_ij = term.Item3;
-                    Vector3 X_ij = nodes[i].StressPos - nodes[j].StressPos;
-
-                    float mag = X_ij.magnitude;
-                    float mu = Mathf.Min(eta * (1f/(d_ij*d_ij)), 1); // w = 1/d^2
-                    Vector3 r = ((mag-d_ij)/2) * (X_ij/mag);
-                    nodes[i].StressPos -= mu * r;
-                    nodes[j].StressPos += mu * r;
+                    sgdTargets.Add(squished[j]);
                 }
             }
-        }
-        private IEnumerable<float> ExpoSchedule(int d_max)
-        {
-            yield return d_max*d_max;
-            yield return d_max;
-            // float eta_max = d_max*d_max;
-            // float lambda = Mathf.Log(eta_max) / 9;
-            // for (int t=0; t<10; t++)
-            // {
-            //     yield return eta_max * Mathf.Exp(-lambda * t);
-            // }
-        }
+            sgdSources.Add(sgdTargets.Count); // to iterate to next
 
-        private Dictionary<int, int> ShortestPathsBFS(int source)
-        {
-            var visited = new Dictionary<int, int>();
-
-            visited[source] = 0;
+            // calculate terms with BFS
+            terms.Clear();
+            int d_max = 0;
             var q = new Queue<int>();
-            q.Enqueue(source);
-
-            while (q.Count > 0)
+            for (int source=0; source<sgdSources.Count-1; source++)
             {
-                int current = q.Dequeue();
-                foreach (int next in adjacency[current])
+                // BFS for each node
+                q.Enqueue(source);
+                var d = new Dictionary<int, int>();
+                d[source] = 0;
+                while (q.Count > 0)
                 {
-                    if (!visited.ContainsKey(next))
+                    int prev = q.Dequeue();
+                    for (int i=sgdSources[prev]; i<sgdSources[prev+1]; i++)
                     {
-                        q.Enqueue(next);
-                        visited[next] = visited[current] + 1;
+                        int next = sgdTargets[i];
+                        if (!d.ContainsKey(next))
+                        {
+                            d[next] = d[prev] + 1;
+                            q.Enqueue(next);
+
+                            if (source < next) // only add every other term
+                            {
+                                terms.Add(new StressTerm () {
+                                    i=source,
+                                    j=next,
+                                    d=d[next],
+                                    w=1f/(d[next]*d[next])
+                                });
+                                d_max = Math.Max(d[next], d_max);
+                            }
+                        }
                     }
                 }
             }
-            return visited;
+
+            // perform optimisation
+            foreach (float eta in SGDSchedule(d_max, 15, .1f))
+            {
+                FYShuffle(terms, rand);
+                foreach (var term in terms)
+                {
+                    Vector2 X_ij = pos[term.i] - pos[term.j];
+
+                    float mag = X_ij.magnitude;
+                    float mu = Mathf.Min(term.w * eta, 1);
+                    Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
+                   
+                    pos[term.i] -= mu * r;
+                    pos[term.j] += mu * r;
+                }
+                // // clamp back to y-axis position if constrained
+                // if (ConstrainTrophic) {
+                //     for (int i=0; i<pos.Count; i++) {
+                //         // pos[i] = new Vector2(pos[i].x, nodes[unsquished[i]].StressPos.y);
+                //         pos[i] = Vector2.Lerp(pos[i], new Vector2(pos[i].x, nodes[unsquished[i]].StressPos.y), .5f);
+                //     }
+                // }
+            }
+            // move positions back into nodes
+            for (int i=0; i<pos.Count; i++) {
+                nodes[unsquished[i]].StressPos = pos[i];
+            }
         }
-        public static void FYShuffle<T>(List<T> deck, int seed=0)
+        private IEnumerable<float> SGDSchedule(int d_max, int t_max, float eps)
         {
-            var rand = new System.Random(seed);
+            float eta_max = d_max*d_max;
+            float lambda = Mathf.Log(eta_max/eps) / (t_max-1);
+            for (int t=0; t<t_max; t++)
+            {
+                yield return eta_max * Mathf.Exp(-lambda * t);
+            }
+        }
+        public static void FYShuffle<T>(List<T> deck, System.Random rand)
+        {
             int n = deck.Count;
             for (int i=0; i<n-1; i++)
             {
@@ -304,63 +260,95 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        ////////////////////////////////////
-        // for trophic level calculation
+        /////////////////////////////
+        // fine tune with majorization every frame
 
-        public bool ConstrainTrophic { get; set; }
-        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector here
-        private SparseVector<float> trophicLevels = new SparseVector<float>();
-
-        // update the system of linear equations (Laplacian)
-        // return set of roots to the tree
-        private HashSet<int> BuildTrophicEquations()
+        private Queue<int> todoBFS = new Queue<int>();
+        private void FineTuneLayout()
         {
-            foreach (int i in nodes.Indices)
-                trophicA[i] = 0;
-
-            foreach (var ij in links.IndexPairs)
-            {
-                int res=ij.Item1, con=ij.Item2;
-                trophicA[con] += 1f;
+            if (nodes.Count==0 || focusState==FocusState.SuperFocus) {
+                return;
             }
-
-            var basal = new HashSet<int>();
-            foreach (int i in nodes.Indices)
+            int i = todoBFS.Dequeue(); // only do one vertex at a time
+            if (ConstrainTrophic && !LaplacianDetZero)
             {
-                if (trophicA[i] != 0)
-                    trophicA[i] = -1f / trophicA[i]; // ensures diagonal dominance
-                else
-                    basal.Add(i);
+                TrophicGaussSeidel();
+                // LayoutMajorizationHorizontal(i);
             }
-            return basal;
+            else
+            {
+                // LayoutMajorization(i);
+            }
+            todoBFS.Enqueue(i);
         }
-
-        // optimised gauss-seidel iteration because of the simplicity of the laplacian
-        void TrophicGaussSeidel()
+        private void LayoutMajorization(int i)
         {
-            SparseVector<float> temp = new SparseVector<float>();
-            foreach (var ij in links.IndexPairs)
+            Vector2 X_i = nodes[i].StressPos;
+            float topSumX = 0, topSumY = 0, botSum=0;
+            foreach (var d_j in ShortestPathsBFS(i))
             {
-                int res = ij.Item1, con = ij.Item2;
-                temp[con] += trophicA[con] * trophicLevels[res];
+                int j = d_j.Key;
+                float d_ij = d_j.Value;
+                Vector2 X_j = nodes[j].StressPos;
+                float mag = (X_i - X_j).magnitude;
+                float w_ij = 1f / (d_ij * d_ij);
+
+                topSumX += w_ij * (X_j.x + (d_ij*(X_i.x - X_j.x))/mag);
+                topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
+                botSum += w_ij;
             }
-            float maxTrophic = 0;
-            foreach (int i in nodes.Indices)
+            if (botSum > 0)
             {
-                trophicLevels[i] = (1 - temp[i]);
-                maxTrophic = Mathf.Max(trophicLevels[i], maxTrophic);
-            }
-            float trophicScaling = 1;
-            if (maxTrophic > MaxChain+1)
-            {
-                trophicScaling = (MaxChain+1) / maxTrophic;
-            }
-            foreach (Node no in nodes)
-            {
-                Vector3 newPos = no.StressPos;
-                newPos.y = Mathf.Lerp(newPos.y, trophicScaling * (trophicLevels[no.Idx]-1), .1f);
-                no.StressPos = newPos;
+                nodes[i].StressPos = new Vector2(topSumX/botSum, topSumY/botSum);
             }
         }
+        private void LayoutMajorizationHorizontal(int i)
+        {
+            float topSumX = 0, /*topSumY = 0,*/ botSum=0;
+            Vector2 X_i = nodes[i].StressPos;
+            foreach (var d_j in ShortestPathsBFS(i))
+            {
+                int j = d_j.Key;
+                float d_ij = d_j.Value;
+
+                Vector2 X_j = nodes[j].StressPos;
+                float mag = (X_i - X_j).magnitude;
+                float w_ij = 1f / (d_ij * d_ij);
+
+                topSumX += w_ij * (X_j.x + (d_ij*(X_i.x - X_j.x))/mag);
+                // topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
+                botSum += w_ij;
+            }
+            if (botSum > 0)
+            {
+                // nodes[i].StressPos = new Vector2(topSumX/botSum, topSumY/botSum);
+                nodes[i].StressPos = new Vector2(topSumX/botSum, nodes[i].StressPos.y);
+            }
+        }
+        private static Dictionary<int, int> visitedBFS = new Dictionary<int, int>();
+        private IEnumerable<KeyValuePair<int, int>> ShortestPathsBFS(int source)
+        {
+            visitedBFS.Clear();
+
+            visitedBFS[source] = 0;
+            var q = new Queue<int>();
+            q.Enqueue(source);
+
+            while (q.Count > 0)
+            {
+                int current = q.Dequeue();
+                foreach (int next in undirected[current])
+                {
+                    if (!visitedBFS.ContainsKey(next))
+                    {
+                        q.Enqueue(next);
+                        visitedBFS[next] = visitedBFS[current] + 1;
+                    }
+                }
+            }
+            visitedBFS.Remove(source);
+            return visitedBFS;
+        }
+
     }
 }

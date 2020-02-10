@@ -12,7 +12,7 @@ namespace EcoBuilder.NodeLink
         }
         public enum PositionState { Stress, Focus }
         public PositionState State { get; set; } = PositionState.Stress;
-        public Vector3 StressPos { get; set; }
+        public Vector2 StressPos { get; set; }
         public Vector3 FocusPos { get; set; }
 
         [SerializeField] float defaultSize = .5f;
@@ -143,16 +143,14 @@ namespace EcoBuilder.NodeLink
         {
             if (State == PositionState.Stress)
             {
-                if (!Disconnected)
+                if (!Disconnected) {
                     transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos, ref velocity, smoothTime);
-                else
-                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos+.5f*Vector3.back, ref velocity, smoothTime);
-            }
-            else //(State == FocusState.Focus)
-            {
+                } else {
+                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, (Vector3)StressPos+.5f*Vector3.back, ref velocity, smoothTime);
+                }
+            } else { //(State == FocusState.Focus)
                 transform.localPosition = Vector3.SmoothDamp(transform.localPosition, FocusPos, ref velocity, smoothTime);
             }
-
             if (bounceRoutine == null)
             {
                 transform.localScale = Vector3.SmoothDamp(transform.localScale, defaultSize*Vector3.one, ref sizocity, smoothTime);

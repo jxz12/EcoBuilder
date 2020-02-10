@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 using UnityEditor;
 using System;
@@ -42,8 +43,8 @@ namespace EcoBuilder
         [SerializeField] List<bool> editables;
 
         [SerializeField] int numInitInteractions;
-        [SerializeField] List<int> resources;
-        [SerializeField] List<int> consumers;
+        [SerializeField] List<int> sources;
+        [SerializeField] List<int> targets;
 
         // score
         public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
@@ -81,8 +82,8 @@ namespace EcoBuilder
         public List<bool> Editables { get { return editables; } }
 
         public int NumInitInteractions { get { return numInitInteractions; } }
-        public List<int> Resources { get { return resources; } }
-        public List<int> Consumers { get { return consumers; } }
+        public List<int> Sources { get { return sources; } }
+        public List<int> Targets { get { return targets; } }
 
         public ScoreMetric Metric { get { return metric; } }
         public int TargetScore1 { get { return targetScore1; } }
@@ -119,13 +120,9 @@ namespace EcoBuilder
         void Awake()
         {
             int n = numInitSpecies;
-            if (n != randomSeeds.Count || n != sizes.Count || n != greeds.Count) {
-                throw new Exception("num species and sizes or greeds do not match");
-            }
             int m = numInitInteractions;
-            if (m != consumers.Count) {
-                throw new Exception("num edge sources and targets do not match");
-            }
+            Assert.IsFalse(n!=randomSeeds.Count || n!=sizes.Count || n!=greeds.Count, "num species and sizes or greeds do not match");
+            Assert.IsFalse(m!=sources.Count || m!=targets.Count, "num edge sources and targets do not match");
 
             titleText.text = title;
             descriptionText.text = description;
@@ -207,10 +204,8 @@ namespace EcoBuilder
         }
         public void ShowCard()
         {
-            print(name);
-            if (GameManager.Instance.CardParent.childCount > 1) {
-                throw new Exception("more than one card?");
-            }
+            Assert.IsFalse(GameManager.Instance.CardParent.childCount > 1, "more than one card on cardparent?");
+
             if (GameManager.Instance.CardParent.childCount == 1) {
                 GameManager.Instance.CardParent.GetComponentInChildren<Level>().ShowThumbnail();
             }
@@ -230,9 +225,8 @@ namespace EcoBuilder
         // called when game is ended
         public void ShowNavigation()
         {
-            if (GameManager.Instance.NavParent.transform.childCount > 0) {
-                throw new Exception("more than one navigation?");
-            }
+            Assert.IsFalse(GameManager.Instance.NavParent.transform.childCount > 0, "more than one level on navigation?");
+
             StartCoroutine(TweenToZeroPosFrom(1f, GameManager.Instance.NavParent));
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
         }
@@ -270,12 +264,9 @@ namespace EcoBuilder
         }
         void LevelSceneLoadedCallback(string sceneName)
         {
-            if (sceneName != "Play") {
-                throw new Exception("Play scene not loaded when expected");
-            }
-            if (GameManager.Instance.PlayedLevel != this) {
-                throw new Exception("not playing level to be initialised");
-            }
+            Assert.IsTrue(sceneName == "Play", "Play scene not loaded when expected");
+            Assert.IsTrue(GameManager.Instance.PlayedLevel == this, "not playing level to be initialised");
+
             GameManager.Instance.OnLoaded.RemoveListener(LevelSceneLoadedCallback);
             thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
 
@@ -330,17 +321,15 @@ namespace EcoBuilder
         }
         void DestroyWhenMenuLoads(string sceneName)
         {
-            if (sceneName != "Menu") {
-                throw new Exception("Menu scene not loaded when expected");
-            }
+            Assert.IsTrue(sceneName == "Menu", "Menu scene not loaded when expected");
+
             GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
             Destroy(gameObject);
         }
         public void FinishLevel() // called on button press
         {
-            if (GameManager.Instance.PlayedLevel != this) {
-                throw new Exception("Played level different from one being finished?");
-            }
+            Assert.IsTrue(GameManager.Instance.PlayedLevel == this, "Played level different from one being finished?");
+
             if (nextLevelPrefab != null) {
                 NextLevelInstantiated = Instantiate(nextLevelPrefab, nextLevelParent);
             } else {

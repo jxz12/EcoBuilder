@@ -91,24 +91,24 @@ namespace EcoBuilder.UI
 
                 prefab = prefab.NextLevelPrefab;
             }
+            // then do research levels
+            bool learningFinished = IsLearningFinished();
             Action SetResearchLeaderboards = null;
-            if (IsLearningFinished())
+            prefab = firstResearchLevel;
+            while (prefab != null)
+            {
+                CheckUnlocked.Invoke(prefab, prefab.NextLevelPrefab);
+                instantiated[prefab.Idx] = prefab;
+                var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
+                var level = leaderboard.GiveLevelPrefab(prefab);
+                SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
+                prefab = prefab.NextLevelPrefab;
+            }
+            if (learningFinished)
             {
                 researchWorld.interactable = true;
-                researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white;
+                researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white; // remove transparency
                 researchLock.enabled = false;
-                prefab = firstResearchLevel;
-                while (prefab != null)
-                {
-                    CheckUnlocked.Invoke(prefab, prefab.NextLevelPrefab);
-
-                    var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
-                    var level = leaderboard.GiveLevelPrefab(prefab);
-                    instantiated[level.Idx] = level;
-                    SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
-
-                    prefab = prefab.NextLevelPrefab;
-                }
             }
             foreach (var idx in unlockedIdxs) {
                 instantiated[idx].Unlock();

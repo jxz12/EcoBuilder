@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Networking;
 using System.Security.Cryptography;
 using System.Text;
@@ -55,10 +56,9 @@ namespace EcoBuilder
         IEnumerator postRoutine = null;
         public void Post(Dictionary<string, string> letter, Action<bool, string> ResponseCallback)
         {
+            Assert.IsTrue(letter.ContainsKey("__address__"), "no __address__ given to send to");
+
             var form = new WWWForm();
-            if (!letter.ContainsKey("__address__")) {
-                throw new Exception("no __address__ given to send to");
-            }
             foreach (var line in letter)
             {
                 if (line.Key == "__address__") { // reserved for URL

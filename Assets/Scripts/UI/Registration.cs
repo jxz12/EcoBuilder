@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace EcoBuilder.UI
@@ -191,6 +192,8 @@ namespace EcoBuilder.UI
         }
         void LoginOrRegister()
         {
+            Assert.IsTrue(_state==State.Register || _state==State.Login, "not registering or logging in");
+
             loginSubmit.interactable = false;
             errorText.gameObject.SetActive(true);
             errorText.text = "Connecting...";
@@ -202,8 +205,6 @@ namespace EcoBuilder.UI
             else if (_state == State.Login)
             {
                 GameManager.Instance.LoginRemote(username.text, password.text, LoggedinCallback);
-            } else {
-                throw new Exception("bad state");
             }
         }
         void LoggedinCallback(bool success, string msg)

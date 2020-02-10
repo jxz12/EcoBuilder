@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using SparseMatrix;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+
+// for heavy calculations
+using System.Threading.Tasks;
 
 namespace EcoBuilder.NodeLink
 {
@@ -11,7 +15,7 @@ namespace EcoBuilder.NodeLink
         // called regardless of user
         public event Action<int> OnFocused;
         public event Action OnUnfocused;
-        public event Action OnConstraints;
+        public event Action OnLayedOut;
         public event Action OnLinked;
 
         // called only when user does something
@@ -34,41 +38,74 @@ namespace EcoBuilder.NodeLink
         }
         void Update()
         {
-            LayoutNextQueuedNode();
+            FineTuneLayout();
             TweenNodes();
             TweenZoom();
             MomentumRotate();
         }
 
+        public bool IsCalculatingAsync { get; private set; } = false;
+        public async void LayoutAsync()
+        {
+            IsCalculatingAsync = true;
+            MaxChain = RefreshTrophicAndFindChain(1);
+            await Task.Run(()=> LayoutSGD());
+
+            NumComponents = SeparateComponents();
+            NumEdges = links.Count();
+
+            JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices));
+
+            IsCalculatingAsync = false;
+            OnLayedOut.Invoke();
+        }
+        public void LayoutSync()
+        {
+            MaxChain = RefreshTrophicAndFindChain(1);
+            LayoutSGD();
+
+            NumComponents = SeparateComponents();
+            NumEdges = links.Count();
+
+            JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            LongestLoop = JohnsonsAlgorithm(nodes.Indices);
+
+            OnLayedOut.Invoke();
+        }
+
+
+
 
         ///////////////////////////////////
         // structure changing functions
 
+        // show versions for random access operations
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
-        Dictionary<int, HashSet<int>> adjacency = new Dictionary<int, HashSet<int>>();
 
         SparseVector<Node> nodeGrave = new SparseVector<Node>();
         SparseMatrix<Link> linkGrave = new SparseMatrix<Link>();
 
+        Dictionary<int, HashSet<int>> undirected = new Dictionary<int, HashSet<int>>();
+
         public void AddNode(int idx, GameObject shape)
         {
-            if (nodes[idx] != null) {
-                throw new Exception("index " + idx + " already added");
-            }
-            if (nodes[idx] == null && nodeGrave[idx] == null) // entirely new
+            Assert.IsNull(nodes[idx], $"node {idx} already added");
+
+            if (nodeGrave[idx] == null) // entirely new
             {
                 Node newNode = Instantiate(nodePrefab, nodesParent);
                 newNode.Init(idx);
                 nodes[idx] = newNode;
-                adjacency[idx] = new HashSet<int>();
+                undirected[idx] = new HashSet<int>();
 
                 // initialise as flashing
                 nodes[idx].SetShape(shape);
                 FlashNode(idx);
                 LieDownNode(idx);
             }
-            else if (nodeGrave[idx] != null) // bring back old
+            else // bring back previously removed
             {
                 nodes[idx] = nodeGrave[idx];
                 nodeGrave.RemoveAt(idx);
@@ -76,15 +113,15 @@ namespace EcoBuilder.NodeLink
                 nodes[idx].Hide(false);
                 nodes[idx].SetShape(shape); // technically not necessary
 
-                adjacency[idx] = new HashSet<int>();
+                undirected[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
                 {
                     if (nodes[col] != null)
                     {
                         links[idx, col] = linkGrave[idx, col];
                         links[idx, col].gameObject.SetActive(true);
-                        adjacency[idx].Add(col);
-                        adjacency[col].Add(idx);
+                        undirected[idx].Add(col);
+                        undirected[col].Add(idx);
                     }
                 }
                 foreach (int row in linkGrave.GetRowIndicesInColumn(idx))
@@ -93,8 +130,8 @@ namespace EcoBuilder.NodeLink
                     {
                         links[row, idx] = linkGrave[row, idx];
                         links[row, idx].gameObject.SetActive(true);
-                        adjacency[idx].Add(row);
-                        adjacency[row].Add(idx);
+                        undirected[idx].Add(row);
+                        undirected[row].Add(idx);
                     }
                 }
                 // clear linkGrave
@@ -112,13 +149,11 @@ namespace EcoBuilder.NodeLink
 
         public void RemoveNode(int idx)
         {
-            if (nodes[idx] == null) {
-                throw new Exception("no index " + idx);
-            }
+            Assert.IsNotNull(nodes[idx], $"node {idx} not added yet");
+
             if (focusedNode != null && focusedNode.Idx == idx) {
                 ForceUnfocus();
             }
-
             // move to graveyard to save for later
             nodes[idx].Hide(true);
             nodeGrave[idx] = nodes[idx];
@@ -144,19 +179,18 @@ namespace EcoBuilder.NodeLink
 
 
             // prevent memory leak in SGD data structures
-            adjacency.Remove(idx);
+            undirected.Remove(idx);
             todoBFS.Clear();
-            foreach (int i in adjacency.Keys)
+            foreach (int i in undirected.Keys)
             {
-                adjacency[i].Remove(idx);
+                undirected[i].Remove(idx);
                 todoBFS.Enqueue(i);
             }
         }        
         public void RemoveNodeCompletely(int idx)
         {
-            if (nodeGrave[idx] == null) {
-                throw new Exception("node not in graveyard");
-            }
+            Assert.IsNotNull(nodeGrave[idx], $"node {idx} not in graveyard");
+
             Destroy(nodeGrave[idx].gameObject);
             nodeGrave.RemoveAt(idx);
 
@@ -170,17 +204,15 @@ namespace EcoBuilder.NodeLink
 
         public void AddLink(int i, int j)
         {
+            Assert.IsNull(links[i,j], $"link {i}:{j} already added");
+            Assert.IsNull(links[j,i], "bidirectional links not allowed");
+
             Link newLink = Instantiate(linkPrefab, linksParent);
             newLink.Init(nodes[i], nodes[j]);
             links[i,j] = newLink;
-            if (links[j,i] != null)
-            {
-                // links[i,j].Curved = links[j,i].Curved = true;
-                throw new Exception("no bidirectional links allowed");
-            }
 
-            adjacency[i].Add(j);
-            adjacency[j].Add(i);
+            undirected[i].Add(j);
+            undirected[j].Add(i);
 
             nodes[i].Disconnected = false;
             nodes[j].Disconnected = false;
@@ -189,23 +221,18 @@ namespace EcoBuilder.NodeLink
         }
         public void RemoveLink(int i, int j)
         {
+            Assert.IsNotNull(links[i,j], $"link {i}:{j} not added");
+
             Destroy(links[i,j].gameObject);
             links.RemoveAt(i,j);
-            if (links[j,i] == null)
-            {
-                adjacency[i].Remove(j);
-                adjacency[j].Remove(i);
-            }
-            else
-            {
-                links[j,i].Curved = false;
-                throw new Exception("no bidirectional links allowed");
-            }
 
-            if (adjacency[i].Count == 0) {
+            undirected[i].Remove(j);
+            undirected[j].Remove(i);
+
+            if (undirected[i].Count == 0) {
                 nodes[i].Disconnected = true;
             }
-            if (adjacency[j].Count == 0) {
+            if (undirected[j].Count == 0) {
                 nodes[j].Disconnected = true;
             }
             OnLinked?.Invoke();
@@ -321,6 +348,7 @@ namespace EcoBuilder.NodeLink
         }
         public void OutlineLoop(bool highlighted, cakeslice.Outline.Colour colour)
         {
+            print("TODO: check if calculating, and wait until done?");
             if (MaxLoop == 0) {
                 return;
             }

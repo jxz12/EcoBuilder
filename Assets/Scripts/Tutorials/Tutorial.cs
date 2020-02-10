@@ -1,7 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace EcoBuilder.Tutorials
@@ -45,22 +45,25 @@ namespace EcoBuilder.Tutorials
 
             smoothTime = .2f;
 
-            StartCoroutine(WaitToStart());
+            InitSmellyReferences();
+            StartLesson();
         }
 
         protected abstract void StartLesson();
-        IEnumerator WaitToStart()
+        // IEnumerator WaitToStart()
+        // {
+        //     // smelly as HECK
+        //     while ((help = FindObjectOfType<UI.Help>()) == null) yield return null;
+        //     while ((inspector = FindObjectOfType<UI.Inspector>()) == null) yield return null;
+        //     while ((incubator = FindObjectOfType<UI.Incubator>()) == null) yield return null;
+        //     while ((score = FindObjectOfType<UI.Score>()) == null) yield return null;
+        //     while ((constraints = FindObjectOfType<UI.Constraints>()) == null) yield return null;
+        //     while ((recorder = FindObjectOfType<UI.Recorder>()) == null) yield return null;
+        //     while ((nodelink = FindObjectOfType<NodeLink.NodeLink>()) == null) yield return null;
+        //     while ((model = FindObjectOfType<Model.Model>()) == null) yield return null;
+        // }
+        void InitSmellyReferences()
         {
-            // smelly as HECK
-            // while ((help = FindObjectOfType<UI.Help>()) == null) yield return null;
-            // while ((inspector = FindObjectOfType<UI.Inspector>()) == null) yield return null;
-            // while ((incubator = FindObjectOfType<UI.Incubator>()) == null) yield return null;
-            // while ((score = FindObjectOfType<UI.Score>()) == null) yield return null;
-            // while ((constraints = FindObjectOfType<UI.Constraints>()) == null) yield return null;
-            // while ((recorder = FindObjectOfType<UI.Recorder>()) == null) yield return null;
-            // while ((nodelink = FindObjectOfType<NodeLink.NodeLink>()) == null) yield return null;
-            // while ((model = FindObjectOfType<Model.Model>()) == null) yield return null;
-            yield return null;
             help = GameManager.Instance.HelpText;
             inspector = FindObjectOfType<UI.Inspector>();
             incubator = FindObjectOfType<UI.Incubator>();
@@ -70,8 +73,16 @@ namespace EcoBuilder.Tutorials
             nodelink = FindObjectOfType<NodeLink.NodeLink>();
             model = FindObjectOfType<Model.Model>();
 
-            StartLesson();
+            Assert.IsNotNull(help);
+            Assert.IsNotNull(inspector);
+            Assert.IsNotNull(incubator);
+            Assert.IsNotNull(score);
+            Assert.IsNotNull(constraints);
+            Assert.IsNotNull(recorder);
+            Assert.IsNotNull(nodelink);
+            Assert.IsNotNull(model);
         }
+
 
         void Update()
         {
