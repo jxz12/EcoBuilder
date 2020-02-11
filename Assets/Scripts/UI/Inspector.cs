@@ -292,7 +292,7 @@ namespace EcoBuilder.UI
             incubated = null;
 
             OnUserSpawned?.Invoke(spawnedIdx);
-            // InspectSpecies(spawnedIdx); // will be done by nodelink
+            InspectSpecies(spawnedIdx);
         }
         public void InspectSpecies(int idx)
         {

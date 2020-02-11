@@ -142,7 +142,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lr: {fileID: 120194515749493738}
-  lineWidth: 0.16
   curveRatio: -0.25
   curveSegments: 10
   numBalls: 1.5

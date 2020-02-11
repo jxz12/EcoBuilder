@@ -42,8 +42,9 @@ namespace EcoBuilder
             inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
 
-            inspector.OnUserSpawned += (i)=> nodelink.FocusNode(i);
+            inspector.OnUserSpawned += (i)=> nodelink.SwitchFocus(i);
             nodelink.OnFocused +=      (i)=> inspector.InspectSpecies(i);
+
             nodelink.OnUnfocused +=     ()=> inspector.Uninspect();
             nodelink.OnEmptyTapped +=   ()=> inspector.Unincubate();
             nodelink.OnLayedOut +=      ()=> constraints.DisplayNumComponents(nodelink.NumComponents);
@@ -93,78 +94,80 @@ namespace EcoBuilder
             //////////////////////
             // initialise level //
             //////////////////////
-            var level = GameManager.Instance.PlayedLevel;
+            var details = GameManager.Instance.PlayedLevelDetails;
 
-            inspector.HideSizeSlider(level.SizeSliderHidden);
-            inspector.HideGreedSlider(level.GreedSliderHidden);
-            inspector.AllowConflicts(level.ConflictsAllowed);
-            nodelink.AllowSuperfocus = level.SuperfocusAllowed;
+            inspector.HideSizeSlider(details.SizeSliderHidden);
+            inspector.HideGreedSlider(details.GreedSliderHidden);
+            inspector.AllowConflicts(details.ConflictsAllowed);
+            nodelink.AllowSuperfocus = details.SuperfocusAllowed;
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
 
-            constraints.Constrain("Leaf", level.NumProducers);
-            constraints.Constrain("Paw", level.NumConsumers);
-            constraints.Constrain("Count", level.MinEdges);
-            constraints.Constrain("Chain", level.MinChain);
-            constraints.Constrain("Loop", level.MinLoop);
+            constraints.Constrain("Leaf", details.NumProducers);
+            constraints.Constrain("Paw", details.NumConsumers);
+            constraints.Constrain("Count", details.MinEdges);
+            constraints.Constrain("Chain", details.MinChain);
+            constraints.Constrain("Loop", details.MinLoop);
 
-            for (int i=0; i<level.NumInitSpecies; i++)
+            for (int i=0; i<details.NumInitSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,
-                    level.Plants[i],
-                    level.Sizes[i],
-                    level.Greeds[i],
-                    level.RandomSeeds[i],
-                    level.Editables[i]);
+                    details.Plants[i],
+                    details.Sizes[i],
+                    details.Greeds[i],
+                    details.RandomSeeds[i],
+                    details.Editables[i]);
 
                 inspector.SetSpeciesRemovable(i, false);
                 nodelink.SetIfNodeRemovable(i, false);
                 nodelink.OutlineNode(i, cakeslice.Outline.Colour.Blue);
             }
-            for (int ij=0; ij<level.NumInitInteractions; ij++)
+            for (int ij=0; ij<details.NumInitInteractions; ij++)
             {
-                int i = level.Sources[ij];
-                int j = level.Targets[ij];
+                int i = details.Sources[ij];
+                int j = details.Targets[ij];
 
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
 
-            score.SetStarThresholds(level.Metric, level.TargetScore1, level.TargetScore2);
-            score.OnLevelCompletabled +=  ()=> level.ShowFinishFlag();
+            score.SetStarThresholds(details.Metric, details.TargetScore1, details.TargetScore2);
+            score.OnLevelCompletabled +=  ()=> GameManager.Instance.MakePlayedLevelFinishable();
             score.OnLevelCompletabled +=  ()=> nodelink.ForceUnfocus();
-            score.OnLevelCompletabled +=  ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, level.CompletedMessage);
+            score.OnLevelCompletabled +=  ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, details.CompletedMessage);
             score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
-            score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, level.ThreeStarsMessage);
+            score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, details.ThreeStarsMessage);
 
-            GameManager.Instance.HelpText.DelayThenShow(2, level.Introduction);
-            level.OnFinished += FinishPlaythrough; // will have hanging references on replay, but I'm okay with that
+            GameManager.Instance.HelpText.Showing = false;
+            GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
+            GameManager.Instance.OnPlayedLevelFinished += FinishPlaythrough;
         }
-        void FinishPlaythrough(Level finished)
+        void OnDestroy()
         {
-            if (this == null) {
-                finished.OnFinished -= FinishPlaythrough;
-                print("TODO: there must be a more elegant way of dealing with this hanging reference");
-                return;
-            }
+            GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
+        }
+        void FinishPlaythrough()
+        {
             inspector.Finish();
             nodelink.Finish();
-            score.Finish();
             recorder.Finish();
 
-            bool highscore = GameManager.Instance.SaveHighScoreLocal(finished.Idx, score.HighestScore);
-            if (highscore) {
-                print("TODO: congratulation on high score on level complete screen");
-            }
+            var details = GameManager.Instance.PlayedLevelDetails;
+            int oldScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
+            int worldAvg = GameManager.Instance.GetLeaderboardMedian(details.Idx);
+            score.Finish(oldScore, worldAvg);
+            GameManager.Instance.SaveHighScoreLocal(details.Idx, score.HighestScore);
+
             if (GameManager.Instance.LoggedIn) {
-                GameManager.Instance.SavePlaythroughRemote(finished.Idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
+                GameManager.Instance.SavePlaythroughRemote(details.Idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
             }
             Destroy(gameObject);
         }
 
         // perform calculations if necessary
         // LateUpdate to ensure all changes are done
+        // TODO: this is weird and should probably be moved back into nodelink and model
         bool atEquilibrium = true, graphDrawn = true;
         void LateUpdate()
         {
@@ -187,12 +190,18 @@ namespace EcoBuilder
                 nodelink.LayoutAsync();
                 #endif
             }
+            // this needs to be here to ensure that the calculated components
+            // are synced before moving every frame
+            if (graphDrawn && !nodelink.IsCalculatingAsync)
+            {
+                nodelink.SeparateConnectedComponents();
+            }
             // we want the score to update even if the model is calculating
             // but no events triggered in case of false positive due to being out of sync
             if (atEquilibrium && !model.IsCalculatingAsync &&
                 graphDrawn && !nodelink.IsCalculatingAsync)
             {
-                score.UpdateStars();
+                score.UpdateStars(constraints.AllSatisfied());
             }
         }
 
@@ -239,7 +248,7 @@ namespace EcoBuilder
                         numInteractions += 1;
                     }
                 }
-                Level.SaveToNewPrefab(DateTime.Now.Ticks.ToString(), plants, randomSeeds, sizes, greeds, editables);
+                // Level.SaveToNewPrefab(DateTime.Now.Ticks.ToString(), plants, randomSeeds, sizes, greeds, editables);
             }
         }
 #endif

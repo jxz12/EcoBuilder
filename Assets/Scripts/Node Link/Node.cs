@@ -30,15 +30,17 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
+            StressPos = UnityEngine.Random.insideUnitCircle; // prevent divide-by-zero
         }
 
         public void SetShape(GameObject shapeObject)
         {
-            // drop it in at the point at shapeObject's position
-            // transform.position = shapeObject.transform.position;
             shape = shapeObject;
             shapeRenderer = shape.GetComponent<MeshRenderer>();
             outline = shape.AddComponent<cakeslice.Outline>();
+
+            // drop it in at the point at shapeObject's position
+            transform.position = shapeObject.transform.position;
 
             shape.transform.SetParent(transform, false);
             shape.transform.localPosition = Vector3.zero;
@@ -49,7 +51,6 @@ namespace EcoBuilder.NodeLink
             shape.SetActive(!hidden);
             GetComponent<Collider>().enabled = !hidden;
         }
-
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
         public void PushOutline(cakeslice.Outline.Colour colour)
         {
@@ -73,6 +74,17 @@ namespace EcoBuilder.NodeLink
             transform.localRotation = Quaternion.identity;
         }
 
+        public void Enlarge()
+        {
+            defaultSize *= 1.2f;
+            transform.localScale = Vector3.one * defaultSize;
+        }
+        public void Shrink()
+        {
+            defaultSize /= 1.2f;
+            transform.localScale = Vector3.one * defaultSize;
+        }
+
 
         IEnumerator flashRoutine;
         public void Flash(bool isFlashing)
@@ -84,8 +96,9 @@ namespace EcoBuilder.NodeLink
                 shapeRenderer.enabled = true;
             }
 
-            if (isFlashing)
+            if (isFlashing) {
                 StartCoroutine(flashRoutine = Flash(1f));
+            }
         }
         IEnumerator Flash(float period)
         {
@@ -135,25 +148,18 @@ namespace EcoBuilder.NodeLink
                 transform.localScale = (defaultSize + magnitude*(4*Mathf.Sqrt(t) * -Mathf.Pow(t-1,3))) * Vector3.one;
                 yield return null;
             }
+            transform.localScale = defaultSize * Vector3.one;
             bounceRoutine = null;
         }
+
         Vector3 velocity; // for use with smoothdamp
-        Vector3 sizocity; // for use with smoothdamp
         public void TweenPos(float smoothTime)
         {
             if (State == PositionState.Stress)
             {
-                if (!Disconnected) {
-                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos, ref velocity, smoothTime);
-                } else {
-                    transform.localPosition = Vector3.SmoothDamp(transform.localPosition, (Vector3)StressPos+.5f*Vector3.back, ref velocity, smoothTime);
-                }
-            } else { //(State == FocusState.Focus)
+                transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos, ref velocity, smoothTime);
+            } else { // superfocus
                 transform.localPosition = Vector3.SmoothDamp(transform.localPosition, FocusPos, ref velocity, smoothTime);
-            }
-            if (bounceRoutine == null)
-            {
-                transform.localScale = Vector3.SmoothDamp(transform.localScale, defaultSize*Vector3.one, ref sizocity, smoothTime);
             }
         }
     }

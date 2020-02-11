@@ -1,18 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
-using UnityEditor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace EcoBuilder
 {
-    public class Level : MonoBehaviour
+    [Serializable]
+    public class LevelDetails
     {
-        /////////////////////
-        // DETAILS IN UNITY
-
         // metadata
         [SerializeField] int idx;
         [SerializeField] string title;
@@ -52,10 +49,6 @@ namespace EcoBuilder
         [SerializeField] int targetScore1;
         [SerializeField] int targetScore2;
 
-        [SerializeField] Level nextLevelPrefab;
-
-        ///////////////////////////
-        // GET DETAILS
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
         public string Description { get { return description; } }
@@ -88,13 +81,15 @@ namespace EcoBuilder
         public ScoreMetric Metric { get { return metric; } }
         public int TargetScore1 { get { return targetScore1; } }
         public int TargetScore2 { get { return targetScore2; } }
-
-        // Other stuff
-        public event Action OnThumbnailed, OnCarded;
-        public event Action<Level> OnFinished;
-
+    }
+    public class Level : MonoBehaviour
+    {
+        [SerializeField] LevelDetails details;
+        public LevelDetails Details { get { return details; } }
+        [SerializeField] Level nextLevelPrefab;
         public Level NextLevelPrefab { get { return nextLevelPrefab; } }
-        public Level NextLevelInstantiated { get; private set; }
+
+        public event Action OnThumbnailed, OnCarded;
 
         // thumbnail
         [SerializeField] Image starsImage;
@@ -119,29 +114,29 @@ namespace EcoBuilder
 
         void Awake()
         {
-            int n = numInitSpecies;
-            int m = numInitInteractions;
-            Assert.IsFalse(n!=randomSeeds.Count || n!=sizes.Count || n!=greeds.Count, "num species and sizes or greeds do not match");
-            Assert.IsFalse(m!=sources.Count || m!=targets.Count, "num edge sources and targets do not match");
+            int n = details.NumInitSpecies;
+            int m = details.NumInitInteractions;
+            Assert.IsFalse(n!=details.RandomSeeds.Count || n!=details.Sizes.Count || n!=details.Greeds.Count, "num species and sizes or greeds do not match");
+            Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, "num edge sources and targets do not match");
 
-            titleText.text = title;
-            descriptionText.text = description;
+            titleText.text = details.Title;
+            descriptionText.text = details.Description;
 
-            target1.text = targetScore1.ToString();
-            target2.text = targetScore2.ToString();
+            target1.text = details.TargetScore1.ToString();
+            target2.text = details.TargetScore2.ToString();
 
-            int score = GameManager.Instance.GetHighScoreLocal(idx);
+            int score = GameManager.Instance.GetHighScoreLocal(details.Idx);
             highScore.text = score.ToString();
             int numStars = 0;
             if (score > 0) {
                 numStars += 1;
             }
-            if (score >= targetScore1)
+            if (score >= details.TargetScore1)
             {
                 numStars += 1;
                 target1.color = Color.grey;
             }
-            if (score >= targetScore2)
+            if (score >= details.TargetScore2)
             {
                 numStars += 1;
                 target2.color = Color.grey;
@@ -222,19 +217,28 @@ namespace EcoBuilder
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
         }
-        // called when game is ended
-        public void ShowNavigation()
+        public void FinishLevel() // called on finish flag pressed
+        {
+            if (nextLevelPrefab != null) {
+                NextLevelInstantiated = Instantiate(nextLevelPrefab, nextLevelParent);
+            } else {
+                print("TODO: credits? reduce width of navigation?");
+            }
+            Instantiate(confettiPrefab, GameManager.Instance.CardParent);
+            GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
+
+            GameManager.Instance.FinishLevel(this);
+        }
+        public Level NextLevelInstantiated { get; private set; }
+        public void UnlockNextLevel() // because of silly animator gameobject active stuff
         {
             Assert.IsFalse(GameManager.Instance.NavParent.transform.childCount > 0, "more than one level on navigation?");
 
-            StartCoroutine(TweenToZeroPosFrom(1f, GameManager.Instance.NavParent));
-            GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
-        }
-        public void UnlockNextLevel() // because of silly animator gameobject active stuff
-        {
+            StartCoroutine(TweenToZeroPosFrom(0f, GameManager.Instance.NavParent));
             if (NextLevelInstantiated != null) {
                 NextLevelInstantiated.Unlock();
             }
+            print("TODO: make navigation pop to below screen then rise");
         }
 
 
@@ -259,13 +263,12 @@ namespace EcoBuilder
 
         public void Play()
         {
-            GameManager.Instance.LoadLevelScene(this);
+            GameManager.Instance.PlayLevel(this);
             GameManager.Instance.OnLoaded.AddListener(LevelSceneLoadedCallback);
         }
         void LevelSceneLoadedCallback(string sceneName)
         {
             Assert.IsTrue(sceneName == "Play", "Play scene not loaded when expected");
-            Assert.IsTrue(GameManager.Instance.PlayedLevel == this, "not playing level to be initialised");
 
             GameManager.Instance.OnLoaded.RemoveListener(LevelSceneLoadedCallback);
             thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
@@ -326,48 +329,34 @@ namespace EcoBuilder
             GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
             Destroy(gameObject);
         }
-        public void FinishLevel() // called on button press
-        {
-            Assert.IsTrue(GameManager.Instance.PlayedLevel == this, "Played level different from one being finished?");
-
-            if (nextLevelPrefab != null) {
-                NextLevelInstantiated = Instantiate(nextLevelPrefab, nextLevelParent);
-            } else {
-                print("TODO: credits? reduce width of navigation?");
-            }
-            Instantiate(confettiPrefab, GameManager.Instance.CardParent);
-            ShowNavigation();
-            OnFinished?.Invoke(this);
-        }
-#if UNITY_EDITOR
-        public void SetInitialEcosystem(
-            List<bool> plants,
-            List<int> randomSeeds,
-            List<float> sizes,
-            List<float> greeds,
-            List<bool> editables)
-        {
-            this.plants = plants;
-            this.randomSeeds = randomSeeds;
-            this.sizes = sizes;
-            this.greeds = greeds;
-            this.editables = editables;
-        }
-        public static void SaveToNewPrefab(
-            string prefabName,
-            List<bool> plants,
-            List<int> randomSeeds,
-            List<float> sizes,
-            List<float> greeds,
-            List<bool> editables)
-        {
-            var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
-            // var level = PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
-            level.GetComponent<Level>().SetInitialEcosystem(plants, randomSeeds, sizes, greeds, editables);
-            bool success;
-            PrefabUtility.SaveAsPrefabAsset(level, "Assets/Prefabs/Levels/"+prefabName+".prefab", out success);
-            Destroy(level);
-        }
-#endif
+// #if UNITY_EDITOR
+//         public void SetInitialEcosystem(
+//             List<bool> plants,
+//             List<int> randomSeeds,
+//             List<float> sizes,
+//             List<float> greeds,
+//             List<bool> editables)
+//         {
+//             this.plants = plants;
+//             this.randomSeeds = randomSeeds;
+//             this.sizes = sizes;
+//             this.greeds = greeds;
+//             this.editables = editables;
+//         }
+//         public static void SaveToNewPrefab(
+//             string prefabName,
+//             List<bool> plants,
+//             List<int> randomSeeds,
+//             List<float> sizes,
+//             List<float> greeds,
+//             List<bool> editables)
+//         {
+//             var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
+//             level.GetComponent<Level>().SetInitialEcosystem(plants, randomSeeds, sizes, greeds, editables);
+//             bool success;
+//             PrefabUtility.SaveAsPrefabAsset(level, "Assets/Prefabs/Levels/"+prefabName+".prefab", out success);
+//             Destroy(level);
+//         }
+// #endif
     }
 }

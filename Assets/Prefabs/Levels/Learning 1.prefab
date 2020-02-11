@@ -364,7 +364,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.title
-      value: 1. Structure
+      value: Introduction
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -481,7 +481,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.completedMessage
-      value: Well done! Tap this button to finish the level.
+      value: 'Well done! Tap this button to finish the level. '
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -534,6 +534,16 @@ PrefabInstance:
         type: 3}
       propertyPath: sizeSliderHidden
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: superfocusAllowed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.metric
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5134734909436383823, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

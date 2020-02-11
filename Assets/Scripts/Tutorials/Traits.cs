@@ -12,8 +12,8 @@ namespace EcoBuilder.Tutorials
         {
             incubator.HideStartButtons(true);
             inspector.HideRemoveButton(true);
-            score.HideScore(true);
-            score.HideConstraints(true);
+            score.Hide(true);
+            constraints.Show(false);
             score.DisableStarCalculation(true);
             targetSize = new Vector2(100,100);
             targetZRot = 45;
@@ -37,6 +37,7 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
             StopAllCoroutines();
+
             help.Message = "You can change the weight of your species by moving this slider. Here, your animal is going extinct because it is not getting enough food. See if you can save it!";
             help.Showing = true;
             help.SetSide(true, false);
@@ -69,7 +70,7 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines();
             help.Showing = false;
 
-            help.Message = "The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. Try changing the animal here in order to make it go extinct again.";
+            help.Message = "The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. You should also notice that heavier species have darker colours, so that you can tell how heavy a species is just by a glance. Try changing the animal here in order to make it go extinct again.";
             help.Showing = true;
 
             StartCoroutine(ShuffleOnSlider(3, 40));
@@ -91,14 +92,7 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.9f);
 
             print("TODO: fix the report card");
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species and their populations, shown by the health bars next to each species. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.HideScore(false); score.DisableStarCalculation(false); }));
-            AttachSmellyListener<Level>(GameManager.Instance.PlayedLevel, "OnFinished", l=>Finish());
-        }
-        void Finish()
-        {
-            // should be dealt with by PlayManager
-            // help.SetPixel(.7f);
-            // help.SetDistFromTop(.25f);
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species and their populations, shown by the health bars next to each species. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {

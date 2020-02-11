@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
-using SparseMatrix;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace EcoBuilder.NodeLink
 {
@@ -12,7 +11,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float layoutSmoothTime;
 
         Vector3 nodesVelocity, graphVelocity;
-        void TweenNodes()
+        void TweenNodesToStress()
         {
             if (!tweenNodes) {
                 return;
@@ -21,26 +20,16 @@ namespace EcoBuilder.NodeLink
             {
                 // get average of all positions, and center
                 Vector2 centroid;
-                if (focusState == FocusState.Focus)
+                centroid = Vector3.zero;
+                foreach (Node no in nodes)
                 {
-                    centroid = focusedNode.StressPos;
-
-                    nodesParent.localPosition = Vector3.SmoothDamp(nodesParent.localPosition, -Vector3.up*centroid.y, ref nodesVelocity, layoutSmoothTime);
-                    graphParent.localPosition = Vector3.SmoothDamp(graphParent.localPosition, Vector3.up*focusHeight, ref graphVelocity, layoutSmoothTime);
+                    Vector2 pos = no.StressPos;
+                    centroid += pos;
                 }
-                else // if not focus
-                {
-                    centroid = Vector3.zero;
-                    foreach (Node no in nodes)
-                    {
-                        Vector2 pos = no.StressPos;
-                        centroid += pos;
-                    }
-                    centroid /= nodes.Count;
+                centroid /= nodes.Count;
 
-                    nodesParent.localPosition = Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
-                    graphParent.localPosition = Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused, ref graphVelocity, layoutSmoothTime);
-                }
+                nodesParent.localPosition = Vector3.SmoothDamp(nodesParent.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
+                graphParent.localPosition = Vector3.SmoothDamp(graphParent.localPosition, graphParentUnfocused, ref graphVelocity, layoutSmoothTime);
 
                 if (ConstrainTrophic)
                 {
@@ -80,9 +69,9 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float zoomSmoothTime;
         float graphScale=1, graphScaleTarget=1, graphScaleVelocity=0;
         Vector3 panVelocity;
-        void TweenZoom()
+        void TweenZoomToFit()
         {
-            if (focusState == FocusState.Unfocus || focusState == FocusState.Frozen)
+            if (focusState != FocusState.SuperFocus)
             {
                 // adjust zoom target and pan when unfocused
                 float maxError = float.MinValue;
@@ -100,11 +89,7 @@ namespace EcoBuilder.NodeLink
                 // reset pan
                 transform.localPosition = Vector3.SmoothDamp(transform.localPosition, Vector3.zero, ref panVelocity, layoutSmoothTime);
             }
-            else if (focusState == FocusState.Focus)
-            {
-                // graphScale = Mathf.SmoothDamp(graphScale, 1.2f, ref graphScaleVelocity, zoomSmoothTime);
-            }
-            else if (focusState == FocusState.SuperFocus)
+            else // superfocus
             {
                 graphScale = Mathf.SmoothDamp(graphScale, 1, ref graphScaleVelocity, zoomSmoothTime);
             }
@@ -141,8 +126,8 @@ namespace EcoBuilder.NodeLink
             public int i, j;
             public float d, w;
         }
-        static List<StressTerm> terms = new List<StressTerm>();
-        static List<Vector2> pos = new List<Vector2>();
+        static List<StressTerm> sgdTerms = new List<StressTerm>();
+        static List<Vector2> sgdPos = new List<Vector2>();
         static Dictionary<int, int> squished = new Dictionary<int, int>();
         static List<int> unsquished = new List<int>();
 
@@ -150,9 +135,12 @@ namespace EcoBuilder.NodeLink
         static List<int> sgdSources = new List<int>();
         static List<int> sgdTargets = new List<int>();
 
+        [SerializeField] int t_init, t_max;
+        [SerializeField] float eps;
+
         private void LayoutSGD(int seed=0)
         {
-            pos.Clear(); // node positions
+            sgdPos.Clear(); // node positions
             squished.Clear();
             unsquished.Clear();
 
@@ -161,7 +149,11 @@ namespace EcoBuilder.NodeLink
             {
                 squished[i] = unsquished.Count;
                 unsquished.Add(i);
-                pos.Add(new Vector2((float)rand.NextDouble(), (float)rand.NextDouble()));
+                if (!ConstrainTrophic) {
+                    sgdPos.Add(new Vector2(squished[i], (float)rand.NextDouble()));
+                } else {
+                    sgdPos.Add(new Vector2(squished[i], nodes[i].StressPos.y));
+                }
             }
             sgdSources.Clear();
             sgdTargets.Clear();
@@ -176,7 +168,7 @@ namespace EcoBuilder.NodeLink
             sgdSources.Add(sgdTargets.Count); // to iterate to next
 
             // calculate terms with BFS
-            terms.Clear();
+            sgdTerms.Clear();
             int d_max = 0;
             var q = new Queue<int>();
             for (int source=0; source<sgdSources.Count-1; source++)
@@ -198,7 +190,7 @@ namespace EcoBuilder.NodeLink
 
                             if (source < next) // only add every other term
                             {
-                                terms.Add(new StressTerm () {
+                                sgdTerms.Add(new StressTerm () {
                                     i=source,
                                     j=next,
                                     d=d[next],
@@ -212,36 +204,83 @@ namespace EcoBuilder.NodeLink
             }
 
             // perform optimisation
-            foreach (float eta in SGDSchedule(d_max, 15, .1f))
+            foreach (float eta in SGDSchedule(d_max, t_init, t_max, eps))
             {
-                FYShuffle(terms, rand);
-                foreach (var term in terms)
+                FYShuffle(sgdTerms, rand);
+                foreach (var term in sgdTerms)
                 {
-                    Vector2 X_ij = pos[term.i] - pos[term.j];
+                    Vector2 X_ij = sgdPos[term.i] - sgdPos[term.j];
 
                     float mag = X_ij.magnitude;
                     float mu = Mathf.Min(term.w * eta, 1);
                     Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
                    
-                    pos[term.i] -= mu * r;
-                    pos[term.j] += mu * r;
+                    sgdPos[term.i] -= mu * r;
+                    sgdPos[term.j] += mu * r;
                 }
-                // // clamp back to y-axis position if constrained
-                // if (ConstrainTrophic) {
-                //     for (int i=0; i<pos.Count; i++) {
-                //         // pos[i] = new Vector2(pos[i].x, nodes[unsquished[i]].StressPos.y);
-                //         pos[i] = Vector2.Lerp(pos[i], new Vector2(pos[i].x, nodes[unsquished[i]].StressPos.y), .5f);
-                //     }
-                // }
+                // clamp back to y-axis position if constrained
+                if (ConstrainTrophic) {
+                    for (int i=0; i<sgdPos.Count; i++) {
+                        sgdPos[i] = new Vector2(sgdPos[i].x, nodes[unsquished[i]].StressPos.y);
+                        // pos[i] = Vector2.Lerp(nodes[unsquished[i]].StressPos, new Vector2(pos[i].x, nodes[unsquished[i]].StressPos.y), .5f);
+                    }
+                }
             }
-            // move positions back into nodes
-            for (int i=0; i<pos.Count; i++) {
-                nodes[unsquished[i]].StressPos = pos[i];
+
+            // SGDProcrustesFlipComponents();
+            print("TODO: ordering and flipping");
+            for (int i=0; i<sgdPos.Count; i++)
+            {
+                nodes[unsquished[i]].StressPos = sgdPos[i];
             }
         }
-        private IEnumerable<float> SGDSchedule(int d_max, int t_max, float eps)
+        // reassigns positions, but flips components if it will preserve distances better
+        private void SGDProcrustesFlipComponents()
+        {
+            var oldCentroids = new float[NumComponents];
+            var newCentroids = new float[NumComponents];
+            var counts = new int[NumComponents];
+            foreach (int idx in componentMap.Keys)
+            {
+                int cc = componentMap[idx];
+                oldCentroids[cc] += nodes[idx].StressPos.x;
+                newCentroids[cc] += sgdPos[squished[idx]].x;
+                counts[cc] += 1;
+            }
+            for (int i=0; i<NumComponents; i++)
+            {
+                oldCentroids[i] /= counts[i];
+                newCentroids[i] /= counts[i];
+            }
+
+            // second dimension holds sum of errors for flipped, not flipped
+            var errors = new float[NumComponents, 2];
+            foreach (int idx in componentMap.Keys)
+            {
+                int cc = componentMap[idx];
+                float error = (nodes[idx].StressPos.x - oldCentroids[cc])  - (sgdPos[squished[idx]].x - newCentroids[cc]);
+                errors[cc,0] += error * error;
+
+                float flippedError = (nodes[idx].StressPos.x - oldCentroids[cc])  + (sgdPos[squished[idx]].x - newCentroids[cc]);
+                errors[cc,1] += flippedError * flippedError;
+            }
+            foreach (int idx in componentMap.Keys)
+            {
+                int cc = componentMap[idx];
+                var pos = sgdPos[squished[idx]];
+                if (errors[cc,0] > errors[cc,1]) {
+                    pos.x = -pos.x; // reflect
+                }
+                nodes[idx].StressPos = pos;
+            }
+        }
+        private static IEnumerable<float> SGDSchedule(int d_max, int t_init, int t_max, float eps)
         {
             float eta_max = d_max*d_max;
+            for (int t=0; t<t_init; t++)
+            {
+                yield return eta_max; // extra iterations to escape local minima
+            }
             float lambda = Mathf.Log(eta_max/eps) / (t_max-1);
             for (int t=0; t<t_max; t++)
             {
@@ -260,7 +299,7 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        /////////////////////////////
+        /////////////////////////////////////////////
         // fine tune with majorization every frame
 
         private Queue<int> todoBFS = new Queue<int>();
@@ -270,16 +309,40 @@ namespace EcoBuilder.NodeLink
                 return;
             }
             int i = todoBFS.Dequeue(); // only do one vertex at a time
-            if (ConstrainTrophic && !LaplacianDetZero)
+            if (ConstrainTrophic)
             {
-                TrophicGaussSeidel();
-                // LayoutMajorizationHorizontal(i);
+                if (!LaplacianDetZero)
+                {
+                    TrophicGaussSeidel();
+                    MoveNodesToTrophicLevel(.1f);
+
+                    // print("TODO: reorder superfocus");
+                    // if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
+                    //     SuperFocus(focusedNode.Idx);
+
+                }
+                LayoutMajorizationHorizontal(i);
             }
             else
             {
-                // LayoutMajorization(i);
+                LayoutMajorization(i);
             }
+
             todoBFS.Enqueue(i);
+        }
+        private void MoveNodesToTrophicLevel(float lerp=1)
+        {
+            Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
+            float trophicScaling = 1;
+            if (MaxTrophicLevel > MaxChain+1)
+            {
+                trophicScaling = (MaxChain+1) / MaxTrophicLevel;
+            }
+            foreach (Node no in nodes)
+            {
+                float y = Mathf.Lerp(no.StressPos.y, trophicScaling * (trophicLevels[no.Idx]-1), lerp);
+                no.StressPos = new Vector2(no.StressPos.x, y);
+            }
         }
         private void LayoutMajorization(int i)
         {

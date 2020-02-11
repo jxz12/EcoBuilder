@@ -2,8 +2,10 @@ dad
 claim moneys
 
 
-MAKE LAYOUT DETERMINISTIC
-DO UI HEALTH BARS
+LEVEL FINISH
+are you sure button
+
+health bars
 don't outline species unless they're non editable too
 
 # Menu
@@ -26,10 +28,12 @@ verify high scores by checking matrices
 
 # Other
 Tidy report card (move it into the tan bar and make it 'hop out')
-make layout deterministic
 make healthbars into UI objects
 remove landscapes and just use planet instead
 double check the teams visualisations
+double check superfocus
+charming node animations
+more fidelity in link balls
 release game with australian fires as angle?
 
 experiments to see how the score changes over time
@@ -47,13 +51,6 @@ The species with the... is...
 
 Phone Simulator
 
-
-
-
-
-
-
-
-
-
-This level is the same as the last one, but you are not allowed to edit the existing species! You are however allowed to add one of your own. Good luck!
+Exclusion
+In this level you will learn about why there are so few red squirrels in the UK.
+Here there are three species, but the 

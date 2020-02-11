@@ -9,8 +9,8 @@ namespace EcoBuilder.Tutorials
         protected override void StartLesson()
         {
             inspector.HideRemoveButton();
-            score.HideScore(true);
-            score.HideConstraints(true);
+            score.Hide(true);
+            constraints.Show(false);
             recorder.gameObject.SetActive(false);
             score.DisableStarCalculation(true);
 
@@ -19,6 +19,8 @@ namespace EcoBuilder.Tutorials
 
         void ExplainIntro()
         {
+            DetachSmellyListeners();
+
             targetSize = new Vector2(100,100);
             targetPos = new Vector2(-61,115);
             targetAnchor = new Vector2(1,0);
@@ -26,11 +28,12 @@ namespace EcoBuilder.Tutorials
 
             incubator.SetConsumerAvailability(false);
 
-            DetachSmellyListeners();
             AttachSmellyListener<bool>(incubator, "OnIncubated", b=>ExplainInspector());
         }
         void ExplainInspector()
         {
+            DetachSmellyListeners();
+
             targetPos = new Vector2(160, 50);
             targetAnchor = new Vector2(.5f, 0);
             targetZRot = 450;
@@ -40,7 +43,6 @@ namespace EcoBuilder.Tutorials
             help.SetSide(true);
             help.SetAnchorHeight(.5f);
 
-            DetachSmellyListeners();
             AttachSmellyListener<int, GameObject>(inspector, "OnSpawned", ExplainSpawn);
             AttachSmellyListener(nodelink, "OnEmptyTapped", ExplainIntro);
         }
@@ -48,6 +50,7 @@ namespace EcoBuilder.Tutorials
         int firstIdx;
         void ExplainSpawn(int idx, GameObject first)
         {
+            DetachSmellyListeners();
             targetAnchor = new Vector2(1,0);
             targetPos = new Vector2(-61, 60);
             targetZRot = 270;
@@ -61,7 +64,6 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.95f, false);
             help.Showing = true;
 
-            DetachSmellyListeners();
             AttachSmellyListener<int, GameObject>(inspector, "OnSpawned", ExplainInteraction);
             AttachSmellyListener<bool>(incubator, "OnIncubated", (b)=>{ help.Showing = false; targetSize = Vector2.zero; });
             AttachSmellyListener(incubator, "OnUnincubated", ()=>{ help.Showing = true; targetSize = new Vector2(100,100); });
@@ -71,6 +73,7 @@ namespace EcoBuilder.Tutorials
         int secondIdx;
         void ExplainInteraction(int idx, GameObject second)
         {
+            DetachSmellyListeners();
             secondSpecies = second;
             secondIdx = idx;
 
@@ -92,12 +95,13 @@ namespace EcoBuilder.Tutorials
             targetZRot = 360;
             incubator.HideStartButtons();
 
-            DetachSmellyListeners();
             AttachSmellyListener<int,int>(nodelink, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
         }
         void ExplainFirstEcosystem(float delay)
         {
+            DetachSmellyListeners();
             StopAllCoroutines();
+
             targetSize = new Vector2(0,0);
             help.Showing = false;
             nodelink.ForceUnfocus();
@@ -112,12 +116,13 @@ namespace EcoBuilder.Tutorials
                 StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the plant to the animal."; }));
             }
 
-            DetachSmellyListeners();
             AttachSmellyListener<int,int>(nodelink, "OnUserUnlinked", (i,j)=>ExplainRemove1(1));
         }
         void ExplainRemove1(float delay)
         {
+            DetachSmellyListeners();
             StopAllCoroutines();
+
             help.Showing = false;
             nodelink.ForceUnfocus();
             inspector.HideRemoveButton(false);
@@ -126,12 +131,13 @@ namespace EcoBuilder.Tutorials
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; targetSize = new Vector3(100,100); targetZRot = 360; }));
             StartCoroutine(Track(secondSpecies.transform));
 
-            DetachSmellyListeners();
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainRemove2());
         }
         void ExplainRemove2()
         {
+            DetachSmellyListeners();
             StopAllCoroutines(); // stop tracking
+
             targetAnchor = new Vector2(.5f, 0);
             targetPos = new Vector2(160, 50);
             targetZRot = 450;
@@ -141,12 +147,12 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.2f);
             help.Message = "And tap this skull button to remove the species.";
 
-            DetachSmellyListeners();
             AttachSmellyListener(nodelink, "OnUnfocused", ()=>ExplainRemove1(0));
             AttachSmellyListener<int>(inspector, "OnUserDespawned", i=>ExplainUndo(1.5f));
         }
         void ExplainUndo(float wait)
         {
+            DetachSmellyListeners();
             targetAnchor = new Vector2(0, 0);
             targetZRot = 405;
 
@@ -159,29 +165,30 @@ namespace EcoBuilder.Tutorials
 
             StartCoroutine(WaitThenDo(wait, ()=> { help.Showing = true; help.Message = "And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."; }));
 
-            DetachSmellyListeners();
             AttachSmellyListener<int>(recorder, "OnSpeciesUndone", (i)=>ExplainFinishCondition(1.5f));
         }
         void ExplainFinishCondition(float delay)
         {
+            DetachSmellyListeners();
             StopAllCoroutines();
+
             targetSize = new Vector2(0,0);
             targetZRot = 315;
 
+            score.DisableStarCalculation(false); 
             help.SetAnchorHeight(.95f);
             help.Showing = false;
             // help.SetSide(false, false);
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; }));
 
-            DetachSmellyListeners();
             AttachSmellyListener(score, "OnLevelCompletabled", ExplainFinish);
-
-            score.DisableStarCalculation(false); 
         }
         void ExplainFinish()
         {
+            DetachSmellyListeners();
             StopAllCoroutines();
+
             targetSize = new Vector2(100,100);
 
             // do not smooth for this
@@ -192,12 +199,11 @@ namespace EcoBuilder.Tutorials
             // help.Message = "Well done! Tap this button to finish the level.";
             // help.Showing = true;
 
-            DetachSmellyListeners();
-            AttachSmellyListener<Level>(GameManager.Instance.PlayedLevel, "OnFinished", l=>ExplainNavigation(l, 2f));
+            AttachSmellyListener(GameManager.Instance, "OnPlayedLevelFinished", ()=>ExplainNavigation(2f));
         }
-        Level finishedLevel = null;
-        void ExplainNavigation(Level finished, float delay)
+        void ExplainNavigation(float delay)
         {
+            DetachSmellyListeners();
             targetAnchor = new Vector2(.5f,0);
             targetZRot = 405;
             targetPos = new Vector2(140, 70);
@@ -206,27 +212,25 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             StartCoroutine(WaitThenDo(delay, ()=> { help.SetSide(false, false); help.Showing = true; help.SetPivotHeight(0); help.SetAnchorHeight(.4f); help.Message = "Great! You can access the next level by tapping it here."; }));
 
-            finishedLevel = finished;
-            DetachSmellyListeners();
-            AttachSmellyListener(finishedLevel.NextLevelInstantiated, "OnCarded", ExplainNextLevel);
+            // AttachSmellyListener(finishedLevel.NextLevelInstantiated, "OnCarded", ExplainNextLevel);
         }
-        Canvas onTop;
-        void ExplainNextLevel()
-        {
-            // targetSize = new Vector2(140, 140);
-            targetPos = new Vector2(50, 300);
+        // Canvas onTop;
+        // void ExplainNextLevel()
+        // {
+        //     // targetSize = new Vector2(140, 140);
+        //     targetPos = new Vector2(50, 300);
 
-            if (onTop == null)
-            {
-                onTop = gameObject.AddComponent<Canvas>();
-                onTop.overrideSorting = true;
-                onTop.sortingOrder = 3;
-                // no need to remove this if undone because on top is always okay
-            }
+        //     if (onTop == null)
+        //     {
+        //         onTop = gameObject.AddComponent<Canvas>();
+        //         onTop.overrideSorting = true;
+        //         onTop.sortingOrder = 3;
+        //         // no need to remove this if undone because on top is always okay
+        //     }
 
-            DetachSmellyListeners();
-            AttachSmellyListener(finishedLevel.NextLevelInstantiated, "OnThumbnailed", ()=>ExplainNavigation(finishedLevel, 0));
-        }
+        //     DetachSmellyListeners();
+        //     // AttachSmellyListener(finishedLevel.NextLevelInstantiated, "OnThumbnailed", ()=>ExplainNavigation(finishedLevel, 0));
+        // }
 
         // bool waiting = false;
         IEnumerator WaitThenDo(float seconds, Action Todo)

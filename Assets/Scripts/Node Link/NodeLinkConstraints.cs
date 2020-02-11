@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using SparseMatrix;
 
@@ -10,10 +11,12 @@ namespace EcoBuilder.NodeLink
 	{
         public int NumComponents { get; private set; } = 0;
         public int NumEdges { get; private set; } = 0;
+
+        public float MaxTrophicLevel { get; private set; } = 0;
         public bool LaplacianDetZero { get; private set; } = false;
 
         private List<int> TallestNodes { get; set; }
-        public int MaxChain { get; private set; }
+        public int MaxChain { get; private set; } = 0;
         private List<int> LongestLoop { get; set; }
         public int MaxLoop { get { return LongestLoop==null? 0 : LongestLoop.Count; } }
 
@@ -21,19 +24,20 @@ namespace EcoBuilder.NodeLink
         //////////////////////////////////////////////////////////////
         // to separate components in layout and calculate disjointness
 
-        // returns number of connected components (undirected)
-        private static Dictionary<int, int> components = new Dictionary<int, int>();
-        private int SeparateComponents()
+        private static Dictionary<int, int> componentMap = new Dictionary<int, int>();
+        // returns number of weakly connected components (ordered by x position)
+        private void CountConnectedComponents()
         {
-            components.Clear();
+            componentMap.Clear();
             var q = new Queue<int>();
             int ncc = 0;
-            foreach (int source in nodes.Indices)
+            foreach (int source in undirected.Keys)
+            // foreach (int source in undirected.Keys.OrderBy(i=> nodes[i].StressPos.x))
             {
-                if (components.ContainsKey(source)) {
+                if (componentMap.ContainsKey(source)) {
                     continue;
                 }
-                components[source] = ncc;
+                componentMap[source] = ncc;
                 q.Clear();
                 
                 q.Enqueue(source);
@@ -42,18 +46,23 @@ namespace EcoBuilder.NodeLink
                     int prev = q.Dequeue();
                     foreach (int next in undirected[prev])
                     {
-                        if (!components.ContainsKey(next))
+                        if (!componentMap.ContainsKey(next))
                         {
-                            Assert.IsFalse(components.ContainsKey(next), $"{next} already in explored component");
-                            components[next] = ncc;
+                            Assert.IsFalse(componentMap.ContainsKey(next), $"{next} already in explored component");
+                            componentMap[next] = ncc;
                             q.Enqueue(next);
                         }
                     }
                 }
                 ncc += 1;
             }
+            NumComponents = ncc;
+        }
+        public void SeparateConnectedComponents()
+        {
+            int ncc = NumComponents;
             if (ncc <= 1) { // don't change layout if ncc is 0 or 1
-                return ncc;
+                return;
             }
 
             // min and max for each component
@@ -63,9 +72,9 @@ namespace EcoBuilder.NodeLink
                 ranges[i,0] = float.MaxValue;
                 ranges[i,1] = float.MinValue;
             }
-            foreach (int idx in nodes.Indices)
+            foreach (int idx in componentMap.Keys)
             {
-                int cc = components[idx];
+                int cc = componentMap[idx];
                 var pos = nodes[idx].StressPos;
                 ranges[cc,0] = Mathf.Min(ranges[cc,0], pos.x);
                 ranges[cc,1] = Mathf.Max(ranges[cc,1], pos.x);
@@ -80,43 +89,37 @@ namespace EcoBuilder.NodeLink
             }
 
             // place in order on x axis
-            foreach (int idx in nodes.Indices)
+            foreach (int idx in componentMap.Keys)
             {
-                int cc = components[idx];
-                Vector2 pos = nodes[idx].StressPos;
-                nodes[idx].StressPos = new Vector2(pos.x+offsets[cc], pos.y);
+                int cc = componentMap[idx];
+                nodes[idx].StressPos += new Vector2(offsets[cc], 0);
             }
-            return ncc;
         }
 
         ///////////////////////////////////////////////////////////////////////
         // for trophic level calculation (and chain length as a consequence)
 
-        private int RefreshTrophicAndFindChain(int nIterGS=0)
+        private void RefreshTrophicAndFindChain(int nIterGS=0)
         {
             HashSet<int> basal = BuildTrophicEquations();
             for (int i=0; i<nIterGS; i++) {
                 TrophicGaussSeidel();
             }
+            MoveNodesToTrophicLevel();
 
             var heights = HeightBFS(basal);
             LaplacianDetZero = (heights.Count != nodes.Count);
 
-            print("TODO: reorder superfocus");
-            // if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
-            //     SuperFocus(focusedNode.Idx);
-
-            int maxChain = 0;
+            MaxChain = 0;
             foreach (int height in heights.Values) {
-                maxChain = Math.Max(height, maxChain);
+                MaxChain = Math.Max(height, MaxChain);
             }
             TallestNodes = new List<int>();
             foreach (int idx in heights.Keys) {
-                if (heights[idx] == maxChain) {
+                if (heights[idx] == MaxChain) {
                     TallestNodes.Add(idx);
                 }
             }
-            return maxChain;
         }
 
         public bool ConstrainTrophic { private get; set; }
@@ -149,7 +152,7 @@ namespace EcoBuilder.NodeLink
         }
 
         // tightly optimised gauss-seidel iteration because of the simplicity of the laplacian
-        void TrophicGaussSeidel()
+        private void TrophicGaussSeidel()
         {
             SparseVector<float> temp = new SparseVector<float>();
             foreach (var ij in links.IndexPairs)
@@ -157,23 +160,11 @@ namespace EcoBuilder.NodeLink
                 int res = ij.Item1, con = ij.Item2;
                 temp[con] += trophicA[con] * trophicLevels[res];
             }
-            float maxTrophic = 0;
+            MaxTrophicLevel = 0;
             foreach (int i in nodes.Indices)
             {
                 trophicLevels[i] = (1 - temp[i]);
-                maxTrophic = Mathf.Max(trophicLevels[i], maxTrophic);
-            }
-            float trophicScaling = 1;
-            if (maxTrophic > MaxChain+1)
-            {
-                trophicScaling = (MaxChain+1) / maxTrophic;
-            }
-            foreach (Node no in nodes)
-            {
-                Vector2 newPos = no.StressPos;
-                // newPos.y = Mathf.Lerp(newPos.y, trophicScaling * (trophicLevels[no.Idx]-1), .1f);
-                newPos.y = trophicScaling * (trophicLevels[no.Idx]-1);
-                no.StressPos = newPos;
+                MaxTrophicLevel = Mathf.Max(trophicLevels[i], MaxTrophicLevel);
             }
         }
 

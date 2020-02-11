@@ -46,16 +46,6 @@ namespace EcoBuilder.UI
         {
             return constraints[name].value >= constraints[name].threshold;
         }
-        public bool AllSatisfied()
-        {
-            return !Disjoint &&
-                   Feasible &&
-                   IsSatisfied("Leaf") &&
-                   IsSatisfied("Paw") &&
-                   IsSatisfied("Count") &&
-                   IsSatisfied("Chain") &&
-                   IsSatisfied("Loop");
-        }
 
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
@@ -101,7 +91,7 @@ namespace EcoBuilder.UI
         }
         public void DisplayNumComponents(int numComponents)
         {
-            Disjoint = numComponents <= 1;
+            Disjoint = numComponents > 1;
         }
         public void DisplayNumEdges(int numEdges)
         {
@@ -123,11 +113,25 @@ namespace EcoBuilder.UI
         {
 			Stable = isStable;
         }
-
+        public bool AllSatisfied()
+        {
+            return !Disjoint &&
+                   Feasible &&
+                   IsSatisfied("Leaf") &&
+                   IsSatisfied("Paw") &&
+                   IsSatisfied("Count") &&
+                   IsSatisfied("Chain") &&
+                   IsSatisfied("Loop");
+        }
         public void Show(bool visible)
         {
             GetComponent<Animator>().SetBool("Visible", visible);
         }
+        // public void Hide(bool hidden=true)
+        // {
+        //     gameObject.SetActive(!hidden);
+        // }
+
         public void Constrain(string name, int threshold)
         {
             if (threshold < 0) // hide

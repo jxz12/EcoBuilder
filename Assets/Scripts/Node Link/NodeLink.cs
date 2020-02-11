@@ -39,8 +39,9 @@ namespace EcoBuilder.NodeLink
         void Update()
         {
             FineTuneLayout();
-            TweenNodes();
-            TweenZoom();
+
+            TweenNodesToStress();
+            TweenZoomToFit();
             MomentumRotate();
         }
 
@@ -48,10 +49,11 @@ namespace EcoBuilder.NodeLink
         public async void LayoutAsync()
         {
             IsCalculatingAsync = true;
-            MaxChain = RefreshTrophicAndFindChain(1);
+
             await Task.Run(()=> LayoutSGD());
 
-            NumComponents = SeparateComponents();
+            CountConnectedComponents();
+            RefreshTrophicAndFindChain();
             NumEdges = links.Count();
 
             JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
@@ -62,10 +64,10 @@ namespace EcoBuilder.NodeLink
         }
         public void LayoutSync()
         {
-            MaxChain = RefreshTrophicAndFindChain(1);
             LayoutSGD();
 
-            NumComponents = SeparateComponents();
+            CountConnectedComponents();
+            RefreshTrophicAndFindChain();
             NumEdges = links.Count();
 
             JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
@@ -142,8 +144,6 @@ namespace EcoBuilder.NodeLink
                     linkGrave.RemoveAt(row, idx);
                 }
             }
-            // nodes[idx].StressPos = Vector3.back + .5f*UnityEngine.Random.insideUnitSphere;
-            nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle;
             todoBFS.Enqueue(idx);
         }
 

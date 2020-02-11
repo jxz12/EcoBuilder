@@ -7,7 +7,6 @@ namespace EcoBuilder.NodeLink
     {
         [SerializeField] LineRenderer lr;
 
-        [SerializeField] float lineWidth;
         [SerializeField] float curveRatio;
         [SerializeField] int curveSegments;
         [SerializeField] float numBalls;
@@ -38,12 +37,14 @@ namespace EcoBuilder.NodeLink
         }
 
         cakeslice.Outline outline;
+        float defaultLineWidth;
         void Awake()
         {
             outline = gameObject.AddComponent<cakeslice.Outline>();
             // outline.eraseRenderer = true;
             outline.enabled = false;
             lr.material.SetFloat("_RepeatCount", numBalls);
+            defaultLineWidth = lr.widthMultiplier;
         }
 
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
@@ -98,7 +99,7 @@ namespace EcoBuilder.NodeLink
                 lr.SetPosition(0, Source.transform.position);
                 lr.SetPosition(1, Target.transform.position);
             }
-            localWidth = Mathf.SmoothDamp(localWidth, show?lineWidth:0, ref widthocity, .2f);
+            localWidth = Mathf.SmoothDamp(localWidth, show?defaultLineWidth:0, ref widthocity, .2f);
             float lossyWidth = transform.lossyScale.x * localWidth;
             lr.widthMultiplier = lossyWidth;
 

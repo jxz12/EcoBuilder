@@ -122,6 +122,16 @@ PrefabInstance:
       propertyPath: idx
       value: 105
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.metric
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.idx
+      value: 105
+      objectReference: {fileID: 0}
     - target: {fileID: 6679057470555005673, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_Sprite

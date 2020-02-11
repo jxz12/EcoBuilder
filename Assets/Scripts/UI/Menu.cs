@@ -58,20 +58,21 @@ namespace EcoBuilder.UI
 
             // lol
             Action<Level, Level> CheckUnlocked = (level,next)=> {
-                int score = GameManager.Instance.GetHighScoreLocal(level.Idx);
+                int score = GameManager.Instance.GetHighScoreLocal(level.Details.Idx);
+                print($"{level} {score}");
                 // always unlock None levels (should be first)
-                if (score > 0 || level.Metric == Level.ScoreMetric.None)
+                if (score > 0 || level.Details.Metric == LevelDetails.ScoreMetric.None)
                 {
-                    unlockedIdxs.Add(level.Idx);
+                    unlockedIdxs.Add(level.Details.Idx);
                     if (next!=null) {
-                        unlockedIdxs.Add(next.Idx);
+                        unlockedIdxs.Add(next.Details.Idx);
                     }
                 }
-                if (level.Metric != Level.ScoreMetric.None)
+                if (level.Details.Metric != LevelDetails.ScoreMetric.None)
                 {
                     if (score > 0) collectedStars += 1;
-                    if (score > level.TargetScore1) collectedStars += 1;
-                    if (score > level.TargetScore2) collectedStars += 1;
+                    if (score > level.Details.TargetScore1) collectedStars += 1;
+                    if (score > level.Details.TargetScore2) collectedStars += 1;
                     totalStars += 3;
                 }
             };
@@ -83,11 +84,11 @@ namespace EcoBuilder.UI
 
                 var parent = new GameObject().AddComponent<RectTransform>();
                 var level = Instantiate(prefab, parent);
-                instantiated[level.Idx] = level;
+                instantiated[level.Details.Idx] = level;
 
                 parent.SetParent(learningLevels.transform);
                 parent.localScale = Vector3.one;
-                parent.name = prefab.Idx.ToString();
+                parent.name = prefab.Details.Idx.ToString();
 
                 prefab = prefab.NextLevelPrefab;
             }
@@ -98,7 +99,7 @@ namespace EcoBuilder.UI
             while (prefab != null)
             {
                 CheckUnlocked.Invoke(prefab, prefab.NextLevelPrefab);
-                instantiated[prefab.Idx] = prefab;
+                instantiated[prefab.Details.Idx] = prefab;
                 var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
                 var level = leaderboard.GiveLevelPrefab(prefab);
                 SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
@@ -141,7 +142,7 @@ namespace EcoBuilder.UI
         {
             var prefab = firstLearningLevel;
             while (prefab != null) {
-                if (GameManager.Instance.GetHighScoreLocal(prefab.Idx) <= 0) {
+                if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) <= 0) {
                     return false;
                 }
                 prefab = prefab.NextLevelPrefab;

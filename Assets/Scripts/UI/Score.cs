@@ -11,12 +11,13 @@ namespace EcoBuilder.UI
         public event Action OnThreeStarsAchieved;
 
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] Constraints constraints;
         [SerializeField] ReportCard report;
 
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
+
+        [SerializeField] TMPro.TextMeshProUGUI resultsPlay, resultsTop, resultsWorldAvg;
 
         int target1, target2;
         [SerializeField] Color feasibleScoreCol, infeasibleScoreCol;
@@ -25,24 +26,11 @@ namespace EcoBuilder.UI
             feasibleScoreCol = scoreText.color;
             scoreText.color = infeasibleScoreCol;
         }
-        public void SetStarThresholds(Level.ScoreMetric metric, int target1, int target2)
+        public void SetStarThresholds(LevelDetails.ScoreMetric metric, int target1, int target2)
         {
             print("TODO: different metrics");
             this.target1 = target1;
             this.target2 = target2;
-        }
-
-        public void Finish()
-        {
-            Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
-
-            GetComponent<Animator>().SetBool("Visible", false);
-            star1.SetTrigger("Confetti");
-            star2.SetTrigger("Confetti");
-            star3.SetTrigger("Confetti");
-            print("TODO: another confetti for constraint score instead");
-
-            constraints.Show(false);
         }
 
 
@@ -67,13 +55,13 @@ namespace EcoBuilder.UI
             scoreText.text = currentScore.ToString();
             report.SetMessage(explanation);
         }
-        public void UpdateStars()
+        public void UpdateStars(bool scoreValid)
         {
             if (starsDisabled) {
                 return;
             }
             int newNumStars = 0;
-            if (constraints.AllSatisfied())
+            if (scoreValid)
             {
                 newNumStars += 1;
 
@@ -122,19 +110,32 @@ namespace EcoBuilder.UI
             starsDisabled = disabled;
         }
 
+        public void Finish(int oldHighScore, int globalMedian)
+        {
+            Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
+
+            GetComponent<Animator>().SetBool("Visible", false);
+            star1.SetTrigger("Confetti");
+            star2.SetTrigger("Confetti");
+            star3.SetTrigger("Confetti");
+
+            resultsPlay.text = HighestScore.ToString();
+            if (HighestScore > oldHighScore) {
+                print("TODO: congratulations!");
+            }
+            resultsTop.text = Math.Max(HighestScore, oldHighScore).ToString();
+            resultsWorldAvg.text = globalMedian.ToString();
+        }
+
         ///////////////////////
         // stuff for tutorials
 
-        public void HideScore(bool hidden=true)
+        public void Hide(bool hidden=true)
         {
             GetComponent<Animator>().enabled = !hidden;
             if (hidden) {
                 transform.localPosition = new Vector2(0,1000); // hack
             }
-        }
-        public void HideConstraints(bool hidden=true)
-        {
-            constraints.gameObject.SetActive(!hidden);
         }
     }
 }

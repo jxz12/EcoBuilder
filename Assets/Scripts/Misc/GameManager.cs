@@ -2,7 +2,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 
@@ -14,14 +13,20 @@ namespace EcoBuilder
         private static GameManager _gameManager;
         public static GameManager Instance {
             get {
-                Assert.IsNotNull(_gameManager, "No active GameManager");
+                if (_gameManager == null)
+                {
+                    _gameManager = FindObjectOfType<GameManager>();
+                    Assert.IsNotNull(_gameManager, "no GameManager in any scene");
+                }
                 return _gameManager;
             }
         }
         void Awake()
         {
-            Assert.IsNull(_gameManager, "More than one GameManager in scene");
-            _gameManager = this;
+            Assert.IsFalse(_gameManager!=null && _gameManager!=this, "more than one GameManager in scene");
+            if (_gameManager == null) {
+                _gameManager = this;
+            }
             if (SceneManager.sceneCount == 1) { // on startup
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
@@ -32,20 +37,9 @@ namespace EcoBuilder
         {
             print("TODO: set this to the dependent on screen size for webgl");
             print("TODO: disable full screen for desktop?!");
-// #if !UNITY_WEBGL
-//             Screen.SetResolution(576, 1024, false);
-//             Screen.fullScreen = true;
-// #endif
-#if UNITY_EDITOR
-            for (int i=0; i<SceneManager.sceneCount; i++)
-            {
-                if (SceneManager.GetSceneAt(i).name == "Play")
-                {
-                    PlayedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab"));
-                    PlayedLevel.Play(); // should cause replay behaviour
-                    break;
-                }
-            }
+#if !UNITY_WEBGL
+            // Screen.SetResolution(576, 1024, false);
+            // Screen.fullScreen = true;
 #endif
         }
         public void Quit()
@@ -67,15 +61,30 @@ namespace EcoBuilder
         // functions to persist levels through scenes //
         ////////////////////////////////////////////////
 
-        public Level PlayedLevel { get; private set; } = null;
-        public void LoadLevelScene(Level toPlay)
-        {
-            if (PlayedLevel != null) // if playing already
-            {
-                if (PlayedLevel != toPlay)
+        private Level playedLevel;
+        public LevelDetails PlayedLevelDetails {
+            get {
+#if UNITY_EDITOR
+                if (playedLevel == null)
                 {
-                    Destroy(PlayedLevel.gameObject);
-                    PlayedLevel = toPlay;
+                    playedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab"));
+                    playedLevel.Play(); // should cause replay behaviour
+                    playedLevel.Unlock();
+                }
+#else
+                Assert.IsNotNull(playedLevel, "no level being played");
+#endif
+                return playedLevel.Details;
+            }
+        }
+        public void PlayLevel(Level toPlay)
+        {
+            if (playedLevel != null) // if playing already
+            {
+                if (playedLevel != toPlay)
+                {
+                    Destroy(playedLevel.gameObject);
+                    playedLevel = toPlay;
                 } else {
                     // replay level so no need to destroy
                 }
@@ -84,9 +93,19 @@ namespace EcoBuilder
             else
             {
                 // play from menu
-                PlayedLevel = toPlay;
+                playedLevel = toPlay;
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
+        }
+        public void MakePlayedLevelFinishable()
+        {
+            playedLevel.ShowFinishFlag();
+        }
+        public event Action OnPlayedLevelFinished;
+        public void FinishLevel(Level toFinish)
+        {
+            Assert.IsTrue(playedLevel == toFinish, "not playing level to be initialised");
+            OnPlayedLevelFinished.Invoke();
         }
 
         // for levels to attach to
@@ -100,6 +119,7 @@ namespace EcoBuilder
         ///////////////////
         // scene loading //
         ///////////////////
+
         [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
         [Serializable] public class MyFloatEvent : UnityEvent<float> {}
         [SerializeField] MyFloatEvent OnLoadingProgress;
@@ -132,15 +152,16 @@ namespace EcoBuilder
 
         public void ReturnToMenu()
         {
-            if (PlayedLevel != null) {
-                PlayedLevel = null; // level destroys itself so no need to do it here
+            if (playedLevel != null) {
+                playedLevel = null; // level destroys itself so no need to do it here
             }
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
         }
 
 
         ///////////////////////////
-        // showing help messages
+        // showing help messages //
+        ///////////////////////////
 
         [SerializeField] UI.Help helpText;
         public UI.Help HelpText { get { return helpText; } }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,13 +19,18 @@ namespace EcoBuilder.NodeLink
         enum FocusState { Unfocus, Focus, SuperFocus, Frozen }; // frozen is end of game
         FocusState focusState = FocusState.Unfocus;
         Node focusedNode = null;
-        public void FocusNode(int idx) // called on click
+        private void FocusNode(int idx) // called on click
         {
+            Assert.IsNotNull(nodes[idx], "cannot focus node that is not spawned");
+
             if (focusedNode != nodes[idx])
             {
                 nodes[idx].PushOutline(cakeslice.Outline.Colour.Yellow);
-                if (focusedNode != null) { // focus switched
+                nodes[idx].Enlarge();
+                if (focusedNode != null) // focus switched
+                {
                     focusedNode.PopOutline();
+                    focusedNode.Shrink();
                 }
             }
 
@@ -51,27 +57,24 @@ namespace EcoBuilder.NodeLink
             focusedNode = nodes[idx];
             OnFocused?.Invoke(idx);
         }
-        public void SwitchFocus(int idx) // urgh, this is needed because of undoing
+
+        // this one is public and does not call an event
+        public void SwitchFocus(int idx)
         {
             if (focusedNode != nodes[idx] && nodes[idx] != null)
             {
                 FocusNode(idx);
-                // OnNodeFocused?.Invoke(idx);
             }
         }
         Vector3 defaultNodelinkPos;
         void Unfocus()
         {
-            if (focusState == FocusState.Unfocus)
-            {
-                // reset pan and zoom
-                // StartCoroutine(TweenPan(defaultNodelinkPos, 1f));
-                // StartCoroutine(TweenZoom(Vector3.one, 1f));
-            }
-            else if (focusState == FocusState.Focus)
+            if (focusState == FocusState.Focus)
             {
                 focusedNode.PopOutline();
+                focusedNode.Shrink();
                 focusedNode = null;
+
                 focusState = FocusState.Unfocus;
                 OnUnfocused.Invoke();
             }
@@ -231,11 +234,11 @@ namespace EcoBuilder.NodeLink
             }
             graphParent.localScale = endZoom;
         }
-        void UserPan(Vector2 pixelDelta)
-        {
-            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
-            transform.localPosition += (Vector3)inchesDelta * panPerInch;
-        }
+        // void UserPan(Vector2 pixelDelta)
+        // {
+        //     Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+        //     transform.localPosition += (Vector3)inchesDelta * panPerInch;
+        // }
         IEnumerator TweenPan(Vector3 endPan, float duration)
         {
             Vector3 startZoom = transform.localPosition;
@@ -294,13 +297,13 @@ namespace EcoBuilder.NodeLink
                         FocusNode(pressedNode.Idx);
                         pressedNode = null;
                     }
-                    else if (focusState == FocusState.Focus)
-                    {
-                        Unfocus();
-                    }
                     else if (focusState == FocusState.Unfocus)
                     {
                         OnEmptyTapped?.Invoke();
+                    }
+                    else
+                    {
+                        Unfocus();
                     }
                 }
             }
@@ -355,13 +358,6 @@ namespace EcoBuilder.NodeLink
             if ((ped.pointerId==-1 || ped.pointerId==0)
                 && dummyTarget != null) // checks if snapping should even be tried
             {
-                // if (focusState == FocusState.Focus)
-                // {
-                //     // pan graph a little to reach far away nodes on vertical screen
-                //     Vector3 dragInches = ped.delta / (Screen.dpi==0? 72:Screen.dpi);
-                //     graphParent.transform.localPosition -= dragInches * inversePanPerDragInch;
-                // }
-
                 if (potentialTarget != null) // remove previous outline if needed
                 {
                     pressedNode.PopOutline();
@@ -454,12 +450,12 @@ namespace EcoBuilder.NodeLink
                 }
                 else
                 {
-                    UserPan((t1.deltaPosition + t2.deltaPosition) / 2);
+                    // UserPan((t1.deltaPosition + t2.deltaPosition) / 2);
                 }
             }
             if (ped.pointerId < -1) // or right/middle click
             {
-                UserPan(ped.delta);
+                // UserPan(ped.delta);
                 // Zoom(ped.delta.y);
             }
         }

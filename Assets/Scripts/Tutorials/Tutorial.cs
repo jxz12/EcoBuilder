@@ -64,7 +64,7 @@ namespace EcoBuilder.Tutorials
         // }
         void InitSmellyReferences()
         {
-            help = GameManager.Instance.HelpText;
+            help = FindObjectOfType<UI.Help>();
             inspector = FindObjectOfType<UI.Inspector>();
             incubator = FindObjectOfType<UI.Incubator>();
             score = FindObjectOfType<UI.Score>();

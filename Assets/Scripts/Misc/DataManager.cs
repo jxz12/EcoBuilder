@@ -17,7 +17,7 @@ namespace EcoBuilder
         /////////////////////
 
         [Serializable]
-        class PlayerDetails
+        private class PlayerDetails
         {
             public string username = "";
             public string password = "";
@@ -38,7 +38,7 @@ namespace EcoBuilder
 
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
         // public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
-        public bool ConstrainTrophic { get { return false; } }
+        public bool ConstrainTrophic { get { return true; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
@@ -285,13 +285,12 @@ namespace EcoBuilder
 
         ///////////////////////////////////////////////////////////////////
         // used to cache results from startup in case player goes into tube
-        // TODO: save to file as well in case startup in tube
-        public class LeaderboardCache
+
+        private class LeaderboardCache
         {
             public int idx;
             public int median = 0;
-            public List<string> names = new List<string>();
-            public List<int> scores = new List<int>();
+            public List<Tuple<string, int>> scores = new List<Tuple<string,int>>();
             public LeaderboardCache(int idx) {
                 this.idx = idx;
             }
@@ -299,15 +298,16 @@ namespace EcoBuilder
         // only leaderboard does not require a login
         public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
         {
+            print("TODO: save to file as well in case startup in tube");
             var data = new Dictionary<string, string>() {
                 { "n_scores", n_scores.ToString() }, { "__address__", serverURL+"leaderboards.php" },
             };
             pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
         }
-        private Dictionary<int, LeaderboardCache> cachedLeaderboards;
+        private Dictionary<int, LeaderboardCache> cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
         private void ParseLeaderboards(string returned)
         {
-            cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
+            cachedLeaderboards.Clear();
             var levels = returned.Split(';');
             foreach (var level in levels)
             {
@@ -319,24 +319,26 @@ namespace EcoBuilder
                 for (int i=1; i<scores.Length; i++)
                 {
                     var score = scores[i].Split(':');
-                    toCache.names.Add(score[0]);
-                    toCache.scores.Add(int.Parse(score[1]));
+                    toCache.scores.Add(Tuple.Create(score[0], int.Parse(score[1])));
                 }
                 Assert.IsFalse(cachedLeaderboards.ContainsKey(toCache.idx), "level index already cached");
 
                 cachedLeaderboards[toCache.idx] = toCache;
             }
         }
-        public LeaderboardCache GetCachedLeaderboard(int level_idx)
+        public int GetLeaderboardMedian(int level_idx)
         {
-            if (cachedLeaderboards == null) {
+            if (cachedLeaderboards==null || !cachedLeaderboards.ContainsKey(level_idx)) {
+                return -1;
+            }
+            return cachedLeaderboards[level_idx].median;
+        }
+        public List<Tuple<string, int>> GetLeaderboardScores(int level_idx)
+        {
+            if (cachedLeaderboards==null || !cachedLeaderboards.ContainsKey(level_idx)) {
                 return null;
             }
-            if (!cachedLeaderboards.ContainsKey(level_idx))
-            {
-                cachedLeaderboards[level_idx] = new LeaderboardCache(level_idx);
-            }
-            return cachedLeaderboards[level_idx];
+            return cachedLeaderboards[level_idx].scores;
         }
 
         private void SavePost(Dictionary<string, string> data)
