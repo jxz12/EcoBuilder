@@ -20,16 +20,18 @@ namespace EcoBuilder.Tutorials
         }
         void CheckChainOfHeight(int heightGoal, Action Todo)
         {
-            if (nodelink.MaxChain == heightGoal)
+            if (nodelink.MaxChain == heightGoal) {
                 Todo.Invoke();
+            }
         }
         // ensure only one animal is in system at beginning
         void LimitNumAnimals(int limit)
         {
-            if (constraints.GetPawValue() >= limit)
+            if (constraints.PawValue >= limit) {
                 incubator.SetConsumerAvailability(false);
-            else
+            } else {
                 incubator.SetConsumerAvailability(true);
+            }
         }
         void ExplainChainOfOne()
         {

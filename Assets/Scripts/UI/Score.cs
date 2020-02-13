@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -16,8 +17,6 @@ namespace EcoBuilder.UI
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
-
-        [SerializeField] TMPro.TextMeshProUGUI resultsPlay, resultsTop, resultsWorldAvg;
 
         int target1, target2;
         [SerializeField] Color feasibleScoreCol, infeasibleScoreCol;
@@ -37,36 +36,54 @@ namespace EcoBuilder.UI
 
         public int HighestScore { get; private set; } = 0;
         public int HighestStars { get; private set; } = 0;
-        float totalScore = 0;
+        float currentScore = 0;
         int realisedScore = 0;
 
-        [SerializeField] float scoreMultiplier, supplementMultiplier;
-
-        public void UpdateScore(float score, float supplement)//, string explanation, string explanationSupplement)
+        // to fetch the score
+        List<Func<float>> ScoreSources = new List<Func<float>>();
+        public void AttachScoreSource(Func<float> Normalised, float multiplier)
         {
-            Assert.IsTrue(score >= 0, "cannot have negative score");
-            float newTotalScore = score*scoreMultiplier + supplement*supplementMultiplier;
-
-            if (newTotalScore > totalScore) {
-                scoreText.color = new Color(.2f,.8f,.2f);
-            } else if (newTotalScore < totalScore) {
-                scoreText.color = new Color(.9f,.1f,.1f);
-            }
-            totalScore = newTotalScore;
-
-            realisedScore = (int)totalScore;
-            scoreText.text = realisedScore.ToString();
-            // print("TODO: score explanation and highest score on tap/hover");
-            // report.SetMessage($"{explanation} + {explanationSupplement} = {totalScore}");
+            ScoreSources.Add(()=> multiplier * Normalised());
         }
-
-        public void UpdateStars(bool scoreValid)
+        // to check whether constraints have been met
+        Func<bool> CheckSatisfied = ()=>false;
+        public void AttachConstraintsSatisfied(Func<bool> IsSatisfied)
         {
-            if (starsDisabled) {
+            CheckSatisfied = IsSatisfied;
+        }
+        // this needs to be here to ensure that the calculated components
+        // are synced before moving every frame
+        // we want the score to update even if the model is calculating
+        // but no events triggered in case of false positive due to being out of sync
+        Func<bool> CheckValid = ()=>false;
+        public void AttachScoreValidity(Func<bool> IsValid)
+        {
+            CheckValid = IsValid;
+        }
+        public void Update() //, string explanation, string explanationSupplement)
+        {
+            float newScore = 0;
+            foreach (var Source in ScoreSources) {
+                newScore += Source.Invoke();
+            }
+            Assert.IsTrue(newScore >= 0, "cannot have negative score");
+
+            if (newScore > currentScore) {
+                scoreText.color = new Color(.2f,.8f,.2f);
+            } else if (newScore < currentScore) {
+                scoreText.color = new Color(.9f,.1f,.1f);
+            } 
+            currentScore = newScore;
+
+            realisedScore = (int)currentScore;
+            scoreText.text = realisedScore.ToString();
+
+            // only continue if allowed
+            if (starsDisabled || !CheckValid.Invoke()) {
                 return;
             }
             int newNumStars = 0;
-            if (scoreValid)
+            if (CheckSatisfied.Invoke())
             {
                 newNumStars += 1;
 
@@ -77,11 +94,11 @@ namespace EcoBuilder.UI
                         newNumStars += 1;
                     }
                 }
-                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .3f*Time.deltaTime);
+                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .5f*Time.deltaTime);
             }
             else
             {
-                scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, 3f*Time.deltaTime);
+                scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, 5f*Time.deltaTime);
             }
             if (newNumStars < 2)
             {
@@ -120,10 +137,14 @@ namespace EcoBuilder.UI
             Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
             GetComponent<Animator>().SetBool("Visible", false);
-            star1.SetTrigger("Confetti");
-            star2.SetTrigger("Confetti");
-            star3.SetTrigger("Confetti");
         }
+
+        public void ShowResults(int prevScore, int globalMedian)
+        {
+            report.ShowResults(HighestStars, HighestScore, prevScore, globalMedian);
+        }
+
+
 
 
         ///////////////////////

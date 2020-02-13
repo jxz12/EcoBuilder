@@ -172,14 +172,8 @@ namespace EcoBuilder.UI
                 Display(Type.Paw, consumers.Count);
             }
         }
-        public int GetPawValue()
-        {
-            return constraintMap[Type.Paw].value;
-        }
-        public int GetLeafValue()
-        {
-            return constraintMap[Type.Leaf].value;
-        }
+        public int PawValue { get { return constraintMap[Type.Paw].value; } }
+        public int LeafValue { get { return constraintMap[Type.Leaf].value; } }
 
         public bool AllSatisfied()
         {
@@ -194,6 +188,10 @@ namespace EcoBuilder.UI
         public void Show(bool visible)
         {
             GetComponent<Animator>().SetBool("Visible", visible);
+        }
+        public void Finish()
+        {
+            Show(false);
         }
 
         [SerializeField] Tooltip tooltip;

@@ -8,7 +8,7 @@ namespace EcoBuilder.UI
     public class Incubator : MonoBehaviour,
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
-        public event Action<bool> OnIncubated;
+        public event Action<bool> OnIncubationStarted;
         public event Action OnDropped;
         public event Action OnUnincubated;
 
@@ -25,12 +25,12 @@ namespace EcoBuilder.UI
             GetComponent<Canvas>().worldCamera = Camera.main;
             GetComponent<Canvas>().planeDistance = planeDistance;
 
-            producerButton.onClick.AddListener(()=> Incubate(true));
-            consumerButton.onClick.AddListener(()=> Incubate(false));
+            producerButton.onClick.AddListener(()=> StartIncubation(true));
+            consumerButton.onClick.AddListener(()=> StartIncubation(false));
         }
-        void Incubate(bool isProducer)
+        private void StartIncubation(bool isProducer)
         {
-            OnIncubated?.Invoke(isProducer);
+            OnIncubationStarted?.Invoke(isProducer);
             GetComponent<Animator>().SetBool("Droppable", false);
             GetComponent<Animator>().SetTrigger("Incubate");
             buttonsAnim.SetBool("Visible", false);
@@ -61,6 +61,7 @@ namespace EcoBuilder.UI
         {
             if (incubatedObj != null) {
                 Destroy(incubatedObj);
+                GetComponent<Animator>().SetTrigger("Unincubate");
             }
             buttonsAnim.SetBool("Visible", false);
         }
@@ -95,12 +96,9 @@ namespace EcoBuilder.UI
         {
             if (dragging)
             {
-                if (ped.pointerCurrentRaycast.gameObject == dropZone.gameObject)
-                {
+                if (ped.pointerCurrentRaycast.gameObject == dropZone.gameObject) {
                     GetComponent<Animator>().SetBool("Droppable", true);
-                }
-                else 
-                {
+                } else {
                     GetComponent<Animator>().SetBool("Droppable", false);
                 }
                 Vector3 mousePos = ped.position;

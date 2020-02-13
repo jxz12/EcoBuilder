@@ -11,22 +11,18 @@ namespace EcoBuilder
         [SerializeField] NodeLink.NodeLink nodelink;
 
         [SerializeField] UI.Inspector inspector;
-        [SerializeField] UI.Incubator incubator;
         [SerializeField] UI.Constraints constraints;
         [SerializeField] UI.Recorder recorder;
         [SerializeField] UI.Score score;
-        [SerializeField] UI.Results results;
 
         void Start()
         {
             ////////////////////////////////////
             // hook up events between objects //
             ////////////////////////////////////
-            incubator.OnIncubated +=  (b)=> inspector.IncubateNew(b);
-            incubator.OnIncubated +=  (b)=> nodelink.ForceUnfocus();
-            incubator.OnIncubated +=  (b)=> nodelink.MoveHorizontal(-.5f);
-            incubator.OnDropped +=     ()=> inspector.SpawnIncubated();
-            incubator.OnUnincubated += ()=> nodelink.MoveHorizontal(0);
+            inspector.OnIncubated +=   ()=> nodelink.ForceUnfocus();
+            inspector.OnIncubated +=   ()=> nodelink.MoveHorizontal(-.5f);
+            inspector.OnUnincubated += ()=> nodelink.MoveHorizontal(0);
 
             inspector.OnSpawned +=       (i,g)=> nodelink.AddNode(i,g);
             inspector.OnSpawned +=       (i,g)=> model.AddSpecies(i);
@@ -64,8 +60,8 @@ namespace EcoBuilder
             model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
             model.OnRescued +=    (i)=> nodelink.BounceNode(i);
 
-            constraints.OnProducersAvailable += (b)=> incubator.SetProducerAvailability(b);
-            constraints.OnConsumersAvailable += (b)=> incubator.SetConsumerAvailability(b);
+            constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
+            constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
             constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
             constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
 
@@ -89,7 +85,6 @@ namespace EcoBuilder
             inspector.OnGreedSet +=      (i,x)=> model.TriggerSolve();
             nodelink.OnLinked +=            ()=> model.TriggerSolve();
 
-
             //////////////////////
             // initialise level //
             //////////////////////
@@ -108,6 +103,7 @@ namespace EcoBuilder
             constraints.ConstrainChain(details.MinChain);
             constraints.ConstrainLoop(details.MinLoop);
 
+            // add species
             for (int i=0; i<details.NumInitSpecies; i++)
             {
                 inspector.SpawnNotIncubated(i,
@@ -121,6 +117,7 @@ namespace EcoBuilder
                 nodelink.SetIfNodeRemovable(i, false);
                 nodelink.OutlineNode(i, cakeslice.Outline.Colour.Blue);
             }
+            // add interactions
             for (int ij=0; ij<details.NumInitInteractions; ij++)
             {
                 int i = details.Sources[ij];
@@ -131,6 +128,7 @@ namespace EcoBuilder
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
 
+            // set up scoring
             score.SetStarThresholds(details.Metric, details.TargetScore1, details.TargetScore2);
             score.OnLevelCompletabled +=  ()=> GameManager.Instance.MakePlayedLevelFinishable();
             score.OnLevelCompletabled +=  ()=> nodelink.ForceUnfocus();
@@ -138,13 +136,36 @@ namespace EcoBuilder
             score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
             score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(.5f, details.ThreeStarsMessage);
 
+            switch (GameManager.Instance.PlayedLevelDetails.Metric)
+            {
+            case LevelDetails.ScoreMetric.None:
+                break;
+            case LevelDetails.ScoreMetric.Standard:
+                score.AttachScoreSource(()=> model.GetNormalisedComplexity(), details.MainMultiplier);
+                break;
+            case LevelDetails.ScoreMetric.Richness:
+                score.AttachScoreSource(()=> model.GetNormalisedComplexity(), details.MainMultiplier);
+                score.AttachScoreSource(()=> constraints.PawValue, details.AltMultiplier);
+                break;
+            case LevelDetails.ScoreMetric.Chain:
+                score.AttachScoreSource(()=> model.GetNormalisedComplexity(), details.MainMultiplier);
+                score.AttachScoreSource(()=> nodelink.MaxChain, details.AltMultiplier);
+                break;
+            case LevelDetails.ScoreMetric.Loop:
+                score.AttachScoreSource(()=> model.GetNormalisedComplexity(), details.MainMultiplier);
+                score.AttachScoreSource(()=> nodelink.MaxLoop, details.AltMultiplier);
+                break;
+            }
+            score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
+            score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
+
             GameManager.Instance.HelpText.Showing = false;
             GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
             GameManager.Instance.OnPlayedLevelFinished += FinishPlaythrough;
         }
         void OnDestroy()
         {
-            print("hanging reference here on quit");
+            print("TODO: hanging reference here on quit");
             GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
         }
         void FinishPlaythrough()
@@ -153,50 +174,22 @@ namespace EcoBuilder
             nodelink.Finish();
             recorder.Finish();
             score.Finish();
+            constraints.Finish();
 
             var details = GameManager.Instance.PlayedLevelDetails;
             int oldScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
             int worldAvg = GameManager.Instance.GetLeaderboardMedian(details.Idx);
-            results.Display(score.HighestStars, score.HighestScore, oldScore, worldAvg);
-            GameManager.Instance.SaveHighScoreLocal(details.Idx, score.HighestScore);
+            score.ShowResults(oldScore, worldAvg);
 
+            GameManager.Instance.SaveHighScoreLocal(details.Idx, score.HighestScore);
             if (GameManager.Instance.LoggedIn) {
                 GameManager.Instance.SavePlaythroughRemote(details.Idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
             }
-            Destroy(gameObject);
         }
 
-        // perform calculations if necessary
+#if UNITY_EDITOR
         void Update()
         {
-            switch (GameManager.Instance.PlayedLevelDetails.Metric)
-            {
-            case LevelDetails.ScoreMetric.None:
-                score.UpdateScore(0, 0); // no score
-                break;
-            case LevelDetails.ScoreMetric.Standard:
-                score.UpdateScore(model.GetNormalisedComplexity(), 0);
-                break;
-            case LevelDetails.ScoreMetric.Richness:
-                score.UpdateScore(model.GetNormalisedComplexity(), constraints.GetPawValue());
-                break;
-            case LevelDetails.ScoreMetric.Chain:
-                score.UpdateScore(model.GetNormalisedComplexity(), nodelink.MaxChain);
-                break;
-            case LevelDetails.ScoreMetric.Loop:
-                score.UpdateScore(model.GetNormalisedComplexity(), nodelink.MaxLoop);
-                break;
-            }
-            // this needs to be here to ensure that the calculated components
-            // are synced before moving every frame
-            // we want the score to update even if the model is calculating
-            // but no events triggered in case of false positive due to being out of sync
-            if (nodelink.GraphLayedOut && model.EquilibriumSolved)
-            {
-                score.UpdateStars(constraints.AllSatisfied());
-            }
-
-#if UNITY_EDITOR
             // save a level for convenience
             if (Input.GetKeyDown(KeyCode.Q) &&
                 Input.GetKeyDown(KeyCode.W) &&

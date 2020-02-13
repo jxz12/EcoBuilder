@@ -45,10 +45,12 @@ namespace EcoBuilder
         [SerializeField] List<int> targets;
 
         // score
-        public enum ScoreMetric { None, Standard, Richness, Edges, Chain, Loop }
+        public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
         [SerializeField] ScoreMetric metric;
         [SerializeField] int targetScore1;
         [SerializeField] int targetScore2;
+        [SerializeField] float mainMultiplier;
+        [SerializeField] float altMultiplier;
 
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
@@ -82,6 +84,8 @@ namespace EcoBuilder
         public ScoreMetric Metric { get { return metric; } }
         public int TargetScore1 { get { return targetScore1; } }
         public int TargetScore2 { get { return targetScore2; } }
+        public float MainMultiplier { get { return mainMultiplier; } }
+        public float AltMultiplier { get { return altMultiplier; } }
 
         public LevelDetails(List<int> randomSeeds, List<bool> plants, List<float> sizes, List<float> greeds, List<int> sources, List<int> targets)
         {
@@ -139,7 +143,7 @@ namespace EcoBuilder
             target2.text = details.TargetScore2.ToString();
 
             int score = GameManager.Instance.GetHighScoreLocal(details.Idx);
-            highScore.text = score.ToString();
+            highScore.text = score<0? "0" : score.ToString();
             int numStars = 0;
             if (score > 0) {
                 numStars += 1;
@@ -191,6 +195,7 @@ namespace EcoBuilder
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 yield return null;
             }
+            transform.localPosition = Vector3.zero;
         }
 
         public void Unlock()
@@ -247,11 +252,11 @@ namespace EcoBuilder
         {
             Assert.IsFalse(GameManager.Instance.NavParent.transform.childCount > 0, "more than one level on navigation?");
 
-            StartCoroutine(TweenToZeroPosFrom(0f, GameManager.Instance.NavParent));
+            StartCoroutine(TweenToZeroPosFrom(0, GameManager.Instance.NavParent));
+            print("TODO: make navigation pop to below screen then rise");
             if (NextLevelInstantiated != null) {
                 NextLevelInstantiated.Unlock();
             }
-            print("TODO: make navigation pop to below screen then rise");
         }
 
 

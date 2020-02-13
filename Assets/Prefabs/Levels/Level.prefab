@@ -493,7 +493,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_firstOverflowCharacterIndex: 0
@@ -950,7 +950,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_firstOverflowCharacterIndex: 0
@@ -1663,9 +1663,11 @@ MonoBehaviour:
     numInitInteractions: 0
     sources: 
     targets: 
-    metric: 1
+    metric: 2
     targetScore1: 0
     targetScore2: 0
+    mainMultiplier: 1000
+    altMultiplier: 10000
   nextLevelPrefab: {fileID: 0}
   starsImage: {fileID: 3298662015200627692}
   starSprites:
@@ -3173,7 +3175,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_firstOverflowCharacterIndex: 0

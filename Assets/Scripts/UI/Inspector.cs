@@ -9,6 +9,8 @@ namespace EcoBuilder.UI
     // handles keeping track of species gameobjects and stats
     public class Inspector : MonoBehaviour
     {
+        public event Action OnIncubated;
+        public event Action OnUnincubated;
         public event Action<int, GameObject> OnSpawned;
         public event Action<int> OnDespawned;
         public event Action<int, string> OnConflicted;
@@ -86,6 +88,10 @@ namespace EcoBuilder.UI
             greedTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical Interference");
             sizeTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
             greedTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
+
+            incubator.OnIncubationStarted += (b)=> IncubateNew(b);
+            incubator.OnDropped += ()=> SpawnIncubated();
+            incubator.OnUnincubated += ()=> OnUnincubated.Invoke();
         }
 
         void SpawnWithNonUserEvents(Species toSpawn)
@@ -249,13 +255,8 @@ namespace EcoBuilder.UI
             }
         }
 
-
-        //////////////////
-        // public stuff //
-        //////////////////
-
         int nextIdx=0;
-        public void IncubateNew(bool isProducer)
+        private void IncubateNew(bool isProducer)
         {
             Assert.IsNull(incubated, "already incubating");
 
@@ -282,7 +283,12 @@ namespace EcoBuilder.UI
             nameField.ExpandIntoRefrove(false); // ugh
 
             GetComponent<Animator>().SetTrigger("Incubate");
+            OnIncubated.Invoke();
         }
+
+        //////////////////
+        // public stuff //
+        //////////////////
         public void SpawnIncubated()
         {
             Assert.IsNotNull(incubated, "nothing incubated to spawn");
@@ -296,14 +302,14 @@ namespace EcoBuilder.UI
         }
         public void InspectSpecies(int idx)
         {
-            if (inspected == null)
-            {
+            if (inspected == null) {
                 GetComponent<Animator>().SetTrigger("Inspect");
             }
             if (incubated != null)
             {
                 incubator.Unincubate();
                 incubated = null;
+                OnUnincubated.Invoke();
             }
 
             inspected = spawnedSpecies[idx];
@@ -316,7 +322,6 @@ namespace EcoBuilder.UI
             sizeTrait.SetValueWithoutCallback(inspected.BodySize);
             greedTrait.SetValueWithoutCallback(inspected.Greediness);
 
-            // nameField.Interactable = false;
             sizeTrait.Interactable  = greedTrait.Interactable = inspected.Editable;
             refroveButton.interactable = inspected.Removable;
 
@@ -338,10 +343,19 @@ namespace EcoBuilder.UI
         {
             if (incubated != null)
             {
+                GetComponent<Animator>().SetTrigger("Unincubate");
                 incubator.Unincubate();
                 incubated = null;
-                GetComponent<Animator>().SetTrigger("Unincubate");
+                OnUnincubated.Invoke();
             }
+        }
+        public void SetProducerAvailability(bool available)
+        {
+            incubator.SetProducerAvailability(available);
+        }
+        public void SetConsumerAvailability(bool available)
+        {
+            incubator.SetConsumerAvailability(available);
         }
 
         // for loading from level
