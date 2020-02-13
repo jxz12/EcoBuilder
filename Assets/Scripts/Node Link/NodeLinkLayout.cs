@@ -13,9 +13,6 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodesToStress()
         {
-            if (!tweenNodes) {
-                return;
-            }
             if (focusState != FocusState.SuperFocus)
             {
                 // get average of all positions, and center
@@ -214,6 +211,7 @@ namespace EcoBuilder.NodeLink
                     float mag = X_ij.magnitude;
                     float mu = Mathf.Min(term.w * eta, 1);
                     Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
+                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y));
                    
                     sgdPos[term.i] -= mu * r;
                     sgdPos[term.j] += mu * r;
@@ -315,11 +313,6 @@ namespace EcoBuilder.NodeLink
                 {
                     TrophicGaussSeidel();
                     MoveNodesToTrophicLevel(.1f);
-
-                    // print("TODO: reorder superfocus");
-                    // if (focusState == FocusState.SuperFocus) // reorder in case trophic order changes
-                    //     SuperFocus(focusedNode.Idx);
-
                 }
                 LayoutMajorizationHorizontal(i);
             }
@@ -333,6 +326,7 @@ namespace EcoBuilder.NodeLink
         private void MoveNodesToTrophicLevel(float lerp=1)
         {
             Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
+            
             float trophicScaling = 1;
             if (MaxTrophicLevel > MaxChain+1)
             {

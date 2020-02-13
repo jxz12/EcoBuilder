@@ -12,9 +12,10 @@ namespace EcoBuilder
 
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.Incubator incubator;
+        [SerializeField] UI.Constraints constraints;
         [SerializeField] UI.Recorder recorder;
         [SerializeField] UI.Score score;
-        [SerializeField] UI.Constraints constraints;
+        [SerializeField] UI.Results results;
 
         void Start()
         {
@@ -34,7 +35,7 @@ namespace EcoBuilder
             inspector.OnDespawned +=       (i)=> constraints.RemoveIdx(i);
             inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
             inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
-            inspector.OnIsProducerSet += (i,x)=> constraints.AddType(i,x);
+            inspector.OnIsProducerSet += (i,x)=> constraints.AddIdx(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
             inspector.OnConflicted +=    (i,m)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
@@ -45,18 +46,17 @@ namespace EcoBuilder
             inspector.OnUserSpawned += (i)=> nodelink.SwitchFocus(i);
             nodelink.OnFocused +=      (i)=> inspector.InspectSpecies(i);
 
-            nodelink.OnUnfocused +=     ()=> inspector.Uninspect();
-            nodelink.OnEmptyTapped +=   ()=> inspector.Unincubate();
-            nodelink.OnLayedOut +=      ()=> constraints.DisplayNumComponents(nodelink.NumComponents);
-            nodelink.OnLayedOut +=      ()=> constraints.DisplayNumEdges(nodelink.NumEdges);
-            nodelink.OnLayedOut +=      ()=> constraints.DisplayMaxChain(nodelink.MaxChain);
-            nodelink.OnLayedOut +=      ()=> constraints.DisplayMaxLoop(nodelink.MaxLoop);
+            nodelink.OnUnfocused +=   ()=> inspector.Uninspect();
+            nodelink.OnEmptyTapped += ()=> inspector.Unincubate();
+            nodelink.OnLayedOut +=    ()=> constraints.UpdateDisjoint(nodelink.NumComponents > 1);
+            nodelink.OnLayedOut +=    ()=> constraints.DisplayEdge(nodelink.NumEdges);
+            nodelink.OnLayedOut +=    ()=> constraints.DisplayChain(nodelink.MaxChain);
+            nodelink.OnLayedOut +=    ()=> constraints.DisplayLoop(nodelink.MaxLoop);
 
-            model.OnEquilibrium += ()=> score.UpdateScore(model.GetNormalisedComplexity(), model.GetComplexityExplanation());
             model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> model.GetNormalisedAbundance(i));
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
-            model.OnEquilibrium += ()=> constraints.DisplayFeasibility(model.Feasible);
-            model.OnEquilibrium += ()=> constraints.DisplayStability(model.Stable);
+            model.OnEquilibrium += ()=> constraints.UpdateFeasibility(model.Feasible);
+            model.OnEquilibrium += ()=> constraints.UpdateStability(model.Stable);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
             model.OnEndangered += (i)=> nodelink.LieDownNode(i);
@@ -69,16 +69,6 @@ namespace EcoBuilder
             constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
             constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
 
-            inspector.OnSpawned +=       (i,g)=> atEquilibrium = false;
-            inspector.OnSpawned +=       (i,g)=> graphDrawn = false;
-            inspector.OnDespawned +=       (i)=> atEquilibrium = false;
-            inspector.OnDespawned +=       (i)=> graphDrawn = false;
-            inspector.OnIsProducerSet += (i,x)=> atEquilibrium = false;
-            inspector.OnSizeSet +=       (i,x)=> atEquilibrium = false;
-            inspector.OnGreedSet +=      (i,x)=> atEquilibrium = false;
-            nodelink.OnLinked +=            ()=> atEquilibrium = false;
-            nodelink.OnLinked +=            ()=> graphDrawn = false;
-
             inspector.OnUserSpawned +=      (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserSizeSet +=  (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
@@ -89,6 +79,15 @@ namespace EcoBuilder
             recorder.OnSpeciesUndone +=     (i)=> nodelink.SwitchFocus(i);
             recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
+
+            // these are necessary to give the model adjacency info
+            model.AttachAdjacency(nodelink.GetTargets);
+            inspector.OnSpawned +=       (i,g)=> model.TriggerSolve();
+            inspector.OnDespawned +=       (i)=> model.TriggerSolve();
+            inspector.OnIsProducerSet += (i,x)=> model.TriggerSolve();
+            inspector.OnSizeSet +=       (i,x)=> model.TriggerSolve();
+            inspector.OnGreedSet +=      (i,x)=> model.TriggerSolve();
+            nodelink.OnLinked +=            ()=> model.TriggerSolve();
 
 
             //////////////////////
@@ -103,11 +102,11 @@ namespace EcoBuilder
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
 
-            constraints.Constrain("Leaf", details.NumProducers);
-            constraints.Constrain("Paw", details.NumConsumers);
-            constraints.Constrain("Count", details.MinEdges);
-            constraints.Constrain("Chain", details.MinChain);
-            constraints.Constrain("Loop", details.MinLoop);
+            constraints.ConstrainLeaf(details.NumProducers);
+            constraints.ConstrainPaw(details.NumConsumers);
+            constraints.ConstrainEdge(details.MinEdges);
+            constraints.ConstrainChain(details.MinChain);
+            constraints.ConstrainLoop(details.MinLoop);
 
             for (int i=0; i<details.NumInitSpecies; i++)
             {
@@ -145,6 +144,7 @@ namespace EcoBuilder
         }
         void OnDestroy()
         {
+            print("hanging reference here on quit");
             GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
         }
         void FinishPlaythrough()
@@ -152,11 +152,12 @@ namespace EcoBuilder
             inspector.Finish();
             nodelink.Finish();
             recorder.Finish();
+            score.Finish();
 
             var details = GameManager.Instance.PlayedLevelDetails;
             int oldScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
             int worldAvg = GameManager.Instance.GetLeaderboardMedian(details.Idx);
-            score.Finish(oldScore, worldAvg);
+            results.Display(score.HighestStars, score.HighestScore, oldScore, worldAvg);
             GameManager.Instance.SaveHighScoreLocal(details.Idx, score.HighestScore);
 
             if (GameManager.Instance.LoggedIn) {
@@ -166,58 +167,45 @@ namespace EcoBuilder
         }
 
         // perform calculations if necessary
-        // LateUpdate to ensure all changes are done
-        // TODO: this is weird and should probably be moved back into nodelink and model
-        bool atEquilibrium = true, graphDrawn = true;
-        void LateUpdate()
+        void Update()
         {
-            if (!atEquilibrium && !model.IsCalculatingAsync)
+            switch (GameManager.Instance.PlayedLevelDetails.Metric)
             {
-                atEquilibrium = true;
-#if UNITY_WEBGL
-                model.EquilibriumSync(nodelink.GetTargets);
-#else
-                model.EquilibriumAsync(nodelink.GetTargets);
-#endif
-            }
-            if (!graphDrawn && !nodelink.IsCalculatingAsync)
-            {
-                graphDrawn = true;
-// threads are not supported on webgl
-#if UNITY_WEBGL
-                nodelink.LayoutSync();
-#else
-                nodelink.LayoutAsync();
-                #endif
+            case LevelDetails.ScoreMetric.None:
+                score.UpdateScore(0, 0); // no score
+                break;
+            case LevelDetails.ScoreMetric.Standard:
+                score.UpdateScore(model.GetNormalisedComplexity(), 0);
+                break;
+            case LevelDetails.ScoreMetric.Richness:
+                score.UpdateScore(model.GetNormalisedComplexity(), constraints.GetPawValue());
+                break;
+            case LevelDetails.ScoreMetric.Chain:
+                score.UpdateScore(model.GetNormalisedComplexity(), nodelink.MaxChain);
+                break;
+            case LevelDetails.ScoreMetric.Loop:
+                score.UpdateScore(model.GetNormalisedComplexity(), nodelink.MaxLoop);
+                break;
             }
             // this needs to be here to ensure that the calculated components
             // are synced before moving every frame
-            if (graphDrawn && !nodelink.IsCalculatingAsync)
-            {
-                nodelink.SeparateConnectedComponents();
-            }
             // we want the score to update even if the model is calculating
             // but no events triggered in case of false positive due to being out of sync
-            if (atEquilibrium && !model.IsCalculatingAsync &&
-                graphDrawn && !nodelink.IsCalculatingAsync)
+            if (nodelink.GraphLayedOut && model.EquilibriumSolved)
             {
                 score.UpdateStars(constraints.AllSatisfied());
             }
-        }
 
 #if UNITY_EDITOR
-        void Update()
-        {
             // save a level for convenience
             if (Input.GetKeyDown(KeyCode.Q) &&
                 Input.GetKeyDown(KeyCode.W) &&
                 Input.GetKeyDown(KeyCode.E))
             {
-                var plants = new List<bool>();
                 var randomSeeds = new List<int>();
+                var plants = new List<bool>();
                 var sizes = new List<float>();
                 var greeds = new List<float>();
-                var editables = new List<bool>();
 
                 var squishedIdxs = new Dictionary<int, int>();
                 int counter = 0;
@@ -225,30 +213,30 @@ namespace EcoBuilder
                 {
                     int idx = kvp.Key;
                     UI.Inspector.Species s = kvp.Value;
-                    plants.Add(s.IsProducer);
                     randomSeeds.Add(s.RandomSeed);
+                    plants.Add(s.IsProducer);
                     sizes.Add(s.BodySize);
                     greeds.Add(s.Greediness);
-                    editables.Add(s.Editable);
 
                     squishedIdxs[idx] = counter++;
                 }
                 int numInitSpecies = squishedIdxs.Count;
                 
-                var resources = new List<int>();
-                var consumers = new List<int>();
+                var sources = new List<int>();
+                var targets = new List<int>();
                 int numInteractions = 0;
                 foreach (var kvp in inspector.GetSpeciesInfo())
                 {
                     int i = kvp.Key;
                     foreach (int j in nodelink.GetTargets(i))
                     {
-                        resources.Add(squishedIdxs[i]);
-                        consumers.Add(squishedIdxs[j]);
+                        sources.Add(squishedIdxs[i]);
+                        targets.Add(squishedIdxs[j]);
                         numInteractions += 1;
                     }
                 }
-                // Level.SaveToNewPrefab(DateTime.Now.Ticks.ToString(), plants, randomSeeds, sizes, greeds, editables);
+                var details = new LevelDetails(randomSeeds, plants, sizes, greeds, sources, targets);
+                GameManager.Instance.SavePlayedAsNewLevel(details);
             }
         }
 #endif

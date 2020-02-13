@@ -115,6 +115,12 @@ namespace EcoBuilder
         public RectTransform NavParent { get { return navParent; } }
         public RectTransform TutParent { get { return tutParent; } }
 
+#if UNITY_EDITOR
+        public void SavePlayedAsNewLevel(LevelDetails details)
+        {
+            playedLevel.SaveAsNewPrefab(details);
+        }
+#endif
 
         ///////////////////
         // scene loading //

@@ -17,56 +17,138 @@ namespace EcoBuilder.UI
         public event Action<bool> OnChainHovered;
         public event Action<bool> OnLoopHovered;
 
-        class Constraint
+        private class Constraint
         {
             public TMPro.TextMeshProUGUI counter;
             public Image icon;
             public int threshold=-1;
             public int value=0;
+            public Constraint(TMPro.TextMeshProUGUI text)
+            {
+                counter = text;
+                icon = text.transform.GetComponentInChildren<Image>();
+            }
         }
-        Dictionary<string, Constraint> constraints;
-        string prefix = "     ";
 
+        private enum Type { Leaf, Paw, Edge, Chain, Loop}
+        Dictionary<Type, Constraint> constraintMap = new Dictionary<Type, Constraint>();
+
+        [SerializeField] TMPro.TextMeshProUGUI leaf, paw, edge, chain, loop;
+
+        string prefix = "     ";
         void Awake()
         {
-            constraints = new Dictionary<string, Constraint>();
-            foreach (TMPro.TextMeshProUGUI t in transform.GetComponentsInChildren<TMPro.TextMeshProUGUI>())
-            {
-                constraints[t.name] = new Constraint
-                {
-                    counter=t,
-                    icon=t.transform.GetComponentInChildren<Image>(),
-                };
-            }
+            constraintMap[Type.Leaf] = new Constraint(leaf);
+            constraintMap[Type.Paw] = new Constraint(paw);
+            constraintMap[Type.Edge] = new Constraint(edge);
+            constraintMap[Type.Chain] = new Constraint(chain);
+            constraintMap[Type.Loop] = new Constraint(loop);
+
             // prevents scene getting dirty, Unity autolayout sucks
             GetComponent<VerticalLayoutGroup>().enabled = true;
             GetComponent<ContentSizeFitter>().enabled = true;
         }
-        private bool IsSatisfied(string name)
+
+        private void Constrain(Type type, int threshold)
         {
-            return constraints[name].value >= constraints[name].threshold;
+            if (threshold < 0) // hide
+            {
+                constraintMap[type].counter.gameObject.SetActive(false);
+            }
+            else if (threshold == 0) // display but do not track
+            {
+                constraintMap[type].counter.text = prefix + "0";
+            }
+            else
+            {
+                constraintMap[type].counter.text = prefix + "0/" + threshold;
+            }
+            constraintMap[type].threshold = threshold;
+        }
+        private void Display(Type type, int value)
+        {
+            constraintMap[type].value = value;
+            if (constraintMap[type].threshold <= 0)
+            {
+                constraintMap[type].counter.text = prefix + value;
+            }
+            else
+            {
+                constraintMap[type].counter.text = 
+                constraintMap[type].counter.text = prefix + value + "/" + constraintMap[type].threshold;
+                constraintMap[type].icon.color = value >= constraintMap[type].threshold? Color.green : Color.white;
+            }
+        }
+        private bool IsSatisfied(Type type)
+        {
+            return constraintMap[type].value >= constraintMap[type].threshold;
+        }
+        private int GetThreshold(Type type)
+        {
+            return constraintMap[type].threshold;
         }
 
+        public void ConstrainLeaf(int threshold) {
+            Constrain(Type.Leaf, threshold);
+        }
+        public void ConstrainPaw(int threshold) {
+            Constrain(Type.Paw, threshold);
+        }
+        public void ConstrainEdge(int threshold) {
+            Constrain(Type.Edge, threshold);
+        }
+        public void ConstrainChain(int threshold) {
+            Constrain(Type.Chain, threshold);
+        }
+        public void ConstrainLoop(int threshold) {
+            Constrain(Type.Loop, threshold);
+        }
+        public void DisplayEdge(int numEdges) {
+            Display(Type.Edge, numEdges);
+        }
+        public void DisplayChain(int lenChain) {
+            Display(Type.Chain, lenChain);
+        }
+        public void DisplayLoop(int lenLoop) {
+            Display(Type.Loop, lenLoop);
+        }
+
+        public void UpdateDisjoint(bool disjoint)
+        {
+            Disjoint = disjoint;
+        }
+        public void UpdateFeasibility(bool isFeasible)
+        {
+            Feasible = isFeasible;
+        }
+        public void UpdateStability(bool isStable)
+        {
+			Stable = isStable;
+        }
+
+        // paws and leaves need to be different
         HashSet<int> producers = new HashSet<int>();
         HashSet<int> consumers = new HashSet<int>();
-        public void AddType(int idx, bool isProducer)
+        public void AddIdx(int idx, bool isProducer)
         {
+            Assert.IsFalse(producers.Contains(idx) || consumers.Contains(idx), $"idx {idx} already added");
             if (isProducer)
             {
-                // this will have to be changed if we want to let species switch type
                 producers.Add(idx);
 
-                Display("Leaf", producers.Count);
-                if (GetThreshold("Leaf") > 0 && IsSatisfied("Leaf"))
+                Display(Type.Leaf, producers.Count);
+                if (GetThreshold(Type.Leaf) > 0 && IsSatisfied(Type.Leaf)) {
                     OnProducersAvailable.Invoke(false);
+                }
             }
             else
             {
                 consumers.Add(idx);
 
-                Display("Paw", consumers.Count);
-                if (GetThreshold("Paw") > 0 && IsSatisfied("Paw"))
+                Display(Type.Paw, consumers.Count);
+                if (GetThreshold(Type.Paw) > 0 && IsSatisfied(Type.Paw)) {
                     OnConsumersAvailable.Invoke(false);
+                }
             }
         }
         public void RemoveIdx(int idx)
@@ -75,101 +157,45 @@ namespace EcoBuilder.UI
             {
                 producers.Remove(idx);
 
-                if (GetThreshold("Leaf") > 0 && IsSatisfied("Leaf"))
+                if (GetThreshold(Type.Leaf) > 0 && IsSatisfied(Type.Leaf)) {
                     OnProducersAvailable.Invoke(true);
-                Display("Leaf", producers.Count);
+                }
+                Display(Type.Leaf, producers.Count);
             }
             else
             {
                 consumers.Remove(idx);
 
-                if (GetThreshold("Paw") > 0 && IsSatisfied("Paw"))
+                if (GetThreshold(Type.Paw) > 0 && IsSatisfied(Type.Paw)) {
                     OnConsumersAvailable.Invoke(true);
-                Display("Paw", consumers.Count);
-
+                }
+                Display(Type.Paw, consumers.Count);
             }
         }
-        public void DisplayNumComponents(int numComponents)
+        public int GetPawValue()
         {
-            Disjoint = numComponents > 1;
+            return constraintMap[Type.Paw].value;
         }
-        public void DisplayNumEdges(int numEdges)
+        public int GetLeafValue()
         {
-            Display("Count", numEdges);
+            return constraintMap[Type.Leaf].value;
         }
-        public void DisplayMaxChain(int lenChain)
-        {
-            Display("Chain", lenChain);
-        }
-        public void DisplayMaxLoop(int lenLoop)
-        {
-            Display("Loop", lenLoop);
-        }
-        public void DisplayFeasibility(bool isFeasible)
-        {
-            Feasible = isFeasible;
-        }
-        public void DisplayStability(bool isStable)
-        {
-			Stable = isStable;
-        }
+
         public bool AllSatisfied()
         {
             return !Disjoint &&
                    Feasible &&
-                   IsSatisfied("Leaf") &&
-                   IsSatisfied("Paw") &&
-                   IsSatisfied("Count") &&
-                   IsSatisfied("Chain") &&
-                   IsSatisfied("Loop");
+                   IsSatisfied(Type.Leaf) &&
+                   IsSatisfied(Type.Paw) &&
+                   IsSatisfied(Type.Edge) &&
+                   IsSatisfied(Type.Chain) &&
+                   IsSatisfied(Type.Loop);
         }
         public void Show(bool visible)
         {
             GetComponent<Animator>().SetBool("Visible", visible);
         }
-        // public void Hide(bool hidden=true)
-        // {
-        //     gameObject.SetActive(!hidden);
-        // }
 
-        public void Constrain(string name, int threshold)
-        {
-            if (threshold < 0) // hide
-            {
-                constraints[name].counter.gameObject.SetActive(false);
-            }
-            else if (threshold == 0) // display but do not track
-            {
-                constraints[name].counter.text = prefix + "0";
-            }
-            else
-            {
-                constraints[name].counter.text = prefix + "0/" + threshold;
-            }
-            constraints[name].threshold = threshold;
-        }
-        public void Display(string name, int value)
-        {
-            constraints[name].value = value;
-            if (constraints[name].threshold <= 0)
-            {
-                constraints[name].counter.text = prefix + value;
-            }
-            else
-            {
-                constraints[name].counter.text = 
-                constraints[name].counter.text = prefix + value + "/" + constraints[name].threshold;
-                constraints[name].icon.color = value >= constraints[name].threshold? Color.green : Color.white;
-            }
-        }
-        public int GetThreshold(string name)
-        {
-            return constraints[name].threshold;
-        }
-        public int GetValue(string name)
-        {
-            return constraints[name].value;
-        }
         [SerializeField] Tooltip tooltip;
         public void OnPointerEnter(PointerEventData ped)
         {
@@ -188,8 +214,8 @@ namespace EcoBuilder.UI
             {
                 tooltip.SetPos(Input.mousePosition);
 
-                bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraints["Chain"].counter.rectTransform, Input.mousePosition);
-                bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraints["Loop"].counter.rectTransform, Input.mousePosition);
+                bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Chain].counter.rectTransform, Input.mousePosition);
+                bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Loop].counter.rectTransform, Input.mousePosition);
 
                 Assert.IsFalse(overChain && overLoop, "cannot highlight both chain and loop");
 
@@ -240,11 +266,11 @@ namespace EcoBuilder.UI
         public bool Disjoint { get; private set; }
         string Error()
         {
-            if (constraints["Paw"].value==0 && constraints["Leaf"].value==0) {
+            if (constraintMap[Type.Paw].value==0 && constraintMap[Type.Leaf].value==0) {
                 return "Your ecosystem is empty.";
-            } else if (!IsSatisfied("Leaf")) {
+            } else if (!IsSatisfied(Type.Leaf)) {
                 return "You have not added enough plants.";
-            } else if (!IsSatisfied("Paw")) {
+            } else if (!IsSatisfied(Type.Paw)) {
                 return "You have not added enough animals.";
             } else if (!Feasible) {
                 return "At least one species is going extinct.";
@@ -252,14 +278,14 @@ namespace EcoBuilder.UI
                 return "Your network is not connected.";
             // } else if (!stable) {
             //     return "Your ecosystem is not stable.";
-            } else if (!IsSatisfied("Count")) {
+            } else if (!IsSatisfied(Type.Edge)) {
                 return "You have not added enough links.";
-            } else if (!IsSatisfied("Chain")) {
+            } else if (!IsSatisfied(Type.Chain)) {
                 return "Your web is not tall enough.";
-            } else if (!IsSatisfied("Loop")) {
+            } else if (!IsSatisfied(Type.Loop)) {
                 return "You do not have a long enough loop.";
             } else {
-                return "Your ecosystem has no errors!";
+                return "";//"Your ecosystem has no errors!";
             }
         }
     }

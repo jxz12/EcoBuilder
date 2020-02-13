@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
+using UnityEditor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,7 +45,7 @@ namespace EcoBuilder
         [SerializeField] List<int> targets;
 
         // score
-        public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
+        public enum ScoreMetric { None, Standard, Richness, Edges, Chain, Loop }
         [SerializeField] ScoreMetric metric;
         [SerializeField] int targetScore1;
         [SerializeField] int targetScore2;
@@ -81,6 +82,18 @@ namespace EcoBuilder
         public ScoreMetric Metric { get { return metric; } }
         public int TargetScore1 { get { return targetScore1; } }
         public int TargetScore2 { get { return targetScore2; } }
+
+        public LevelDetails(List<int> randomSeeds, List<bool> plants, List<float> sizes, List<float> greeds, List<int> sources, List<int> targets)
+        {
+            numInitSpecies = plants.Count;
+            this.randomSeeds = randomSeeds;
+            this.plants = plants;
+            this.sizes = sizes;
+            this.greeds = greeds;
+            numInitInteractions = sources.Count;
+            this.sources = sources;
+            this.targets = targets;
+        }
     }
     public class Level : MonoBehaviour
     {
@@ -329,34 +342,14 @@ namespace EcoBuilder
             GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
             Destroy(gameObject);
         }
-// #if UNITY_EDITOR
-//         public void SetInitialEcosystem(
-//             List<bool> plants,
-//             List<int> randomSeeds,
-//             List<float> sizes,
-//             List<float> greeds,
-//             List<bool> editables)
-//         {
-//             this.plants = plants;
-//             this.randomSeeds = randomSeeds;
-//             this.sizes = sizes;
-//             this.greeds = greeds;
-//             this.editables = editables;
-//         }
-//         public static void SaveToNewPrefab(
-//             string prefabName,
-//             List<bool> plants,
-//             List<int> randomSeeds,
-//             List<float> sizes,
-//             List<float> greeds,
-//             List<bool> editables)
-//         {
-//             var level = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Levels/Level.prefab"));
-//             level.GetComponent<Level>().SetInitialEcosystem(plants, randomSeeds, sizes, greeds, editables);
-//             bool success;
-//             PrefabUtility.SaveAsPrefabAsset(level, "Assets/Prefabs/Levels/"+prefabName+".prefab", out success);
-//             Destroy(level);
-//         }
-// #endif
+#if UNITY_EDITOR
+        public bool SaveAsNewPrefab(LevelDetails newDetails)
+        {
+            bool success;
+            details = newDetails;
+            PrefabUtility.SaveAsPrefabAsset(gameObject, $"Assets/Prefabs/Levels/{DateTime.Now.Ticks}.prefab", out success);
+            return success;
+        }
+#endif
     }
 }

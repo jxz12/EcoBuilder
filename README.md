@@ -7,6 +7,11 @@ are you sure button
 
 health bars
 don't outline species unless they're non editable too
+reorder superfocus
+
+
+
+
 
 # Menu
 make icons for reversing drag direction
@@ -50,7 +55,3 @@ The species with the... is...
 2 hours Thursday 1 Friday, week 3rd Feb
 
 Phone Simulator
-
-Exclusion
-In this level you will learn about why there are so few red squirrels in the UK.
-Here there are three species, but the 

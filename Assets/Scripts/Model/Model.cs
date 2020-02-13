@@ -47,7 +47,7 @@ namespace EcoBuilder.Model
               maxRealAbund = 1.95f,
               minRealFlux = 1e-16f,
               maxRealFlux = 1e-6f,
-              minRealPlex = 2.1e-5f, // TODO: calculate actual values
+              minRealPlex = 2.1e-5f,
               maxRealPlex = 6.3e-3f;
 
         private float minLogAbund, maxLogAbund,
@@ -153,6 +153,26 @@ namespace EcoBuilder.Model
             speciesToIdx.Remove(toRemove);
         }
 
+        // we need this because the graveyard in nodelink makes it nontrivial
+        // to store a copy of the whole graph by only relying on OnLinked<int,int>
+        Func<int, IEnumerable<int>> IdxAdjacency;
+        public void AttachAdjacency(Func<int, IEnumerable<int>> IdxAdjacency)
+        {
+            this.IdxAdjacency = IdxAdjacency;
+        }
+        private IEnumerable<Species> GetConsumers(Species resource)
+        {
+            foreach (int con in IdxAdjacency(speciesToIdx[resource]))
+            {
+                yield return idxToSpecies[con];
+            }
+        }
+        // trigger is necessary because we do not know when the structure will change
+        public void TriggerSolve()
+        {
+            solveTriggered = true;
+        }
+
         public void SetSpeciesIsProducer(int idx, bool isProducer)
         {
             Species s = idxToSpecies[idx];
@@ -193,25 +213,37 @@ namespace EcoBuilder.Model
 
         public bool Feasible { get; private set; } = false;
         public bool Stable { get; private set; } = false;
-        public bool IsCalculatingAsync { get; private set; } = false;
 
-                                           // required because this class does not store adjacency
-        public async void EquilibriumAsync(Func<int, IEnumerable<int>> Consumers)
+        void Update()
         {
-            IsCalculatingAsync = true;
-            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
+            if (solveTriggered && !isCalculatingAsync)
+            {
+                solveTriggered = false;
+#if UNITY_WEBGL
+                EquilibrateSync();
+#else
+                EquilibrateAsync();
+#endif
+            }
+        }
 
-            Feasible = await Task.Run(()=> simulation.SolveFeasibility(map));
+
+        private bool solveTriggered = false;
+        private bool isCalculatingAsync = false;
+        public bool EquilibriumSolved { get { return !solveTriggered && !isCalculatingAsync; } }
+        public async void EquilibrateAsync()
+        {
+            isCalculatingAsync = true;
+
+            Feasible = await Task.Run(()=> simulation.SolveFeasibility(GetConsumers));
             Stable = await Task.Run(()=> simulation.SolveStability());
 
-            IsCalculatingAsync = false;
+            isCalculatingAsync = false;
             OnEquilibrium.Invoke();
         }
-        public void EquilibriumSync(Func<int, IEnumerable<int>> Consumers)
+        public void EquilibrateSync(Func<int, IEnumerable<int>> Consumers)
         {
-            Func<Species, IEnumerable<Species>> map = s=>Consumers(speciesToIdx[s]).Select(i=>idxToSpecies[i]);
-
-            Feasible = simulation.SolveFeasibility(map);
+            Feasible = simulation.SolveFeasibility(GetConsumers);
             Stable = simulation.SolveStability();
 
             OnEquilibrium.Invoke();
@@ -251,7 +283,6 @@ namespace EcoBuilder.Model
         public float GetNormalisedComplexity()
         {
             double realPlex = simulation.HoComplexity;
-            // print("ho "+realPlex.ToString("e2"));
             if (realPlex < minRealPlex) {
                 return 0;
             } else if (realPlex <= maxRealPlex) {
@@ -260,11 +291,13 @@ namespace EcoBuilder.Model
                 return (float)(realPlex / maxRealPlex);
             }
         }
-        public string GetComplexityExplanation()
+        public Dictionary<string, float> GetComplexityComponents()
         {
-            // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (simulation.Richness*simulation.Connectance*totalAbund_Norm);
-            // return "Number of Species " + simulation.Richness + " × Proportion of Links " + simulation.Connectance + " × Total Health " + totalAbund_Norm + " = " + (NormalisedScore);
-            return "TODO: explain score better";
+            return new Dictionary<string, float>() {
+                {"# Species",  simulation.Richness},
+                {"# Interactions", (float)simulation.Connectance},
+                {"Total Health", (float)simulation.TotalAbundance}
+            };
         }
 
         public string GetMatrix()

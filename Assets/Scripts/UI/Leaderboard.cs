@@ -11,6 +11,7 @@ namespace EcoBuilder.UI
         public Level LevelToPlay { get { return levelParent.GetComponentInChildren<Level>(); } }
         public Level GiveLevelPrefab(Level levelPrefab)
         {
+            print("TODO: do not show scores if metric is None");
             name = levelPrefab.Details.Idx.ToString();
             titleText.text = levelPrefab.Details.Title;
             if (GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx) >= 0)

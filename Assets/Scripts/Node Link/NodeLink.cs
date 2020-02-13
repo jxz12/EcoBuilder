@@ -39,16 +39,35 @@ namespace EcoBuilder.NodeLink
         void Update()
         {
             FineTuneLayout();
+            if (tweenNodes) {
+                TweenNodesToStress();
+                TweenZoomToFit();
+                MomentumRotate();
+            }
 
-            TweenNodesToStress();
-            TweenZoomToFit();
-            MomentumRotate();
+            if (layoutTriggered && !isCalculatingAsync)
+            {
+                layoutTriggered = false;
+#if UNITY_WEBGL
+                LayoutSync();
+#else
+                LayoutAsync();
+#endif
+            }
+            // this makes sure that the components calculated async match the
+            // possible Node.StressPos 
+            if (GraphLayedOut)
+            {
+                SeparateConnectedComponents();
+            }
         }
 
-        public bool IsCalculatingAsync { get; private set; } = false;
+        private bool layoutTriggered = false;
+        private bool isCalculatingAsync = false;
+        public bool GraphLayedOut { get { return !layoutTriggered && !isCalculatingAsync; } }
         public async void LayoutAsync()
         {
-            IsCalculatingAsync = true;
+            isCalculatingAsync = true;
 
             await Task.Run(()=> LayoutSGD());
 
@@ -59,7 +78,7 @@ namespace EcoBuilder.NodeLink
             JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
             LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices));
 
-            IsCalculatingAsync = false;
+            isCalculatingAsync = false;
             OnLayedOut.Invoke();
         }
         public void LayoutSync()
@@ -114,6 +133,7 @@ namespace EcoBuilder.NodeLink
 
                 nodes[idx].Hide(false);
                 nodes[idx].SetShape(shape); // technically not necessary
+                nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle; // to prevent possible infinities
 
                 undirected[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -145,6 +165,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
             todoBFS.Enqueue(idx);
+            layoutTriggered = true;
         }
 
         public void RemoveNode(int idx)
@@ -186,6 +207,7 @@ namespace EcoBuilder.NodeLink
                 undirected[i].Remove(idx);
                 todoBFS.Enqueue(i);
             }
+            layoutTriggered = true;
         }        
         public void RemoveNodeCompletely(int idx)
         {
@@ -218,6 +240,7 @@ namespace EcoBuilder.NodeLink
             nodes[j].Disconnected = false;
 
             OnLinked?.Invoke();
+            layoutTriggered = true;
         }
         public void RemoveLink(int i, int j)
         {
@@ -236,6 +259,7 @@ namespace EcoBuilder.NodeLink
                 nodes[j].Disconnected = true;
             }
             OnLinked?.Invoke();
+            layoutTriggered = true;
         }
 
         public void SetIfNodeCanBeSource(int idx, bool canBeSource) // basal

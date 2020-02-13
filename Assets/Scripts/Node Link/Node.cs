@@ -72,6 +72,7 @@ namespace EcoBuilder.NodeLink
         {
             transform.SetParent(newParent, true);
             transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one * defaultSize;
         }
 
         public void Enlarge()

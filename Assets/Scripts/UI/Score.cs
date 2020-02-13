@@ -28,33 +28,38 @@ namespace EcoBuilder.UI
         }
         public void SetStarThresholds(LevelDetails.ScoreMetric metric, int target1, int target2)
         {
-            print("TODO: different metrics");
             this.target1 = target1;
             this.target2 = target2;
         }
-
 
 		//////////////////////
 		// score calculation
 
         public int HighestScore { get; private set; } = 0;
         public int HighestStars { get; private set; } = 0;
-        int currentScore;
-        float normalisedScore;
-        public void UpdateScore(float newNormalisedScore, string explanation)
+        float totalScore = 0;
+        int realisedScore = 0;
+
+        [SerializeField] float scoreMultiplier, supplementMultiplier;
+
+        public void UpdateScore(float score, float supplement)//, string explanation, string explanationSupplement)
         {
-            if (newNormalisedScore > normalisedScore) {
+            Assert.IsTrue(score >= 0, "cannot have negative score");
+            float newTotalScore = score*scoreMultiplier + supplement*supplementMultiplier;
+
+            if (newTotalScore > totalScore) {
                 scoreText.color = new Color(.2f,.8f,.2f);
-            } else if (newNormalisedScore < normalisedScore) {
+            } else if (newTotalScore < totalScore) {
                 scoreText.color = new Color(.9f,.1f,.1f);
             }
-            normalisedScore = newNormalisedScore;
+            totalScore = newTotalScore;
 
-            print("TODO: deal with possible score of 0?");
-            currentScore = (int)(normalisedScore * 1000);
-            scoreText.text = currentScore.ToString();
-            report.SetMessage(explanation);
+            realisedScore = (int)totalScore;
+            scoreText.text = realisedScore.ToString();
+            // print("TODO: score explanation and highest score on tap/hover");
+            // report.SetMessage($"{explanation} + {explanationSupplement} = {totalScore}");
         }
+
         public void UpdateStars(bool scoreValid)
         {
             if (starsDisabled) {
@@ -65,10 +70,10 @@ namespace EcoBuilder.UI
             {
                 newNumStars += 1;
 
-                if (currentScore >= target1)
+                if (realisedScore >= target1)
                 {
                     newNumStars += 1;
-                    if (currentScore >= target2) {
+                    if (realisedScore >= target2) {
                         newNumStars += 1;
                     }
                 }
@@ -88,6 +93,9 @@ namespace EcoBuilder.UI
                 scoreTargetText.text = target2.ToString();
                 scoreTargetImage.sprite = targetSprite2;
             }
+            star1.SetBool("Filled", newNumStars>=1);
+            star2.SetBool("Filled", newNumStars>=2);
+            star3.SetBool("Filled", newNumStars==3);
 
             // do not set off events yet if finish is disabled
             if (HighestStars == 0 && newNumStars > 0) {
@@ -98,10 +106,7 @@ namespace EcoBuilder.UI
                 OnThreeStarsAchieved?.Invoke();
             }
             HighestStars = Math.Max(HighestStars, newNumStars);
-            HighestScore = Math.Max(HighestScore, currentScore);
-            star1.SetBool("Filled", HighestStars>=1);
-            star2.SetBool("Filled", HighestStars>=2);
-            star3.SetBool("Filled", HighestStars==3);
+            HighestScore = Math.Max(HighestScore, realisedScore);
         }
 
         bool starsDisabled;
@@ -110,7 +115,7 @@ namespace EcoBuilder.UI
             starsDisabled = disabled;
         }
 
-        public void Finish(int oldHighScore, int globalMedian)
+        public void Finish()
         {
             Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
@@ -118,14 +123,8 @@ namespace EcoBuilder.UI
             star1.SetTrigger("Confetti");
             star2.SetTrigger("Confetti");
             star3.SetTrigger("Confetti");
-
-            resultsPlay.text = HighestScore.ToString();
-            if (HighestScore > oldHighScore) {
-                print("TODO: congratulations!");
-            }
-            resultsTop.text = Math.Max(HighestScore, oldHighScore).ToString();
-            resultsWorldAvg.text = globalMedian.ToString();
         }
+
 
         ///////////////////////
         // stuff for tutorials

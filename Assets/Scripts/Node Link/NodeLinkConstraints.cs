@@ -58,7 +58,7 @@ namespace EcoBuilder.NodeLink
             }
             NumComponents = ncc;
         }
-        public void SeparateConnectedComponents()
+        private void SeparateConnectedComponents()
         {
             int ncc = NumComponents;
             if (ncc <= 1) { // don't change layout if ncc is 0 or 1
@@ -243,7 +243,7 @@ namespace EcoBuilder.NodeLink
 
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
         // can be very slow, so run async if possible
-        static List<int> johnsonLongestLoop;
+        static List<int> johnsonLongestLoop = new List<int>();
         static List<int> JohnsonsAlgorithm(IEnumerable<int> indices)
         {
             var johnsonLongestLoop = new List<int>(); // empty list is no loop

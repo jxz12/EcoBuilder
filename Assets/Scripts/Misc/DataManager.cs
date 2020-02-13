@@ -251,7 +251,7 @@ namespace EcoBuilder
         public int GetHighScoreLocal(int levelIdx)
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
-                return 0;
+                return -1;
             }
             return player.highScores[levelIdx];
         }

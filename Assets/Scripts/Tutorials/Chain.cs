@@ -26,7 +26,7 @@ namespace EcoBuilder.Tutorials
         // ensure only one animal is in system at beginning
         void LimitNumAnimals(int limit)
         {
-            if (constraints.GetValue("Paw") >= limit)
+            if (constraints.GetPawValue() >= limit)
                 incubator.SetConsumerAvailability(false);
             else
                 incubator.SetConsumerAvailability(true);

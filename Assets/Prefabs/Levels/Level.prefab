@@ -1640,11 +1640,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   details:
     idx: 0
-    title: TODO
-    description: TODO
-    introduction: TODO
-    completedMessage: TODO
-    threeStarsMessage: TODO
+    title: Title TODO
+    description: Description TODO
+    introduction: Intro TODO
+    completedMessage: Completion TODO
+    threeStarsMessage: Congratulation TODO
     numProducers: 0
     numConsumers: 0
     minEdges: 0
