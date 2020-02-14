@@ -187,11 +187,12 @@ namespace EcoBuilder.UI
         }
         public void Show(bool visible)
         {
-            GetComponent<Animator>().SetBool("Visible", visible);
+            // GetComponent<Animator>().SetBool("Visible", visible);
+            gameObject.SetActive(visible);
         }
         public void Finish()
         {
-            Show(false);
+            GetComponent<Animator>().SetBool("Visible", false);
         }
 
         [SerializeField] Tooltip tooltip;

@@ -227,11 +227,11 @@ namespace EcoBuilder.UI
             Species toSet = incubated!=null? incubated : inspected;
             toSet.BodySize = newValue;
             factory.RegenerateSpecies(toSet.GObject, toSet.BodySize, toSet.Greediness, toSet.RandomSeed);
-            if (toSet.UserName != null)
+            if (toSet.UserName != null) {
                 toSet.GObject.name = toSet.UserName; // revert to user's name
-            else
+            } else {
                 nameField.SetNameWithoutCallback(toSet.GObject.name);
-
+            }
             if (inspected != null)
             {
                 OnSizeSet?.Invoke(inspected.Idx, newValue);
@@ -243,11 +243,11 @@ namespace EcoBuilder.UI
             Species toSet = incubated!=null? incubated : inspected;
             toSet.Greediness = newValue;
             factory.RegenerateSpecies(toSet.GObject, toSet.BodySize, toSet.Greediness, toSet.RandomSeed);
-            if (toSet.UserName != null)
+            if (toSet.UserName != null) {
                 toSet.GObject.name = toSet.UserName; // revert to user's name
-            else
+            } else {
                 nameField.SetNameWithoutCallback(toSet.GObject.name);
-
+            }
             if (inspected != null)
             {
                 OnGreedSet?.Invoke(inspected.Idx, newValue);
@@ -349,6 +349,15 @@ namespace EcoBuilder.UI
                 OnUnincubated.Invoke();
             }
         }
+        public void MakeSpeciesObjectExtinct(int idx)
+        {
+            factory.KillSpecies(spawnedSpecies[idx].GObject);
+        }
+        public void MakeSpeciesObjectRescued(int idx)
+        {
+            factory.RescueSpecies(spawnedSpecies[idx].GObject);
+        }
+
         public void SetProducerAvailability(bool available)
         {
             incubator.SetProducerAvailability(available);
@@ -419,7 +428,8 @@ namespace EcoBuilder.UI
         
 
         ///////////////////////////
-        // for spawning from level
+        // for un/redoing
+
         public void SetIsProducer(int idx, bool isProducer)
         {
             Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");

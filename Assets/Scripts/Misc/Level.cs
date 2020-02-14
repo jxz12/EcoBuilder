@@ -87,13 +87,14 @@ namespace EcoBuilder
         public float MainMultiplier { get { return mainMultiplier; } }
         public float AltMultiplier { get { return altMultiplier; } }
 
-        public LevelDetails(List<int> randomSeeds, List<bool> plants, List<float> sizes, List<float> greeds, List<int> sources, List<int> targets)
+        public LevelDetails(List<int> randomSeeds, List<bool> plants, List<float> sizes, List<float> greeds, List<bool> editables, List<int> sources, List<int> targets)
         {
             numInitSpecies = plants.Count;
             this.randomSeeds = randomSeeds;
             this.plants = plants;
             this.sizes = sizes;
             this.greeds = greeds;
+            this.editables = editables;
             numInitInteractions = sources.Count;
             this.sources = sources;
             this.targets = targets;
@@ -284,6 +285,16 @@ namespace EcoBuilder
             GameManager.Instance.PlayLevel(this);
             GameManager.Instance.OnLoaded.AddListener(LevelSceneLoadedCallback);
         }
+#if UNITY_EDITOR
+        public void PlayExternal()
+        {
+            thumbnailedParent = GameManager.Instance.PlayParent;
+            ShowThumbnail(0);
+            StartCoroutine(WaitThenEnableQuitReplay(0));
+            StartTutorialIfAvailable();
+            Unlock();
+        }
+#endif
         void LevelSceneLoadedCallback(string sceneName)
         {
             Assert.IsTrue(sceneName == "Play", "Play scene not loaded when expected");

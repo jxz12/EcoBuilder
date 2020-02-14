@@ -48,7 +48,8 @@ namespace EcoBuilder.UI
         {
             targetWidth = pixelWidth;
             if (!damp) {
-                rt.sizeDelta = new Vector2(targetWidth, rt.sizeDelta.y);
+                width = targetWidth;
+                rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
             }
             ForceUpdateLayout();
         }

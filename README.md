@@ -6,7 +6,6 @@ score explanation
 are you sure button
 
 health bars
-don't outline species unless they're non editable too
 reorder superfocus
 
 
@@ -34,7 +33,6 @@ Tidy report card
 make healthbars into UI objects
 remove landscapes and just use planet instead
 double check the teams visualisations
-double check superfocus
 fix confetti
 charming node animations
 more fidelity in link balls

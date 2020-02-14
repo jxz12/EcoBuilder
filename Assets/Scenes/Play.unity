@@ -1424,6 +1424,11 @@ PrefabInstance:
       propertyPath: MouthTextures.Array.data[8]
       value: 
       objectReference: {fileID: 2800000, guid: 44334a7e125ad402f931da8cec1de483, type: 3}
+    - target: {fileID: 2075217385111946365, guid: 936548de6ee50422892e006738b406d9,
+        type: 3}
+      propertyPath: DeadEyeTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: 5bc38df8af2cd55468d093897890533c, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 936548de6ee50422892e006738b406d9, type: 3}
 --- !u!114 &416833258 stripped
@@ -3476,10 +3481,6 @@ MonoBehaviour:
   nodesParent: {fileID: 823585299}
   linksParent: {fileID: 260843400}
   unfocusParent: {fileID: 1412613650}
-  heartPrefab: {fileID: 1364553399587929248, guid: 54acd8ed4289f5249a546f4ee8973fd1,
-    type: 3}
-  skullPrefab: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
-    type: 3}
   minLinkFlow: 0.1
   maxLinkFlow: 0.5
   tooltip: {fileID: 464567629}

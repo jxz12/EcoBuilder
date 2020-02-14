@@ -68,8 +68,7 @@ namespace EcoBuilder
                 if (playedLevel == null)
                 {
                     playedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab"));
-                    playedLevel.Play(); // should cause replay behaviour
-                    playedLevel.Unlock();
+                    playedLevel.PlayExternal();
                 }
 #else
                 Assert.IsNotNull(playedLevel, "no level being played");

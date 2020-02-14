@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2075217385111946363}
   - component: {fileID: 2075217385111946364}
-  - component: {fileID: 2075217385111946365}
   m_Layer: 0
   m_Name: Animal_Generator
   m_TagString: Untagged
@@ -44,30 +43,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1fb97e0947fd49f3842e9ce5f06eee1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Animal_Prefab: {fileID: 8620083413230679600, guid: 1f2994656656b4fcdaccf128fdfadbee,
-    type: 3}
-  Plant_Prefab: {fileID: 7943114584279828413, guid: e094bc46ecfe745bc9b0013c9235ed86,
+  speciesPrefab: {fileID: 1558682969434995755, guid: ca2697c3a0977234aa90fb68296a5eae,
     type: 3}
   Consumer_Meshs:
-  - {fileID: 3363173149664772039, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
-  - {fileID: 7406790110253308521, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
-  - {fileID: 3329136176600644168, guid: d2259cb3bdcaa874db55ae32abc15e98, type: 3}
+  - {fileID: 3363173149664772039, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  - {fileID: 7406790110253308521, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  - {fileID: 3329136176600644168, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
   Producer_Meshs:
-  - {fileID: 3906130615805142554, guid: 56743108949053049b08878223d68070, type: 3}
-  - {fileID: 6058517668492572802, guid: 56743108949053049b08878223d68070, type: 3}
-  - {fileID: 1750515013993300720, guid: 56743108949053049b08878223d68070, type: 3}
---- !u!114 &2075217385111946365
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2075217385111946362}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63640e5353d3845f982385aaa6a3332d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  - {fileID: 3906130615805142554, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  - {fileID: 6058517668492572802, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  - {fileID: -3329120111838817650, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  DeadEyeTexture: {fileID: 2800000, guid: 5bc38df8af2cd55468d093897890533c, type: 3}
+  skullPrefab: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
+    type: 3}
+  heartPrefab: {fileID: 1364553399587929248, guid: 54acd8ed4289f5249a546f4ee8973fd1,
+    type: 3}
   EyeTextures:
   - {fileID: 2800000, guid: 1197f90b1e3ca42558b658ed2d76b149, type: 3}
   - {fileID: 2800000, guid: 4d55ef837b84a4a3480a86707c18c3c1, type: 3}
@@ -88,9 +78,9 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 4c670d76532bf45dba251ad05e4597eb, type: 3}
   - {fileID: 2800000, guid: eca6d910c880441e0895842ca74f2579, type: 3}
   - {fileID: 2800000, guid: c751e071c9b3f4a8db2c6cd4de76da83, type: 3}
-  - {fileID: 2800000, guid: 1a85b91c3079e4317a2237b92a6cf91b, type: 3}
-  - {fileID: 2800000, guid: 44334a7e125ad402f931da8cec1de483, type: 3}
   CheeckTextures:
   - {fileID: 2800000, guid: 2ced268f6dcb9a848aad6ce8b60d130a, type: 3}
   NoseTextures:
   - {fileID: 2800000, guid: de41a2dcab7f1436e8d4710b7e82d7ed, type: 3}
+  emptyTexture: {fileID: 2800000, guid: 9524ae47136a1e54399305cacc05c1b8, type: 3}
+  woodMaterial: {fileID: 2100000, guid: cbdcfbc0be4baff49831623c49a6713e, type: 2}

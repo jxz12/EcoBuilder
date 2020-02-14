@@ -66,8 +66,7 @@ namespace EcoBuilder.Model
             public double Metabolism { get; set; } = double.NaN;
             public double Efficiency { get; set; } = double.NaN;
 
-            public bool Endangered { get; set; } = true; // initialise extinct so heart appears
-            public float NormalisedAbundance { get; set; } = 0;
+            public bool Endangered { get; set; }
 
             public Species(int idx)
             {
@@ -177,6 +176,9 @@ namespace EcoBuilder.Model
         {
             Species s = idxToSpecies[idx];
             s.IsProducer = isProducer;
+
+            // THIS IS SO THAT EFFECTS TRIGGER CORRECTLY ON ADD
+            s.Endangered = isProducer;
 
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;

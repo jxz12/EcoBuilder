@@ -1,14 +1,24 @@
 fileFormatVersion: 2
-guid: ffbf8a65b99196f47a70ea5307cdb7aa
+guid: 92a7d8804cab8e84c809e4acfcbddb7e
 ModelImporter:
   serializedVersion: 19300
-  internalIDToNameTable: []
-  externalObjects:
+  internalIDToNameTable:
   - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Map
-    second: {fileID: 2100000, guid: f452fbc18db41ed45bc9f4802b6ca9e1, type: 2}
+      74: -9131349657557742433
+    second: Armature|die
+  - first:
+      74: 2789604289822619476
+    second: Armature|Idle1
+  - first:
+      74: 213856876459495052
+    second: Armature|Idle2
+  - first:
+      74: -2783173183761764002
+    second: Armature|Idle3
+  - first:
+      74: -526121602075100429
+    second: Armature|live
+  externalObjects: {}
   materials:
     materialImportMode: 1
     materialName: 0
@@ -28,7 +38,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 1
+    animationCompression: 3
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -39,11 +49,11 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 0.5
     meshCompression: 0
     addColliders: 0
-    useSRGBMaterialColor: 0
-    sortHierarchyByName: 1
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 0
     importVisibility: 0
     importBlendShapes: 0
     importCameras: 0
@@ -73,7 +83,7 @@ ModelImporter:
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
   referencedClips: []
-  importAnimation: 0
+  importAnimation: 1
   humanDescription:
     serializedVersion: 3
     human: []
@@ -85,14 +95,14 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0.5
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 0
+    hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   avatarSetup: 0
   additionalBone: 0

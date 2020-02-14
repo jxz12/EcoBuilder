@@ -18,12 +18,11 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float defaultSize = .5f;
         public bool CanBeSource { get; set; } = true;
         public bool CanBeTarget { get; set; } = true;
-        public bool Removable { get; set; } = true;
-        public bool Disconnected {get; set; } = true;
+        public bool CanBeFocused { get; set; } = true;
 
         GameObject shape;
         public GameObject Shape { get { return shape; } }
-        MeshRenderer shapeRenderer;
+        Renderer shapeRenderer;
         cakeslice.Outline outline;
 
         public void Init(int idx)
@@ -36,8 +35,8 @@ namespace EcoBuilder.NodeLink
         public void SetShape(GameObject shapeObject)
         {
             shape = shapeObject;
-            shapeRenderer = shape.GetComponent<MeshRenderer>();
-            outline = shape.AddComponent<cakeslice.Outline>();
+            shapeRenderer = shape.GetComponentInChildren<Renderer>();
+            outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
 
             // drop it in at the point at shapeObject's position
             transform.position = shapeObject.transform.position;
@@ -75,15 +74,15 @@ namespace EcoBuilder.NodeLink
             transform.localScale = Vector3.one * defaultSize;
         }
 
-        public void Enlarge()
+        public void Highlight()
         {
-            defaultSize *= 1.2f;
-            transform.localScale = Vector3.one * defaultSize;
+            // defaultSize *= 1.2f;
+            // transform.localScale = Vector3.one * defaultSize;
         }
-        public void Shrink()
+        public void Unhighlight()
         {
-            defaultSize /= 1.2f;
-            transform.localScale = Vector3.one * defaultSize;
+            // defaultSize /= 1.2f;
+            // transform.localScale = Vector3.one * defaultSize;
         }
 
 
@@ -107,7 +106,7 @@ namespace EcoBuilder.NodeLink
             float start = Time.time;
             while (true)
             {
-                if ((Time.time-start) % period < period/2)
+                if ((Time.time-start) % period > period/2)
                 {
                     if (enabled)
                     {
@@ -126,32 +125,7 @@ namespace EcoBuilder.NodeLink
                 yield return null;
             }
         }
-        public void LieDown()
-        {
-            transform.localRotation = Quaternion.Euler(0, 0, -90);
-        }
-        IEnumerator bounceRoutine;
-        public void Bounce()
-        {
-            transform.localRotation = Quaternion.identity;
-            if (bounceRoutine != null)
-            {
-                StopCoroutine(bounceRoutine);
-            }
-            StartCoroutine(bounceRoutine = Bounce(.6f, .1f));
-        }
-        IEnumerator Bounce(float length, float magnitude)
-        {
-            float startTime = Time.time;
-            while (Time.time < startTime+length)
-            {
-                float t = (Time.time-startTime) / length;
-                transform.localScale = (defaultSize + magnitude*(4*Mathf.Sqrt(t) * -Mathf.Pow(t-1,3))) * Vector3.one;
-                yield return null;
-            }
-            transform.localScale = defaultSize * Vector3.one;
-            bounceRoutine = null;
-        }
+
 
         Vector3 velocity; // for use with smoothdamp
         public void TweenPos(float smoothTime)

@@ -53,12 +53,10 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> constraints.UpdateFeasibility(model.Feasible);
             model.OnEquilibrium += ()=> constraints.UpdateStability(model.Stable);
+            model.OnEndangered += (i)=> inspector.MakeSpeciesObjectExtinct(i);
+            model.OnRescued +=    (i)=> inspector.MakeSpeciesObjectRescued(i);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
-            model.OnEndangered += (i)=> nodelink.SkullEffectNode(i);
-            model.OnEndangered += (i)=> nodelink.LieDownNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
-            model.OnRescued +=    (i)=> nodelink.HeartEffectNode(i);
-            model.OnRescued +=    (i)=> nodelink.BounceNode(i);
 
             constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
@@ -114,8 +112,7 @@ namespace EcoBuilder
                     details.Editables[i]);
 
                 inspector.SetSpeciesRemovable(i, false);
-                nodelink.SetIfNodeRemovable(i, false);
-                nodelink.OutlineNode(i, cakeslice.Outline.Colour.Blue);
+                nodelink.OutlineNode(i, details.Editables[i]? cakeslice.Outline.Colour.Clear : cakeslice.Outline.Colour.Blue);
             }
             // add interactions
             for (int ij=0; ij<details.NumInitInteractions; ij++)
@@ -199,6 +196,7 @@ namespace EcoBuilder
                 var plants = new List<bool>();
                 var sizes = new List<float>();
                 var greeds = new List<float>();
+                var editables = new List<bool>();
 
                 var squishedIdxs = new Dictionary<int, int>();
                 int counter = 0;
@@ -210,6 +208,7 @@ namespace EcoBuilder
                     plants.Add(s.IsProducer);
                     sizes.Add(s.BodySize);
                     greeds.Add(s.Greediness);
+                    editables.Add(true);
 
                     squishedIdxs[idx] = counter++;
                 }
@@ -228,7 +227,7 @@ namespace EcoBuilder
                         numInteractions += 1;
                     }
                 }
-                var details = new LevelDetails(randomSeeds, plants, sizes, greeds, sources, targets);
+                var details = new LevelDetails(randomSeeds, plants, sizes, greeds, editables, sources, targets);
                 GameManager.Instance.SavePlayedAsNewLevel(details);
             }
         }

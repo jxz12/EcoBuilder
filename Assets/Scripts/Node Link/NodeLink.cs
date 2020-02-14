@@ -26,7 +26,6 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
-        [SerializeField] Effect heartPrefab, skullPrefab;
 
         void Start()
         {
@@ -47,6 +46,7 @@ namespace EcoBuilder.NodeLink
 
             if (layoutTriggered && !isCalculatingAsync)
             {
+                print("TODO: reorder superfocus");
                 layoutTriggered = false;
 #if UNITY_WEBGL
                 LayoutSync();
@@ -121,10 +121,7 @@ namespace EcoBuilder.NodeLink
                 nodes[idx] = newNode;
                 undirected[idx] = new HashSet<int>();
 
-                // initialise as flashing
                 nodes[idx].SetShape(shape);
-                FlashNode(idx);
-                LieDownNode(idx);
             }
             else // bring back previously removed
             {
@@ -236,9 +233,6 @@ namespace EcoBuilder.NodeLink
             undirected[i].Add(j);
             undirected[j].Add(i);
 
-            nodes[i].Disconnected = false;
-            nodes[j].Disconnected = false;
-
             OnLinked?.Invoke();
             layoutTriggered = true;
         }
@@ -252,12 +246,6 @@ namespace EcoBuilder.NodeLink
             undirected[i].Remove(j);
             undirected[j].Remove(i);
 
-            if (undirected[i].Count == 0) {
-                nodes[i].Disconnected = true;
-            }
-            if (undirected[j].Count == 0) {
-                nodes[j].Disconnected = true;
-            }
             OnLinked?.Invoke();
             layoutTriggered = true;
         }
@@ -270,9 +258,10 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        public void SetIfNodeRemovable(int idx, bool removable)
+        public void SetIfNodeCanBeFocused(int idx, bool canBeFocused)
         {
-            nodes[idx].Removable = removable;
+            nodes[idx].CanBeFocused = canBeFocused;
+            nodes[idx].GetComponent<Collider>().enabled = canBeFocused;
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
@@ -312,22 +301,6 @@ namespace EcoBuilder.NodeLink
         public void UnflashNode(int idx)
         {
             nodes[idx].Flash(false);
-        }
-        public void SkullEffectNode(int idx)
-        {
-            Instantiate(skullPrefab, nodes[idx].transform);
-        }
-        public void HeartEffectNode(int idx)
-        {
-            Instantiate(heartPrefab, nodes[idx].transform);
-        }
-        public void BounceNode(int idx)
-        {
-            nodes[idx].Bounce();
-        }
-        public void LieDownNode(int idx)
-        {
-            nodes[idx].LieDown();
         }
 
         // adds a gameobject like the jump shadow in mario bros.

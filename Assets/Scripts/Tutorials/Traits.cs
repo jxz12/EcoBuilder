@@ -7,7 +7,7 @@ namespace EcoBuilder.Tutorials
     // this tutorial teaches the size slider and its effects
     public class Traits : Tutorial
     {
-        GameObject plant, animal;
+        NodeLink.Node plant, animal;
         protected override void StartLesson()
         {
             incubator.HideStartButtons(true);
@@ -19,8 +19,10 @@ namespace EcoBuilder.Tutorials
             targetZRot = 45;
 
             var nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
-            animal = nodes[1].gameObject;
-            plant = nodes[0].gameObject;
+            animal = nodes[1];
+            plant = nodes[0];
+
+            nodelink.SetIfNodeCanBeFocused(animal.Idx, false);
 
             ExplainIntro();
         }
@@ -28,6 +30,10 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
             StopAllCoroutines();
+
+            // in case the user goes back
+            help.Message = GameManager.Instance.PlayedLevelDetails.Introduction;
+            help.ResetPosition();
             
             StartCoroutine(Track(plant.transform));
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
@@ -40,7 +46,7 @@ namespace EcoBuilder.Tutorials
 
             help.Message = "You can change the weight of your species by moving this slider. Here, your animal is going extinct because it is not getting enough food. See if you can save it!";
             help.Showing = true;
-            help.SetSide(true, false);
+            help.SetSide(true);
             help.SetAnchorHeight(.95f);
 
             StartCoroutine(ShuffleOnSlider(3, 40));
@@ -54,13 +60,15 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines();
 
             help.Showing = false;
-            // inspector.Uninspect();
             nodelink.ForceUnfocus();
+
+            nodelink.SetIfNodeCanBeFocused(animal.Idx, true);
+            nodelink.SetIfNodeCanBeFocused(plant.Idx, true);
 
             smoothTime = .3f;
             targetSize = Vector2.zero;
 
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(600); help.Showing = true; StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100); }));
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100); }));
 
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainInterference());
         }
@@ -89,7 +97,7 @@ namespace EcoBuilder.Tutorials
             // inspector.Uninspect();
             nodelink.ForceUnfocus();
             help.SetSide(false,false);
-            help.SetAnchorHeight(.9f);
+            help.SetAnchorHeight(.85f);
 
             print("TODO: fix the report card");
             StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species and their populations, shown by the health bars next to each species. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
