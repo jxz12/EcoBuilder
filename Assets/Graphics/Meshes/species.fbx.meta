@@ -131,7 +131,7 @@ ModelImporter:
     second: ImportLogs
   externalObjects: {}
   materials:
-    materialImportMode: 1
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -139,7 +139,7 @@ ModelImporter:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
     resampleCurves: 1
-    optimizeGameObjects: 0
+    optimizeGameObjects: 1
     motionNodeName: 
     rigImportErrors: 
     rigImportWarnings: 
@@ -320,8 +320,8 @@ ModelImporter:
     keepQuads: 0
     weldVertices: 1
     preserveHierarchy: 0
-    skinWeightsMode: 0
-    maxBonesPerVertex: 4
+    skinWeightsMode: 1
+    maxBonesPerVertex: 2
     minBoneWeight: 0.001
     meshOptimizationFlags: -1
     indexFormat: 0
@@ -343,7 +343,57 @@ ModelImporter:
   humanDescription:
     serializedVersion: 3
     human: []
-    skeleton: []
+    skeleton:
+    - name: species(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: pig
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.00000004371139, y: 1, z: 0.000000081460335, w: -3.560745e-15}
+      scale: {x: 1, y: 1, z: 1}
+    - name: bear
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.00000004371139, y: 1, z: 0.000000081460335, w: -3.560745e-15}
+      scale: {x: 1, y: 1, z: 1}
+    - name: insect
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.00000004371139, y: 1, z: 0.000000081460335, w: -3.560745e-15}
+      scale: {x: 1, y: 1, z: 1}
+    - name: grass
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.00000004371139, y: 1, z: 0.000000081460335, w: -3.560745e-15}
+      scale: {x: 1, y: 1, z: 1}
+    - name: shrub
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.00000004371139, y: 1, z: 0.000000081460335, w: -3.560745e-15}
+      scale: {x: 1, y: 1, z: 1}
+    - name: baobab
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.00000004371139, y: 1, z: 0.000000081460335, w: -3.560745e-15}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Armature
+      parentName: species(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071067, y: -0.00000009415696, z: 0.000000094156974, w: 0.7071068}
+      scale: {x: 100, y: 100, z: 100}
+    - name: Lower
+      parentName: Armature
+      position: {x: 4.371139e-12, y: 8.146033e-12, z: -0.00005}
+      rotation: {x: 0.7071069, y: -0.000000030908613, z: 0.000000030908627, w: 0.7071067}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Upper
+      parentName: Lower
+      position: {x: -3.8536e-27, y: 0.00005, z: 0}
+      rotation: {x: -0, y: -2.1175824e-22, z: -6.7167066e-22, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     armTwist: 0.5
     foreArmTwist: 0.5
     upperLegTwist: 0.5
@@ -351,16 +401,16 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.5
-    rootMotionBoneName: 
+    globalScale: 0.005
+    rootMotionBoneName: Lower
     hasTranslationDoF: 0
-    hasExtraRoot: 0
+    hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 1
+  avatarSetup: 0
   additionalBone: 0
   userData: 
   assetBundleName: 

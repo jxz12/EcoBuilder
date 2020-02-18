@@ -1,5 +1,6 @@
 // animal generator
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -34,6 +35,7 @@ namespace EcoBuilder.Archie{
         {
             var created_species = species.GetComponent<animal_object>();
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
+            Assert.IsTrue(generated_consumers.Contains(created_species) || generated_producers.Contains(created_species), "animal_object never generated in first place");
 
             UnityEngine.Random.InitState(randomSeed);
             if (generated_consumers.Contains(created_species))
@@ -97,7 +99,7 @@ namespace EcoBuilder.Archie{
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
 
             Instantiate(skullPrefab, created_species.transform);
-            created_species.Animator.SetTrigger("Die");
+            created_species.Die();
 
             created_species.Renderer.materials[1].SetTexture("_MainTex", DeadEyeTexture);
         }
@@ -107,7 +109,7 @@ namespace EcoBuilder.Archie{
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
 
             Instantiate(heartPrefab, created_species.transform);
-            created_species.Animator.SetTrigger("Live");
+            created_species.Live();
 
             created_species.Renderer.materials[1].SetTexture("_MainTex", created_species.Eyes);
         }
@@ -153,6 +155,35 @@ namespace EcoBuilder.Archie{
         private Texture2D pick_random(Texture2D[] A)
         {
             return A[UnityEngine.Random.Range(0, A.Length)];
+        }
+
+        // idle animations
+        [SerializeField] float idlePoisson = 7f;
+        float lastIdle=0;
+        void Update()
+        {
+            float t = Time.time - lastIdle;
+            float prob = (1-Mathf.Exp(-t * (1/idlePoisson)));
+            if (Random.Range(0,1f) < prob)
+            {
+                RandomIdleAnimation();
+                lastIdle = Time.time;
+            }
+        }
+        void RandomIdleAnimation()
+        {
+            int nSpecies = generated_producers.Count + generated_consumers.Count;
+            if (nSpecies == 0) {
+                return;
+            }
+            int choice = Random.Range(0, nSpecies);
+
+            if (choice < generated_producers.Count)
+            {
+                generated_producers.ElementAt(choice).IdleAnimation();
+            } else {
+                generated_consumers.ElementAt(choice-generated_producers.Count).IdleAnimation();
+            }
         }
 
         public static string[] adjectives = new string[]

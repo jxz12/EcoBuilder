@@ -2,7 +2,8 @@ dad
 claim moneys
 
 HEALTH BARS AND NUMBERS (HIDE IF EMPTY TAP)
-X eyes and idle animations and new names
+new names
+remove landscapes and just use planet instead
 
 score explanation
 make loading and results looks pretty
@@ -32,10 +33,8 @@ verify high scores by checking matrices
 # Other
 Tidy report card
 make healthbars into UI objects
-remove landscapes and just use planet instead
 double check the teams visualisations
 fix confetti
-charming node animations
 more fidelity in link balls
 release game with australian fires as angle?
 

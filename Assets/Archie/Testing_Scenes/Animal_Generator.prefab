@@ -84,3 +84,4 @@ MonoBehaviour:
   - {fileID: 2800000, guid: de41a2dcab7f1436e8d4710b7e82d7ed, type: 3}
   EmptyTexture: {fileID: 2800000, guid: 9524ae47136a1e54399305cacc05c1b8, type: 3}
   WoodMaterial: {fileID: 2100000, guid: cbdcfbc0be4baff49831623c49a6713e, type: 2}
+  idlePoisson: 5000
