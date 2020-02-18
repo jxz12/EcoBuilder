@@ -9,9 +9,6 @@ namespace EcoBuilder.Archie
         public SkinnedMeshRenderer Renderer { get { return smr; } }
         public Animator Animator { get { return anim; } }
 
-        public void Awake()
-        {
-            print("TODO: idle animations");
-        }
+        public Texture2D Eyes { get; set; }
     }
 }

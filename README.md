@@ -1,12 +1,13 @@
 dad
 claim moneys
 
+HEALTH BARS AND NUMBERS (HIDE IF EMPTY TAP)
+X eyes and idle animations and new names
 
 score explanation
+make loading and results looks pretty
 are you sure button
 
-health bars
-reorder superfocus
 
 
 

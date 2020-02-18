@@ -46,13 +46,13 @@ MonoBehaviour:
   speciesPrefab: {fileID: 1558682969434995755, guid: ca2697c3a0977234aa90fb68296a5eae,
     type: 3}
   Consumer_Meshs:
-  - {fileID: 3363173149664772039, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
-  - {fileID: 7406790110253308521, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
-  - {fileID: 3329136176600644168, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  - {fileID: 4300004, guid: 9a3f74c3fccb3fa42a3c794ee7686d1b, type: 3}
+  - {fileID: 4300000, guid: 9a3f74c3fccb3fa42a3c794ee7686d1b, type: 3}
+  - {fileID: 4300002, guid: 9a3f74c3fccb3fa42a3c794ee7686d1b, type: 3}
   Producer_Meshs:
-  - {fileID: 3906130615805142554, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
-  - {fileID: 6058517668492572802, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
-  - {fileID: -3329120111838817650, guid: 92a7d8804cab8e84c809e4acfcbddb7e, type: 3}
+  - {fileID: 4300006, guid: 9a3f74c3fccb3fa42a3c794ee7686d1b, type: 3}
+  - {fileID: 4300008, guid: 9a3f74c3fccb3fa42a3c794ee7686d1b, type: 3}
+  - {fileID: 4300010, guid: 9a3f74c3fccb3fa42a3c794ee7686d1b, type: 3}
   DeadEyeTexture: {fileID: 2800000, guid: 5bc38df8af2cd55468d093897890533c, type: 3}
   skullPrefab: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
     type: 3}
@@ -82,5 +82,5 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 2ced268f6dcb9a848aad6ce8b60d130a, type: 3}
   NoseTextures:
   - {fileID: 2800000, guid: de41a2dcab7f1436e8d4710b7e82d7ed, type: 3}
-  emptyTexture: {fileID: 2800000, guid: 9524ae47136a1e54399305cacc05c1b8, type: 3}
-  woodMaterial: {fileID: 2100000, guid: cbdcfbc0be4baff49831623c49a6713e, type: 2}
+  EmptyTexture: {fileID: 2800000, guid: 9524ae47136a1e54399305cacc05c1b8, type: 3}
+  WoodMaterial: {fileID: 2100000, guid: cbdcfbc0be4baff49831623c49a6713e, type: 2}

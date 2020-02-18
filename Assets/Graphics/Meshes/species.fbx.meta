@@ -1,23 +1,134 @@
 fileFormatVersion: 2
-guid: 92a7d8804cab8e84c809e4acfcbddb7e
+guid: 9a3f74c3fccb3fa42a3c794ee7686d1b
 ModelImporter:
   serializedVersion: 19300
   internalIDToNameTable:
   - first:
-      74: -9131349657557742433
+      1: 100000
+    second: Armature
+  - first:
+      1: 100002
+    second: baobab
+  - first:
+      1: 100004
+    second: bear
+  - first:
+      1: 100006
+    second: grass
+  - first:
+      1: 100008
+    second: insect
+  - first:
+      1: 100010
+    second: Lower
+  - first:
+      1: 100012
+    second: pig
+  - first:
+      1: 100014
+    second: shrub
+  - first:
+      1: 100016
+    second: //RootNode
+  - first:
+      1: 100018
+    second: Upper
+  - first:
+      4: 400000
+    second: Armature
+  - first:
+      4: 400002
+    second: baobab
+  - first:
+      4: 400004
+    second: bear
+  - first:
+      4: 400006
+    second: grass
+  - first:
+      4: 400008
+    second: insect
+  - first:
+      4: 400010
+    second: Lower
+  - first:
+      4: 400012
+    second: pig
+  - first:
+      4: 400014
+    second: shrub
+  - first:
+      4: 400016
+    second: //RootNode
+  - first:
+      4: 400018
+    second: Upper
+  - first:
+      21: 2100000
+    second: Body
+  - first:
+      21: 2100002
+    second: Face
+  - first:
+      21: 2100004
+    second: Wood
+  - first:
+      43: 4300000
+    second: pig
+  - first:
+      43: 4300002
+    second: bear
+  - first:
+      43: 4300004
+    second: insect
+  - first:
+      43: 4300006
+    second: grass
+  - first:
+      43: 4300008
+    second: shrub
+  - first:
+      43: 4300010
+    second: baobab
+  - first:
+      74: 7400000
     second: Armature|die
   - first:
-      74: 2789604289822619476
+      74: 7400002
     second: Armature|Idle1
   - first:
-      74: 213856876459495052
+      74: 7400004
     second: Armature|Idle2
   - first:
-      74: -2783173183761764002
+      74: 7400006
     second: Armature|Idle3
   - first:
-      74: -526121602075100429
+      74: 7400008
     second: Armature|live
+  - first:
+      95: 9500000
+    second: //RootNode
+  - first:
+      137: 13700000
+    second: baobab
+  - first:
+      137: 13700002
+    second: bear
+  - first:
+      137: 13700004
+    second: grass
+  - first:
+      137: 13700006
+    second: insect
+  - first:
+      137: 13700008
+    second: pig
+  - first:
+      137: 13700010
+    second: shrub
+  - first:
+      41386430: 2186277476908879412
+    second: ImportLogs
   externalObjects: {}
   materials:
     materialImportMode: 1
@@ -45,15 +156,160 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     extraUserProperties: []
-    clipAnimations: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Armature|die
+      takeName: Armature|die
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 16
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|Idle1
+      takeName: Armature|Idle1
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 58
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|Idle2
+      takeName: Armature|Idle2
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 60
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|Idle3
+      takeName: Armature|Idle3
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 95
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Armature|live
+      takeName: Armature|live
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     isReadable: 0
   meshes:
     lODScreenPercentages: []
     globalScale: 0.5
-    meshCompression: 0
+    meshCompression: 2
     addColliders: 0
     useSRGBMaterialColor: 1
-    sortHierarchyByName: 0
+    sortHierarchyByName: 1
     importVisibility: 0
     importBlendShapes: 0
     importCameras: 0
@@ -98,13 +354,13 @@ ModelImporter:
     globalScale: 0.5
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 0
+  avatarSetup: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

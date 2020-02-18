@@ -14,17 +14,16 @@ namespace EcoBuilder.Archie{
 
         public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed)
         {
+            animal_object created_species = Instantiate(speciesPrefab);
+
             UnityEngine.Random.InitState(randomSeed);
-            animal_object created_species;
             if (!isProducer)
             {
-                created_species = Instantiate(speciesPrefab);
                 Form_Animal(created_species, bodySize, greediness, randomSeed);
                 generated_consumers.Add(created_species);
             }
             else
             {
-                created_species = Instantiate(speciesPrefab);
                 Form_Plant(created_species, bodySize, greediness, randomSeed);
                 generated_producers.Add(created_species);
             }
@@ -35,8 +34,8 @@ namespace EcoBuilder.Archie{
         {
             var created_species = species.GetComponent<animal_object>();
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
-            UnityEngine.Random.InitState(randomSeed);
 
+            UnityEngine.Random.InitState(randomSeed);
             if (generated_consumers.Contains(created_species))
             {
                 Form_Animal(created_species, size, greed, randomSeed);
@@ -44,12 +43,11 @@ namespace EcoBuilder.Archie{
             else
             {
                 Form_Plant(created_species, size, greed, randomSeed);
-                //re-generate tree
             }
         }
 
 
-        private void Form_Animal(animal_object animal, float bodySize, float greediness, int randomSeed)
+        private void Form_Animal(animal_object animal, float bodySize, float greediness, int seed)
         {
             // give appropriate name
             int d0 = UnityEngine.Random.Range(0, adjectives.Length);
@@ -68,10 +66,10 @@ namespace EcoBuilder.Archie{
             var lab = new LABColor(70-50*bodySize, 60*greediness, -50);
             Color rgb = lab.ToColor();
 
-            Generate_and_Apply(randomSeed, animal, rgb, true);
+            Generate_and_Apply(animal, seed, rgb, true);
         }
 
-        private void Form_Plant(animal_object plant, float bodySize, float greediness, int randomSeed)
+        private void Form_Plant(animal_object plant, float bodySize, float greediness, int seed)
         {
             // give appropriate name
             int d0 = UnityEngine.Random.Range(0, adjectives.Length);
@@ -89,7 +87,7 @@ namespace EcoBuilder.Archie{
             var lab = new LABColor(80-50*bodySize, -80+100*greediness, 50);
             Color rgb = lab.ToColor();
 
-            Generate_and_Apply(randomSeed, plant, rgb, false);
+            Generate_and_Apply(plant, seed, rgb, false);
         }
         [SerializeField] Texture2D DeadEyeTexture;
         [SerializeField] animal_effect skullPrefab, heartPrefab;
@@ -100,7 +98,8 @@ namespace EcoBuilder.Archie{
 
             Instantiate(skullPrefab, created_species.transform);
             created_species.Animator.SetTrigger("Die");
-            print("TODO: eyes");
+
+            created_species.Renderer.materials[1].SetTexture("_MainTex", DeadEyeTexture);
         }
         public override void RescueSpecies(GameObject species)
         {
@@ -109,7 +108,51 @@ namespace EcoBuilder.Archie{
 
             Instantiate(heartPrefab, created_species.transform);
             created_species.Animator.SetTrigger("Live");
-            print("TODO: eyes");
+
+            created_species.Renderer.materials[1].SetTexture("_MainTex", created_species.Eyes);
+        }
+
+        [SerializeField] Texture2D[] EyeTextures, MouthTextures, CheeckTextures, NoseTextures; // arranged in ascending order of size they represent
+        [SerializeField] Texture2D EmptyTexture;
+        [SerializeField] Material WoodMaterial;
+        private void Generate_and_Apply(animal_object obj, int seed, Color col, bool hasNose=true, bool deadEyes=false)
+        {
+            obj.Renderer.materials[0].SetColor("_Color", col);
+
+            if (obj.Renderer.materials.Length > 1)
+            {
+                var eyes = pick_random(EyeTextures);
+                var nose = hasNose? pick_random(NoseTextures) : EmptyTexture;
+                var mouth = pick_random(MouthTextures);
+                var cheek = pick_random(CheeckTextures);
+
+                obj.Eyes = eyes; // used for dying later
+                obj.Renderer.materials[1].SetTexture("_MainTex", eyes);
+                obj.Renderer.materials[1].SetTexture("_MainTex2", mouth);
+                obj.Renderer.materials[1].SetTexture("_MainTex3", nose);
+                obj.Renderer.materials[1].SetTexture("_MainTex4", cheek);
+            }
+
+            // for baobab lol
+            if (obj.Renderer.sharedMesh.subMeshCount == 3 && obj.Renderer.materials.Length < 3)
+            {
+                var prevMaterials = new List<Material>(obj.Renderer.materials);
+                prevMaterials.Add(WoodMaterial);
+
+                obj.Renderer.materials = prevMaterials.ToArray();
+            }
+            else if (obj.Renderer.sharedMesh.subMeshCount == 2 && obj.Renderer.materials.Length > 2)
+            {
+                var prevMaterials = new List<Material>();
+                prevMaterials.Add(obj.Renderer.materials[0]);
+                prevMaterials.Add(obj.Renderer.materials[1]);
+
+                obj.Renderer.materials = prevMaterials.ToArray();
+            }
+        }
+        private Texture2D pick_random(Texture2D[] A)
+        {
+            return A[UnityEngine.Random.Range(0, A.Length)];
         }
 
         public static string[] adjectives = new string[]
@@ -206,50 +249,5 @@ namespace EcoBuilder.Archie{
             "Oak",
             "Beech"}
         };
-
-        [SerializeField] Texture2D[] EyeTextures, MouthTextures, CheeckTextures, NoseTextures; // arranged in ascending order of size they represent
-        [SerializeField] Texture2D emptyTexture;
-        [SerializeField] Material woodMaterial;
-        private void Generate_and_Apply(int seed, animal_object obj, Color col, bool hasNose=true)
-        {
-            // seed random number
-            UnityEngine.Random.InitState(seed);
-
-            obj.Renderer.materials[0].SetColor("_Color", col);
-
-            if (obj.Renderer.materials.Length > 1)
-            {
-                var eyes = pick_random(EyeTextures);
-                var nose = hasNose? pick_random(NoseTextures) : emptyTexture;
-                var mouth = pick_random(MouthTextures);
-                var cheek = pick_random(CheeckTextures);
-
-                obj.Renderer.materials[1].SetTexture("_MainTex", eyes);
-                obj.Renderer.materials[1].SetTexture("_MainTex2", mouth);
-                obj.Renderer.materials[1].SetTexture("_MainTex3", nose);
-                obj.Renderer.materials[1].SetTexture("_MainTex4", cheek);
-            }
-
-            // for baobab lol
-            if (obj.Renderer.sharedMesh.subMeshCount == 3 && obj.Renderer.materials.Length < 3)
-            {
-                var prevMaterials = new List<Material>(obj.Renderer.materials);
-                prevMaterials.Add(woodMaterial);
-
-                obj.Renderer.materials = prevMaterials.ToArray();
-            }
-            else if (obj.Renderer.sharedMesh.subMeshCount == 2 && obj.Renderer.materials.Length > 2)
-            {
-                var prevMaterials = new List<Material>();
-                prevMaterials.Add(obj.Renderer.materials[0]);
-                prevMaterials.Add(obj.Renderer.materials[1]);
-
-                obj.Renderer.materials = prevMaterials.ToArray();
-            }
-        }
-        private Texture2D pick_random(Texture2D[] A)
-        {
-            return A[UnityEngine.Random.Range(0, A.Length)];
-        }
     }
 }

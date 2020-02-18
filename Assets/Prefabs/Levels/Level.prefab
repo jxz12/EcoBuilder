@@ -1663,7 +1663,7 @@ MonoBehaviour:
     numInitInteractions: 0
     sources: 
     targets: 
-    metric: 2
+    metric: 0
     targetScore1: 0
     targetScore2: 0
     mainMultiplier: 1000
