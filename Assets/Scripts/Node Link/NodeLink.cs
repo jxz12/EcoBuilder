@@ -2,6 +2,7 @@
 using UnityEngine.Assertions;
 using System;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 // for heavy calculations
@@ -36,16 +37,8 @@ namespace EcoBuilder.NodeLink
         }
         void Update()
         {
-            FineTuneLayout();
-            if (tweenNodes) {
-                TweenNodesToStress();
-                TweenZoomToFit();
-                MomentumRotate();
-            }
-
             if (layoutTriggered && !isCalculatingAsync)
             {
-                print("TODO: reorder superfocus");
                 layoutTriggered = false;
 #if UNITY_WEBGL
                 LayoutSync();
@@ -53,12 +46,19 @@ namespace EcoBuilder.NodeLink
                 LayoutAsync();
 #endif
             }
-            // this makes sure that the components calculated async match the
-            // possible Node.StressPos 
-            if (GraphLayedOut)
-            {
+
+            FineTuneLayout();
+
+            if (GraphLayedOut) {
                 SeparateConnectedComponents();
             }
+
+            if (tweenNodes) {
+                TweenNodesToStress();
+                TweenZoomToFit();
+                MomentumRotate();
+            }
+
         }
 
         private bool layoutTriggered = false;
@@ -74,8 +74,8 @@ namespace EcoBuilder.NodeLink
             RefreshTrophicAndFindChain();
             NumEdges = links.Count();
 
-            JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
-            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm(nodes.Indices));
+            JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm());
 
             isCalculatingAsync = false;
             OnLayedOut.Invoke();
@@ -88,8 +88,8 @@ namespace EcoBuilder.NodeLink
             RefreshTrophicAndFindChain();
             NumEdges = links.Count();
 
-            JohnsonInOut(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
-            LongestLoop = JohnsonsAlgorithm(nodes.Indices);
+            JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            LongestLoop = JohnsonsAlgorithm();
 
             OnLayedOut.Invoke();
         }
@@ -320,48 +320,64 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].PopOutline();
         }
-        public void OutlineLink(int src, int trg, cakeslice.Outline.Colour colour)
+        public void OutlineLink(int src, int tgt, cakeslice.Outline.Colour colour)
         {
-            links[src,trg].PushOutline(colour);
+            links[src, tgt].PushOutline(colour);
         }
-        public void OutlineChain(bool highlighted, cakeslice.Outline.Colour colour)
+
+        private List<Action> toUnoutline = new List<Action>();
+        public void OutlineChain(cakeslice.Outline.Colour colour)
         {
-            print("TODO: check if calculating, and wait until done?");
+            Assert.IsTrue(toUnoutline.Count == 0, "previous outline not undone");
             if (MaxChain == 0) {
                 return;
             }
-            if (highlighted) {
-                foreach (int idx in TallestNodes) {
-                    nodes[idx].PushOutline(colour);
-                }
-            } else {
-                foreach (int idx in TallestNodes) {
-                    nodes[idx].PopOutline();
-                }
-            }
+            StartCoroutine(WaitThenOutlineChain(colour));
         }
-        public void OutlineLoop(bool highlighted, cakeslice.Outline.Colour colour)
+        public void OutlineLoop(cakeslice.Outline.Colour colour)
         {
-            print("TODO: check if calculating, and wait until done?");
+            Assert.IsTrue(toUnoutline.Count == 0, "previous outline not undone");
             if (MaxLoop == 0) {
                 return;
             }
-            if (highlighted)
-            {
-                for (int i=0; i<LongestLoop.Count; i++)
-                {
-                    links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]].PushOutline(colour);
-                    nodes[LongestLoop[i]].PushOutline(colour);
-                }
+            StartCoroutine(WaitThenOutlineLoop(colour));
+        }
+        private IEnumerator WaitThenOutlineChain(cakeslice.Outline.Colour colour)
+        {
+            // if calculating then we could potentially try to outline inactive or destroyed nodes
+            while (isCalculatingAsync) {
+                yield return null;
             }
-            else
+            foreach (int idx in TallestNodes)
             {
-                for (int i=0; i<LongestLoop.Count; i++)
-                {
-                    links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]].PopOutline();
-                    nodes[LongestLoop[i]].PopOutline();
-                }
+                nodes[idx].PushOutline(colour);
+                toUnoutline.Add(()=> nodes[idx].PopOutline());
             }
+        }
+        private IEnumerator WaitThenOutlineLoop(cakeslice.Outline.Colour colour)
+        {
+            // if calculating then we could potentially try to outline inactive or destroyed nodes
+            while (isCalculatingAsync) {
+                yield return null;
+            }
+            for (int i=0; i<LongestLoop.Count; i++)
+            {
+                var loopLink = links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]];
+                var loopNode = nodes[LongestLoop[i]];
+
+                loopNode.PushOutline(colour);
+                loopLink.PushOutline(colour);
+
+                toUnoutline.Add(()=> loopNode.PopOutline());
+                toUnoutline.Add(()=> loopLink.PopOutline());
+            }
+        }
+        public void UnoutlineChainOrLoop()
+        {
+            foreach (Action Undo in toUnoutline) {
+                Undo.Invoke();
+            }
+            toUnoutline.Clear();
         }
 
         public void TooltipNode(int idx, string msg)

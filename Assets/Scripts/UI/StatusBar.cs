@@ -5,8 +5,8 @@ namespace EcoBuilder.UI
 {
     public class StatusBar : MonoBehaviour
     {
-        [SerializeField] Image health;
-        [SerializeField] TMPro.TextMeshProUGUI sizeText;
+        [SerializeField] Image health, healthBG;
+        [SerializeField] TMPro.TextMeshProUGUI sizeText, greedText;
 
         Transform toFollow;
         public void FollowSpecies(Transform target, int size, int greed)
@@ -16,16 +16,24 @@ namespace EcoBuilder.UI
 
             SetSize(size);
             SetGreed(greed);
-            Show(true);
+            ShowTraits(true);
+            ShowHealth(false);
+            print("TODO: grow");
         }
-        public void Show(bool visible)
+        public void ShowTraits(bool visible)
         {
             sizeText.enabled = visible;
+            greedText.enabled = false;
+            print("TODO: greed");
+        }
+        public void ShowHealth(bool visible)
+        {
+            health.enabled = visible;
+            healthBG.enabled = visible;
         }
         public void SetHealth(float normalisedHealth)
         {
-            // health.fillAmount = normalisedHealth;
-            print("TODO: set health");
+            health.fillAmount = normalisedHealth;
         }
         public void SetSize(int size)
         {
@@ -33,7 +41,7 @@ namespace EcoBuilder.UI
         }
         public void SetGreed(int greed)
         {
-            print("TODO: set greed");
+            greedText.text = greed.ToString();
         }
         RectTransform rt;
         void Awake()

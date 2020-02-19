@@ -62,8 +62,10 @@ namespace EcoBuilder
 
             constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
             constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            constraints.OnChainHovered +=       (b)=> nodelink.OutlineChain(b, cakeslice.Outline.Colour.Red);
-            constraints.OnLoopHovered +=        (b)=> nodelink.OutlineLoop(b, cakeslice.Outline.Colour.Red);
+            constraints.OnChainHovered +=        ()=> nodelink.OutlineChain(cakeslice.Outline.Colour.Red);
+            constraints.OnLoopHovered +=         ()=> nodelink.OutlineLoop(cakeslice.Outline.Colour.Red);
+            constraints.OnChainUnhovered +=      ()=> nodelink.UnoutlineChainOrLoop();
+            constraints.OnLoopUnhovered +=       ()=> nodelink.UnoutlineChainOrLoop();
 
             inspector.OnUserSpawned +=      (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);

@@ -31,9 +31,8 @@ namespace EcoBuilder.UI
             this.target2 = target2;
         }
 
-		//////////////////////
-		// score calculation
-
+        //////////////////////
+        // score calculation
         public int HighestScore { get; private set; } = 0;
         public int HighestStars { get; private set; } = 0;
         float currentScore = 0;

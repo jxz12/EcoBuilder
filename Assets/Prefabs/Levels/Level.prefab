@@ -1657,13 +1657,13 @@ MonoBehaviour:
     numInitSpecies: 0
     plants: 
     randomSeeds: 
-    sizes: []
-    greeds: []
+    sizes: 
+    greeds: 
     editables: 
     numInitInteractions: 0
     sources: 
     targets: 
-    metric: 0
+    metric: 1
     targetScore1: 0
     targetScore2: 0
     mainMultiplier: 1000

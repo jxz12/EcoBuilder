@@ -1,7 +1,7 @@
 dad
 claim moneys
 
-HEALTH BARS AND NUMBERS (HIDE IF EMPTY TAP)
+hide health and traits if empty tap
 remove landscapes and just use planet instead
 show highest score on score tap
 

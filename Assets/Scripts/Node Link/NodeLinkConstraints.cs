@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
-	public partial class NodeLink
-	{
+    public partial class NodeLink
+    {
         public int NumComponents { get; private set; } = 0;
         public int NumEdges { get; private set; } = 0;
 
@@ -199,58 +199,45 @@ namespace EcoBuilder.NodeLink
         ///////////////////////////////////
         // loops with Johnson's algorithm
 
-        // ignores 'graveyard' species
-        
         static Dictionary<int, HashSet<int>> johnsonIncoming = new Dictionary<int, HashSet<int>>();
         static Dictionary<int, HashSet<int>> johnsonOutgoing = new Dictionary<int, HashSet<int>>();
-        static void JohnsonInOut(IEnumerable<int> indices, IEnumerable<Tuple<int, int>> indexPairs)
+        static void JohnsonInit(IEnumerable<int> indices, IEnumerable<Tuple<int, int>> indexPairs)
         {
             // a function to initialise outgoing and incoming edges for johnson's algorithm below
-            var oldIndices = new HashSet<int>(johnsonIncoming.Keys);
+            // ignores 'graveyard' species
+
+            Assert.IsTrue(johnsonOutgoing.Count == 0, "Johnson DFS did not clear its graph");
+            Assert.IsTrue(johnsonIncoming.Count == 0, "Johnson DFS did not clear its graph");
+
             foreach (int i in indices)
             {
-                HashSet<int> incoming, outgoing;
-                johnsonIncoming.TryGetValue(i, out incoming);
-                johnsonOutgoing.TryGetValue(i, out outgoing);
-                if (incoming == null) {
-                    johnsonIncoming[i] = new HashSet<int>();
-                } else {
-                    incoming.Clear();
-                }
-                if (outgoing == null) {
-                    johnsonOutgoing[i] = new HashSet<int>();
-                } else {
-                    outgoing.Clear();
-                }
-                oldIndices.Remove(i);
-            }
-            // remove 'leaked' indices in case node is removed
-            foreach (int i in oldIndices)
-            {
-                johnsonIncoming.Remove(i);
-                johnsonOutgoing.Remove(i);
+                johnsonOutgoing[i] = new HashSet<int>();
+                johnsonIncoming[i] = new HashSet<int>();
             }
             foreach (var ij in indexPairs)
             {
                 int i=ij.Item1, j=ij.Item2;
-                johnsonIncoming[j].Add(i);
                 johnsonOutgoing[i].Add(j);
+                johnsonIncoming[j].Add(i);
             }
         }
 
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
         // can be very slow, so run async if possible
         static List<int> johnsonLongestLoop = new List<int>();
-        static List<int> JohnsonsAlgorithm(IEnumerable<int> indices)
+        static List<int> JohnsonsAlgorithm()
         {
-            var johnsonLongestLoop = new List<int>(); // empty list is no loop
+            johnsonLongestLoop = new List<int>(); // empty list is no loop
+            var indices = new List<int>(johnsonOutgoing.Keys);
             foreach (int idx in indices)
             {
-                // ensure the strongly connected component is bigger than just the vertex
+                // creates the outgoing subset
                 JohnsonSCC(idx);
+
+                // does the DFS on that subset
                 JohnsonSingleSource(idx);
 
-                // remove node from graph
+                // remove node from graph to not need to consider again
                 johnsonOutgoing.Remove(idx);
                 johnsonIncoming.Remove(idx);
                 foreach (var set in johnsonOutgoing.Values) {
@@ -260,7 +247,8 @@ namespace EcoBuilder.NodeLink
                     set.Remove(idx);
                 }
             }
-            return new List<int>(johnsonLongestLoop); // reverse order because of stack, but who cares
+            johnsonLongestLoop.Reverse();
+            return new List<int>(johnsonLongestLoop);
         }
         static Stack<int> johnsonStack = new Stack<int>();
         static HashSet<int> johnsonSet = new HashSet<int>();
@@ -270,10 +258,9 @@ namespace EcoBuilder.NodeLink
             johnsonStack.Clear();
             johnsonSet.Clear();
             johnsonMap.Clear();
-			foreach (int i in johnsonOutgoing.Keys) {
-				johnsonMap[i] = new HashSet<int>();
+            foreach (int i in johnsonOutgoingSubset.Keys) {
+                johnsonMap[i] = new HashSet<int>();
             }
-
             JohnsonDFS(source, source);
         }
         static bool JohnsonDFS(int source, int current)
@@ -282,12 +269,12 @@ namespace EcoBuilder.NodeLink
             johnsonStack.Push(current);
             johnsonSet.Add(current);
 
-            foreach (int next in johnsonOutgoing[current])
+            foreach (int next in johnsonOutgoingSubset[current])
             {
                 if (next == source) // found cycle, so see if it is longest
                 {
                     if (johnsonStack.Count > johnsonLongestLoop.Count) {
-						johnsonLongestLoop = new List<int>(johnsonStack);
+                        johnsonLongestLoop = new List<int>(johnsonStack);
                     }
                     foundCycle = true;
                 }
@@ -298,11 +285,14 @@ namespace EcoBuilder.NodeLink
                 }
             }
             // if found a path to source, then remove from set and (recursively) from map
-            if (foundCycle) {
+            if (foundCycle)
+            {
                 JohnsonUnblock(current);
-            } else {
+            } 
+            else
+            {
                 // else do not unblock, add to map so that it will be unblocked in the future
-                foreach (int next in johnsonOutgoing[current]) {
+                foreach (int next in johnsonOutgoingSubset[current]) {
                     johnsonMap[next].Add(current);
                 }
             }
@@ -313,55 +303,56 @@ namespace EcoBuilder.NodeLink
         {
             // recursively unblock everything on path that we are freeing up
             johnsonSet.Remove(toUnblock);
-			foreach (int toAlsoUnblock in johnsonMap[toUnblock]) {
-				if (johnsonSet.Contains(toAlsoUnblock)) {
-					JohnsonUnblock(toAlsoUnblock);
+            foreach (int toAlsoUnblock in johnsonMap[toUnblock]) {
+                if (johnsonSet.Contains(toAlsoUnblock)) {
+                    JohnsonUnblock(toAlsoUnblock);
                 }
-			}
-			johnsonMap[toUnblock].Clear();
+            }
+            johnsonMap[toUnblock].Clear();
         }
 
 
         // returns the strongly connected component including idx
-        static Dictionary<int, HashSet<int>> johnsonSCC = new Dictionary<int, HashSet<int>>();
+        static Dictionary<int, HashSet<int>> johnsonOutgoingSubset = new Dictionary<int, HashSet<int>>();
+        static HashSet<int> johnsonComponentOut = new HashSet<int>();
+        static HashSet<int> johnsonComponentIn = new HashSet<int>();
         static void JohnsonSCC(int idx)
         {
-            var component1 = WeaklyConnectedComponent(idx, johnsonOutgoing);
-            var component2 = WeaklyConnectedComponent(idx, johnsonIncoming);
-            component1.IntersectWith(component2);
+            JohnsonWCC(idx, johnsonOutgoing, johnsonComponentOut);
+            JohnsonWCC(idx, johnsonIncoming, johnsonComponentIn);
+            johnsonComponentOut.IntersectWith(johnsonComponentIn);
 
-            johnsonSCC.Clear();
-            foreach (int i in component1)
+            johnsonOutgoingSubset.Clear();
+            foreach (int i in johnsonComponentOut)
             {
-                johnsonSCC[i] = new HashSet<int>();
+                johnsonOutgoingSubset[i] = new HashSet<int>();
                 foreach (int j in johnsonOutgoing[i])
                 {
-                    if (component1.Contains(j)) {
-                        johnsonSCC[i].Add(j);
+                    if (johnsonComponentOut.Contains(j)) {
+                        johnsonOutgoingSubset[i].Add(j);
                     }
                 }
             }
         }
-        static HashSet<int> WeaklyConnectedComponent(int idx, Dictionary<int, HashSet<int>> outgoing)
+        static void JohnsonWCC(int idx, Dictionary<int, HashSet<int>> outgoing, HashSet<int> component)
         {
             var q = new Queue<int>();
-            var visited = new HashSet<int>();
+            component.Clear();
 
             q.Enqueue(idx);
-            visited.Add(idx);
+            component.Add(idx);
             while (q.Count > 0)
             {
                 int current = q.Dequeue();
                 foreach (int next in outgoing[current])
                 {
-                    if (!visited.Contains(next))
+                    if (!component.Contains(next))
                     {
                         q.Enqueue(next);
-                        visited.Add(next);
+                        component.Add(next);
                     }
                 }
             }
-            return visited;
         }
 
         /////////////////////////
@@ -380,5 +371,5 @@ namespace EcoBuilder.NodeLink
             }
             return (float)Math.Sqrt(sum_x_sqr - 1);
         }
-	}
+    }
 }

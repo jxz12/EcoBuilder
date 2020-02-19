@@ -55,6 +55,7 @@ namespace EcoBuilder.UI
         }
         public void SetAnchorHeight(float normalisedHeight, bool damp=true) // 0-1 range
         {
+            print("hi");
             targetAnchor = new Vector2(targetAnchor.x, normalisedHeight);
             if (!damp) {
                 rt.anchorMin = rt.anchorMin = targetAnchor;

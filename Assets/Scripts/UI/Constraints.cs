@@ -14,8 +14,9 @@ namespace EcoBuilder.UI
         public event Action<bool> OnProducersAvailable;
         public event Action<bool> OnConsumersAvailable;
         public event Action<bool> OnErrorShown;
-        public event Action<bool> OnChainHovered;
-        public event Action<bool> OnLoopHovered;
+
+        public event Action OnChainHovered, OnChainUnhovered;
+        public event Action OnLoopHovered, OnLoopUnhovered;
 
         private class Constraint
         {
@@ -123,7 +124,7 @@ namespace EcoBuilder.UI
         }
         public void UpdateStability(bool isStable)
         {
-			Stable = isStable;
+            Stable = isStable;
         }
 
         // paws and leaves need to be different
@@ -221,23 +222,23 @@ namespace EcoBuilder.UI
                 // always unhighlight first to clear highlighting
                 if (chainHovered && !overChain)
                 {
-                    OnChainHovered?.Invoke(false);
+                    OnChainUnhovered?.Invoke();
                     chainHovered = false;
                 }
                 if (loopHovered && !overLoop)
                 {
-                    OnLoopHovered?.Invoke(false);
+                    OnLoopUnhovered?.Invoke();
                     loopHovered = false;
                 }
 
                 if (!chainHovered && overChain)
                 {
-                    OnChainHovered?.Invoke(true);
+                    OnChainHovered?.Invoke();
                     chainHovered = true;
                 }
                 if (!loopHovered && overLoop)
                 {
-                    OnLoopHovered?.Invoke(true);
+                    OnLoopHovered?.Invoke();
                     loopHovered = true;
                 }
 
@@ -250,12 +251,12 @@ namespace EcoBuilder.UI
             StopCoroutine(followCoroutine);
             if (chainHovered)
             {
-                OnChainHovered?.Invoke(false);
+                OnChainUnhovered?.Invoke();
                 chainHovered = false;
             }
             if (loopHovered)
             {
-                OnLoopHovered?.Invoke(false);
+                OnLoopUnhovered?.Invoke();
                 loopHovered = false;
             }
             OnErrorShown?.Invoke(false);

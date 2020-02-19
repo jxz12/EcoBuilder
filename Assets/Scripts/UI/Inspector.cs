@@ -181,7 +181,8 @@ namespace EcoBuilder.UI
                 graveyard.Remove(toSpawn.Idx);
             }
             spawnedSpecies[toSpawn.Idx] = toSpawn;
-            toSpawn.Status.Show(true);
+            toSpawn.Status.ShowTraits(true);
+            toSpawn.Status.ShowHealth(true);
 
             // must be invoked first so that nodelink focuses after adding
             OnSpawned?.Invoke(toSpawn.Idx, toSpawn.IsProducer, toSpawn.GObject);
@@ -194,7 +195,8 @@ namespace EcoBuilder.UI
             spawnedSpecies.Remove(toBury.Idx);
 
             graveyard[toBury.Idx] = toBury;
-            toBury.Status.Show(false);
+            toBury.Status.ShowTraits(false);
+            toBury.Status.ShowHealth(false);
 
             // must be invoked last so that nodelink unfocuses before removing
             OnDespawned?.Invoke(toBury.Idx);
@@ -396,7 +398,6 @@ namespace EcoBuilder.UI
         }
         public void MakeSpeciesObjectExtinct(int idx)
         {
-            print("hi");
             factory.KillSpecies(spawnedSpecies[idx].GObject);
         }
         public void MakeSpeciesObjectRescued(int idx)
@@ -517,7 +518,6 @@ namespace EcoBuilder.UI
             foreach (var kvp in spawnedSpecies)
             {
                 kvp.Value.Status.SetHealth(Health(kvp.Key));
-                print(Health(kvp.Key));
             }
         }
         

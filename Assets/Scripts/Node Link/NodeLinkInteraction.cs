@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace EcoBuilder.NodeLink
 {
-	public partial class NodeLink :
+    public partial class NodeLink :
         IPointerDownHandler, IPointerUpHandler,
         IBeginDragHandler, IDragHandler, IEndDragHandler,
         IScrollHandler
-	{
+    {
         [SerializeField] UI.Tooltip tooltip;
         [SerializeField] float rotationPerInch, zoomPerInch, panPerInch;
 
@@ -563,5 +563,5 @@ namespace EcoBuilder.NodeLink
                 return closest;
             }
         }
-	}
+    }
 }

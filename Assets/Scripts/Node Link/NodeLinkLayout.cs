@@ -76,8 +76,8 @@ namespace EcoBuilder.NodeLink
                 {
                     // make sure that all nodes fit on screen
                     var viewportPos = Camera.main.WorldToViewportPoint(no.transform.localPosition * graphScaleTarget) - new Vector3(.5f,.5f);
-                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .4f);
-                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .4f);
+                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .375f);
+                    maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .3f);
                 }
                 graphScaleTarget -= maxError*.1f;
                 graphScaleTarget = Mathf.Min(graphScaleTarget, 1); // don't scale too much
@@ -146,12 +146,12 @@ namespace EcoBuilder.NodeLink
             {
                 squished[i] = unsquished.Count;
                 unsquished.Add(i);
-                if (!ConstrainTrophic) {
+                // if (!ConstrainTrophic) {
                     sgdPos.Add(new Vector2(squished[i], (float)rand.NextDouble()));
-                } else {
-                    sgdPos.Add(new Vector2(squished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
-                    // still add a little jitter to prevent NaN
-                }
+                // } else {
+                //     sgdPos.Add(new Vector2(squished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
+                //     // still add a little jitter to prevent NaN
+                // }
             }
             sgdSources.Clear();
             sgdTargets.Clear();
@@ -234,8 +234,8 @@ namespace EcoBuilder.NodeLink
                 // clamp back to y-axis position if constrained
                 if (ConstrainTrophic) {
                     for (int i=0; i<sgdPos.Count; i++) {
-                        // sgdPos[i] = new Vector2(sgdPos[i].x, nodes[unsquished[i]].StressPos.y);
-                        sgdPos[i] = new Vector2(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, nodes[unsquished[i]].StressPos.y, .5f));
+                        sgdPos[i] = new Vector2(sgdPos[i].x, nodes[unsquished[i]].StressPos.y);
+                        // sgdPos[i] = new Vector2(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, nodes[unsquished[i]].StressPos.y, .5f));
                     }
                 }
             }
@@ -340,7 +340,7 @@ namespace EcoBuilder.NodeLink
                 if (!LaplacianDetZero)
                 {
                     TrophicGaussSeidel();
-                    MoveNodesToTrophicLevel(.1f);
+                    MoveNodesToTrophicLevel();
                 }
                 LayoutMajorizationHorizontal(i);
             }
@@ -356,9 +356,9 @@ namespace EcoBuilder.NodeLink
             Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
 
             float trophicScaling = 1;
-            if (MaxTrophicLevel > MaxChain+1)
+            if (MaxTrophicLevel-1 > MaxChain)
             {
-                trophicScaling = (MaxChain+1) / MaxTrophicLevel;
+                trophicScaling = MaxChain / (MaxTrophicLevel-1);
             }
             foreach (Node no in nodes)
             {
