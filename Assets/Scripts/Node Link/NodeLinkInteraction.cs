@@ -19,9 +19,9 @@ namespace EcoBuilder.NodeLink
         enum FocusState { Unfocus, Focus, SuperFocus, Frozen }; // frozen is end of game
         FocusState focusState = FocusState.Unfocus;
         Node focusedNode = null;
-        private void FocusNode(int idx) // called on click
+        private void TapNode(int idx)
         {
-            Assert.IsNotNull(nodes[idx], "cannot focus node that is not spawned");
+            Assert.IsNotNull(nodes[idx], $"no spawned node with index {idx}");
 
             if (focusedNode != nodes[idx])
             {
@@ -49,7 +49,7 @@ namespace EcoBuilder.NodeLink
             else if (focusState == FocusState.SuperFocus)
             {
                 if (focusedNode == nodes[idx]) {
-                    Unfocus();
+                    TapEmpty();
                 } else { // switch superfocused node
                     SuperFocus(idx);
                 }
@@ -57,26 +57,21 @@ namespace EcoBuilder.NodeLink
             focusedNode = nodes[idx];
             OnFocused?.Invoke(idx);
         }
-
-        // this one is public and does not call an event
-        public void SwitchFocus(int idx)
+        private void TapEmpty()
         {
-            if (focusedNode != nodes[idx] && nodes[idx] != null)
+            if (focusState == FocusState.Unfocus)
             {
-                FocusNode(idx);
+                OnEmptyTapped?.Invoke();
             }
-        }
-        Vector3 defaultNodelinkPos;
-        void Unfocus()
-        {
-            if (focusState == FocusState.Focus)
+            else if (focusState == FocusState.Focus)
             {
                 focusedNode.PopOutline();
                 focusedNode.Highlight();
+                int idx = focusedNode.Idx;
                 focusedNode = null;
 
                 focusState = FocusState.Unfocus;
-                OnUnfocused.Invoke();
+                OnUnfocused.Invoke(idx);
             }
             else if (focusState == FocusState.SuperFocus)
             {
@@ -94,11 +89,24 @@ namespace EcoBuilder.NodeLink
         public void ForceUnfocus()
         {
             while (focusState != FocusState.Unfocus) {
-                Unfocus();
+                TapEmpty();
             }
         }
+        // for external
+        public void ForceFocus(int idx)
+        {
+            if (focusedNode != nodes[idx]) {
+                TapNode(idx);
+            }
+        }
+        // public void UnfocusWithoutEvents()
+        // {
+        //     while (focusState != FocusState.Unfocus) {
+        //         TapEmpty(false);
+        //     }
+        // }
 
-        public void SuperFocus(int focusIdx)
+        private void SuperFocus(int focusIdx)
         {
             var unrelated = new List<Node>();
             var consumers = new List<Node>();
@@ -196,6 +204,7 @@ namespace EcoBuilder.NodeLink
         public void Finish()
         {
             ForceUnfocus();
+            print("TODO: more fun animation");
             // StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
             // StartCoroutine(TweenPan(defaultNodelinkPos, 2));
 
@@ -294,16 +303,12 @@ namespace EcoBuilder.NodeLink
                 {
                     if (pressedNode != null)
                     {
-                        FocusNode(pressedNode.Idx);
+                        TapNode(pressedNode.Idx);
                         pressedNode = null;
-                    }
-                    else if (focusState == FocusState.Unfocus)
-                    {
-                        OnEmptyTapped?.Invoke();
                     }
                     else
                     {
-                        Unfocus();
+                        TapEmpty();
                     }
                 }
             }

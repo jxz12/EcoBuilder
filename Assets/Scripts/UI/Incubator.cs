@@ -8,9 +8,11 @@ namespace EcoBuilder.UI
     public class Incubator : MonoBehaviour,
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
-        public event Action<bool> OnIncubationStarted;
+        // this is a little confusing because Incubator handles wanting incubation,
+        // but nodelink handles wanting unincubation
+        public event Action<bool> OnIncubationWanted;
         public event Action OnDropped;
-        public event Action OnUnincubated;
+        // public event Action OnUnincubated;
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
@@ -30,7 +32,7 @@ namespace EcoBuilder.UI
         }
         private void StartIncubation(bool isProducer)
         {
-            OnIncubationStarted?.Invoke(isProducer);
+            OnIncubationWanted?.Invoke(isProducer);
             GetComponent<Animator>().SetBool("Droppable", false);
             GetComponent<Animator>().SetTrigger("Incubate");
             buttonsAnim.SetBool("Visible", false);
@@ -41,13 +43,12 @@ namespace EcoBuilder.UI
             buttonsAnim.SetBool("Visible", true);
             Destroy(incubatedObj);
             incubatedObj = null;
-            OnUnincubated?.Invoke();
+            // OnUnincubated?.Invoke();
         }
 
         GameObject incubatedObj;
         public void SetIncubatedObject(GameObject toIncubate)
         {
-            // dropZone.SetActive(false);
             incubatedObj = toIncubate;
             incubatedObj.transform.SetParent(incubatedParent, false);
         }
@@ -124,7 +125,7 @@ namespace EcoBuilder.UI
                 OnDropped?.Invoke();
                 GetComponent<Animator>().SetTrigger("Spawn");
                 buttonsAnim.SetBool("Visible", true);
-                OnUnincubated?.Invoke();
+                // OnUnincubated?.Invoke();
             }
         }
     }

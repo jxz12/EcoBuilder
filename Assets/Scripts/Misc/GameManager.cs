@@ -164,6 +164,21 @@ namespace EcoBuilder
         }
 
 
+        [SerializeField] Planet earth;
+        Transform earthParent;
+        public void TakePlanet(Transform newParent)
+        {
+            Assert.IsNotNull(earth, "earth was destroyed :(");
+            earthParent = earth.transform.parent;
+            earth.transform.SetParent(newParent, true);
+            earth.TweenToRestPosition(2);
+        }
+        public void ReturnPlanet()
+        {
+            earth.transform.SetParent(earthParent, true);
+            earth.TweenToRestPosition(2);
+        }
+
         ///////////////////////////
         // showing help messages //
         ///////////////////////////

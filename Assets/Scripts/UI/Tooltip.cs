@@ -11,15 +11,17 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite trashSprite, notrashSprite;
         [SerializeField] TMPro.TextMeshProUGUI text;
 
-        [SerializeField] float scaleLerp;
+        [SerializeField] float sizeSmoothTime;
+        float size, sizocity;
 
         void Update()
         {
             if (visible) {
-                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one, scaleLerp);
+                size = Mathf.SmoothDamp(size, 1, ref sizocity, sizeSmoothTime);
             } else {
-                transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, scaleLerp);
+                size = Mathf.SmoothDamp(size, 0, ref sizocity, sizeSmoothTime);
             }
+            transform.localScale = new Vector3(size, size, size);
         }
         public void SetPos(Vector2 screenPos)
         {

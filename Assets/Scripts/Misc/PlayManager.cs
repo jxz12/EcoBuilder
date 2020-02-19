@@ -20,30 +20,32 @@ namespace EcoBuilder
             ////////////////////////////////////
             // hook up events between objects //
             ////////////////////////////////////
-            inspector.OnIncubated +=   ()=> nodelink.ForceUnfocus();
-            inspector.OnIncubated +=   ()=> nodelink.MoveHorizontal(-.5f);
-            inspector.OnUnincubated += ()=> nodelink.MoveHorizontal(0);
-
-            inspector.OnSpawned +=       (i,g)=> nodelink.AddNode(i,g);
-            inspector.OnSpawned +=       (i,g)=> model.AddSpecies(i);
+            inspector.OnSpawned +=     (i,b,g)=> { nodelink.AddNode(i,g); nodelink.SetIfNodeCanBeTarget(i,!b); };
+            inspector.OnSpawned +=     (i,b,g)=> model.AddSpecies(i,b);
+            inspector.OnSpawned +=     (i,b,g)=> constraints.AddIdx(i,b);
             inspector.OnDespawned +=       (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=       (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=       (i)=> constraints.RemoveIdx(i);
-            inspector.OnIsProducerSet += (i,x)=> nodelink.SetIfNodeCanBeTarget(i,!x);
-            inspector.OnIsProducerSet += (i,x)=> model.SetSpeciesIsProducer(i,x);
-            inspector.OnIsProducerSet += (i,x)=> constraints.AddIdx(i,x);
             inspector.OnSizeSet +=       (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=      (i,x)=> model.SetSpeciesInterference(i,x);
             inspector.OnConflicted +=    (i,m)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
             inspector.OnConflicted +=    (i,m)=> nodelink.TooltipNode(i, m);
             inspector.OnUnconflicted +=    (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted +=    (i)=> nodelink.UntooltipNode(i);
+            inspector.OnIncubated +=        ()=> nodelink.MoveHorizontal(-.5f);
 
-            inspector.OnUserSpawned += (i)=> nodelink.SwitchFocus(i);
+            // the above will always (but not exclusively) cause the below in the next three things
+            inspector.OnUserSpawned += (i)=> nodelink.ForceFocus(i);
             nodelink.OnFocused +=      (i)=> inspector.InspectSpecies(i);
 
-            nodelink.OnUnfocused +=   ()=> inspector.Uninspect();
-            nodelink.OnEmptyTapped += ()=> inspector.Unincubate();
+            inspector.OnUserDespawned += (i)=> nodelink.ForceUnfocus();
+            inspector.OnIncubated +=      ()=> nodelink.ForceUnfocus();
+            nodelink.OnUnfocused +=      (i)=> inspector.Uninspect();
+
+            nodelink.OnEmptyTapped +=  ()=> inspector.CancelIncubation();
+            inspector.OnUnincubated += ()=> nodelink.MoveHorizontal(0);
+
+            // constraints
             nodelink.OnLayedOut +=    ()=> constraints.UpdateDisjoint(nodelink.NumComponents > 1);
             nodelink.OnLayedOut +=    ()=> constraints.DisplayEdge(nodelink.NumEdges);
             nodelink.OnLayedOut +=    ()=> constraints.DisplayChain(nodelink.MaxChain);
@@ -70,15 +72,14 @@ namespace EcoBuilder
             nodelink.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
 
-            recorder.OnSpeciesUndone +=     (i)=> nodelink.SwitchFocus(i);
+            recorder.OnSpeciesUndone +=     (i)=> nodelink.ForceFocus(i);
             recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
 
             // these are necessary to give the model adjacency info
-            model.AttachAdjacency(nodelink.GetTargets);
-            inspector.OnSpawned +=       (i,g)=> model.TriggerSolve();
+            model.AttachAdjacency(nodelink.GetActiveTargets);
+            inspector.OnSpawned +=     (i,b,g)=> model.TriggerSolve();
             inspector.OnDespawned +=       (i)=> model.TriggerSolve();
-            inspector.OnIsProducerSet += (i,x)=> model.TriggerSolve();
             inspector.OnSizeSet +=       (i,x)=> model.TriggerSolve();
             inspector.OnGreedSet +=      (i,x)=> model.TriggerSolve();
             nodelink.OnLinked +=            ()=> model.TriggerSolve();
@@ -156,6 +157,8 @@ namespace EcoBuilder
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
 
+            // nodelink.AddDropShadow(GameManager.Instance.TakePlanet(), -1.5f);
+
             GameManager.Instance.HelpText.Showing = false;
             GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
             GameManager.Instance.OnPlayedLevelFinished += FinishPlaythrough;
@@ -194,20 +197,19 @@ namespace EcoBuilder
             {
                 var randomSeeds = new List<int>();
                 var plants = new List<bool>();
-                var sizes = new List<float>();
-                var greeds = new List<float>();
+                var sizes = new List<int>();
+                var greeds = new List<int>();
                 var editables = new List<bool>();
 
                 var squishedIdxs = new Dictionary<int, int>();
                 int counter = 0;
-                foreach (var kvp in inspector.GetSpeciesInfo())
+                foreach (var info in inspector.GetSpawnedSpeciesInfo())
                 {
-                    int idx = kvp.Key;
-                    UI.Inspector.Species s = kvp.Value;
-                    randomSeeds.Add(s.RandomSeed);
-                    plants.Add(s.IsProducer);
-                    sizes.Add(s.BodySize);
-                    greeds.Add(s.Greediness);
+                    int idx = info.Item1;
+                    randomSeeds.Add(info.Item2);
+                    plants.Add(info.Item3);
+                    sizes.Add(info.Item4);
+                    greeds.Add(info.Item5);
                     editables.Add(true);
 
                     squishedIdxs[idx] = counter++;
@@ -217,10 +219,10 @@ namespace EcoBuilder
                 var sources = new List<int>();
                 var targets = new List<int>();
                 int numInteractions = 0;
-                foreach (var kvp in inspector.GetSpeciesInfo())
+                foreach (var info in inspector.GetSpawnedSpeciesInfo())
                 {
-                    int i = kvp.Key;
-                    foreach (int j in nodelink.GetTargets(i))
+                    int i = info.Item1;
+                    foreach (int j in nodelink.GetActiveTargets(i))
                     {
                         sources.Add(squishedIdxs[i]);
                         targets.Add(squishedIdxs[j]);

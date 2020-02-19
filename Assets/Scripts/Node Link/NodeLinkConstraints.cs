@@ -1,9 +1,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using SparseMatrix;
 
 namespace EcoBuilder.NodeLink
 {
@@ -25,7 +23,6 @@ namespace EcoBuilder.NodeLink
         // to separate components in layout and calculate disjointness
 
         private static Dictionary<int, int> componentMap = new Dictionary<int, int>();
-        // returns number of weakly connected components (ordered by x position)
         private void CountConnectedComponents()
         {
             componentMap.Clear();

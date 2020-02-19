@@ -404,7 +404,17 @@ PrefabInstance:
     - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_Value
-      value: 4.79
+      value: -0.43
+      objectReference: {fileID: 0}
+    - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_MinValue
+      value: -4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_MaxValue
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
@@ -1555,7 +1565,7 @@ MonoBehaviour:
   trashSprite: {fileID: 21300000, guid: a375de8423d16a94dad3a1b1634f0ec9, type: 3}
   notrashSprite: {fileID: 21300000, guid: fed71c81e57b2a2428937a063006f913, type: 3}
   text: {fileID: 2075776986}
-  scaleLerp: 0.2
+  sizeSmoothTime: 0.1
 --- !u!1 &534420149
 GameObject:
   m_ObjectHideFlags: 0
@@ -3675,6 +3685,8 @@ MonoBehaviour:
   greedTrait: {fileID: 1654515231}
   incubator: {fileID: 1297594225}
   factory: {fileID: 416833258}
+  statusPrefab: {fileID: 6356978029892352767, guid: ee9beaf420eec6442a9a3e99e38c83ca,
+    type: 3}
 --- !u!1001 &1178024093
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4769,11 +4781,11 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
-  m_enableKerning: 1
+  m_enableKerning: 0
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 0
-  m_parseCtrlCharacters: 1
+  m_parseCtrlCharacters: 0
   m_isOrthographic: 1
   m_isCullingEnabled: 0
   m_ignoreRectMaskCulling: 0
@@ -4937,11 +4949,11 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
-  m_enableKerning: 1
+  m_enableKerning: 0
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 0
-  m_parseCtrlCharacters: 1
+  m_parseCtrlCharacters: 0
   m_isOrthographic: 1
   m_isCullingEnabled: 0
   m_ignoreRectMaskCulling: 0
@@ -4952,7 +4964,7 @@ MonoBehaviour:
   m_geometrySortingOrder: 0
   m_VertexBufferAutoSizeReduction: 1
   m_firstVisibleCharacter: 0
-  m_useMaxVisibleDescender: 1
+  m_useMaxVisibleDescender: 0
   m_pageToDisplay: 1
   m_margin: {x: 10, y: 0, z: 10, w: 0}
   m_textInfo:
@@ -6255,7 +6267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -6309,11 +6321,11 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
-  m_enableKerning: 1
+  m_enableKerning: 0
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 0
-  m_parseCtrlCharacters: 1
+  m_parseCtrlCharacters: 0
   m_isOrthographic: 1
   m_isCullingEnabled: 0
   m_ignoreRectMaskCulling: 0
@@ -6324,7 +6336,7 @@ MonoBehaviour:
   m_geometrySortingOrder: 0
   m_VertexBufferAutoSizeReduction: 1
   m_firstVisibleCharacter: 0
-  m_useMaxVisibleDescender: 1
+  m_useMaxVisibleDescender: 0
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 5, w: 0}
   m_textInfo:
@@ -6847,11 +6859,11 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
-  m_enableKerning: 1
+  m_enableKerning: 0
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 0
-  m_parseCtrlCharacters: 1
+  m_parseCtrlCharacters: 0
   m_isOrthographic: 1
   m_isCullingEnabled: 0
   m_ignoreRectMaskCulling: 0
@@ -6862,7 +6874,7 @@ MonoBehaviour:
   m_geometrySortingOrder: 0
   m_VertexBufferAutoSizeReduction: 1
   m_firstVisibleCharacter: 0
-  m_useMaxVisibleDescender: 1
+  m_useMaxVisibleDescender: 0
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
@@ -7288,6 +7300,21 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1408770983256091827, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1408770983256091827, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -154
+      objectReference: {fileID: 0}
+    - target: {fileID: 1408770983493247791, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1408770983656339525, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_Enabled
@@ -7323,6 +7350,12 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1408770984035641863, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 9e2d10e868bfcc2459840cd98bcfde42,
+        type: 3}
     - target: {fileID: 2293863075976356619, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_Name
@@ -7341,7 +7374,17 @@ PrefabInstance:
     - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}
       propertyPath: m_Value
-      value: 4.76
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_MaxValue
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6160264691538017074, guid: fd81e617ae2242143981bf7c63adedd8,
+        type: 3}
+      propertyPath: m_MinValue
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 6339720412529468862, guid: fd81e617ae2242143981bf7c63adedd8,
         type: 3}

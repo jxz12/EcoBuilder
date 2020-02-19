@@ -29,7 +29,6 @@ namespace EcoBuilder
             public enum Team { Unassigned=-1, Wolf, Lion, NeverAsk }
             public Team team = Team.Unassigned;
 
-            public bool newsletterConsent = true;
             public bool reverseDrag = true;
 
             public Dictionary<int, int> highScores = new Dictionary<int, int>();

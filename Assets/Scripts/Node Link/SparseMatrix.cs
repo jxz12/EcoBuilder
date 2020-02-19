@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SparseMatrix {
+namespace EcoBuilder.NodeLink {
     public class SparseMatrixJonathanWood<T>
     {
         // Master dictionary hold rows of column dictionary

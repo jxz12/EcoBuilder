@@ -10,7 +10,8 @@ namespace EcoBuilder.UI
     public class Trait : MonoBehaviour,
         IPointerDownHandler, IPointerUpHandler
     {
-        public event Action<float, float> OnUserSlid; // from, to
+                         // from,to
+        public event Action<int, int> OnUserSlid;
         public event Action<int> OnConflicted;
         public event Action<int> OnUnconflicted;
         public bool Interactable {
@@ -20,35 +21,49 @@ namespace EcoBuilder.UI
             }
         }
 
-        float currentValue;
+        int currentValue;
         private Slider slider;
+        public int UnnormalisedValue {
+            get {
+                return (int)(slider.value);
+            }
+        }
         void Awake()
         {
             slider = GetComponent<Slider>();
+
+            Assert.IsNotNull(slider, "slider is null");
+            Assert.IsTrue(slider.wholeNumbers, "not whole numbers, but this is smelly");
+
             slider.onValueChanged.AddListener(x=> UserChangeValue());
-            currentValue  = slider.normalizedValue;
+            currentValue = UnnormalisedValue;
+        }
+        public float NormaliseValue(int unnormalised)
+        {
+            return (unnormalised-slider.minValue) / (slider.maxValue-slider.minValue);
+        }
+        public int PositivifyValue(int unnormalised)
+        {
+            return unnormalised - (int)slider.minValue + 1;
         }
 
         // if this function return false, the slider will 'snap' back
-        Func<float, int> FindConflict;
-        public void AddExternalConflict(Func<float, int> Rule)
+        Func<int, int> FindConflict;
+        public void AddExternalConflict(Func<int, int> Rule)
         {
             FindConflict = Rule;
         }
-        public IEnumerable<float> PossibleInitialValues {
+        public IEnumerable<int> PossibleInitialValues {
             get {
-                Assert.IsTrue(slider.wholeNumbers, "not whole numbers");
-
                 if (!RandomiseInitialValue)
                 {
-                    yield return slider.normalizedValue;
+                    yield return UnnormalisedValue;
                 }
                 else
                 {
-                    float range = slider.maxValue - slider.minValue;
-                    for (float val=slider.minValue; val<=slider.maxValue; val+=1)
+                    for (int val=(int)slider.minValue; val<=slider.maxValue; val++)
                     {
-                        yield return (val-slider.minValue) / range;
+                        yield return val;
                     }
                 }
             }
@@ -56,35 +71,33 @@ namespace EcoBuilder.UI
 
         // does not set randomly if initial value is fixed
         public bool RandomiseInitialValue { get; set; } = true;
-        public float SetValueFromRandomSeed(int randomSeed)
+        public void SetValueFromRandomSeed(int randomSeed)
         {
-            if (!RandomiseInitialValue)
-            {
-                return slider.normalizedValue;
-            }
-            else
+            if (RandomiseInitialValue)
             {
                 UnityEngine.Random.InitState(randomSeed);
-                return SetValueWithoutCallback(UnityEngine.Random.Range(0, 1f));
+                SetValueWithoutCallback(UnityEngine.Random.Range((int)slider.minValue, (int)slider.maxValue));
             }
+            // otherwise leave slider alone
         }
-        public float SetValueWithoutCallback(float normalizedValue)
+        public void SetValueWithoutCallback(int unnormalisedValue)
         {
             Assert.IsFalse(dragging, "should not be dragging while setting value externally");
 
-            slider.normalizedValue = normalizedValue;
-            currentValue = slider.normalizedValue;
-            return currentValue;
+            slider.value = unnormalisedValue;
+            currentValue = UnnormalisedValue;
+
+            Assert.IsTrue(slider.value == currentValue, "somehow normalisation has failed");
         }
 
         int conflict = -1;
-        float toSnapBack = -1;
+        int toSnapBack = -1;
         private void UserChangeValue()
         {
             if (!dragging) {
                 return; 
             }
-            float newValue = slider.normalizedValue;
+            int newValue = UnnormalisedValue;
             if (conflict >= 0) {
                 OnUnconflicted?.Invoke(conflict);
             }

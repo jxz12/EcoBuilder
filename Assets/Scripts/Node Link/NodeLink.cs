@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
-using SparseMatrix;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ namespace EcoBuilder.NodeLink
     {
         // called regardless of user
         public event Action<int> OnFocused;
-        public event Action OnUnfocused;
+        public event Action<int> OnUnfocused;
         public event Action OnLayedOut;
         public event Action OnLinked;
 
@@ -30,7 +29,7 @@ namespace EcoBuilder.NodeLink
         void Start()
         {
             xRotation = xDefaultRotation = graphParent.localRotation.eulerAngles.x;
-            defaultNodelinkPos = transform.localPosition;
+            // defaultNodelinkPos = transform.localPosition;
 
             graphParent.localScale = Vector3.zero;
             StartCoroutine(TweenZoom(Vector3.one, 2));
@@ -168,10 +167,11 @@ namespace EcoBuilder.NodeLink
         public void RemoveNode(int idx)
         {
             Assert.IsNotNull(nodes[idx], $"node {idx} not added yet");
+            Assert.IsFalse(focusedNode == nodes[idx], $"cannot remove focused node");
+            // if (focusedNode != null && focusedNode.Idx == idx) {
+            //     ForceFullUnfocus();
+            // }
 
-            if (focusedNode != null && focusedNode.Idx == idx) {
-                ForceUnfocus();
-            }
             // move to graveyard to save for later
             nodes[idx].Hide(true);
             nodeGrave[idx] = nodes[idx];
@@ -269,7 +269,7 @@ namespace EcoBuilder.NodeLink
         }
 
         // to give other classes access to the adjacency
-        public IEnumerable<int> GetTargets(int source)
+        public IEnumerable<int> GetActiveTargets(int source)
         {
             return links.GetColumnIndicesInRow(source);
         }
@@ -304,14 +304,11 @@ namespace EcoBuilder.NodeLink
         }
 
         // adds a gameobject like the jump shadow in mario bros.
-        public void AddDropShadow(GameObject shadowPrefab)
+        public void AddDropShadow(GameObject shadow, float yPos)
         {
-            if (shadowPrefab == null) {
-                return;
-            }
-            var shadow = Instantiate(shadowPrefab);
+            Assert.IsNotNull(shadow, "shadow gameobject is null");
             shadow.transform.SetParent(nodesParent, false);
-            shadow.transform.localPosition = Vector3.zero;
+            shadow.transform.localPosition = new Vector3(0, yPos, 0);
             shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
         }
 

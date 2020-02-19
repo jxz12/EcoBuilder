@@ -54,11 +54,11 @@ namespace EcoBuilder.Model
                       minLogFlux, maxLogFlux,
                       minLogPlex, maxLogPlex;
 
-        ///////////////////////////////////////////////////////////////////
-        // search rate derivations
-        class Species
+        private class Species
         {
-            public int Idx { get; private set; } = -1;
+            // you may be asking: why have another class for this?
+            // so that some values can be cached instead of calculated every time.
+            public int Idx { get; private set; }
             public bool IsProducer { get; set; } = false;
             public double BodySize { get; set; } = double.NaN;
             public double Interference { get; set; } = double.NaN;
@@ -74,7 +74,10 @@ namespace EcoBuilder.Model
             }
         }
         
+        //////////////////////////////
+        // search rate derivations
         // NOTE: THESE ARE NOT MASS-SPECIFIC, THEY ARE INDIVIDUAL-SPECIFIC
+
         double ActiveCapture(double m_r, double m_c)
         {
             double k_rc = m_r/m_c;
@@ -131,12 +134,19 @@ namespace EcoBuilder.Model
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
         Dictionary<Species, int> speciesToIdx = new Dictionary<Species, int>();
 
-        public void AddSpecies(int idx)
+        public void AddSpecies(int idx, bool isProducer)
         {
             Assert.IsFalse(idxToSpecies.ContainsKey(idx), "already contains idx " + idx);
 
             var newSpecies = new Species(idx);
             simulation.AddSpecies(newSpecies);
+
+            newSpecies.IsProducer = isProducer;
+            newSpecies.Efficiency = isProducer? e_p : e_c;
+
+            // THIS IS SO THAT EFFECTS TRIGGER CORRECTLY ON ADD
+            newSpecies.Endangered = isProducer;
+
 
             idxToSpecies.Add(idx, newSpecies);
             speciesToIdx.Add(newSpecies, idx);
@@ -172,18 +182,6 @@ namespace EcoBuilder.Model
             solveTriggered = true;
         }
 
-        public void SetSpeciesIsProducer(int idx, bool isProducer)
-        {
-            Species s = idxToSpecies[idx];
-            s.IsProducer = isProducer;
-
-            // THIS IS SO THAT EFFECTS TRIGGER CORRECTLY ON ADD
-            s.Endangered = isProducer;
-
-            double sizeScaling = Math.Pow(s.BodySize, beta-1);
-            s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
-            s.Efficiency = s.IsProducer? e_p : e_c;
-        }
         public void SetSpeciesBodySize(int idx, float sizeNormalised)
         {
             Species s = idxToSpecies[idx];

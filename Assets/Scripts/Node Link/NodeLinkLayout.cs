@@ -149,7 +149,8 @@ namespace EcoBuilder.NodeLink
                 if (!ConstrainTrophic) {
                     sgdPos.Add(new Vector2(squished[i], (float)rand.NextDouble()));
                 } else {
-                    sgdPos.Add(new Vector2(squished[i], nodes[i].StressPos.y));
+                    sgdPos.Add(new Vector2(squished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
+                    // still add a little jitter to prevent NaN
                 }
             }
             sgdSources.Clear();
@@ -162,7 +163,8 @@ namespace EcoBuilder.NodeLink
                     sgdTargets.Add(squished[j]);
                 }
             }
-            sgdSources.Add(sgdTargets.Count); // to iterate to next
+            sgdSources.Add(sgdTargets.Count); // for iteration to next
+
 
             // calculate terms with BFS
             sgdTerms.Clear();
@@ -200,6 +202,13 @@ namespace EcoBuilder.NodeLink
                 }
             }
 
+            // keep memory tidy
+            sgdTerms.TrimExcess();
+            sgdPos.TrimExcess();
+            unsquished.TrimExcess();
+            sgdSources.TrimExcess();
+            sgdTargets.TrimExcess();
+
             // perform optimisation
             foreach (float eta in SGDSchedule(d_max, t_init, t_max, eps))
             {
@@ -209,9 +218,15 @@ namespace EcoBuilder.NodeLink
                     Vector2 X_ij = sgdPos[term.i] - sgdPos[term.j];
 
                     float mag = X_ij.magnitude;
-                    float mu = Mathf.Min(term.w * eta, 1);
+                    if (mag == 0) // prevent divide by zero
+                    {
+                        sgdPos[term.i] += new Vector2((float)rand.NextDouble(), (float)rand.NextDouble());
+                        continue;
+                    }
+                    float mu = Math.Min(term.w * eta, 1);
                     Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
-                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y));
+
+                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), "r=NaN for SGD");
                    
                     sgdPos[term.i] -= mu * r;
                     sgdPos[term.j] += mu * r;
@@ -219,25 +234,38 @@ namespace EcoBuilder.NodeLink
                 // clamp back to y-axis position if constrained
                 if (ConstrainTrophic) {
                     for (int i=0; i<sgdPos.Count; i++) {
-                        sgdPos[i] = new Vector2(sgdPos[i].x, nodes[unsquished[i]].StressPos.y);
-                        // pos[i] = Vector2.Lerp(nodes[unsquished[i]].StressPos, new Vector2(pos[i].x, nodes[unsquished[i]].StressPos.y), .5f);
+                        // sgdPos[i] = new Vector2(sgdPos[i].x, nodes[unsquished[i]].StressPos.y);
+                        sgdPos[i] = new Vector2(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, nodes[unsquished[i]].StressPos.y, .5f));
                     }
                 }
             }
 
             // SGDProcrustesFlipComponents();
-            print("TODO: ordering and flipping");
+            print("TODO: fix procrustes flipping by storing old centroids at top of this function");
             for (int i=0; i<sgdPos.Count; i++)
             {
                 nodes[unsquished[i]].StressPos = sgdPos[i];
             }
         }
         // reassigns positions, but flips components if it will preserve distances better
+        static List<float> oldCentroids = new List<float>();
+        static List<float> newCentroids = new List<float>();
+        static List<int> counts = new List<int>();
         private void SGDProcrustesFlipComponents()
         {
-            var oldCentroids = new float[NumComponents];
-            var newCentroids = new float[NumComponents];
-            var counts = new int[NumComponents];
+            oldCentroids.Clear();
+            newCentroids.Clear();
+            counts.Clear();
+            for (int i=0; i<NumComponents; i++)
+            {
+                oldCentroids.Add(0);
+                newCentroids.Add(0);
+                counts.Add(0);
+            }
+            oldCentroids.TrimExcess();
+            newCentroids.TrimExcess();
+            counts.TrimExcess();
+
             foreach (int idx in componentMap.Keys)
             {
                 int cc = componentMap[idx];
@@ -326,7 +354,7 @@ namespace EcoBuilder.NodeLink
         private void MoveNodesToTrophicLevel(float lerp=1)
         {
             Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
-            
+
             float trophicScaling = 1;
             if (MaxTrophicLevel > MaxChain+1)
             {

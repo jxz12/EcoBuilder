@@ -94,7 +94,7 @@ namespace EcoBuilder.UI
 
         // the next two only track the latest in a string of actions
         // to prevent the stack growing really big on swipe
-        public void SizeSet(int idx, float prev, float current, Action<int, float> SetSize)
+        public void SizeSet(int idx, int prev, int current, Action<int, int> SetSize)
         {
             if (undos.Count > 0 && (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx))
             {
@@ -108,18 +108,18 @@ namespace EcoBuilder.UI
                 RecordAction("s"+(int)(current*8));
             }
         }
-        public void GreedSet(int idx, float prev, float current, Action<int, float> SetGreed)
+        public void GreedSet(int idx, int prev, int current, Action<int, int> SetGreed)
         {
             if (undos.Count > 0 && (undos.Peek().type == Move.Type.Size && undos.Peek().idx == idx))
             {
                 var prevMove = undos.Pop();
                 PushMove(new Move(prevMove.Undo, ()=>SetGreed(idx,current), idx, Move.Type.Greed));
-                UpdateAction("g"+(int)(current*8));
+                UpdateAction("g"+current);
             }
             else
             {
                 PushMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
-                RecordAction("g"+(int)(current*8));
+                RecordAction("g"+current);
             }
         }
 

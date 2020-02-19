@@ -1,32 +1,28 @@
 // animal generator
-using System.Collections;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace EcoBuilder.Archie{
+namespace EcoBuilder.Archie
+{
     public class animal_generator : ProceduralMeshGenerator
     {
         [SerializeField] animal_object speciesPrefab;
         [SerializeField] Mesh[] Consumer_Meshs, Producer_Meshs; // meshes should be stored in the order of the size they represent (ascending)
-        static public HashSet<animal_object> generated_consumers = new HashSet<animal_object>();
-        static public HashSet<animal_object> generated_producers = new HashSet<animal_object>();
 
         public override GameObject GenerateSpecies(bool isProducer, float bodySize, float greediness, int randomSeed)
         {
             animal_object created_species = Instantiate(speciesPrefab);
+            created_species.IsPlant = isProducer;
 
             UnityEngine.Random.InitState(randomSeed);
-            if (!isProducer)
+            if (isProducer)
             {
-                Form_Animal(created_species, bodySize, greediness, randomSeed);
-                generated_consumers.Add(created_species);
+                Form_Plant(created_species, bodySize, greediness, randomSeed);
             }
             else
             {
-                Form_Plant(created_species, bodySize, greediness, randomSeed);
-                generated_producers.Add(created_species);
+                Form_Animal(created_species, bodySize, greediness, randomSeed);
             }
             return created_species.gameObject;
         }
@@ -35,27 +31,28 @@ namespace EcoBuilder.Archie{
         {
             var created_species = species.GetComponent<animal_object>();
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
-            Assert.IsTrue(generated_consumers.Contains(created_species) || generated_producers.Contains(created_species), "animal_object never generated in first place");
 
             UnityEngine.Random.InitState(randomSeed);
-            if (generated_consumers.Contains(created_species))
+            if (created_species.IsPlant)
             {
-                Form_Animal(created_species, size, greed, randomSeed);
+                Form_Plant(created_species, size, greed, randomSeed);
             }
             else
             {
-                Form_Plant(created_species, size, greed, randomSeed);
+                Form_Animal(created_species, size, greed, randomSeed);
             }
         }
 
 
         private void Form_Animal(animal_object animal, float bodySize, float greediness, int seed)
         {
-            // give appropriate name
-            int d0 = UnityEngine.Random.Range(0, adjectives.Length);
-            int d1 = (int)(bodySize*.999f * nounsConsumer.Length);
-            int d2 = UnityEngine.Random.Range(0, nounsConsumer[d1].Length);
-            animal.name = adjectives[d0] + " " + nounsConsumer[d1][d2];
+            // // give appropriate name
+            // int d0 = UnityEngine.Random.Range(0, adjectives.Length);
+            // int d1 = (int)(bodySize*.999f * nounsConsumer.Length);
+            // int d2 = UnityEngine.Random.Range(0, nounsConsumer[d1].Length);
+            // animal.name = adjectives[d0] + " " + nounsConsumer[d1][d2];
+            animal.name = name_generator.GetName6(seed);
+
             // assign mesh
             animal.Renderer.sharedMesh = Consumer_Meshs[(int)(bodySize*.999f * Consumer_Meshs.Length)];
 
@@ -68,16 +65,18 @@ namespace EcoBuilder.Archie{
             var lab = new LABColor(70-50*bodySize, 60*greediness, -50);
             Color rgb = lab.ToColor();
 
-            Generate_and_Apply(animal, seed, rgb, true);
+            Generate_and_Apply(animal, seed, rgb);
         }
 
         private void Form_Plant(animal_object plant, float bodySize, float greediness, int seed)
         {
             // give appropriate name
-            int d0 = UnityEngine.Random.Range(0, adjectives.Length);
-            int d1 = (int)(bodySize*.999f * nounsProducer.Length);
-            int d2 = UnityEngine.Random.Range(0, nounsProducer[d1].Length);
-            plant.name = adjectives[d0] + " " + nounsProducer[d1][d2];
+            // int d0 = UnityEngine.Random.Range(0, adjectives.Length);
+            // int d1 = (int)(bodySize*.999f * nounsProducer.Length);
+            // int d2 = UnityEngine.Random.Range(0, nounsProducer[d1].Length);
+            // plant.name = adjectives[d0] + " " + nounsProducer[d1][d2];
+            plant.name = name_generator.GetName1(seed);
+
             // assign mesh
             plant.Renderer.sharedMesh = Producer_Meshs[(int)(bodySize*.999f * Producer_Meshs.Length)];
 
@@ -89,9 +88,8 @@ namespace EcoBuilder.Archie{
             var lab = new LABColor(80-50*bodySize, -80+100*greediness, 50);
             Color rgb = lab.ToColor();
 
-            Generate_and_Apply(plant, seed, rgb, false);
+            Generate_and_Apply(plant, seed, rgb);
         }
-        [SerializeField] Texture2D DeadEyeTexture;
         [SerializeField] animal_effect skullPrefab, heartPrefab;
         public override void KillSpecies(GameObject species)
         {
@@ -115,21 +113,25 @@ namespace EcoBuilder.Archie{
         }
 
         [SerializeField] Texture2D[] EyeTextures, MouthTextures, CheeckTextures, NoseTextures; // arranged in ascending order of size they represent
-        [SerializeField] Texture2D EmptyTexture;
+        [SerializeField] Texture2D EmptyTexture, DeadEyeTexture;
         [SerializeField] Material WoodMaterial;
-        private void Generate_and_Apply(animal_object obj, int seed, Color col, bool hasNose=true, bool deadEyes=false)
+        private void Generate_and_Apply(animal_object obj, int seed, Color col)
         {
             obj.Renderer.materials[0].SetColor("_Color", col);
 
             if (obj.Renderer.materials.Length > 1)
             {
                 var eyes = pick_random(EyeTextures);
-                var nose = hasNose? pick_random(NoseTextures) : EmptyTexture;
+                var nose = obj.IsPlant? EmptyTexture : pick_random(NoseTextures);
                 var mouth = pick_random(MouthTextures);
                 var cheek = pick_random(CheeckTextures);
 
                 obj.Eyes = eyes; // used for dying later
-                obj.Renderer.materials[1].SetTexture("_MainTex", eyes);
+                if (obj.Renderer.materials[1].GetTexture("_MainTex") != DeadEyeTexture)
+                {
+                    // only change if not dead
+                    obj.Renderer.materials[1].SetTexture("_MainTex", eyes);
+                }
                 obj.Renderer.materials[1].SetTexture("_MainTex2", mouth);
                 obj.Renderer.materials[1].SetTexture("_MainTex3", nose);
                 obj.Renderer.materials[1].SetTexture("_MainTex4", cheek);
@@ -166,23 +168,8 @@ namespace EcoBuilder.Archie{
             float prob = (1-Mathf.Exp(-t * (1/idlePoisson)));
             if (Random.Range(0,1f) < prob)
             {
-                RandomIdleAnimation();
+                animal_object.RandomIdleAnimation();
                 lastIdle = Time.time;
-            }
-        }
-        void RandomIdleAnimation()
-        {
-            int nSpecies = generated_producers.Count + generated_consumers.Count;
-            if (nSpecies == 0) {
-                return;
-            }
-            int choice = Random.Range(0, nSpecies);
-
-            if (choice < generated_producers.Count)
-            {
-                generated_producers.ElementAt(choice).IdleAnimation();
-            } else {
-                generated_consumers.ElementAt(choice-generated_producers.Count).IdleAnimation();
             }
         }
 

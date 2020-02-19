@@ -2,15 +2,15 @@ dad
 claim moneys
 
 HEALTH BARS AND NUMBERS (HIDE IF EMPTY TAP)
-new names
 remove landscapes and just use planet instead
+show highest score on score tap
 
 score explanation
 make loading and results looks pretty
 are you sure button
 
-
-
+max instead of min producers or consumers
+make score constraint shiny
 
 
 
@@ -31,8 +31,6 @@ finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other
-Tidy report card
-make healthbars into UI objects
 double check the teams visualisations
 fix confetti
 more fidelity in link balls

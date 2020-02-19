@@ -36,8 +36,8 @@ namespace EcoBuilder
         [SerializeField] int numInitSpecies;
         [SerializeField] List<bool> plants;
         [SerializeField] List<int> randomSeeds;
-        [SerializeField] List<float> sizes;
-        [SerializeField] List<float> greeds;
+        [SerializeField] List<int> sizes;
+        [SerializeField] List<int> greeds;
         [SerializeField] List<bool> editables;
 
         [SerializeField] int numInitInteractions;
@@ -71,15 +71,15 @@ namespace EcoBuilder
         public bool SuperfocusAllowed { get { return superfocusAllowed; } }
 
         public int NumInitSpecies { get { return numInitSpecies; } }
-        public List<bool> Plants { get { return plants; } }
-        public List<int> RandomSeeds { get { return randomSeeds; } }
-        public List<float> Sizes { get { return sizes; } }
-        public List<float> Greeds { get { return greeds; } }
-        public List<bool> Editables { get { return editables; } }
+        public IReadOnlyList<bool> Plants { get { return plants; } }
+        public IReadOnlyList<int> RandomSeeds { get { return randomSeeds; } }
+        public IReadOnlyList<int> Sizes { get { return sizes; } }
+        public IReadOnlyList<int> Greeds { get { return greeds; } }
+        public IReadOnlyList<bool> Editables { get { return editables; } }
 
         public int NumInitInteractions { get { return numInitInteractions; } }
-        public List<int> Sources { get { return sources; } }
-        public List<int> Targets { get { return targets; } }
+        public IReadOnlyList<int> Sources { get { return sources; } }
+        public IReadOnlyList<int> Targets { get { return targets; } }
 
         public ScoreMetric Metric { get { return metric; } }
         public int TargetScore1 { get { return targetScore1; } }
@@ -87,7 +87,7 @@ namespace EcoBuilder
         public float MainMultiplier { get { return mainMultiplier; } }
         public float AltMultiplier { get { return altMultiplier; } }
 
-        public LevelDetails(List<int> randomSeeds, List<bool> plants, List<float> sizes, List<float> greeds, List<bool> editables, List<int> sources, List<int> targets)
+        public LevelDetails(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets)
         {
             numInitSpecies = plants.Count;
             this.randomSeeds = randomSeeds;
@@ -134,8 +134,8 @@ namespace EcoBuilder
         {
             int n = details.NumInitSpecies;
             int m = details.NumInitInteractions;
-            Assert.IsFalse(n!=details.RandomSeeds.Count || n!=details.Sizes.Count || n!=details.Greeds.Count, "num species and sizes or greeds do not match");
-            Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, "num edge sources and targets do not match");
+            // Assert.IsFalse(n!=details.RandomSeeds.Count || n!=details.Sizes.Count || n!=details.Greeds.Count, "num species and sizes or greeds do not match");
+            // Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, "num edge sources and targets do not match");
 
             titleText.text = details.Title;
             descriptionText.text = details.Description;
