@@ -12,7 +12,6 @@ namespace EcoBuilder.UI
         // but nodelink handles wanting unincubation
         public event Action<bool> OnIncubationWanted;
         public event Action OnDropped;
-        // public event Action OnUnincubated;
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
@@ -43,7 +42,6 @@ namespace EcoBuilder.UI
             buttonsAnim.SetBool("Visible", true);
             Destroy(incubatedObj);
             incubatedObj = null;
-            // OnUnincubated?.Invoke();
         }
 
         GameObject incubatedObj;
@@ -52,11 +50,9 @@ namespace EcoBuilder.UI
             incubatedObj = toIncubate;
             incubatedObj.transform.SetParent(incubatedParent, false);
         }
-        public void ReplaceIncubatedObject(GameObject replacement)
+        public void ReleaseIncubatedObject()
         {
-            Destroy(incubatedObj);
-            incubatedObj = replacement;
-            incubatedObj.transform.SetParent(incubatedParent, false);
+            incubatedObj = null;
         }
         public void Finish()
         {
@@ -68,17 +64,17 @@ namespace EcoBuilder.UI
         }
 
         // for tutorials
-        public void HideStartButtons(bool hidden=true)
+        public void HideTypeButtons(bool hidden=true)
         {
             buttonsAnim.gameObject.SetActive(!hidden);
         }
-        public void SetProducerAvailability(bool available)
+        public void EnableProducerButton(bool enabled)
         {
-            producerButton.interactable = available;
+            producerButton.interactable = enabled;
         }
-        public void SetConsumerAvailability(bool available)
+        public void EnableConsumerButton(bool enabled)
         {
-            consumerButton.interactable = available;
+            consumerButton.interactable = enabled;
         }
 
 

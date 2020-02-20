@@ -5,7 +5,7 @@ using UnityEngine;
 namespace EcoBuilder.Tutorials
 {
     // this tutorial teaches the idea of loops
-    public class Loop : Tutorial
+    public class TutorialLoop : Tutorial
     {
         protected override void StartLesson()
         {

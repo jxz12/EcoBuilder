@@ -55,7 +55,6 @@ namespace EcoBuilder.UI
         }
         public void SetAnchorHeight(float normalisedHeight, bool damp=true) // 0-1 range
         {
-            print("hi");
             targetAnchor = new Vector2(targetAnchor.x, normalisedHeight);
             if (!damp) {
                 rt.anchorMin = rt.anchorMin = targetAnchor;
@@ -92,6 +91,10 @@ namespace EcoBuilder.UI
             {
                 rt.anchorMin = rt.anchorMax = targetAnchor;
             }
+            else
+            {
+                // TODO: make it not spaz out
+            }
         }
         public bool Showing {
             get { return targetPivot.x==1; }
@@ -107,16 +110,17 @@ namespace EcoBuilder.UI
             // flips pivot to opposite of current state
             if (targetPivot.x == 1) {
                 targetPivot.x = 0;
-                arrow.transform.rotation = Quaternion.Euler(0,0,-90);
+                arrow.transform.localRotation = Quaternion.Euler(0,180,90);
             } else {
                 targetPivot.x = 1;
-                arrow.transform.rotation = Quaternion.Euler(0,0,90);
+                arrow.transform.localRotation = Quaternion.Euler(0,0,90);
             }
         }
 
+        // TODO: SMELLY
         public string Message {
             get { return message.text; }
-            set { message.text = value; ForceUpdateLayout(); }
+            set { StopAllCoroutines(); message.text = value; ForceUpdateLayout(); }
         }
         public void DelayThenSet(float delay, string delayedMessage)
         {
@@ -131,6 +135,7 @@ namespace EcoBuilder.UI
         public void DelayThenShow(float delay, string delayedMessage)
         {
             StopAllCoroutines();
+            Showing = false;
             StartCoroutine(DelayThenShowRoutine(delay, delayedMessage));
         }
         IEnumerator DelayThenShowRoutine(float delay, string delayedMessage)
@@ -139,12 +144,12 @@ namespace EcoBuilder.UI
             Message = delayedMessage;
             Showing = true;
         }
-        public void ResetPosition()
+        public void ResetPosition(bool damp=true)
         {
-            SetSide(false);
-            SetPivotHeight(1);
-            SetAnchorHeight(.85f);
-            SetPixelWidth(400);
+            SetSide(false, damp);
+            SetPivotHeight(1, damp);
+            SetAnchorHeight(.85f, damp);
+            SetPixelWidth(400, damp);
         }
 
         void UserShow(bool showing) // to attach to button

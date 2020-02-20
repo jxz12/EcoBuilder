@@ -30,10 +30,6 @@ namespace EcoBuilder.NodeLink
         void Start()
         {
             xRotation = xDefaultRotation = graphParent.localRotation.eulerAngles.x;
-            // defaultNodelinkPos = transform.localPosition;
-
-            graphParent.localScale = Vector3.zero;
-            StartCoroutine(TweenZoom(Vector3.one, 2));
         }
         void Update()
         {
@@ -48,11 +44,9 @@ namespace EcoBuilder.NodeLink
             }
 
             FineTuneLayout();
-
             if (GraphLayedOut) {
                 SeparateConnectedComponents();
             }
-
             if (tweenNodes) {
                 TweenNodesToStress();
                 TweenZoomToFit();
@@ -93,8 +87,6 @@ namespace EcoBuilder.NodeLink
 
             OnLayedOut.Invoke();
         }
-
-
 
 
         ///////////////////////////////////
@@ -258,10 +250,9 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        public void SetIfNodeCanBeFocused(int idx, bool canBeFocused)
+        public void SetIfNodeInteractable(int idx, bool canBeFocused)
         {
-            nodes[idx].CanBeFocused = canBeFocused;
-            nodes[idx].GetComponent<Collider>().enabled = canBeFocused;
+            nodes[idx].Interactable = canBeFocused;
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {
@@ -302,16 +293,6 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Flash(false);
         }
-
-        // adds a gameobject like the jump shadow in mario bros.
-        public void AddDropShadow(GameObject shadow, float yPos)
-        {
-            Assert.IsNotNull(shadow, "shadow gameobject is null");
-            shadow.transform.SetParent(nodesParent, false);
-            shadow.transform.localPosition = new Vector3(0, yPos, 0);
-            shadow.transform.localRotation = Quaternion.AngleAxis(-45, Vector3.up);
-        }
-
         public void OutlineNode(int idx, cakeslice.Outline.Colour colour)
         {
             nodes[idx].PushOutline(colour);
@@ -380,18 +361,49 @@ namespace EcoBuilder.NodeLink
             toUnoutline.Clear();
         }
 
+
+        // adds a gameobject like the jump shadow in mario bros.
+        Transform shadowParent;
+        public void AddDropShadow(GameObject shadow, float yPos)
+        {
+            Assert.IsNotNull(shadow, "shadow gameobject is null");
+            if (shadowParent == null)
+            {
+                shadowParent = new GameObject().transform;
+                shadowParent.name = "Shadow";
+                shadowParent.SetParent(nodesParent);
+            }
+            shadowParent.localPosition = new Vector3(0,yPos,0);
+
+            shadow.transform.SetParent(shadowParent, true);
+        }
+
         public void TooltipNode(int idx, string msg)
         {
-            print("TODO: this is a bit messy and doesn't work if graph is spinning");
             tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
             tooltip.ShowText(msg);
             tooltip.Enable();
             tweenNodes = dragging = false;
+
+            print("TODO: this is a bit messy and doesn't work if graph is spinning");
         }
         public void UntooltipNode(int idx)
         {
             tooltip.Disable();
             tweenNodes = dragging = true;
+        }
+        public void Finish()
+        {
+            ForceUnfocus();
+            // StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
+            // StartCoroutine(TweenPan(defaultNodelinkPos, 2));
+
+            GetComponent<Collider>().enabled = false;
+            foreach (var node in nodes)
+            {
+                node.GetComponent<Collider>().enabled = false;
+            }
+            print("TODO: more fun explody animation");
         }
     }
 }

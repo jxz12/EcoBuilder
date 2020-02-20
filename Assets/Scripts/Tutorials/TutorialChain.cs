@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace EcoBuilder.Tutorials
 {
-    public class Chain : Tutorial
+    public class TutorialChain : Tutorial
     {
         protected override void StartLesson()
         {
@@ -28,16 +28,16 @@ namespace EcoBuilder.Tutorials
         void LimitNumAnimals(int limit)
         {
             if (constraints.PawValue >= limit) {
-                incubator.SetConsumerAvailability(false);
+                inspector.SetConsumerAvailability(false);
             } else {
-                incubator.SetConsumerAvailability(true);
+                inspector.SetConsumerAvailability(true);
             }
         }
         void ExplainChainOfOne()
         {
             help.Message = "chain of one done! Now do two";
             help.Showing = true;
-            incubator.SetConsumerAvailability(true);
+            inspector.SetConsumerAvailability(true);
             // allow animal again, but only one more
             // ask to make a chain of 2
 

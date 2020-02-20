@@ -11,6 +11,8 @@ namespace EcoBuilder
         void Awake()
         {
             anim = GetComponent<Animator>();
+            transform.localScale = Vector3.zero;
+            TweenToRestPositionFromNextFrame(2f);
         }
 
         // for animation events
@@ -22,25 +24,32 @@ namespace EcoBuilder
         {
             this.enabled = true;
         }
-        public void TweenToRestPosition(float duration)
+        public void TweenToRestPositionFromNextFrame(float duration)
         {
-            StopCoroutine(tweenRoutine);
-            StartCoroutine(TweenToZero(duration));
+            if (tweenRoutine != null) {
+                StopCoroutine(tweenRoutine);
+            }
+            StartCoroutine(tweenRoutine = TweenToZero(duration));
         }
         IEnumerator tweenRoutine;
         IEnumerator TweenToZero(float duration)
         {
+            yield return null; // smelly wait so that localpos is set to shadow
+            float startTime = Time.time;
             Vector3 startPos = transform.localPosition;
             Vector3 startScale = transform.localScale;
-            float startTime = Time.time;
             while (Time.time < startTime+duration)
             {
                 float t = (Time.time-startTime)/duration;
-                // quadratic ease in-out
+
+                // cubic ease in-out
                 if (t < .5f) {
-                    t = 2*t*t;
+                    // t = 2*t*t;
+                    t = 4*t*t*t;
                 } else {
-                    t = -1 + (4-2*t)*t;
+                    // t = -1 + (4-2*t)*t;
+                    t -= 1;
+                    t = 4*t*t*t + 1;
                 }
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 transform.localScale = Vector3.Lerp(startScale, Vector3.one, t);
@@ -50,25 +59,13 @@ namespace EcoBuilder
             transform.localScale = Vector3.one;
         }
 
-        // public void ListenToScenes(string s) // also ugly
-        // {
-        //     if (s == "Menu")
-        //     {
-        //         anim.SetTrigger("Grow");
-        //     }
-        //     else if (s == "Play" && !anim.GetCurrentAnimatorStateInfo(0).IsName("Hidden")) // so ugly
-        //     {
-        //         anim.SetTrigger("Shrink");
-        //     }
-        // }
-
         // for user interaction
-        // [SerializeField] float minRotationVelocity, rotationMultiplier;
+        [SerializeField] float minRotationVelocity = .01f;
         float rotation, rotationTarget, rotationVelocity;
         void Update()
         {
             rotationTarget += (rotationVelocity + Mathf.Sign(rotationVelocity)*.2f) * Time.deltaTime;
-            rotation = Mathf.SmoothDamp(rotation, rotationTarget, ref rotationVelocity, .02f);
+            rotation = Mathf.SmoothDamp(rotation, rotationTarget, ref rotationVelocity, minRotationVelocity);
 
             transform.localRotation = Quaternion.Euler(0,rotation,0);
         }

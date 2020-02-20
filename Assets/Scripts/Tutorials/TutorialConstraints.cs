@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace EcoBuilder.Tutorials
 {
-    public class Constraints : Tutorial
+    public class TutorialConstraints : Tutorial
     {
         protected override void StartLesson()
         {

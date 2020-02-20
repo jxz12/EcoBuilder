@@ -40,9 +40,9 @@ namespace EcoBuilder.UI
 
         // to fetch the score
         List<Func<float>> ScoreSources = new List<Func<float>>();
-        public void AttachScoreSource(Func<float> Normalised, float multiplier)
+        public void AttachScoreSource(Func<float> Source)
         {
-            ScoreSources.Add(()=> multiplier * Normalised());
+            ScoreSources.Add(Source);
         }
         // to check whether constraints have been met
         Func<bool> CheckSatisfied = ()=>false;

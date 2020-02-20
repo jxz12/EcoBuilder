@@ -36,8 +36,7 @@ namespace EcoBuilder
         void Start()
         {
             print("TODO: set this to the dependent on screen size for webgl");
-            print("TODO: disable full screen for desktop?!");
-#if !UNITY_WEBGL
+#if UNITY_WEBGL
             // Screen.SetResolution(576, 1024, false);
             // Screen.fullScreen = true;
 #endif
@@ -65,18 +64,18 @@ namespace EcoBuilder
         public LevelDetails PlayedLevelDetails {
             get {
 #if UNITY_EDITOR
+                // for convenience in editor
                 if (playedLevel == null)
                 {
-                    playedLevel = Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab"));
-                    playedLevel.PlayExternal();
+                    playedLevel = Instantiate(Level.DefaultPrefab);
+                    playedLevel.Unlock();
                 }
-#else
-                Assert.IsNotNull(playedLevel, "no level being played");
 #endif
+                Assert.IsNotNull(playedLevel, "no level being played");
                 return playedLevel.Details;
             }
         }
-        public void PlayLevel(Level toPlay)
+        public void LoadLevelScene(Level toPlay)
         {
             if (playedLevel != null) // if playing already
             {
@@ -96,6 +95,10 @@ namespace EcoBuilder
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
         }
+        public void BeginPlayedLevel()
+        {
+            playedLevel.BeginPlay();
+        }
         public void MakePlayedLevelFinishable()
         {
             playedLevel.ShowFinishFlag();
@@ -114,45 +117,40 @@ namespace EcoBuilder
         public RectTransform NavParent { get { return navParent; } }
         public RectTransform TutParent { get { return tutParent; } }
 
-#if UNITY_EDITOR
-        public void SavePlayedAsNewLevel(LevelDetails details)
-        {
-            playedLevel.SaveAsNewPrefab(details);
-        }
-#endif
-
         ///////////////////
         // scene loading //
         ///////////////////
 
-        [SerializeField] UnityEvent OnSceneUnloaded, OnSceneLoaded;
+        [Serializable] public class MyBoolEvent : UnityEvent<bool> {}
+        [SerializeField] MyBoolEvent OnSceneLoading;
         [Serializable] public class MyFloatEvent : UnityEvent<float> {}
-        [SerializeField] MyFloatEvent OnLoadingProgress;
-        [Serializable] public class MyStringEvent : UnityEvent<string> {}
-        public MyStringEvent OnLoaded;
+        [SerializeField] MyFloatEvent OnLoadingProgressed;
+        public event Action<string> OnSceneLoaded;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
-            OnSceneUnloaded.Invoke();
+            OnSceneLoading.Invoke(true);
             if (toUnload != null)
             {
                 var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
                 while (!unloading.isDone)
                 {
-                    OnLoadingProgress?.Invoke(unloading.progress/2);
+                    OnLoadingProgressed?.Invoke(unloading.progress/2);
                     yield return null;
                 }
             }
+            OnLoadingProgressed?.Invoke(.5f);
+            yield return new WaitForSeconds(2);
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
                 while (!loading.isDone)
                 {
-                    OnLoadingProgress?.Invoke(.5f + loading.progress/2);
+                    OnLoadingProgressed?.Invoke(.5f + loading.progress/2);
                     yield return null;
                 }
-                OnLoaded?.Invoke(toLoad);
             }
-            OnSceneLoaded?.Invoke();
+            OnSceneLoading.Invoke(false);
+            OnSceneLoaded?.Invoke(toLoad);
         }
 
         public void ReturnToMenu()
@@ -166,17 +164,18 @@ namespace EcoBuilder
 
         [SerializeField] Planet earth;
         Transform earthParent;
-        public void TakePlanet(Transform newParent)
+        public GameObject TakePlanet()
         {
             Assert.IsNotNull(earth, "earth was destroyed :(");
             earthParent = earth.transform.parent;
-            earth.transform.SetParent(newParent, true);
-            earth.TweenToRestPosition(2);
+            earth.TweenToRestPositionFromNextFrame(2);
+            return earth.gameObject;
         }
         public void ReturnPlanet()
         {
+            Assert.IsNotNull(earth, "earth was destroyed :(");
             earth.transform.SetParent(earthParent, true);
-            earth.TweenToRestPosition(2);
+            earth.TweenToRestPositionFromNextFrame(2);
         }
 
         ///////////////////////////

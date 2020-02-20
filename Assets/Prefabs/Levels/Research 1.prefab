@@ -117,6 +117,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Research 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1177925893353857984, guid: c2e2e7070b5713f478704ab422e6101e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1744894759364357133, guid: c2e2e7070b5713f478704ab422e6101e,
         type: 3}
       propertyPath: nextLevelPrefab
@@ -180,6 +185,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.pageCount
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6896961548895955612, guid: c2e2e7070b5713f478704ab422e6101e,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6896961548895955612, guid: c2e2e7070b5713f478704ab422e6101e,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8912394500406530882, guid: c2e2e7070b5713f478704ab422e6101e,
         type: 3}

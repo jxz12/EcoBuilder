@@ -5,14 +5,14 @@ using UnityEngine;
 namespace EcoBuilder.Tutorials
 {
     // this tutorial teaches the size slider and its effects
-    public class Traits : Tutorial
+    public class TutorialTraits : Tutorial
     {
         NodeLink.Node plant, animal;
         protected override void StartLesson()
         {
-            incubator.HideStartButtons(true);
-            inspector.HideRemoveButton(true);
-            score.Hide(true);
+            inspector.HideIncubatorButtons();
+            inspector.HideRemoveButton();
+            score.Hide();
             constraints.Show(false);
             score.DisableStarCalculation(true);
             targetSize = new Vector2(100,100);
@@ -22,18 +22,22 @@ namespace EcoBuilder.Tutorials
             animal = nodes[1];
             plant = nodes[0];
 
-            nodelink.SetIfNodeCanBeFocused(animal.Idx, false);
+            nodelink.SetIfNodeInteractable(animal.Idx, false);
 
-            ExplainIntro();
+            ExplainIntro(false);
         }
-        void ExplainIntro()
+        void ExplainIntro(bool showText)
         {
             DetachSmellyListeners();
             StopAllCoroutines();
 
             // in case the user goes back
-            help.Message = GameManager.Instance.PlayedLevelDetails.Introduction;
-            help.ResetPosition();
+            if (showText)
+            {
+                help.Message = GameManager.Instance.PlayedLevelDetails.Introduction;
+                help.Showing = true;
+                help.ResetPosition();
+            }
             
             StartCoroutine(Track(plant.transform));
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
@@ -52,7 +56,7 @@ namespace EcoBuilder.Tutorials
             StartCoroutine(ShuffleOnSlider(3, 40));
 
             AttachSmellyListener<int>(model, "OnRescued", i=>ExplainMetabolism(2));
-            AttachSmellyListener(nodelink, "OnUnfocused", ExplainIntro);
+            AttachSmellyListener<int>(nodelink, "OnUnfocused", i=>ExplainIntro(true));
         }
         void ExplainMetabolism(float delay)
         {
@@ -62,8 +66,8 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             nodelink.ForceUnfocus();
 
-            nodelink.SetIfNodeCanBeFocused(animal.Idx, true);
-            nodelink.SetIfNodeCanBeFocused(plant.Idx, true);
+            nodelink.SetIfNodeInteractable(animal.Idx, true);
+            nodelink.SetIfNodeInteractable(plant.Idx, true);
 
             smoothTime = .3f;
             targetSize = Vector2.zero;
@@ -83,7 +87,7 @@ namespace EcoBuilder.Tutorials
 
             StartCoroutine(ShuffleOnSlider(3, 40));
 
-            AttachSmellyListener(nodelink, "OnUnfocused", ()=>ExplainMetabolism(0));
+            AttachSmellyListener<int>(nodelink, "OnUnfocused", i=>ExplainMetabolism(0));
             AttachSmellyListener<int>(model, "OnEndangered", i=>ExplainScore());
         }
         void ExplainScore()

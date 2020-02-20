@@ -16,7 +16,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float rotationPerInch, zoomPerInch, panPerInch;
 
         public bool AllowSuperfocus { get; set; }
-        enum FocusState { Unfocus, Focus, SuperFocus, Frozen }; // frozen is end of game
+        enum FocusState { Unfocus, Focus, SuperFocus };
         FocusState focusState = FocusState.Unfocus;
         Node focusedNode = null;
         private void TapNode(int idx)
@@ -99,12 +99,6 @@ namespace EcoBuilder.NodeLink
                 TapNode(idx);
             }
         }
-        // public void UnfocusWithoutEvents()
-        // {
-        //     while (focusState != FocusState.Unfocus) {
-        //         TapEmpty(false);
-        //     }
-        // }
 
         private void SuperFocus(int focusIdx)
         {
@@ -196,74 +190,68 @@ namespace EcoBuilder.NodeLink
         ///////////////////////////////////////
         // user-interaction rotation and zoom
 
+        float DPI { get {  return Screen.dpi==0? 72 : Screen.dpi; } }
+
         Vector3 graphParentUnfocused;
         public void MoveHorizontal(float xCoord)
         {
             graphParentUnfocused.x = xCoord;
         }
-        public void Finish()
-        {
-            ForceUnfocus();
-            print("TODO: more fun animation");
-            // StartCoroutine(TweenZoom(Vector3.one*1.2f, 2));
-            // StartCoroutine(TweenPan(defaultNodelinkPos, 2));
-
-            focusState = FocusState.Frozen;
-        }
 
         void UserRotate(Vector2 pixelDelta)
         {
-            Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+            Vector2 inchesDelta = pixelDelta / DPI; // convert to inches
             Vector2 rotation = inchesDelta * rotationPerInch; // convert to degrees
             yTargetRotation -= rotation.x;
             xTargetRotation += rotation.y;
         }
         // void UserZoom(float pixelDelta)
         // {
-        //     float inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+        //     float inchesDelta = pixelDelta / DPI; // convert to inches
         //     float zoom = inchesDelta * zoomPerInch;
         //     zoom = Mathf.Min(zoom, .5f);
         //     zoom = Mathf.Max(zoom, -.5f);
 
         //     graphParent.localScale *= 1 + zoom;
         // }
-        IEnumerator TweenZoom(Vector3 endZoom, float duration)
-        {
-            Vector3 startZoom = graphParent.localScale;
-            float startTime = Time.time;
-            while (Time.time < startTime + duration)
-            {
-                float t = (Time.time-startTime) / duration * 2;
-                if (t < 1) {
-                    graphParent.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
-                } else {
-                    graphParent.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
-                }
-                yield return null;
-            }
-            graphParent.localScale = endZoom;
-        }
+        // IEnumerator TweenZoom(Vector3 endZoom, float duration)
+        // {
+        //     Vector3 startZoom = graphParent.localScale;
+        //     float startTime = Time.time;
+        //     while (Time.time < startTime + duration)
+        //     {
+        //         float t = (Time.time-startTime) / duration * 2;
+        //         if (t < 1) {
+        //             graphParent.localScale = startZoom + (endZoom-startZoom)/2f*t*t;
+        //         } else {
+        //             graphParent.localScale = startZoom - (endZoom-startZoom)/2f*((t-1)*(t-3)-1);
+        //         }
+        //         yield return null;
+        //     }
+        //     graphParent.localScale = endZoom;
+        // }
         // void UserPan(Vector2 pixelDelta)
         // {
-        //     Vector2 inchesDelta = pixelDelta / (Screen.dpi==0? 72:Screen.dpi); // convert to inches
+        //     Vector2 inchesDelta = pixelDelta / DPI; // convert to inches
         //     transform.localPosition += (Vector3)inchesDelta * panPerInch;
         // }
-        IEnumerator TweenPan(Vector3 endPan, float duration)
-        {
-            Vector3 startZoom = transform.localPosition;
-            float startTime = Time.time;
-            while (Time.time < startTime + duration)
-            {
-                float t = (Time.time-startTime) / duration * 2;
-                if (t < 1) {
-                    transform.localPosition = startZoom + (endPan-startZoom)/2f*t*t;
-                } else {
-                    transform.localPosition = startZoom - (endPan-startZoom)/2f*((t-1)*(t-3)-1);
-                }
-                yield return null;
-            }
-            transform.localPosition = endPan;
-        }
+        // IEnumerator TweenPan(Vector3 endPan, float duration)
+        // {
+        //     Vector3 startZoom = transform.localPosition;
+        //     float startTime = Time.time;
+        //     while (Time.time < startTime + duration)
+        //     {
+        //         float t = (Time.time-startTime) / duration * 2;
+        //         if (t < 1) {
+        //             transform.localPosition = startZoom + (endPan-startZoom)/2f*t*t;
+        //         } else {
+        //             transform.localPosition = startZoom - (endPan-startZoom)/2f*((t-1)*(t-3)-1);
+        //         }
+        //         yield return null;
+        //     }
+        //     transform.localPosition = endPan;
+        // }
+
 
         ///////////////////////////////
         // Event Systems (link adding)
@@ -280,10 +268,14 @@ namespace EcoBuilder.NodeLink
                 pressedNode = ClosestSnappedNode(ped);
                 if (pressedNode != null)
                 {
-                    pressedNode.PushOutline(cakeslice.Outline.Colour.Yellow);
                     tooltip.Enable();
-                    tooltip.ShowInspect();
                     tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
+                    pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
+                    if (pressedNode.Interactable) {
+                        tooltip.ShowInspect();
+                    } else {
+                        tooltip.ShowBanned();
+                    }
                 }
             }
         }
@@ -292,18 +284,16 @@ namespace EcoBuilder.NodeLink
         {
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
-                tweenNodes = true;
-
-                if (pressedNode != null)
-                {
-                    pressedNode.PopOutline(); // remove initial yellow press outline
-                    tooltip.Disable();
+                if (pressedNode != null) {
+                    pressedNode.PopOutline(); // remove initial orange press outline
                 }
                 if (!ped.dragging) // if click
                 {
                     if (pressedNode != null)
                     {
-                        TapNode(pressedNode.Idx);
+                        if (pressedNode.Interactable) {
+                            TapNode(pressedNode.Idx);
+                        }
                         pressedNode = null;
                     }
                     else
@@ -311,6 +301,8 @@ namespace EcoBuilder.NodeLink
                         TapEmpty();
                     }
                 }
+                tweenNodes = true;
+                tooltip.Disable();
             }
         }
 
@@ -327,10 +319,11 @@ namespace EcoBuilder.NodeLink
             {
                 if (pressedNode != null)
                 {
-                    tooltip.Enable();
+                    // tooltip.Enable();
 
-                    if ((!DragFromTarget && pressedNode.CanBeSource) ||
-                        (DragFromTarget && pressedNode.CanBeTarget))
+                    if (pressedNode.Interactable &&
+                        ((pressedNode.CanBeSource && !DragFromTarget) ||
+                         (pressedNode.CanBeTarget && DragFromTarget)))
                     {
                         dummyTarget = Instantiate(nodePrefab, nodesParent);
                         dummyTarget.transform.localScale = Vector3.zero;
@@ -372,8 +365,10 @@ namespace EcoBuilder.NodeLink
                     potentialLink = null;
                 }
                 Node snappedNode = ClosestSnappedNode(ped);
+
                 // a load of crap to determine if a snap occurs
                 if (snappedNode!=null && snappedNode!=pressedNode &&
+                    snappedNode.Interactable &&
                     (((!DragFromTarget && snappedNode.CanBeTarget)
                          && ((links[snappedNode.Idx, pressedNode.Idx]==null &&
                               links[pressedNode.Idx, snappedNode.Idx]==null) ||
@@ -530,9 +525,6 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float snapRadiusInches;
         private Node ClosestSnappedNode(PointerEventData ped)
         {
-            if (focusState == FocusState.Frozen) {
-                return null;
-            }
             GameObject hoveredObject = ped.pointerCurrentRaycast.gameObject;
             Node snappedNode = null;
             if (hoveredObject != null) {
@@ -546,9 +538,9 @@ namespace EcoBuilder.NodeLink
             {
                 Node closest = null;
                 float closestDist = float.MaxValue;
-                float snapRadiusPxls = snapRadiusInches * (Screen.dpi==0? 72:Screen.dpi);
+                float snapRadiusPxls = snapRadiusInches * DPI;
                 float sqRadius = snapRadiusPxls * snapRadiusPxls;
-                foreach (Node no in nodes.Where(n=>n.gameObject.activeSelf && n.CanBeFocused))
+                foreach (Node no in nodes.Where(n=>n.gameObject.activeSelf))
                 {
                     Vector2 screenPos = Camera.main.WorldToScreenPoint(no.transform.position);
 

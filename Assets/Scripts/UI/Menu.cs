@@ -207,7 +207,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                GameManager.Instance.HelpText.DelayThenSet(.15f, splashHelp);
+                GameManager.Instance.HelpText.DelayThenSet(.5f, splashHelp);
                 GameManager.Instance.HelpText.Showing = false;
             }
         }

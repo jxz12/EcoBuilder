@@ -2,16 +2,14 @@ dad
 claim moneys
 
 hide health and traits if empty tap
-remove landscapes and just use planet instead
 show highest score on score tap
 
 score explanation
-make loading and results looks pretty
+make status bars(also hide and on finish) and loading and results looks pretty
 are you sure button
 
 max instead of min producers or consumers
 make score constraint shiny
-
 
 
 # Menu

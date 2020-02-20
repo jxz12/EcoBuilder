@@ -132,6 +132,7 @@ namespace EcoBuilder.UI
         private void SpawnIncubated()
         {
             Assert.IsNotNull(incubated, "nothing incubated to spawn");
+            incubator.ReleaseIncubatedObject();
             OnUnincubated?.Invoke();
 
             SpawnWithNonUserEvents(incubated);
@@ -407,11 +408,11 @@ namespace EcoBuilder.UI
 
         public void SetProducerAvailability(bool available)
         {
-            incubator.SetProducerAvailability(available);
+            incubator.EnableProducerButton(available);
         }
         public void SetConsumerAvailability(bool available)
         {
-            incubator.SetConsumerAvailability(available);
+            incubator.EnableConsumerButton(available);
         }
 
 
@@ -422,7 +423,10 @@ namespace EcoBuilder.UI
         {
             Assert.IsFalse(spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx), "idx already added");
             Assert.IsNull(inspected, "somehow inspecting??");
-            Assert.IsFalse(size < 0 || size > 1, "size not in bounds");
+
+            float norm = sizeTrait.NormaliseValue(size);
+            Assert.IsFalse(norm < 0 || norm > 1, "size not in bounds");
+            norm = greedTrait.NormaliseValue(greed);
             Assert.IsFalse(greed < 0 || greed > 1, "greed not in bounds");
 
             var toSpawn = new Species(idx, isProducer, randomSeed);
@@ -525,14 +529,15 @@ namespace EcoBuilder.UI
         {
             if (incubated != null)
             {
-                incubator.Finish();
                 GetComponent<Animator>().SetTrigger("Unincubate");
             }
             else if (inspected != null)
             {
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
+            incubator.Finish();
         }
+
         public void HideSizeSlider(bool hidden)
         {
             sizeTrait.gameObject.SetActive(!hidden);
@@ -556,6 +561,10 @@ namespace EcoBuilder.UI
         public void HideRemoveButton(bool hidden=true)
         {
             removeHidden = hidden;
+        }
+        public void HideIncubatorButtons(bool hidden=true)
+        {
+            incubator.HideTypeButtons(hidden);
         }
 
         // for saving levels

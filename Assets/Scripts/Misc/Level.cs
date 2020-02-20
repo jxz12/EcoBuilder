@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
-using UnityEditor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,10 +46,10 @@ namespace EcoBuilder
         // score
         public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
         [SerializeField] ScoreMetric metric;
-        [SerializeField] int targetScore1;
-        [SerializeField] int targetScore2;
         [SerializeField] float mainMultiplier;
         [SerializeField] float altMultiplier;
+        [SerializeField] int targetScore1;
+        [SerializeField] int targetScore2;
 
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
@@ -82,10 +81,10 @@ namespace EcoBuilder
         public IReadOnlyList<int> Targets { get { return targets; } }
 
         public ScoreMetric Metric { get { return metric; } }
-        public int TargetScore1 { get { return targetScore1; } }
-        public int TargetScore2 { get { return targetScore2; } }
         public float MainMultiplier { get { return mainMultiplier; } }
         public float AltMultiplier { get { return altMultiplier; } }
+        public int TargetScore1 { get { return targetScore1; } }
+        public int TargetScore2 { get { return targetScore2; } }
 
         public LevelDetails(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets)
         {
@@ -134,8 +133,8 @@ namespace EcoBuilder
         {
             int n = details.NumInitSpecies;
             int m = details.NumInitInteractions;
-            // Assert.IsFalse(n!=details.RandomSeeds.Count || n!=details.Sizes.Count || n!=details.Greeds.Count, "num species and sizes or greeds do not match");
-            // Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, "num edge sources and targets do not match");
+            Assert.IsFalse(n!=details.RandomSeeds.Count || n!=details.Sizes.Count || n!=details.Greeds.Count, "num species and sizes or greeds do not match");
+            Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, "num edge sources and targets do not match");
 
             titleText.text = details.Title;
             descriptionText.text = details.Description;
@@ -152,12 +151,12 @@ namespace EcoBuilder
             if (score >= details.TargetScore1)
             {
                 numStars += 1;
-                target1.color = Color.grey;
+                target1.color = new Color(1,1,1,.3f);
             }
             if (score >= details.TargetScore2)
             {
                 numStars += 1;
-                target2.color = Color.grey;
+                target2.color = new Color(1,1,1,.3f);
             }
             starsImage.sprite = starSprites[numStars];
         }
@@ -238,16 +237,12 @@ namespace EcoBuilder
         }
         public void FinishLevel() // called on finish flag pressed
         {
-            if (nextLevelPrefab != null) {
-                NextLevelInstantiated = Instantiate(nextLevelPrefab, nextLevelParent);
-            } else {
-                print("TODO: credits? reduce width of navigation?");
-            }
             Instantiate(confettiPrefab, GameManager.Instance.CardParent);
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
 
             GameManager.Instance.FinishLevel(this);
         }
+
         public Level NextLevelInstantiated { get; private set; }
         public void UnlockNextLevel() // because of silly animator gameobject active stuff
         {
@@ -255,8 +250,12 @@ namespace EcoBuilder
 
             StartCoroutine(TweenToZeroPosFrom(0, GameManager.Instance.NavParent));
             print("TODO: make navigation pop to below screen then rise");
-            if (NextLevelInstantiated != null) {
+
+            if (nextLevelPrefab != null) {
+                NextLevelInstantiated = Instantiate(nextLevelPrefab, nextLevelParent);
                 NextLevelInstantiated.Unlock();
+            } else {
+                print("TODO: credits? reduce width of navigation?");
             }
         }
 
@@ -280,39 +279,31 @@ namespace EcoBuilder
         ///////////////////////
         // Scene changing
 
-        public void Play()
+        public void Play() // for external attaching
         {
-            GameManager.Instance.PlayLevel(this);
-            GameManager.Instance.OnLoaded.AddListener(LevelSceneLoadedCallback);
+            GameManager.Instance.LoadLevelScene(this);
         }
-#if UNITY_EDITOR
-        public void PlayExternal()
-        {
-            thumbnailedParent = GameManager.Instance.PlayParent;
-            ShowThumbnail(0);
-            StartCoroutine(WaitThenEnableQuitReplay(0));
-            StartTutorialIfAvailable();
-            Unlock();
-        }
-#endif
-        void LevelSceneLoadedCallback(string sceneName)
-        {
-            Assert.IsTrue(sceneName == "Play", "Play scene not loaded when expected");
 
-            GameManager.Instance.OnLoaded.RemoveListener(LevelSceneLoadedCallback);
-            thumbnailedParent = GameManager.Instance.PlayParent; // move to corner
+        Tutorials.Tutorial teacher;
+        public void BeginPlay()
+        {
+            Assert.IsTrue(GameManager.Instance.PlayedLevelDetails == details, "wrong level beginning");
+
+            StartCoroutine(WaitOneFrameThenBegin());
+        }
+        private IEnumerator WaitOneFrameThenBegin()
+        {
+            yield return null;
+            thumbnailedParent = GameManager.Instance.PlayParent; // detach from possibly the menu
 
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
 
-            StartTutorialIfAvailable();
-        }
-        Tutorials.Tutorial teacher;
-        void StartTutorialIfAvailable()
-        {
             if (tutorialPrefab != null) {
                 teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutParent);
             }
+            GameManager.Instance.HelpText.ResetPosition();
+            GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
         }
         void OnDestroy()
         {
@@ -349,21 +340,29 @@ namespace EcoBuilder
         {
             GameManager.Instance.ReturnToMenu();
             GameManager.Instance.HelpText.Showing = false;
-            GameManager.Instance.OnLoaded.AddListener(DestroyWhenMenuLoads);
+            GameManager.Instance.OnSceneLoaded += DestroyWhenMenuLoads;
         }
         void DestroyWhenMenuLoads(string sceneName)
         {
             Assert.IsTrue(sceneName == "Menu", "Menu scene not loaded when expected");
 
-            GameManager.Instance.OnLoaded.RemoveListener(DestroyWhenMenuLoads);
+            GameManager.Instance.OnSceneLoaded -= DestroyWhenMenuLoads;
             Destroy(gameObject);
         }
+
 #if UNITY_EDITOR
-        public bool SaveAsNewPrefab(LevelDetails newDetails)
+        public static Level DefaultPrefab {
+            get {
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning 1.prefab");
+            }
+        }
+        public static bool SaveAsNewPrefab(LevelDetails newDetails, string name)
         {
+            var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(DefaultPrefab);
+            newPrefab.details = newDetails;
+
             bool success;
-            details = newDetails;
-            PrefabUtility.SaveAsPrefabAsset(gameObject, $"Assets/Prefabs/Levels/{DateTime.Now.Ticks}.prefab", out success);
+            UnityEditor.PrefabUtility.SaveAsPrefabAsset(newPrefab.gameObject, $"Assets/Prefabs/Levels/{name}.prefab", out success);
             return success;
         }
 #endif

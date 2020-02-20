@@ -13,7 +13,6 @@ namespace EcoBuilder.Tutorials
         // smellllly
         protected UI.Help help;
         protected UI.Inspector inspector;
-        protected UI.Incubator incubator;
         protected UI.Score score;
         protected UI.Recorder recorder;
         protected UI.Constraints constraints;
@@ -50,23 +49,10 @@ namespace EcoBuilder.Tutorials
         }
 
         protected abstract void StartLesson();
-        // IEnumerator WaitToStart()
-        // {
-        //     // smelly as HECK
-        //     while ((help = FindObjectOfType<UI.Help>()) == null) yield return null;
-        //     while ((inspector = FindObjectOfType<UI.Inspector>()) == null) yield return null;
-        //     while ((incubator = FindObjectOfType<UI.Incubator>()) == null) yield return null;
-        //     while ((score = FindObjectOfType<UI.Score>()) == null) yield return null;
-        //     while ((constraints = FindObjectOfType<UI.Constraints>()) == null) yield return null;
-        //     while ((recorder = FindObjectOfType<UI.Recorder>()) == null) yield return null;
-        //     while ((nodelink = FindObjectOfType<NodeLink.NodeLink>()) == null) yield return null;
-        //     while ((model = FindObjectOfType<Model.Model>()) == null) yield return null;
-        // }
         void InitSmellyReferences()
         {
             help = FindObjectOfType<UI.Help>();
             inspector = FindObjectOfType<UI.Inspector>();
-            incubator = FindObjectOfType<UI.Incubator>();
             score = FindObjectOfType<UI.Score>();
             constraints = FindObjectOfType<UI.Constraints>();
             recorder = FindObjectOfType<UI.Recorder>();
@@ -75,7 +61,6 @@ namespace EcoBuilder.Tutorials
 
             Assert.IsNotNull(help);
             Assert.IsNotNull(inspector);
-            Assert.IsNotNull(incubator);
             Assert.IsNotNull(score);
             Assert.IsNotNull(constraints);
             Assert.IsNotNull(recorder);

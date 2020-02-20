@@ -5,7 +5,7 @@ using UnityEngine;
 namespace EcoBuilder.Tutorials
 {
     // this tutorial teaches the greed slider and superfocus
-    public class Research : Tutorial
+    public class TutorialResearch : Tutorial
     {
         protected override void StartLesson()
         {
