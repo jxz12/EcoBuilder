@@ -453,7 +453,7 @@ namespace EcoBuilder.UI
 
             Species s = spawnedSpecies[idx];
             s.BodySize = size;
-            OnSizeSet?.Invoke(idx, size);
+            OnSizeSet?.Invoke(idx, sizeTrait.NormaliseValue(size));
             factory.RegenerateSpecies(s.GObject, sizeTrait.NormaliseValue(s.BodySize), greedTrait.NormaliseValue(s.Greediness), s.RandomSeed);
 
             if (inspected == s)
@@ -461,6 +461,7 @@ namespace EcoBuilder.UI
                 sizeTrait.SetValueWithoutCallback(s.BodySize);
                 greedTrait.SetValueWithoutCallback(s.Greediness);
             }
+            s.Status.SetSize(sizeTrait.PositivifyValue(size));
         }
         public void SetGreed(int idx, int greed)
         {
@@ -468,7 +469,7 @@ namespace EcoBuilder.UI
 
             Species s = spawnedSpecies[idx];
             s.Greediness = greed;
-            OnGreedSet?.Invoke(idx, greed);
+            OnGreedSet?.Invoke(idx, greedTrait.NormaliseValue(greed));
             factory.RegenerateSpecies(s.GObject, s.BodySize, s.Greediness, s.RandomSeed);
 
             if (inspected == s)
@@ -476,6 +477,7 @@ namespace EcoBuilder.UI
                 sizeTrait.SetValueWithoutCallback(s.BodySize);
                 greedTrait.SetValueWithoutCallback(s.Greediness);
             }
+            s.Status.SetGreed(sizeTrait.PositivifyValue(greed));
         }
 
         public void Respawn(int idx)

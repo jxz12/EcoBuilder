@@ -349,7 +349,7 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning 1.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab");
             }
         }
         public static bool SaveAsNewPrefab(LevelDetails newDetails, string name)
