@@ -11,24 +11,14 @@ namespace EcoBuilder.NodeLink
         [SerializeField] int curveSegments;
         [SerializeField] float numBalls;
 
-        public bool Curved { get; set; } = false;
-        public float TileSpeed { get; set; } = 0;
-        public bool Removable { get; set; } = true;
+        // these are not get set for performance
+        public bool Curved = false;
+        public float TileSpeed = 0;
+        public bool Removable = true;
 
-        private Node source;
-        public Node Source {
-            get { return source; }
-            set {
-                source = value;
-            }
-        }
-        private Node target;
-        public Node Target {
-            get { return target; }
-            set {
-                target = value;
-            }
-        }
+        public Node Source;
+        public Node Target;
+
         public void Init(Node source, Node target)
         {
             Source = source;

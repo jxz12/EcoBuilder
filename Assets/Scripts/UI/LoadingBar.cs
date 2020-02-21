@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Assertions;
+using System.Collections;
 
 namespace EcoBuilder.UI
 {
@@ -11,7 +12,7 @@ namespace EcoBuilder.UI
             "Preparing your ecosystem...",
             "Watering the plants...",
             "Feeding the lions...",
-            // "Holding a General Election to choose the King of the Animal Kingdom, but with Single Transferable Vote instead of First Past the Post because Democracy is important, even in the wild...",
+            "Holding a General Election to elect the King of the Jungle...",//, but with Single Transferable Vote instead of First Past the Post because Democracy is important, even in the wild...",
             "Cloning Velociraptors from Jurassic fossils...",
             "Noah's most difficult job was probably not building the ark, but keeping his ecosystem alive...",
             "Forging food chains...",
@@ -23,12 +24,32 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI funnyMessage;
         [SerializeField] Slider bar;
 
+        RectTransform barRT;
+        void Awake()
+        {
+            barRT = bar.GetComponent<RectTransform>();
+        }
         public void Show(bool showing)
         {
-            gameObject.SetActive(showing);
+            GetComponent<Canvas>().enabled = showing;
             if (showing) {
                 funnyMessage.text = possibleMessages[Random.Range(0, possibleMessages.Length)];
+                StopAllCoroutines();
+                StartCoroutine(MoveUp());
             }
+        }
+        IEnumerator MoveUp(float duration=.5f)
+        {
+            Vector2 startPos = barRT.anchoredPosition;
+            float startTime = Time.time;
+            while (Time.time < startTime + duration)
+            {
+                float t = (Time.time - startTime) / duration;
+                float y = Mathf.Lerp(startPos.y-200, startPos.y, t);
+                barRT.anchoredPosition = new Vector2(startPos.x, y);
+                yield return null;
+            }
+            barRT.anchoredPosition = startPos;
         }
         public void SetLoadingProgress(float progress)
         {

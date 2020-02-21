@@ -19,6 +19,7 @@ namespace EcoBuilder.Tutorials
         protected NodeLink.NodeLink nodelink;
         protected Model.Model model;
 
+        protected Camera mainCam;
         protected Image pointerIm;
         protected RectTransform pointerRT;
         protected Vector2 canvasRefRes { get; private set; }
@@ -36,6 +37,7 @@ namespace EcoBuilder.Tutorials
 
             var rtCanvas  = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
             canvasRefRes = new Vector2(rtCanvas.sizeDelta.x, rtCanvas.sizeDelta.y);
+            mainCam = Camera.main;
 
             targetPos = pointerRT.anchoredPosition;
             targetSize = pointerRT.sizeDelta;

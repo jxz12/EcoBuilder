@@ -1,12 +1,16 @@
 dad
 claim moneys
 
+canvas for each level pls
 hide health and traits if empty tap
-show highest score on score tap
+score explanation and show highest on tap
 
-score explanation
-make status bars(also hide and on finish) and loading and results looks pretty
+
+make something else flash for extinct instead?
+make status bars pretty and hide and on finish
+make results looks pretty
 are you sure button
+remove animators from all UI if poss
 
 max instead of min producers or consumers
 make score constraint shiny
@@ -16,14 +20,9 @@ make score constraint shiny
 make icons for reversing drag direction
 
 # Learning world
-at least one level about keystone species
-at least one level about keeping heavy species alive
-
-(level 1 is nodes+links+undo, level 2 is dynamics+score, level 3 is constraints+focus)
-(level 4+5 is exclusion, level 6+7 is apparent, level 8+9 is variants (combinations))
-(level 10 is edges, level 11 is chain, level 12 is loop, 13-15 are variants)
 
 # Research world
+fix superfocus
 make leaderboards more explorable
 finish the tutorial for this as well.
 verify high scores by checking matrices

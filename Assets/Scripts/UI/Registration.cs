@@ -45,8 +45,11 @@ namespace EcoBuilder.UI
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
             privacyOpen.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
 
-            SetState(State.Start);
             StartCoroutine(yTween(1,-1000,0,true));
+        }
+        public void Begin()
+        {
+            SetState(State.Start);
         }
 
         [SerializeField] GameObject[] startObj, idObj, gdprObj, resetObj, demoObj, skipObj; // required because hierarchy with sub-layout components causes strange frames
@@ -58,6 +61,7 @@ namespace EcoBuilder.UI
             switch (state)
             {
             case State.Start:
+                GetComponent<Canvas>().enabled = true;
                 ShowObjectsOnly(startObj);
                 username.text = password.text = email.text = "";
                 termsConsent.isOn = emailConsent.isOn = askAgain.isOn = false;
@@ -113,6 +117,9 @@ namespace EcoBuilder.UI
                 break;
             case State.End:
                 OnFinished.Invoke();
+                if (_state == State.Demographics) { // on register
+                    GameManager.Instance.HelpText.DelayThenShow(2f, null);
+                }
                 StartCoroutine(yTween(1,0,-1000,false));
                 break;
             }
@@ -165,7 +172,7 @@ namespace EcoBuilder.UI
                 yield return null;
             }
             if (!applyShade) {
-                gameObject.SetActive(false);
+                GetComponent<Canvas>().enabled = false;
             }
         }
 

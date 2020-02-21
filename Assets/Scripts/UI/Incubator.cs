@@ -13,6 +13,7 @@ namespace EcoBuilder.UI
         public event Action<bool> OnIncubationWanted;
         public event Action OnDropped;
 
+        [SerializeField] Canvas rootCanvas;
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
         [SerializeField] float planeDistance;
@@ -21,10 +22,12 @@ namespace EcoBuilder.UI
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
 
+        Camera mainCam;
         void Start()
         {
-            GetComponent<Canvas>().worldCamera = Camera.main;
-            GetComponent<Canvas>().planeDistance = planeDistance;
+            mainCam = Camera.main;
+            rootCanvas.worldCamera = mainCam; // smellly
+            rootCanvas.planeDistance = planeDistance;
 
             producerButton.onClick.AddListener(()=> StartIncubation(true));
             consumerButton.onClick.AddListener(()=> StartIncubation(false));
@@ -100,7 +103,7 @@ namespace EcoBuilder.UI
                 }
                 Vector3 mousePos = ped.position;
                 mousePos.z = planeDistance - 1;
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
+                Vector3 worldPos = mainCam.ScreenToWorldPoint(mousePos);
 
                 incubatedParent.position = worldPos;
             }

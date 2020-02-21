@@ -7,16 +7,17 @@ namespace EcoBuilder.UI
 {
     public class Recorder : MonoBehaviour
     {
-        public event Action<int> OnSpeciesUndone;
+        public event Action<int> OnSpeciesTraitsChanged;
         public event Action<int> OnSpeciesMemoryLeak;
+        public event Action OnUndoOrRedo;
 
         [SerializeField] Button undoButton;
         [SerializeField] Button redoButton;
 
-        class Move
+        class Move // NOTE: the game cannot be recreated
         {
             public int idx { get; private set; }
-            public enum Type { None=0, Spawn, Despawn, Link, Unlink, Production, Size, Greed, Undo, Redo }; // uuugh
+            public enum Type { Spawn, Despawn, Link, Unlink, Size, Greed };
             public Type type { get; private set; }
             public Action Undo { get; private set; }
             public Action Redo { get; private set; }
@@ -86,11 +87,11 @@ namespace EcoBuilder.UI
             RecordAction("/"+res+","+con);
         }
 
-        public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
-        {
-            PushMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, Move.Type.Production));
-            RecordAction("p"+(current?"1":"0"));
-        }
+        // public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
+        // {
+        //     PushMove(new Move(()=>SetType(idx,prev), ()=>SetType(idx,current), idx, Move.Type.Production));
+        //     RecordAction("p"+(current?"1":"0"));
+        // }
 
         // the next two only track the latest in a string of actions
         // to prevent the stack growing really big on swipe
@@ -133,10 +134,12 @@ namespace EcoBuilder.UI
             undoButton.interactable = undos.Count > 0;
             redoButton.interactable = true;
 
-            if (toUndo.type!=Move.Type.Link && toUndo.type!=Move.Type.Unlink) {
-                OnSpeciesUndone.Invoke(toUndo.idx); // to focus when needed
+            if (toUndo.type==Move.Type.Size || toUndo.type==Move.Type.Greed)
+            {
+                OnSpeciesTraitsChanged?.Invoke(toUndo.idx);
             }
             RecordAction("<");
+            OnUndoOrRedo?.Invoke();
         }
         void Redo()
         {
@@ -147,10 +150,12 @@ namespace EcoBuilder.UI
             redoButton.interactable = redos.Count > 0;
             undoButton.interactable = true;
 
-            if (toRedo.type!=Move.Type.Link && toRedo.type!=Move.Type.Unlink) {
-                OnSpeciesUndone.Invoke(toRedo.idx);
+            if (toRedo.type==Move.Type.Size || toRedo.type==Move.Type.Greed)
+            {
+                OnSpeciesTraitsChanged?.Invoke(toRedo.idx);
             }
             RecordAction(">");
+            OnUndoOrRedo?.Invoke();
         }
         public string GetActions()
         {

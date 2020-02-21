@@ -59,7 +59,6 @@ namespace EcoBuilder.UI
                 textRT.sizeDelta = new Vector2(defaultWidth, textRT.sizeDelta.y);
             }
             input.textComponent.ForceMeshUpdate();
-            // input.textComponent.force
             expanded = expand;
         }
     }

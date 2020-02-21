@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -269,7 +268,7 @@ namespace EcoBuilder.NodeLink
                 if (pressedNode != null)
                 {
                     tooltip.Enable();
-                    tooltip.SetPos(Camera.main.WorldToScreenPoint(pressedNode.transform.position));
+                    tooltip.SetPos(mainCam.WorldToScreenPoint(pressedNode.transform.position));
                     pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
                     if (pressedNode.Interactable) {
                         tooltip.ShowInspect();
@@ -381,7 +380,7 @@ namespace EcoBuilder.NodeLink
                               links[snappedNode.Idx, pressedNode.Idx].Removable))))
                    )
                 {
-                    tooltip.SetPos(Camera.main.WorldToScreenPoint(snappedNode.transform.position));
+                    tooltip.SetPos(mainCam.WorldToScreenPoint(snappedNode.transform.position));
                     potentialTarget = snappedNode;
 
                     Link linkToRemove = DragFromTarget? links[snappedNode.Idx, pressedNode.Idx]
@@ -412,8 +411,8 @@ namespace EcoBuilder.NodeLink
                 else // no snap
                 {
                     Vector3 screenPoint = ped.position;
-                    screenPoint.z = pressedNode.transform.position.z - Camera.main.transform.position.z;
-                    dummyTarget.transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
+                    screenPoint.z = pressedNode.transform.position.z - mainCam.transform.position.z;
+                    dummyTarget.transform.position = mainCam.ScreenToWorldPoint(screenPoint);
 
                     tooltip.SetPos(screenPoint);
                     if (snappedNode!=null && snappedNode!=pressedNode)
@@ -542,7 +541,7 @@ namespace EcoBuilder.NodeLink
                 float sqRadius = snapRadiusPxls * snapRadiusPxls;
                 foreach (Node no in nodes.Where(n=>n.gameObject.activeSelf))
                 {
-                    Vector2 screenPos = Camera.main.WorldToScreenPoint(no.transform.position);
+                    Vector2 screenPos = mainCam.WorldToScreenPoint(no.transform.position);
 
                     // if the click is within the clickable radius
                     float dist = (ped.position-screenPos).sqrMagnitude;

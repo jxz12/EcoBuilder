@@ -12,7 +12,7 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI text;
 
         [SerializeField] float sizeSmoothTime;
-        float size, sizocity;
+        float size=0, sizocity=0;
 
         void Update()
         {

@@ -37,19 +37,19 @@ namespace EcoBuilder.UI
 
         private class Species
         {
-            public int Idx { get; private set; }
-            public int RandomSeed { get; private set; } 
+            public int Idx;
+            public int RandomSeed;
 
-            public bool IsProducer { get; set; }
-            public int BodySize { get; set; } = 0;
-            public int Greediness { get; set; } = 0;
-            public bool Editable { get; set; } = true;
+            public bool IsProducer;
+            public int BodySize = 0;
+            public int Greediness = 0;
+            public bool Editable = true;
 
-            public bool Removable { get; set; } = true;
+            public bool Removable = true;
 
-            public GameObject GObject { get; set; } = null;
-            public StatusBar Status { get; set; } = null;
-            public string UserName { get; set; } = null;
+            public GameObject GObject = null;
+            public StatusBar Status = null;
+            public string UserName = null;
 
             public Species(int idx, bool isProducer)
             {
@@ -97,8 +97,6 @@ namespace EcoBuilder.UI
         private void IncubateNew(bool isProducer)
         {
             Assert.IsNull(incubated, "already incubating");
-            refroveButton.onClick.RemoveAllListeners();
-            refroveButton.onClick.AddListener(RefreshIncubated);
 
             if (inspected != null) {
                 inspected = null;
@@ -122,8 +120,12 @@ namespace EcoBuilder.UI
             nameField.Interactable = true;
             sizeTrait.Interactable = true;
             greedTrait.Interactable = true;
+
             refroveButton.interactable = true;
             refroveButton.gameObject.SetActive(true);
+            refroveButton.onClick.RemoveAllListeners();
+            refroveButton.onClick.AddListener(RefreshIncubated);
+
             nameField.ExpandIntoRefrove(false); // ugh
 
             GetComponent<Animator>().SetTrigger("Incubate");
@@ -141,9 +143,8 @@ namespace EcoBuilder.UI
 
             OnUserSpawned?.Invoke(spawnedIdx);
 
-            // FIXME: this is handled by a nodelink callback, but this is smelly
-            //        would be less smelly to unincubate here first
-            // InspectSpecies(spawnedIdx);
+            // this *should* also be handled by a nodelink callback anyway
+            InspectSpecies(spawnedIdx);
         }
         private void RefreshIncubated()
         {
@@ -169,9 +170,8 @@ namespace EcoBuilder.UI
             OnUserDespawned?.Invoke(toRemove.Idx);
             BuryWithNonUserEvents(toRemove);
 
-            // FIXME: this is handled by a nodelink callback, but is smelly
-            //        would be less smelly to uninspect here first
-            // Uninspect();
+            // this *should* also be handled by a nodelink callback anyway
+            Uninspect();
         }
 
         private void SpawnWithNonUserEvents(Species toSpawn)
@@ -199,7 +199,6 @@ namespace EcoBuilder.UI
             toBury.Status.ShowTraits(false);
             toBury.Status.ShowHealth(false);
 
-            // must be invoked last so that nodelink unfocuses before removing
             OnDespawned?.Invoke(toBury.Idx);
         }
 
@@ -340,9 +339,6 @@ namespace EcoBuilder.UI
         //////////////////
         public void InspectSpecies(int idx)
         {
-            refroveButton.onClick.RemoveAllListeners();
-            refroveButton.onClick.AddListener(RemoveInspected);
-
             if (inspected == null) {
                 GetComponent<Animator>().SetTrigger("Inspect");
             }
@@ -364,12 +360,14 @@ namespace EcoBuilder.UI
             sizeTrait.SetValueWithoutCallback(inspected.BodySize);
             greedTrait.SetValueWithoutCallback(inspected.Greediness);
 
-            sizeTrait.Interactable  = greedTrait.Interactable = inspected.Editable;
+            sizeTrait.Interactable = greedTrait.Interactable = inspected.Editable;
             refroveButton.interactable = inspected.Removable;
 
-            // uuggghhh
             refroveButton.gameObject.SetActive(!removeHidden);
-            nameField.ExpandIntoRefrove(removeHidden);
+            refroveButton.onClick.RemoveAllListeners();
+            refroveButton.onClick.AddListener(RemoveInspected);
+
+            nameField.ExpandIntoRefrove(removeHidden); // uuggghhh
         }
         public void Uninspect()
         {
@@ -449,15 +447,6 @@ namespace EcoBuilder.UI
         ////////////////////
         // un/redoing 
 
-        // public void SetIsProducer(int idx, bool isProducer)
-        // {
-        //     Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");
-
-        //     Species s = spawnedSpecies[idx];
-        //     s.IsProducer = isProducer;
-        //     OnIsProducerSet?.Invoke(idx, isProducer);
-        //     factory.RegenerateSpecies(s.GObject, s.BodySize, s.Greediness, s.RandomSeed);
-        // }
         public void SetSize(int idx, int size)
         {
             Assert.IsTrue(spawnedSpecies.ContainsKey(idx), "idx not spawned");
@@ -517,12 +506,31 @@ namespace EcoBuilder.UI
         }
         public void DrawHealthBars(Func<int, float> Health)
         {
-            print("TODO: health bars");
-            // return;
             foreach (var kvp in spawnedSpecies)
             {
                 kvp.Value.Status.SetHealth(Health(kvp.Key));
             }
+        }
+
+        private bool allowConflicts = true;
+        public void AllowConflicts(bool allowed)
+        {
+            allowConflicts = allowed;
+        }
+        public void HideSizeSlider(bool hidden=true)
+        {
+            sizeTrait.gameObject.SetActive(!hidden);
+            sizeTrait.RandomiseInitialValue = !hidden;
+        }
+        public void HideGreedSlider(bool hidden=true)
+        {
+            greedTrait.gameObject.SetActive(!hidden);
+            greedTrait.RandomiseInitialValue = !hidden;
+        }
+        public void HideStatusBars(bool hidden=true)
+        {
+            print("TODO: hide");
+            // StatusBar.HideAll = hidden;
         }
         
         public void Finish()
@@ -536,24 +544,8 @@ namespace EcoBuilder.UI
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
             incubator.Finish();
+            HideStatusBars();
         }
-
-        public void HideSizeSlider(bool hidden)
-        {
-            sizeTrait.gameObject.SetActive(!hidden);
-            sizeTrait.RandomiseInitialValue = !hidden;
-        }
-        public void HideGreedSlider(bool hidden)
-        {
-            greedTrait.gameObject.SetActive(!hidden);
-            greedTrait.RandomiseInitialValue = !hidden;
-        }
-        private bool allowConflicts = true;
-        public void AllowConflicts(bool allowed)
-        {
-            allowConflicts = allowed;
-        }
-
 
         //////////////////////////////
         // stuff for tutorials to use

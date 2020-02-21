@@ -37,14 +37,13 @@ namespace EcoBuilder.UI
 
         void StartRegistration()
         {
-            form.gameObject.SetActive(true);
+            form.Begin();
             form.OnFinished += StartMainMenuFromReg;
         }
         void StartMainMenuFromReg()
         {
             form.OnFinished -= StartMainMenuFromReg;
             ShowMainMenu();
-            GameManager.Instance.HelpText.DelayThenShow(2, splashHelp);
         }
 
         [SerializeField] UI.Leaderboard leaderboardPrefab;
@@ -138,6 +137,7 @@ namespace EcoBuilder.UI
 
             GetComponent<Animator>().SetTrigger("Reveal");
             StartCoroutine(WaitThenShowLogo(.7f));
+            GameManager.Instance.HelpText.Message = splashHelp;
         }
         bool IsLearningFinished()
         {
@@ -166,7 +166,7 @@ namespace EcoBuilder.UI
         }
         public void DeleteAccount()
         {
-            GameManager.Instance.DeleteAccountRemote((b,s)=> print(s));
+            GameManager.Instance.DeleteAccountRemote((b,s)=> print("TODO: show error if could not delete"));
         }
         public void CreateAccount()
         {

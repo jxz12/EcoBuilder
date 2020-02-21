@@ -208,7 +208,7 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "__address__", serverURL+"delete.php" },
             };
-            pat.Post(data, OnCompletion);
+            pat.Post(data, (b,s)=>{ OnCompletion(b,s); if (b) LogOut(); } );
         }
 
         //////////////////////////////////////////////

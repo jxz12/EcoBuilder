@@ -7,18 +7,26 @@ namespace EcoBuilder.UI
     {
         [SerializeField] Image health, healthBG;
         [SerializeField] TMPro.TextMeshProUGUI sizeText, greedText;
+        [SerializeField] Canvas canvas;
 
-        Transform toFollow;
+        RectTransform rt;
+        void Awake()
+        {
+            rt = GetComponent<RectTransform>();
+            canvas.worldCamera = Camera.main;
+        }
+
         public void FollowSpecies(Transform target, int size, int greed)
         {
-            toFollow = target;
-            rt.position = Camera.main.WorldToScreenPoint(target.position);
-
             SetSize(size);
             SetGreed(greed);
             ShowTraits(true);
             ShowHealth(false);
-            print("TODO: grow");
+
+            rt.SetParent(target);
+            rt.localScale = new Vector3(.01f, .01f, .01f);
+            rt.localPosition = new Vector3(0, 0, -.5f);
+            rt.localRotation = Quaternion.identity;
         }
         public void ShowTraits(bool visible)
         {
@@ -43,18 +51,13 @@ namespace EcoBuilder.UI
         {
             greedText.text = greed.ToString();
         }
-        RectTransform rt;
-        void Awake()
-        {
-            rt = GetComponent<RectTransform>();
-        }
         void Update()
         {
-            if (toFollow == null) {
-                Destroy(gameObject);
-            } else {
-                rt.position = Camera.main.WorldToScreenPoint(toFollow.position);
-            }
+            // if (toFollow == null) {
+            //     Destroy(gameObject);
+            // } else {
+            //     rt.position = Camera.main.WorldToScreenPoint(toFollow.position);
+            // }
         }
     }
 }

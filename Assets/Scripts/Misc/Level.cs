@@ -126,6 +126,7 @@ namespace EcoBuilder
         [SerializeField] Button finishFlag;
         [SerializeField] RectTransform nextLevelParent;
 
+        [SerializeField] Canvas canvas;
         [SerializeField] UI.Effect fireworksPrefab, confettiPrefab;
         [SerializeField] Tutorials.Tutorial tutorialPrefab;
 
@@ -261,19 +262,14 @@ namespace EcoBuilder
 
 
         // a hack to keep the card on top of the other thumbnails
-        Canvas onTop;
-        GraphicRaycaster raycaster;
         public void RenderOnTop(int sortOrder)
         {
-            onTop = gameObject.AddComponent<Canvas>();
-            onTop.overrideSorting = true;
-            onTop.sortingOrder = sortOrder;
-            raycaster = gameObject.AddComponent<GraphicRaycaster>();
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = sortOrder;
         }
         public void RenderBelow()
         {
-            Destroy(raycaster);
-            Destroy(onTop);
+            canvas.overrideSorting = false;
         }
 
         ///////////////////////

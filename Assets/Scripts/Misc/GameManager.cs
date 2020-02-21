@@ -139,7 +139,9 @@ namespace EcoBuilder
                 }
             }
             OnLoadingProgressed?.Invoke(.5f);
-            yield return new WaitForSeconds(2);
+#if UNITY_EDITOR
+            yield return new WaitForSeconds(1);
+#endif
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);

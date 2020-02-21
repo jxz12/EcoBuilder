@@ -27,8 +27,10 @@ namespace EcoBuilder.NodeLink
         [SerializeField] Link linkPrefab;
         [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
 
+        Camera mainCam;
         void Start()
         {
+            mainCam = Camera.main;
             xRotation = xDefaultRotation = graphParent.localRotation.eulerAngles.x;
         }
         void Update()
@@ -159,10 +161,9 @@ namespace EcoBuilder.NodeLink
         public void RemoveNode(int idx)
         {
             Assert.IsNotNull(nodes[idx], $"node {idx} not added yet");
-            Assert.IsFalse(focusedNode == nodes[idx], $"cannot remove focused node");
-            // if (focusedNode != null && focusedNode.Idx == idx) {
-            //     ForceFullUnfocus();
-            // }
+            if (focusedNode != null && focusedNode.Idx == idx) {
+                ForceUnfocus();
+            }
 
             // move to graveyard to save for later
             nodes[idx].Hide(true);
@@ -380,7 +381,7 @@ namespace EcoBuilder.NodeLink
 
         public void TooltipNode(int idx, string msg)
         {
-            tooltip.transform.position = Camera.main.WorldToScreenPoint(nodes[idx].transform.position);
+            tooltip.transform.position = mainCam.WorldToScreenPoint(nodes[idx].transform.position);
             tooltip.ShowText(msg);
             tooltip.Enable();
             tweenNodes = dragging = false;

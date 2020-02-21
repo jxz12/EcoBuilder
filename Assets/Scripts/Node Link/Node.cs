@@ -6,19 +6,21 @@ namespace EcoBuilder.NodeLink
 {
     public class Node : MonoBehaviour
     {
-        public int Idx { get; private set; }
+        public int Idx;
         public Color Col {
             get { return shapeRenderer!=null? shapeRenderer.material.color : Color.black; }
         }
+        
+        // these are not get/set for performance
         public enum PositionState { Stress, Focus }
-        public PositionState State { get; set; } = PositionState.Stress;
-        public Vector2 StressPos { get; set; }
-        public Vector3 FocusPos { get; set; }
+        public PositionState State = PositionState.Stress;
+        public Vector2 StressPos;
+        public Vector3 FocusPos;
 
         [SerializeField] float defaultSize = .5f;
-        public bool CanBeSource { get; set; } = true;
-        public bool CanBeTarget { get; set; } = true;
-        public bool Interactable { get; set; } = true;
+        public bool CanBeSource = true;
+        public bool CanBeTarget = true;
+        public bool Interactable = true;
 
         GameObject shape;
         public GameObject Shape { get { return shape; } }

@@ -32,18 +32,22 @@ namespace EcoBuilder
             inspector.OnConflicted += (i,m)=> nodelink.TooltipNode(i, m);
             inspector.OnUnconflicted += (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted += (i)=> nodelink.UntooltipNode(i);
+            inspector.OnIncubated +=     ()=> nodelink.ForceUnfocus();
             inspector.OnIncubated +=     ()=> nodelink.MoveHorizontal(-.5f);
+            inspector.OnUnincubated +=   ()=> nodelink.MoveHorizontal(0);
 
+            nodelink.OnEmptyTapped += ()=> inspector.CancelIncubation();
+            nodelink.OnEmptyTapped += ()=> inspector.HideStatusBars();
+
+            ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things
+            // smelly because the second callback does something that should already be done
             inspector.OnUserSpawned += (i)=> nodelink.ForceFocus(i);
             nodelink.OnFocused +=      (i)=> inspector.InspectSpecies(i);
 
             inspector.OnUserDespawned += (i)=> nodelink.ForceUnfocus();
-            inspector.OnIncubated +=      ()=> nodelink.ForceUnfocus();
             nodelink.OnUnfocused +=      (i)=> inspector.Uninspect();
-
-            nodelink.OnEmptyTapped +=  ()=> inspector.CancelIncubation();
-            inspector.OnUnincubated += ()=> nodelink.MoveHorizontal(0);
+            ////////////////////////////
 
             // constraints
             nodelink.OnLayedOut += ()=> constraints.UpdateDisjoint(nodelink.NumComponents > 1);
@@ -74,9 +78,9 @@ namespace EcoBuilder
             nodelink.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
 
-            recorder.OnSpeciesUndone +=     (i)=> nodelink.ForceFocus(i);
-            recorder.OnSpeciesMemoryLeak += (i)=> nodelink.RemoveNodeCompletely(i);
-            recorder.OnSpeciesMemoryLeak += (i)=> inspector.DespawnCompletely(i);
+            recorder.OnSpeciesTraitsChanged += (i)=> nodelink.ForceFocus(i);
+            recorder.OnSpeciesMemoryLeak +=    (i)=> nodelink.RemoveNodeCompletely(i);
+            recorder.OnSpeciesMemoryLeak +=    (i)=> inspector.DespawnCompletely(i);
 
             // these are necessary to give the model adjacency info
             model.AttachAdjacency(nodelink.GetActiveTargets);

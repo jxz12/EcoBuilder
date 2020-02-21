@@ -13,10 +13,11 @@ namespace EcoBuilder.Tutorials
             inspector.HideIncubatorButtons();
             inspector.HideRemoveButton();
             score.Hide();
+            recorder.gameObject.SetActive(false); 
             constraints.Show(false);
             score.DisableStarCalculation(true);
             targetSize = new Vector2(100,100);
-            targetZRot = 45;
+            targetZRot = 45;  
 
             var nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
             animal = nodes[1];
@@ -67,7 +68,7 @@ namespace EcoBuilder.Tutorials
             nodelink.ForceUnfocus();
 
             nodelink.SetIfNodeInteractable(animal.Idx, true);
-            nodelink.SetIfNodeInteractable(plant.Idx, true);
+            nodelink.SetIfNodeInteractable(plant.Idx, false);
 
             smoothTime = .3f;
             targetSize = Vector2.zero;
@@ -98,7 +99,10 @@ namespace EcoBuilder.Tutorials
             targetSize = new Vector2(0,0);
             smoothTime = .2f;
 
-            // inspector.Uninspect();
+            recorder.gameObject.SetActive(true); 
+
+            nodelink.SetIfNodeInteractable(plant.Idx, true);
+
             nodelink.ForceUnfocus();
             help.SetSide(false,false);
             help.SetAnchorHeight(.85f);
@@ -121,7 +125,7 @@ namespace EcoBuilder.Tutorials
             Point();
             while (true)
             {
-                targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                targetPos = ScreenPos(mainCam.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
                 yield return null;
             }
         }

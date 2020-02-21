@@ -136,7 +136,7 @@ namespace EcoBuilder.UI
         {
             StopAllCoroutines();
             Showing = false;
-            StartCoroutine(DelayThenShowRoutine(delay, delayedMessage));
+            StartCoroutine(DelayThenShowRoutine(delay, delayedMessage!=null? delayedMessage : Message));
         }
         IEnumerator DelayThenShowRoutine(float delay, string delayedMessage)
         {

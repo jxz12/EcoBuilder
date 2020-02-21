@@ -3,7 +3,6 @@ using UnityEngine.Assertions;
 using UnityEditor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 // for heavy calculations
 using System.Threading.Tasks;
@@ -58,15 +57,15 @@ namespace EcoBuilder.Model
         {
             // you may be asking: why have another class for this?
             // so that some values can be cached instead of calculated every time.
-            public int Idx { get; private set; }
-            public bool IsProducer { get; set; } = false;
-            public double BodySize { get; set; } = double.NaN;
-            public double Interference { get; set; } = double.NaN;
+            public int Idx;
+            public bool IsProducer = false;
+            public double BodySize = double.NaN;
+            public double Interference = double.NaN;
 
-            public double Metabolism { get; set; } = double.NaN;
-            public double Efficiency { get; set; } = double.NaN;
+            public double Metabolism = double.NaN;
+            public double Efficiency = double.NaN;
 
-            public bool Endangered { get; set; }
+            public bool Endangered;
 
             public Species(int idx)
             {

@@ -182,7 +182,7 @@ namespace EcoBuilder.Tutorials
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."; }));
 
-            AttachSmellyListener<int>(recorder, "OnSpeciesUndone", (i)=>ExplainFinishCondition(1.5f));
+            AttachSmellyListener(recorder, "OnUndoOrRedo", ()=>ExplainFinishCondition(1.5f));
         }
         void ExplainFinishCondition(float delay)
         {
@@ -243,19 +243,19 @@ namespace EcoBuilder.Tutorials
         IEnumerator Shuffle(Transform grab, Transform drop, float time)
         {
             float start = Time.time;
-            transform.position = ScreenPos(Camera.main.WorldToViewportPoint(grab.position));
+            transform.position = ScreenPos(mainCam.WorldToViewportPoint(grab.position));
 
             float prevSmoothTime = smoothTime;
             while (true)
             {
                 if (((Time.time - start) % time) < (time/2f))
                 {
-                    targetPos = ScreenPos(Camera.main.WorldToViewportPoint(grab.position)) + new Vector2(0,-20);
+                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(grab.position)) + new Vector2(0,-20);
                     Grab();
                 }
                 else
                 {
-                    targetPos = ScreenPos(Camera.main.WorldToViewportPoint(drop.position)) + new Vector2(0,-20);
+                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(drop.position)) + new Vector2(0,-20);
                     Pan();
                 }
                 yield return null;
@@ -266,7 +266,7 @@ namespace EcoBuilder.Tutorials
             Point();
             while (true)
             {
-                targetPos = ScreenPos(Camera.main.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                targetPos = ScreenPos(mainCam.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
                 yield return null;
             }
         }
