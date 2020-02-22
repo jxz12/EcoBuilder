@@ -30,7 +30,7 @@ PrefabInstance:
     - target: {fileID: 3298662015735737884, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_Name
-      value: Learning 9
+      value: Learning Loop
       objectReference: {fileID: 0}
     - target: {fileID: 3298662015735737885, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -128,6 +128,12 @@ PrefabInstance:
       propertyPath: superfocusAllowed
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: tutorialPrefab
+      value: 
+      objectReference: {fileID: 8830097565081490270, guid: 14f63235c8ca6554bae47d441e062acd,
+        type: 3}
     - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount

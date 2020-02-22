@@ -218,7 +218,7 @@ namespace EcoBuilder
                     plants.Add(info.Item3);
                     sizes.Add(info.Item4);
                     greeds.Add(info.Item5);
-                    editables.Add(true);
+                    editables.Add(false);
 
                     squishedIdxs[idx] = counter++;
                 }
@@ -237,8 +237,7 @@ namespace EcoBuilder
                         numInteractions += 1;
                     }
                 }
-                var details = new LevelDetails(randomSeeds, plants, sizes, greeds, editables, sources, targets);
-                Level.SaveAsNewPrefab(details, DateTime.Now.Ticks.ToString());
+                Level.SaveAsNewPrefab(randomSeeds, plants, sizes, greeds, editables, sources, targets, DateTime.Now.Ticks.ToString());
             }
         }
 #endif

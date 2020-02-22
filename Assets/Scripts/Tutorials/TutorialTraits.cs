@@ -108,7 +108,7 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.85f);
 
             print("TODO: fix the report card");
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species and their populations, shown by the health bars next to each species. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of interactions, and their health. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
         }
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {

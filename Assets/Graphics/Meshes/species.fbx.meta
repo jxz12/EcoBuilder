@@ -306,7 +306,7 @@ ModelImporter:
   meshes:
     lODScreenPercentages: []
     globalScale: 0.5
-    meshCompression: 2
+    meshCompression: 3
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
@@ -386,12 +386,12 @@ ModelImporter:
       scale: {x: 100, y: 100, z: 100}
     - name: Lower
       parentName: Armature
-      position: {x: 4.371139e-12, y: 8.146033e-12, z: -0.00005}
+      position: {x: 4.371139e-10, y: 8.1460333e-10, z: -0.005}
       rotation: {x: 0.7071069, y: -0.000000030908613, z: 0.000000030908627, w: 0.7071067}
       scale: {x: 1, y: 1, z: 1}
     - name: Upper
       parentName: Lower
-      position: {x: -3.8536e-27, y: 0.00005, z: 0}
+      position: {x: -3.8536e-25, y: 0.005, z: 0}
       rotation: {x: -0, y: -2.1175824e-22, z: -6.7167066e-22, w: 1}
       scale: {x: 1, y: 1, z: 1}
     armTwist: 0.5
@@ -401,7 +401,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.005
+    globalScale: 0.5
     rootMotionBoneName: Lower
     hasTranslationDoF: 0
     hasExtraRoot: 1

@@ -86,7 +86,7 @@ namespace EcoBuilder
         public int TargetScore1 { get { return targetScore1; } }
         public int TargetScore2 { get { return targetScore2; } }
 
-        public LevelDetails(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets)
+        public void SetEcosystem(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets)
         {
             numInitSpecies = plants.Count;
             this.randomSeeds = randomSeeds;
@@ -105,6 +105,7 @@ namespace EcoBuilder
         public LevelDetails Details { get { return details; } }
         [SerializeField] Level nextLevelPrefab;
         public Level NextLevelPrefab { get { return nextLevelPrefab; } }
+        [SerializeField] Tutorials.Tutorial tutorialPrefab;
 
         public event Action OnThumbnailed, OnCarded;
 
@@ -128,7 +129,6 @@ namespace EcoBuilder
 
         [SerializeField] Canvas canvas;
         [SerializeField] UI.Effect fireworksPrefab, confettiPrefab;
-        [SerializeField] Tutorials.Tutorial tutorialPrefab;
 
         void Awake()
         {
@@ -349,16 +349,18 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level.prefab");
+                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Heavy 1.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
-        public static bool SaveAsNewPrefab(LevelDetails newDetails, string name)
+        public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets, string name)
         {
             var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(DefaultPrefab);
-            newPrefab.details = newDetails;
+            newPrefab.details.SetEcosystem(seeds, plants, sizes, greeds, editables, sources, targets);
 
             bool success;
             UnityEditor.PrefabUtility.SaveAsPrefabAsset(newPrefab.gameObject, $"Assets/Prefabs/Levels/{name}.prefab", out success);
+            Destroy(newPrefab.gameObject);
             return success;
         }
 #endif

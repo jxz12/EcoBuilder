@@ -15,6 +15,7 @@ remove animators from all UI if poss
 max instead of min producers or consumers
 make score constraint shiny
 
+the more complicated heavy
 
 # Menu
 make icons for reversing drag direction
@@ -48,3 +49,6 @@ The species with the... is...
 1 hour Thursday,           week 10th Feb
 
 Phone Simulator
+
+This level is the same as the last, but this time you are only allowed one plant.
+This level gives you a species of weight 8 again, but this time you are only allowed one plant.This level is the same as the last, except that this time you cannot add an extra plant to make the heavy speces survive. See if you can still save it!

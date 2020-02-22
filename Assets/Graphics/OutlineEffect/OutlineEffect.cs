@@ -72,7 +72,7 @@ namespace cakeslice
 
         [Header("These settings can affect performance!")]
         public bool cornerOutlines = false;
-        public bool addLinesBetweenColors = false;
+        // public bool addLinesBetweenColors = false;
 
         [Header("Advanced settings")]
         public bool scaleWithScreenSize = true;
@@ -285,11 +285,11 @@ namespace cakeslice
         {
             outlineShaderMaterial.SetTexture("_OutlineSource", renderTexture);
 
-            if (addLinesBetweenColors)
-            {
-                Graphics.Blit(source, extraRenderTexture, outlineShaderMaterial, 0);
-                outlineShaderMaterial.SetTexture("_OutlineSource", extraRenderTexture);
-            }
+            // if (addLinesBetweenColors)
+            // {
+            //     Graphics.Blit(source, extraRenderTexture, outlineShaderMaterial, 0);
+            //     outlineShaderMaterial.SetTexture("_OutlineSource", extraRenderTexture);
+            // }
             Graphics.Blit(source, destination, outlineShaderMaterial, 1);
         }
 

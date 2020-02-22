@@ -158,9 +158,9 @@ namespace EcoBuilder.NodeLink
                 sgdSquished[i] = sgdUnsquished.Count;
                 sgdUnsquished.Add(i);
                 // if (!ConstrainTrophic) {
-                    sgdPos.Add(new Vector2(sgdSquished[i], (float)rand.NextDouble()));
+                    sgdPos.Add(new Vector2(i, (float)rand.NextDouble()));
                 // } else {
-                //     sgdPos.Add(new Vector2(sgdSquished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
+                //     sgdPos.Add(new Vector2(i, nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
                 //     // still add a little jitter to prevent NaN
                 // }
                 // sgdPos.Add(nodes[i].StressPos);
@@ -222,9 +222,9 @@ namespace EcoBuilder.NodeLink
             sgdTargets.TrimExcess();
 
             // perform optimisation
-            FYShuffle(sgdTerms, rand);
             foreach (float eta in SGDSchedule(d_max, t_init, t_max, eps))
             {
+                FYShuffle(sgdTerms, rand);
                 foreach (var term in sgdTerms)
                 {
                     Vector2 X_ij = sgdPos[term.i] - sgdPos[term.j];

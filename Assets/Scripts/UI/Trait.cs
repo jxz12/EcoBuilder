@@ -14,29 +14,35 @@ namespace EcoBuilder.UI
         public event Action<int, int> OnUserSlid;
         public event Action<int> OnConflicted;
         public event Action<int> OnUnconflicted;
+
+        private Slider slider;
+        Sprite defaultFillSprite;
+        [SerializeField] Sprite blueFillSprite;
+        [SerializeField] Image fill;
         public bool Interactable {
             set { 
                 slider.interactable = value;
-                slider.targetGraphic.color = value? Color.white : Color.blue;
-            }
-        }
-
-        int currentValue;
-        private Slider slider;
-        public int UnnormalisedValue {
-            get {
-                return (int)(slider.value);
+                // slider.targetGraphic.color = value? Color.white : Color.blue;
+                slider.targetGraphic.enabled = value;
+                fill.sprite = value? defaultFillSprite : blueFillSprite;
             }
         }
         void Awake()
         {
             slider = GetComponent<Slider>();
-
             Assert.IsNotNull(slider, "slider is null");
             Assert.IsTrue(slider.wholeNumbers, "not whole numbers, but this is smelly");
 
+            defaultFillSprite = fill.sprite;
             slider.onValueChanged.AddListener(x=> UserChangeValue());
             currentValue = UnnormalisedValue;
+        }
+
+        int currentValue;
+        public int UnnormalisedValue {
+            get {
+                return (int)(slider.value);
+            }
         }
         public float NormaliseValue(int unnormalised)
         {

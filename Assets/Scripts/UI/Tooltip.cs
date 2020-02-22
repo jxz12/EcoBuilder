@@ -14,6 +14,7 @@ namespace EcoBuilder.UI
         [SerializeField] float sizeSmoothTime;
         float size=0, sizocity=0;
 
+
         void Update()
         {
             if (visible) {
@@ -21,7 +22,7 @@ namespace EcoBuilder.UI
             } else {
                 size = Mathf.SmoothDamp(size, 0, ref sizocity, sizeSmoothTime);
             }
-            transform.localScale = new Vector3(size, size, size);
+            transform.localScale = new Vector2(size, size);
         }
         public void SetPos(Vector2 screenPos)
         {
