@@ -32,7 +32,7 @@ namespace EcoBuilder.UI
         {
             sizeText.enabled = visible;
             greedText.enabled = false;
-            print("TODO: greed");
+            // print("TODO: greed");
         }
         public void ShowHealth(bool visible)
         {

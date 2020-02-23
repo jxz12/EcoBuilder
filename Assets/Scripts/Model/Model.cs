@@ -248,9 +248,7 @@ namespace EcoBuilder.Model
             Species s = idxToSpecies[idx];
             double realAbund = simulation.GetSolvedAbundance(s);
 
-            print($"{idx} {s.Endangered} {realAbund}");
-
-            // always throw event on first time
+            // null used to always throw event on first time
             if (realAbund <= 0 && (!s.Endangered ?? true)) {
                 OnEndangered.Invoke(idx);
             }
