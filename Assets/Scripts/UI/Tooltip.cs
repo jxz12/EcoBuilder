@@ -14,7 +14,6 @@ namespace EcoBuilder.UI
         [SerializeField] float sizeSmoothTime;
         float size=0, sizocity=0;
 
-
         void Update()
         {
             if (visible) {
@@ -22,7 +21,10 @@ namespace EcoBuilder.UI
             } else {
                 size = Mathf.SmoothDamp(size, 0, ref sizocity, sizeSmoothTime);
             }
-            transform.localScale = new Vector2(size, size);
+            if (size < 1e-10f) {
+                size = 0; // prevents invalid AABB error
+            }
+            transform.localScale = new Vector3(size, size, 1);
         }
         public void SetPos(Vector2 screenPos)
         {
@@ -31,11 +33,11 @@ namespace EcoBuilder.UI
         bool visible = false;
         public void Enable()
         {
-            if (!visible)
-            {
+            // if (!visible)
+            // {
                 visible = true;
-                transform.localScale = Vector3.zero;
-            }
+                // transform.localScale = Vector3.zero;
+            // }
         }
         public void Disable()
         {

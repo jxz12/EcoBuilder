@@ -157,12 +157,12 @@ namespace EcoBuilder.NodeLink
             {
                 sgdSquished[i] = sgdUnsquished.Count;
                 sgdUnsquished.Add(i);
-                // if (!ConstrainTrophic) {
+                if (!ConstrainTrophic) {
                     sgdPos.Add(new Vector2(i, (float)rand.NextDouble()));
-                // } else {
-                //     sgdPos.Add(new Vector2(i, nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
-                //     // still add a little jitter to prevent NaN
-                // }
+                } else {
+                    // still add a little jitter to prevent NaN
+                    sgdPos.Add(new Vector2(i, nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
+                }
                 // sgdPos.Add(nodes[i].StressPos);
             }
             sgdSources.Clear();
@@ -247,7 +247,7 @@ namespace EcoBuilder.NodeLink
                 if (ConstrainTrophic) {
                     for (int i=0; i<sgdPos.Count; i++) {
                         // sgdPos[i] = new Vector2(sgdPos[i].x, nodes[sgdUnsquished[i]].StressPos.y);
-                        sgdPos[i] = new Vector2(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, nodes[sgdUnsquished[i]].StressPos.y, .2f));
+                        sgdPos[i] = new Vector2(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, nodes[sgdUnsquished[i]].StressPos.y, .5f));
                     }
                 }
             }

@@ -6,31 +6,32 @@ hide health and traits if empty tap
 score explanation and show highest on tap
 
 
-make something else flash for extinct instead?
 make status bars pretty and hide and on finish
-make results looks pretty
+make results looks pretty and fix confetti
 are you sure button
 remove animators from all UI if poss
 
 max instead of min producers or consumers
 make score constraint shiny
 
-the more complicated heavy
-
 # Menu
 make icons for reversing drag direction
 
-# Learning world
+# TESTS
+add nodes and links and make sure adjacency is correct
+also make sure undoing and redoing keeps this correct
+to test layout, add nodes and links and make sure stress is lower than a certain amount
+double check the score for certiain combinations too
+automated random graphs to test for no NaN
 
 # Research world
-fix superfocus
+fix superfocus small nodes
 make leaderboards more explorable
 finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other
-double check the teams visualisations
-fix confetti
+double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
 more fidelity in link balls
 release game with australian fires as angle?
 

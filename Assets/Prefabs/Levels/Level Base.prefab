@@ -1597,7 +1597,7 @@ GameObject:
   - component: {fileID: 4551156237783506342}
   - component: {fileID: 8998872397350653752}
   m_Layer: 5
-  m_Name: Level
+  m_Name: Level Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1680,11 +1680,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   details:
     idx: 0
-    title: Title TODO
-    description: Description TODO
-    introduction: Intro TODO
-    completedMessage: Completion TODO
-    threeStarsMessage: Congratulation TODO
+    title: TODO
+    description: TODO
+    introduction: TODO
+    completedMessage: TODO
+    threeStarsMessage: TODO
     numProducers: 0
     numConsumers: 0
     minEdges: 0
@@ -1709,6 +1709,7 @@ MonoBehaviour:
     targetScore1: 0
     targetScore2: 0
   nextLevelPrefab: {fileID: 0}
+  tutorialPrefab: {fileID: 0}
   starsImage: {fileID: 3298662015200627692}
   starSprites:
   - {fileID: 21300000, guid: a4a5ee8f85028754cae13ef78bf29dea, type: 3}
@@ -1730,7 +1731,6 @@ MonoBehaviour:
     type: 3}
   confettiPrefab: {fileID: 2354476291600607311, guid: b9e80853802ac784aa11b54c39acefdf,
     type: 3}
-  tutorialPrefab: {fileID: 0}
 --- !u!95 &8998872397350653752
 Animator:
   serializedVersion: 3

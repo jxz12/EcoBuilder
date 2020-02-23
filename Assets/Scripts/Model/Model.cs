@@ -65,7 +65,7 @@ namespace EcoBuilder.Model
             public double Metabolism = double.NaN;
             public double Efficiency = double.NaN;
 
-            public bool Endangered;
+            public bool? Endangered = null;
 
             public Species(int idx)
             {
@@ -142,10 +142,6 @@ namespace EcoBuilder.Model
 
             newSpecies.IsProducer = isProducer;
             newSpecies.Efficiency = isProducer? e_p : e_c;
-
-            // THIS IS SO THAT EFFECTS TRIGGER CORRECTLY ON ADD
-            newSpecies.Endangered = isProducer;
-
 
             idxToSpecies.Add(idx, newSpecies);
             speciesToIdx.Add(newSpecies, idx);
@@ -252,10 +248,13 @@ namespace EcoBuilder.Model
             Species s = idxToSpecies[idx];
             double realAbund = simulation.GetSolvedAbundance(s);
 
-            if (!s.Endangered && realAbund <= 0) {
+            print($"{idx} {s.Endangered} {realAbund}");
+
+            // always throw event on first time
+            if (realAbund <= 0 && (!s.Endangered ?? true)) {
                 OnEndangered.Invoke(idx);
             }
-            if (s.Endangered && realAbund > 0) {
+            if (realAbund > 0 && (s.Endangered ?? true)) {
                 OnRescued.Invoke(idx);
             }
             s.Endangered = realAbund <= 0;
