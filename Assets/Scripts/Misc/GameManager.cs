@@ -61,6 +61,7 @@ namespace EcoBuilder
         ////////////////////////////////////////////////
 
         private Level playedLevel;
+        public event Action OnPlayedLevelFinished; // listened by playmanager
         public LevelDetails PlayedLevelDetails {
             get {
 #if UNITY_EDITOR
@@ -68,6 +69,8 @@ namespace EcoBuilder
                 if (playedLevel == null)
                 {
                     playedLevel = Instantiate(Level.DefaultPrefab);
+                    playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
+
                     playedLevel.Unlock();
                 }
 #endif
@@ -83,7 +86,7 @@ namespace EcoBuilder
                 {
                     Destroy(playedLevel.gameObject);
                     playedLevel = toPlay;
-                    playedLevel.OnFinished += OnPlayedLevelFinished;
+                    playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
                 } else {
                     // replay level so no need to destroy
                 }
@@ -93,11 +96,10 @@ namespace EcoBuilder
             {
                 // play from menu
                 playedLevel = toPlay;
-                playedLevel.OnFinished += OnPlayedLevelFinished;
+                playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
         }
-        public event Action OnPlayedLevelFinished; // listened by playmanager
 
         public void BeginPlayedLevel() // called by playmanager
         {
@@ -117,10 +119,10 @@ namespace EcoBuilder
         public event Action<string> OnSceneLoaded;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
+            loadingBar.Show(true);
 #if UNITY_EDITOR
             yield return new WaitForSeconds(1);
 #endif
-            loadingBar.Show(true);
             if (toUnload != null)
             {
                 var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
@@ -142,6 +144,8 @@ namespace EcoBuilder
             }
             loadingBar.Show(true);
             OnSceneLoaded?.Invoke(toLoad);
+
+            report.HideIfShowing(); // smelly that this is here
         }
 
 
@@ -187,7 +191,9 @@ namespace EcoBuilder
         public UI.Help HelpText { get { return helpText; } }
 
         [SerializeField] UI.ReportCard report;
-        public void ShowResultsScreen(int nStars, int score, string matrix, string actions)
+
+        // called by playmanager
+        public void SetResultsScreen(int nStars, int score, string matrix, string actions)
         {
             int idx = playedLevel.Details.Idx;
 
@@ -197,15 +203,23 @@ namespace EcoBuilder
             if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None)
             {
                 int worldAvg = GetLeaderboardMedian(idx);
-                report.ShowResults(nStars, score, prevScore, worldAvg);
+                report.SetResults(nStars, score, prevScore, worldAvg);
             }
 
             if (LoggedIn) {
                 SavePlaythroughRemote(idx, score, matrix, actions);
             }
 
-            var nextLevel = Instantiate(playedLevel.NextLevelPrefab);
-            nextLevel.transform.SetParent(report.NextLevelAnchor);
+            if (playedLevel.NextLevelPrefab != null) {
+                report.GiveNavigation(playedLevel, Instantiate(playedLevel.NextLevelPrefab));
+            } else {
+                report.GiveNavigation(playedLevel, null);
+            }
+        }
+        // called by level
+        public void ShowResultsScreen()
+        {
+            report.ShowResults();
         }
     }
 }

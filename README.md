@@ -1,6 +1,8 @@
 dad
 claim moneys
 
+make report card quit disable its button
+
 one level with num edges constraints
 one level with a heavy species and chain
 one level with a heavy species and loop

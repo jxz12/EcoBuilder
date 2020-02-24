@@ -30,7 +30,7 @@ namespace EcoBuilder.UI
             rootCanvas = GetComponent<Canvas>();
             Assert.IsNotNull(rootCanvas);
             Assert.IsTrue(rootCanvas.isRootCanvas);
-            Assert.IsTrue(rootCanvas.renderMode == RenderMode.ScreenSpaceCamera);
+            // Assert.IsTrue(rootCanvas.renderMode == RenderMode.ScreenSpaceCamera);
 
             rootCanvas.worldCamera = mainCam; // smellly
             rootCanvas.planeDistance = planeDistance;

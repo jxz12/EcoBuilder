@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -6,10 +7,12 @@ namespace EcoBuilder.UI
 {
     public class ReportCard : MonoBehaviour
     {
-        [SerializeField] TMPro.TextMeshProUGUI current, highest, median;
-        [SerializeField] GameObject starPrefab;
-        [SerializeField] Image shade;
+        [SerializeField] TMPro.TextMeshProUGUI title, current, currentMsg, average, averageMsg;
+        [SerializeField] Image points, globe, shade;
         [SerializeField] Animator star1, star2, star3;
+        [SerializeField] Button quitBtn;
+
+        [SerializeField] RectTransform prevLevelAnchor, nextLevelAnchor;
 
         RectTransform rt;
         Canvas canvas;
@@ -17,22 +20,82 @@ namespace EcoBuilder.UI
         {
             rt = GetComponent<RectTransform>();
             canvas = GetComponent<Canvas>();
+
+            quitBtn.onClick.AddListener(Quit);
         }
 
-        public void ShowResults(int numStars, int score, int prevScore, int globalMedian)
+        Level prevLvl, nextLvl;
+        public void GiveNavigation(Level prevLvl, Level nextLvl)
         {
-            current.text = score.ToString();
-            if (score > prevScore) {
-                print("TODO: congratulations!");
+            prevLvl.transform.SetParent(prevLevelAnchor, false);
+            if (nextLvl != null) {
+                nextLvl.transform.SetParent(nextLevelAnchor, false);
+                print("TODO: credits?");
             }
-            highest.text = prevScore.ToString();
-            median.text = globalMedian.ToString();
-            print("TODO: check if median is valid");
-
-            StartCoroutine(ShowRoutine(1.5f));
-            StartCoroutine(StarRoutine(2, .5f, .5f, numStars));
+            this.prevLvl = prevLvl;
+            this.nextLvl = nextLvl;
         }
-        IEnumerator ShowRoutine(float duration)
+        void Quit()
+        {
+            quitBtn.interactable = false;
+            Destroy(prevLvl);
+            if (nextLvl != null) {
+                Destroy(nextLvl);
+            }
+            GameManager.Instance.ReturnToMenu();
+        }
+
+        [SerializeField] Sprite pointSprite, trophySprite;
+        int numStars = -1;
+        public void SetResults(int numStars, int score, int prevScore, int worldAvg)
+        {
+            StopAllCoroutines();
+            current.text = score.ToString();
+            if (score > prevScore)
+            {
+                current.text = score.ToString();
+                currentMsg.text = "You got a new high score!";
+                points.sprite = trophySprite;
+                StartCoroutine(WiggleSprite(points));
+            }
+            else
+            {
+                current.text = "";
+                currentMsg.text = "Well done!";
+                current.text = prevScore.ToString();
+                points.sprite = pointSprite;
+            }
+
+            average.text = average.ToString();
+            print("TODO: check if avg is valid");
+            if (score > worldAvg)
+            {
+                average.text = score.ToString();
+                averageMsg.text = "You beat the world average!";
+                StartCoroutine(WiggleSprite(globe));
+            }
+            else
+            {
+                average.text = "";
+                averageMsg.text = "World average";
+            }
+            this.numStars = numStars;
+        }
+        public void ShowResults()
+        {
+            Assert.IsTrue(numStars != -1);
+            quitBtn.interactable = true;
+
+            StartCoroutine(ShowRoutine(1f, -1000,0, 0,.5f));
+            StartCoroutine(StarRoutine(1, .5f, .5f, numStars));
+        }
+        public void HideIfShowing()
+        {
+            if (canvas.enabled) {
+                StartCoroutine(ShowRoutine(1f, 0, -1000, .5f, 0));
+            }
+        }
+        IEnumerator ShowRoutine(float duration, float y0, float y1, float a0, float a1)
         {
             canvas.enabled = true;
             float startTime = Time.time;
@@ -45,12 +108,17 @@ namespace EcoBuilder.UI
                 } else {
                     t = -1 + (4-2*t)*t;
                 }
-                float y = Mathf.Lerp(-1000, 0, t);
-                float a = Mathf.Lerp(0,.5f, t);
+                float y = Mathf.Lerp(y0, y1, t);
+                float a = Mathf.Lerp(a0, a1, t);
 
                 rt.anchoredPosition = new Vector2(0, y);
                 shade.color = new Color(0,0,0,a);
                 yield return null;
+            }
+            rt.anchoredPosition = new Vector2(0, y1);
+            shade.color = new Color(0,0,0,a1);
+            if (a1 == 0) {
+                canvas.enabled = false;
             }
         }
         IEnumerator StarRoutine(float delay1, float delay2, float delay3, int numStars)
@@ -62,53 +130,126 @@ namespace EcoBuilder.UI
             yield return new WaitForSeconds(delay3);
             star3.SetBool("Filled", numStars >= 3);
         }
-
-        [SerializeField] RectTransform prevLevelAnchor, nextLevelAnchor;
-        public RectTransform PrevLevelAnchor { get { return prevLevelAnchor; } }
-        public RectTransform NextLevelAnchor { get { return nextLevelAnchor; } }
-
-        // public Level NextLevelInstantiated { get; private set; }
-        // public void UnlockNextLevel() // because of silly animator gameobject active stuff
-        // {
-        //     Assert.IsFalse(GameManager.Instance.NavParent.transform.childCount > 0, "more than one level on navigation?");
-
-        //     StartCoroutine(TweenToZeroPosFrom(0, GameManager.Instance.NavParent));
-        //     print("TODO: make navigation pop to below screen then rise");
-        // }
+        IEnumerator WiggleSprite(Image image)
+        {
+            float startTime = Time.time;
+            while (true)
+            {
+                float t = Time.time - startTime;
+                image.transform.localRotation = Quaternion.Euler(0, 0, 10*Mathf.Sin(2*t));
+                yield return true;
+            }
+        }
 
 
 
-        // public void SetMessage(string message)
-        // {
-        //     this.message.text = message;
-        // }
-        // public void Toggle()
-        // {
-        //     bool showing = GetComponent<Animator>().GetBool("Visible");
-        //     if (showing)
-        //     {
-        //         text.text = "";
-        //     }
-        //     else
-        //     {
-        //         text.text = message;
-        //     }
-        //     GetComponent<Animator>().SetBool("Visible", !showing);
-        // }
-        // public void Toggle()
-        // {
-        //     gameObject.SetActive(!gameObject.activeSelf);
-        // }
 
-        // public void Show(string report)
-        // {
-        //     GetComponent<Animator>().SetBool("Visible", true);
-        //     text.text = report;
-        // }
-        // public void Hide()
-        // {
-        //     GetComponent<Animator>().SetBool("Visible", false);
-        //     text.text = "";
-        // }
+        // from TMPro namespace
+        // public AnimationCurve VertexCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.25f, 2.0f), new Keyframe(0.5f, 0), new Keyframe(0.75f, 2.0f), new Keyframe(1, 0f));
+        public AnimationCurve VertexCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.5f, 0), new Keyframe(1, 0f));
+        public float CurveScale = 1.0f;
+
+        void Start()
+        {
+            WarpText();
+        }
+
+        private AnimationCurve CopyAnimationCurve(AnimationCurve curve)
+        {
+            AnimationCurve newCurve = new AnimationCurve();
+            newCurve.keys = curve.keys;
+            return newCurve;
+        }
+
+
+        // from textmeshpro examples
+        void WarpText()
+        {
+            VertexCurve.preWrapMode = WrapMode.Clamp;
+            VertexCurve.postWrapMode = WrapMode.Clamp;
+
+            //Mesh mesh = m_TextComponent.textInfo.meshInfo[0].mesh;
+
+            Vector3[] vertices;
+            Matrix4x4 matrix;
+
+            var m_TextComponent = title;
+            m_TextComponent.havePropertiesChanged = true; // Need to force the TextMeshPro Object to be updated.
+            CurveScale *= 10;
+            float old_CurveScale = CurveScale;
+            AnimationCurve old_curve = CopyAnimationCurve(VertexCurve);
+
+
+            old_CurveScale = CurveScale;
+            old_curve = CopyAnimationCurve(VertexCurve);
+
+            m_TextComponent.ForceMeshUpdate(); // Generate the mesh and populate the textInfo with data we can use and manipulate.
+
+            TMPro.TMP_TextInfo textInfo = m_TextComponent.textInfo;
+            int characterCount = textInfo.characterCount;
+
+            if (characterCount == 0) return;
+
+            //vertices = textInfo.meshInfo[0].vertices;
+            //int lastVertexIndex = textInfo.characterInfo[characterCount - 1].vertexIndex;
+
+            float boundsMinX = m_TextComponent.bounds.min.x;  //textInfo.meshInfo[0].mesh.bounds.min.x;
+            float boundsMaxX = m_TextComponent.bounds.max.x;  //textInfo.meshInfo[0].mesh.bounds.max.x;
+
+
+
+            for (int i = 0; i < characterCount; i++)
+            {
+                if (!textInfo.characterInfo[i].isVisible)
+                    continue;
+
+                int vertexIndex = textInfo.characterInfo[i].vertexIndex;
+
+                // Get the index of the mesh used by this character.
+                int materialIndex = textInfo.characterInfo[i].materialReferenceIndex;
+
+                vertices = textInfo.meshInfo[materialIndex].vertices;
+
+                // Compute the baseline mid point for each character
+                Vector3 offsetToMidBaseline = new Vector2((vertices[vertexIndex + 0].x + vertices[vertexIndex + 2].x) / 2, textInfo.characterInfo[i].baseLine);
+                //float offsetY = VertexCurve.Evaluate((float)i / characterCount + loopCount / 50f); // Random.Range(-0.25f, 0.25f);
+
+                // Apply offset to adjust our pivot point.
+                vertices[vertexIndex + 0] += -offsetToMidBaseline;
+                vertices[vertexIndex + 1] += -offsetToMidBaseline;
+                vertices[vertexIndex + 2] += -offsetToMidBaseline;
+                vertices[vertexIndex + 3] += -offsetToMidBaseline;
+
+                // Compute the angle of rotation for each character based on the animation curve
+                float x0 = (offsetToMidBaseline.x - boundsMinX) / (boundsMaxX - boundsMinX); // Character's position relative to the bounds of the mesh.
+                float x1 = x0 + 0.0001f;
+                float y0 = VertexCurve.Evaluate(x0) * CurveScale;
+                float y1 = VertexCurve.Evaluate(x1) * CurveScale;
+
+                Vector3 horizontal = new Vector3(1, 0, 0);
+                //Vector3 normal = new Vector3(-(y1 - y0), (x1 * (boundsMaxX - boundsMinX) + boundsMinX) - offsetToMidBaseline.x, 0);
+                Vector3 tangent = new Vector3(x1 * (boundsMaxX - boundsMinX) + boundsMinX, y1) - new Vector3(offsetToMidBaseline.x, y0);
+
+                float dot = Mathf.Acos(Vector3.Dot(horizontal, tangent.normalized)) * 57.2957795f;
+                Vector3 cross = Vector3.Cross(horizontal, tangent);
+                float angle = cross.z > 0 ? dot : 360 - dot;
+
+                matrix = Matrix4x4.TRS(new Vector3(0, y0, 0), Quaternion.Euler(0, 0, angle), Vector3.one);
+
+                vertices[vertexIndex + 0] = matrix.MultiplyPoint3x4(vertices[vertexIndex + 0]);
+                vertices[vertexIndex + 1] = matrix.MultiplyPoint3x4(vertices[vertexIndex + 1]);
+                vertices[vertexIndex + 2] = matrix.MultiplyPoint3x4(vertices[vertexIndex + 2]);
+                vertices[vertexIndex + 3] = matrix.MultiplyPoint3x4(vertices[vertexIndex + 3]);
+
+                vertices[vertexIndex + 0] += offsetToMidBaseline;
+                vertices[vertexIndex + 1] += offsetToMidBaseline;
+                vertices[vertexIndex + 2] += offsetToMidBaseline;
+                vertices[vertexIndex + 3] += offsetToMidBaseline;
+            }
+
+
+            // Upload the mesh with the revised information
+            m_TextComponent.UpdateVertexData();
+        }
     }
 }

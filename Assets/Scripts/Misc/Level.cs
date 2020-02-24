@@ -169,7 +169,7 @@ namespace EcoBuilder
         //////////////////////////////
         // animations states
 
-        enum State { Thumbnail=0, Card=1, FinishFlag=2, Navigation=3, Leaving=4 }
+        enum State { Thumbnail=0, Card=1, FinishFlag=2 }
 
         IEnumerator tweenRoutine;
         IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
@@ -239,16 +239,9 @@ namespace EcoBuilder
             Instantiate(fireworksPrefab, transform);
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+
         }
 
-
-        public void FinishLevel() // called on finish flag pressed
-        {
-            Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
-            GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
-
-            OnFinished?.Invoke();
-        }
 
         // a hack to keep the card on top of the other thumbnails
         public void RenderOnTop(int sortOrder)
@@ -282,14 +275,41 @@ namespace EcoBuilder
             thumbnailedParent = GameManager.Instance.PlayAnchor; // detach from possibly the menu
 
             ShowThumbnail(1.5f);
-            StartCoroutine(WaitThenEnableQuitReplay(1.5f));
 
             if (tutorialPrefab != null) {
                 teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutCanvas.transform);
             }
             GameManager.Instance.HelpText.ResetPosition();
             GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
+
+            // necessary because we do not have a separate animator state for playing
+            playButton.interactable = false;
+            yield return new WaitForSeconds(1f);
+
+            playButton.gameObject.SetActive(false);
+            quitButton.gameObject.SetActive(true);
+            replayButton.gameObject.SetActive(true);
         }
+
+        public void FinishLevel() // called on finish flag pressed
+        {
+            Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
+            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+
+            OnFinished?.Invoke();
+            StartCoroutine(EnableQuitReplayThenShowResults());
+        }
+        IEnumerator EnableQuitReplayThenShowResults()
+        {
+            playButton.interactable = true;
+            playButton.gameObject.SetActive(true);
+            quitButton.gameObject.SetActive(false);
+            replayButton.gameObject.SetActive(false);
+            yield return new WaitForSeconds(.5f);
+
+            GameManager.Instance.ShowResultsScreen();
+        }
+
         void OnDestroy()
         {
             if (teacher != null) {
@@ -303,27 +323,6 @@ namespace EcoBuilder
             }
             Play();
         }
-        // necessary because there is no separate 'playing' state
-        // but the card requires different buttons
-        IEnumerator WaitThenEnableQuitReplay(float waitTime)
-        {
-            playButton.interactable = false;
-            yield return new WaitForSeconds(waitTime);
-            EnableQuitReplay();
-        }
-        void EnableQuitReplay() // only public because of stupidness
-        {
-            playButton.gameObject.SetActive(false);
-            quitButton.gameObject.SetActive(true);
-            replayButton.gameObject.SetActive(true);
-        }
-        public void DisableQuitReplay()
-        {
-            playButton.gameObject.SetActive(true);
-            quitButton.gameObject.SetActive(false);
-            replayButton.gameObject.SetActive(false);
-        }
-
         public void Quit()
         {
             GameManager.Instance.ReturnToMenu();
@@ -341,8 +340,8 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Chain.prefab");
-                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
+                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Chain.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
         public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets, string name)

@@ -170,7 +170,7 @@ namespace EcoBuilder
         }
         void OnDestroy()
         {
-            // TODO: null on quit?
+            // TODO: GameManager is null on quit?
             GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
             GameManager.Instance.ReturnPlanet();
         }
@@ -182,7 +182,7 @@ namespace EcoBuilder
             score.Finish();
             constraints.Finish();
 
-            GameManager.Instance.ShowResultsScreen(score.HighestStars, score.HighestScore, model.GetMatrix(), recorder.GetActions());
+            GameManager.Instance.SetResultsScreen(score.HighestStars, score.HighestScore, model.GetMatrix(), recorder.GetActions());
             Destroy(gameObject);
         }
 
