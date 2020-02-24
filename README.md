@@ -1,7 +1,10 @@
 dad
 claim moneys
 
-canvas for each level pls
+one level with num edges constraints
+one level with a heavy species and chain
+one level with a heavy species and loop
+
 hide health and traits if empty tap
 score explanation and show highest on tap
 

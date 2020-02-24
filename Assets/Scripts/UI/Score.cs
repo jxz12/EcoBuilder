@@ -12,7 +12,6 @@ namespace EcoBuilder.UI
         public event Action OnThreeStarsAchieved;
 
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] ReportCard report;
 
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
@@ -137,12 +136,6 @@ namespace EcoBuilder.UI
 
             GetComponent<Animator>().SetBool("Visible", false);
         }
-
-        public void ShowResults(int prevScore, int globalMedian)
-        {
-            report.ShowResults(HighestStars, HighestScore, prevScore, globalMedian);
-        }
-
 
 
 

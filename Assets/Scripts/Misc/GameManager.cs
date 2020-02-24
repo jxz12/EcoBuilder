@@ -106,7 +106,7 @@ namespace EcoBuilder
         public event Action OnPlayedLevelFinished;
         public void FinishLevel(Level toFinish)
         {
-            Assert.IsTrue(playedLevel == toFinish, "not playing level to be initialised");
+            Assert.IsTrue(playedLevel == toFinish, "not playing level to be finished");
             OnPlayedLevelFinished.Invoke();
         }
 
@@ -186,5 +186,11 @@ namespace EcoBuilder
 
         [SerializeField] UI.Help helpText;
         public UI.Help HelpText { get { return helpText; } }
+
+        [SerializeField] UI.ReportCard report;
+        public void ShowResults(int prevScore, int globalMedian)
+        {
+            report.ShowResults(HighestStars, HighestScore, prevScore, globalMedian);
+        }
     }
 }

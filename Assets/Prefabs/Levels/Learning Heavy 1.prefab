@@ -220,7 +220,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.minEdges
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -247,7 +247,7 @@ PrefabInstance:
       propertyPath: details.introduction
       value: In this level the animal is going extinct again! But it has a blue outline,
         which means that you cannot change its size. Try to save it with the resources
-        you have available.
+        you have available, as shown by the panel on the left..
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

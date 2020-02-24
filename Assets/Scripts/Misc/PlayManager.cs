@@ -186,7 +186,7 @@ namespace EcoBuilder
             {
                 int oldScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
                 int worldAvg = GameManager.Instance.GetLeaderboardMedian(details.Idx);
-                score.ShowResults(oldScore, worldAvg);
+                GameManager.Instance.ShowResults(oldScore, worldAvg);
             }
             GameManager.Instance.SaveHighScoreLocal(details.Idx, score.HighestScore);
             if (GameManager.Instance.LoggedIn) {

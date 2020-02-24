@@ -15,8 +15,11 @@ namespace EcoBuilder.NodeLink
 
         private List<int> TallestNodes { get; set; }
         public int MaxChain { get; private set; } = 0;
+        public int NumMaxChain { get; private set; } = 0;
+
         private List<int> LongestLoop { get; set; }
         public int MaxLoop { get { return LongestLoop==null? 0 : LongestLoop.Count; } }
+        public int NumMaxLoop { get; private set; } = 0;
 
 
         //////////////////////////////////////////////////////////////
@@ -108,8 +111,18 @@ namespace EcoBuilder.NodeLink
             LaplacianDetZero = (heights.Count != nodes.Count);
 
             MaxChain = 0;
-            foreach (int height in heights.Values) {
-                MaxChain = Math.Max(height, MaxChain);
+            NumMaxChain = 0;
+            foreach (int height in heights.Values)
+            {
+                if (height == MaxChain)
+                {
+                    NumMaxChain += 1;
+                }
+                else if (height > MaxChain)
+                {
+                    MaxChain = height;
+                    NumMaxChain = 1;
+                }
             }
             TallestNodes = new List<int>();
             foreach (int idx in heights.Keys) {
@@ -225,6 +238,7 @@ namespace EcoBuilder.NodeLink
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
         // can be very slow, so run async if possible
         static List<int> johnsonLongestLoop = new List<int>();
+        static int johnsonNumLongest = 0;
         static List<int> JohnsonsAlgorithm()
         {
             johnsonLongestLoop = new List<int>(); // empty list is no loop
@@ -273,8 +287,13 @@ namespace EcoBuilder.NodeLink
             {
                 if (next == source) // found cycle, so see if it is longest
                 {
-                    if (johnsonStack.Count > johnsonLongestLoop.Count) {
+                    if (johnsonStack.Count == johnsonLongestLoop.Count)
+                    {
+                        johnsonNumLongest += 1;
+                    }
+                    else if (johnsonStack.Count > johnsonLongestLoop.Count) {
                         johnsonLongestLoop = new List<int>(johnsonStack);
+                        johnsonNumLongest = 1;
                     }
                     foundCycle = true;
                 }

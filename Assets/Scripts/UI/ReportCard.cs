@@ -21,6 +21,20 @@ namespace EcoBuilder.UI
             print("TODO: check if median is valid");
         }
 
+        // public Level NextLevelInstantiated { get; private set; }
+        // public void UnlockNextLevel() // because of silly animator gameobject active stuff
+        // {
+        //     Assert.IsFalse(GameManager.Instance.NavParent.transform.childCount > 0, "more than one level on navigation?");
+
+        //     StartCoroutine(TweenToZeroPosFrom(0, GameManager.Instance.NavParent));
+        //     print("TODO: make navigation pop to below screen then rise");
+        // }
+
+
+
+
+
+
         // public void SetMessage(string message)
         // {
         //     this.message.text = message;

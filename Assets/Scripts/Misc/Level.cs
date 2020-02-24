@@ -244,23 +244,6 @@ namespace EcoBuilder
             GameManager.Instance.FinishLevel(this);
         }
 
-        public Level NextLevelInstantiated { get; private set; }
-        public void UnlockNextLevel() // because of silly animator gameobject active stuff
-        {
-            Assert.IsFalse(GameManager.Instance.NavParent.transform.childCount > 0, "more than one level on navigation?");
-
-            StartCoroutine(TweenToZeroPosFrom(0, GameManager.Instance.NavParent));
-            print("TODO: make navigation pop to below screen then rise");
-
-            if (nextLevelPrefab != null) {
-                NextLevelInstantiated = Instantiate(nextLevelPrefab, nextLevelParent);
-                NextLevelInstantiated.Unlock();
-            } else {
-                print("TODO: credits? reduce width of navigation?");
-            }
-        }
-
-
         // a hack to keep the card on top of the other thumbnails
         public void RenderOnTop(int sortOrder)
         {
@@ -309,9 +292,6 @@ namespace EcoBuilder
         }
         public void Replay()
         {
-            if (NextLevelInstantiated != null) { // if replay from finish
-                Destroy(NextLevelInstantiated);
-            }
             if (teacher != null) {
                 Destroy(teacher.gameObject);
             }
@@ -349,8 +329,8 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Apparent Exclusion.prefab");
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Chain.prefab");
+                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
         public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets, string name)
