@@ -257,12 +257,25 @@ namespace EcoBuilder.Model
             }
             s.Endangered = realAbund <= 0;
 
-            if (realAbund <= minRealAbund) {
-                return 0;
-            } else if (realAbund >= maxRealAbund) {
-                return 1;
-            } else {
-                return (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+            if (realAbund > 0)
+            {
+                if (realAbund < minRealAbund) {
+                    return 0;
+                } else if (realAbund <= maxRealAbund) {
+                    return (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+                } else {
+                    return 1;
+                }
+            }
+            else // return a negative abundance but scaled as if it were positive
+            {
+                if (-realAbund < minRealAbund) {
+                    return 0;
+                } else if (-realAbund <= maxRealAbund) {
+                    return (float)(-Math.Log10(-realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+                } else {
+                    return -1;
+                }
             }
         }
         public float GetNormalisedFlux(int res, int con)

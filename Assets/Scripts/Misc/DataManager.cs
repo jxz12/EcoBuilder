@@ -136,6 +136,8 @@ namespace EcoBuilder
             };
             pat.Post(data, OnCompletion);
         }
+
+        // this is for if the player wants to register after already playing
         string ComposeRegistrationScores()
         {
             if (player.highScores.Count == 0) {
@@ -175,7 +177,7 @@ namespace EcoBuilder
             };
             pat.Post(data, (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
         }
-        void ParseLogin(string username, string password, string returned)
+        private void ParseLogin(string username, string password, string returned)
         {
             player.username = username;
             player.password = password;
@@ -255,7 +257,7 @@ namespace EcoBuilder
             return player.highScores[levelIdx];
         }
         // returns whether new high score is achieved
-        public bool SaveHighScoreLocal(int levelIdx, int score)
+        private bool SaveHighScoreLocal(int levelIdx, int score)
         {
             if (GetHighScoreLocal(levelIdx) < score)
             {
@@ -265,7 +267,7 @@ namespace EcoBuilder
             }
             return false;
         }
-        public void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
+        private void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },

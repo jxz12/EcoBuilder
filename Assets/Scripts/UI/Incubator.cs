@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
@@ -13,7 +14,6 @@ namespace EcoBuilder.UI
         public event Action<bool> OnIncubationWanted;
         public event Action OnDropped;
 
-        [SerializeField] Canvas rootCanvas;
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
         [SerializeField] float planeDistance;
@@ -22,10 +22,16 @@ namespace EcoBuilder.UI
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
 
+        Canvas rootCanvas;
         Camera mainCam;
         void Start()
         {
             mainCam = Camera.main;
+            rootCanvas = GetComponent<Canvas>();
+            Assert.IsNotNull(rootCanvas);
+            Assert.IsTrue(rootCanvas.isRootCanvas);
+            Assert.IsTrue(rootCanvas.renderMode == RenderMode.ScreenSpaceCamera);
+
             rootCanvas.worldCamera = mainCam; // smellly
             rootCanvas.planeDistance = planeDistance;
 

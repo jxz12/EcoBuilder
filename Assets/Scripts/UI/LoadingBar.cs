@@ -51,7 +51,7 @@ namespace EcoBuilder.UI
             }
             barRT.anchoredPosition = startPos;
         }
-        public void SetLoadingProgress(float progress)
+        public void SetProgress(float progress)
         {
             Assert.IsFalse(progress < 0 || progress > 1, "not normalised");
             bar.normalizedValue = Mathf.Max(progress, .05f); // to stop it squishing at left

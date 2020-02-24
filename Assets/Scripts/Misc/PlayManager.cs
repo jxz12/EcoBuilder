@@ -170,6 +170,7 @@ namespace EcoBuilder
         }
         void OnDestroy()
         {
+            // TODO: null on quit?
             GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
             GameManager.Instance.ReturnPlanet();
         }
@@ -181,17 +182,7 @@ namespace EcoBuilder
             score.Finish();
             constraints.Finish();
 
-            var details = GameManager.Instance.PlayedLevelDetails;
-            if (details.Metric != LevelDetails.ScoreMetric.None)
-            {
-                int oldScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
-                int worldAvg = GameManager.Instance.GetLeaderboardMedian(details.Idx);
-                GameManager.Instance.ShowResults(oldScore, worldAvg);
-            }
-            GameManager.Instance.SaveHighScoreLocal(details.Idx, score.HighestScore);
-            if (GameManager.Instance.LoggedIn) {
-                GameManager.Instance.SavePlaythroughRemote(details.Idx, score.HighestScore, model.GetMatrix(), recorder.GetActions());
-            }
+            GameManager.Instance.ShowResultsScreen(score.HighestStars, score.HighestScore, model.GetMatrix(), recorder.GetActions());
             Destroy(gameObject);
         }
 

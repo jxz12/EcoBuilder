@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Assertions;
 
 namespace EcoBuilder.UI
 {
@@ -41,7 +42,18 @@ namespace EcoBuilder.UI
         }
         public void SetHealth(float normalisedHealth)
         {
-            health.fillAmount = normalisedHealth;
+            Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1);
+
+            if (normalisedHealth >= 0)
+            {
+                health.color = Color.green;
+                health.fillAmount = normalisedHealth;
+            }
+            else
+            {
+                health.color = Color.yellow;
+                health.fillAmount = -normalisedHealth;
+            }
         }
         public void SetSize(int size)
         {

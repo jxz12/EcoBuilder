@@ -107,7 +107,7 @@ namespace EcoBuilder
         public Level NextLevelPrefab { get { return nextLevelPrefab; } }
         [SerializeField] Tutorials.Tutorial tutorialPrefab;
 
-        public event Action OnThumbnailed, OnCarded;
+        public event Action OnThumbnailed, OnCarded, OnFinished;
 
         // thumbnail
         [SerializeField] Image starsImage;
@@ -140,6 +140,10 @@ namespace EcoBuilder
             titleText.text = details.Title;
             descriptionText.text = details.Description;
 
+            SetScoreTexts();
+        }
+        public void SetScoreTexts()
+        {
             target1.text = details.TargetScore1.ToString();
             target2.text = details.TargetScore2.ToString();
 
@@ -218,13 +222,13 @@ namespace EcoBuilder
         }
         public void ShowCard()
         {
-            Assert.IsFalse(GameManager.Instance.CardParent.childCount > 1, "more than one card on cardparent?");
+            Assert.IsFalse(GameManager.Instance.CardAnchor.childCount > 1, "more than one card on cardparent?");
 
-            if (GameManager.Instance.CardParent.childCount == 1) {
-                GameManager.Instance.CardParent.GetComponentInChildren<Level>().ShowThumbnail();
+            if (GameManager.Instance.CardAnchor.childCount == 1) {
+                GameManager.Instance.CardAnchor.GetComponentInChildren<Level>().ShowThumbnail();
             }
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-            StartCoroutine(TweenToZeroPosFrom(.5f, GameManager.Instance.CardParent));
+            StartCoroutine(TweenToZeroPosFrom(.5f, GameManager.Instance.CardAnchor));
 
             GetComponent<Animator>().SetInteger("State", (int)State.Card);
             OnCarded?.Invoke();
@@ -236,12 +240,14 @@ namespace EcoBuilder
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
         }
+
+
         public void FinishLevel() // called on finish flag pressed
         {
-            Instantiate(confettiPrefab, GameManager.Instance.CardParent);
+            Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
             GetComponent<Animator>().SetInteger("State", (int)State.Navigation);
 
-            GameManager.Instance.FinishLevel(this);
+            OnFinished?.Invoke();
         }
 
         // a hack to keep the card on top of the other thumbnails
@@ -268,18 +274,18 @@ namespace EcoBuilder
         {
             Assert.IsTrue(GameManager.Instance.PlayedLevelDetails == details, "wrong level beginning");
 
-            StartCoroutine(WaitOneFrameThenBegin());
+            StartCoroutine(WaitOneFrameThenBeginPlay());
         }
-        private IEnumerator WaitOneFrameThenBegin()
+        private IEnumerator WaitOneFrameThenBeginPlay()
         {
             yield return null;
-            thumbnailedParent = GameManager.Instance.PlayParent; // detach from possibly the menu
+            thumbnailedParent = GameManager.Instance.PlayAnchor; // detach from possibly the menu
 
             ShowThumbnail(1.5f);
             StartCoroutine(WaitThenEnableQuitReplay(1.5f));
 
             if (tutorialPrefab != null) {
-                teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutParent);
+                teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutCanvas.transform);
             }
             GameManager.Instance.HelpText.ResetPosition();
             GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
@@ -305,11 +311,17 @@ namespace EcoBuilder
             yield return new WaitForSeconds(waitTime);
             EnableQuitReplay();
         }
-        public void EnableQuitReplay() // only public because of stupidness
+        void EnableQuitReplay() // only public because of stupidness
         {
             playButton.gameObject.SetActive(false);
             quitButton.gameObject.SetActive(true);
             replayButton.gameObject.SetActive(true);
+        }
+        public void DisableQuitReplay()
+        {
+            playButton.gameObject.SetActive(true);
+            quitButton.gameObject.SetActive(false);
+            replayButton.gameObject.SetActive(false);
         }
 
         public void Quit()

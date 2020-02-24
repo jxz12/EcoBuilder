@@ -83,6 +83,7 @@ namespace EcoBuilder
                 {
                     Destroy(playedLevel.gameObject);
                     playedLevel = toPlay;
+                    playedLevel.OnFinished += OnPlayedLevelFinished;
                 } else {
                     // replay level so no need to destroy
                 }
@@ -92,73 +93,70 @@ namespace EcoBuilder
             {
                 // play from menu
                 playedLevel = toPlay;
+                playedLevel.OnFinished += OnPlayedLevelFinished;
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
         }
-        public void BeginPlayedLevel()
+        public event Action OnPlayedLevelFinished; // listened by playmanager
+
+        public void BeginPlayedLevel() // called by playmanager
         {
             playedLevel.BeginPlay();
         }
-        public void MakePlayedLevelFinishable()
+        public void MakePlayedLevelFinishable() // called by playmanager
         {
             playedLevel.ShowFinishFlag();
         }
-        public event Action OnPlayedLevelFinished;
-        public void FinishLevel(Level toFinish)
-        {
-            Assert.IsTrue(playedLevel == toFinish, "not playing level to be finished");
-            OnPlayedLevelFinished.Invoke();
-        }
 
-        // for levels to attach to
-        [SerializeField] RectTransform cardParent, playParent, navParent, tutParent;
-        public RectTransform CardParent { get { return cardParent; } }
-        public RectTransform PlayParent { get { return playParent; } }
-        public RectTransform NavParent { get { return navParent; } }
-        public RectTransform TutParent { get { return tutParent; } }
 
         ///////////////////
         // scene loading //
         ///////////////////
 
-        [Serializable] public class MyBoolEvent : UnityEvent<bool> {}
-        [SerializeField] MyBoolEvent OnSceneLoading;
-        [Serializable] public class MyFloatEvent : UnityEvent<float> {}
-        [SerializeField] MyFloatEvent OnLoadingProgressed;
+        [SerializeField] UI.LoadingBar loadingBar;
         public event Action<string> OnSceneLoaded;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
         {
-            OnSceneLoading.Invoke(true);
+#if UNITY_EDITOR
+            yield return new WaitForSeconds(1);
+#endif
+            loadingBar.Show(true);
             if (toUnload != null)
             {
                 var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
                 while (!unloading.isDone)
                 {
-                    OnLoadingProgressed?.Invoke(unloading.progress/2);
+                    loadingBar.SetProgress(unloading.progress/4f);
                     yield return null;
                 }
             }
-            OnLoadingProgressed?.Invoke(.5f);
-#if UNITY_EDITOR
-            yield return new WaitForSeconds(1);
-#endif
+            loadingBar.SetProgress(.25f);
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
                 while (!loading.isDone)
                 {
-                    OnLoadingProgressed?.Invoke(.5f + loading.progress/2);
+                    loadingBar.SetProgress(.25f + .75f*loading.progress);
                     yield return null;
                 }
             }
-            OnSceneLoading.Invoke(false);
+            loadingBar.Show(true);
             OnSceneLoaded?.Invoke(toLoad);
         }
+
+
+
+        // for levels to attach to in order to persist across scenes
+        [SerializeField] RectTransform cardAnchor, playAnchor;
+        public RectTransform CardAnchor { get { return cardAnchor; } }
+        public RectTransform PlayAnchor { get { return playAnchor; } }
+        [SerializeField] Canvas tutorialCanvas;
+        public Canvas TutCanvas { get { return tutorialCanvas; } }
 
         public void ReturnToMenu()
         {
             if (playedLevel != null) {
-                playedLevel = null; // level destroys itself so no need to do it here
+                playedLevel = null; // level destroys itself so probably no need to do it here
             }
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
         }
@@ -180,6 +178,7 @@ namespace EcoBuilder
             earth.TweenToRestPositionFromNextFrame(2);
         }
 
+
         ///////////////////////////
         // showing help messages //
         ///////////////////////////
@@ -188,9 +187,25 @@ namespace EcoBuilder
         public UI.Help HelpText { get { return helpText; } }
 
         [SerializeField] UI.ReportCard report;
-        public void ShowResults(int prevScore, int globalMedian)
+        public void ShowResultsScreen(int nStars, int score, string matrix, string actions)
         {
-            report.ShowResults(HighestStars, HighestScore, prevScore, globalMedian);
+            int idx = playedLevel.Details.Idx;
+
+            int prevScore = GetHighScoreLocal(idx);
+            SaveHighScoreLocal(idx, score);
+
+            if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None)
+            {
+                int worldAvg = GetLeaderboardMedian(idx);
+                report.ShowResults(nStars, score, prevScore, worldAvg);
+            }
+
+            if (LoggedIn) {
+                SavePlaythroughRemote(idx, score, matrix, actions);
+            }
+
+            var nextLevel = Instantiate(playedLevel.NextLevelPrefab);
+            nextLevel.transform.SetParent(report.NextLevelAnchor);
         }
     }
 }
