@@ -23,7 +23,7 @@ namespace EcoBuilder
                 yield return p.SendWebRequest();
                 if (p.isNetworkError)
                 {
-                    message.text = p.error;
+                    message.text = $"Network Error: {p.error}";
                     ResponseCallback?.Invoke(false, p.error);
                     Hide();
                 }
@@ -40,8 +40,7 @@ namespace EcoBuilder
                     case 503: response = "Could not connect to database (503)"; break;
                     default: response = "Could not connect to server ("+p.responseCode+")"; break;
                     }
-                    print(p.downloadHandler.text);
-                    message.text = p.error;
+                    message.text = $"HTTP Error: {p.error}";
                     ResponseCallback?.Invoke(false, response);
                     Hide();
                 }

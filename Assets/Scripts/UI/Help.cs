@@ -160,11 +160,25 @@ namespace EcoBuilder.UI
         [SerializeField] float smoothTime = .15f;
         void Update()
         {
-            rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);
-            rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
-
-            width = Mathf.SmoothDamp(width, targetWidth, ref widthocity, smoothTime);
-            rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
+            float pivotMag = (rt.pivot - targetPivot).sqrMagnitude;
+            if (pivotMag > .00001f) {
+                rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);
+            } else if (pivotMag > 0) {
+                rt.pivot = targetPivot;
+            }
+            float anchorMag = (rt.anchorMin - targetAnchor).sqrMagnitude;
+            if (anchorMag > .00001f) {
+                rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
+            } else if (anchorMag > 0) {
+                rt.anchorMax = rt.anchorMin = targetAnchor;
+            }
+            float widthMag = width-targetWidth;
+            widthMag *= widthMag;
+            if (widthMag > 1) {
+                width = Mathf.SmoothDamp(width, targetWidth, ref widthocity, smoothTime);
+            } else if (widthMag > 0) {
+                rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
+            }
         }
     }
 }

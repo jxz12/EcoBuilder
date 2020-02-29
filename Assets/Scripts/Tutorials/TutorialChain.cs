@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace EcoBuilder.Tutorials
 {
@@ -9,15 +10,32 @@ namespace EcoBuilder.Tutorials
         protected override void StartLesson()
         {
             targetSize = Vector2.zero;
-            recorder.gameObject.SetActive(false);
+            recorder.Hide();
+            inspector.HideSizeSlider();
+            // inspector.HideGreedSlider();
+            inspector.HideRemoveButton();
+            score.Hide();
+            score.DisableStarCalculation();
+
+            constraints.ConstrainLeaf(1);
+            constraints.ConstrainPaw(1);
 
             ExplainIntro();
+        }
+        int producerIdx=-1, herbivoreIdx=-1;
+        void ListenForIdxs(int idx, bool isProducer, GameObject gameObject)
+        {
+            if (isProducer) {
+                producerIdx = idx;
+            } else {
+                herbivoreIdx = idx;
+            }
         }
         void ExplainIntro()
         {
             DetachSmellyListeners();
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ListenForIdxs);
             AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(1, ExplainChainOfOne));
-            AttachSmellyListener(nodelink, "OnLayedOut", ()=>LimitNumAnimals(1));
         }
         void CheckChainOfHeight(int heightGoal, Action Todo)
         {
@@ -25,56 +43,71 @@ namespace EcoBuilder.Tutorials
                 Todo.Invoke();
             }
         }
-        // ensure only one animal is in system at beginning
-        void LimitNumAnimals(int limit)
-        {
-            if (constraints.PawValue >= limit) {
-                inspector.SetConsumerAvailability(false);
-            } else {
-                inspector.SetConsumerAvailability(true);
-            }
-        }
         void ExplainChainOfOne()
         {
-            help.Message = "You should notice that the number on the left has changed! This is because the animal is one link away from the plant, which means it has a chain of one. Try adding another animal and making it eat the current one.";
+            DetachSmellyListeners();
+            Assert.IsTrue(producerIdx!=-1 && herbivoreIdx!=-1);
+
+            help.Message = "You should notice that the number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. If you press that icon, you can highlight all species with that chain length. Try adding another animal and making it eat the current one.";
             help.Showing = true;
-            inspector.SetConsumerAvailability(true);
+
+
             // allow animal again, but only one more
-            // ask to make a chain of 2
-            print("TODO: make plant uninteractable (cannot be source) for now");
+            constraints.ConstrainPaw(2);
+            inspector.SetConsumerAvailability(true); // this is a hack because I didn't code constraints well
 
-            DetachSmellyListeners();
-            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(2, ExplainChainOfTwo));
+            // stop user from removing the link
+            nodelink.SetIfLinkRemovable(producerIdx, herbivoreIdx, false);
+            nodelink.SetIfNodeCanBeTarget(herbivoreIdx, false);
+            nodelink.SetIfNodeCanBeSource(producerIdx, false);
+
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ListenForIdxs2);
+            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainChainOfTwo(1.5f)));
         }
-        void ExplainChainOfTwo()
+        int carnivoreIdx=-1;
+        void ListenForIdxs2(int idx, bool isProducer, GameObject gameObject)
         {
-            help.Message = "Great job. It takes two hops to get from the plant to the second animal, and so the maximum chain of your ecosystem is two. Now try making the second animal also eat the plant.";
-            help.Showing = true;
-            // now that there is a chain of 2, ask them to reduce it again by making a triangle
-
-            DetachSmellyListeners();
-            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(1, ExplainBackToOne));
+            carnivoreIdx = idx;
         }
-        void ExplainBackToOne()
+        void ExplainChainOfTwo(float delay)
         {
-            help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to any plant, and so the path going through both animals is overridden by the path from the plant. To finish this level, create an ecosystem with a chain of three!";
-            // ask the user to make a chain of three with only one more 
-
             DetachSmellyListeners();
-            // AttachSmellyListener(nodelink, "OnLayedOut", ()=> CheckChainOfHeight(3, ExplainThree));
+            Assert.IsTrue(carnivoreIdx!=-1);
+
+            nodelink.ForceUnfocus();
+            help.Showing = false;
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is two. However, you will notice that it cannot survive! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food. Try saving it, but without adding any more links."; help.Showing = true; inspector.HideSizeSlider(false); }));
+
+            // inspector.FixSpeciesSize(carnivoreIdx);
+            nodelink.SetIfLinkRemovable(herbivoreIdx, carnivoreIdx, false);
+
+            AttachSmellyListener(model, "OnEquilibrium", ()=>{if (model.Feasible) ExplainTopSurvival(1.5f); });
         }
-        // void ExplainThree()
-        // {
-        //     nodelink.ForceUnfocus();
-        //     help.Showing = false;
-        //     StartCoroutine(WaitThenDo(2, ()=>{ help.Showing = true; help.Message = "Well done! You should now understand the concept of chain length. At any point, if you press the chain icon in the panel to the left you can highlight your species with the longest chain. Construct a chain of length four to finish this level!"; }));
+        void ExplainTopSurvival(float delay)
+        {
+            DetachSmellyListeners();
 
-        //     constraints.ConstrainLoop(4);
+            nodelink.ForceUnfocus();
+            help.Showing = false;
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain of two also eat the plant."; help.Showing = true; }));
 
-        //     print("TODO: enable mass editing only now?");
+            nodelink.SetIfNodeCanBeSource(producerIdx, true);
 
-        //     DetachSmellyListeners();
-        // }
+            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(1, ()=>ExplainBackToOne(1)));
+        }
+        void ExplainBackToOne(float delay)
+        {
+            DetachSmellyListeners();
+
+            nodelink.ForceUnfocus();
+            help.Showing = false;
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to any plant, and so the path going through both animals is overridden by the path from the plant. To finish this level, reconstruct the ecosystem with a chain of 2."; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); })); 
+
+            recorder.Hide(false);
+            constraints.ConstrainChain(2);
+            nodelink.SetIfNodeCanBeTarget(herbivoreIdx, true);
+        }
+
         
         IEnumerator WaitThenDo(float seconds, Action Todo)
         {

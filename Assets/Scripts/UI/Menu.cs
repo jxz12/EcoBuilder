@@ -11,8 +11,8 @@ namespace EcoBuilder.UI
     {
         // NOTE: most of the functionality of this class is in UnityEvents!
         //       don't ask me why I chose to do it this way and opposite in Registration
-        [SerializeField] GridLayoutGroup learningLevels;
-        [SerializeField] VerticalLayoutGroup researchLevels;
+        [SerializeField] GridLayoutGroup learningGrid;
+        [SerializeField] VerticalLayoutGroup researchList;
         [SerializeField] Registration form;
         [SerializeField] Toggle reverseDrag;
 
@@ -85,7 +85,7 @@ namespace EcoBuilder.UI
                 CheckUnlocked.Invoke(prefab);
 
                 var parent = new GameObject().AddComponent<RectTransform>();
-                parent.SetParent(learningLevels.transform);
+                parent.SetParent(learningGrid.transform);
                 parent.localScale = Vector3.one;
                 parent.name = prefab.Details.Idx.ToString();
 
@@ -94,18 +94,24 @@ namespace EcoBuilder.UI
                 prefab = prefab.NextLevelPrefab;
             }
             // then do research levels
-            bool learningFinished = IsLearningFinished();
             Action SetResearchLeaderboards = null;
-            prefab = firstResearchLevel;
+
+            // this is to make sure the tutorial does not have a leaderboard
+            var firstResearchParent = new GameObject().AddComponent<RectTransform>();
+            firstResearchParent.SetParent(researchList.transform, false);
+            firstResearchParent.name = firstResearchLevel.Details.Idx.ToString();
+            instantiated[firstResearchLevel.Details.Idx] = Instantiate(firstResearchLevel, firstResearchParent);
+            prefab = firstResearchLevel.NextLevelPrefab;
             while (prefab != null)
             {
                 CheckUnlocked.Invoke(prefab);
-                var leaderboard = Instantiate(leaderboardPrefab, researchLevels.transform);
+                var leaderboard = Instantiate(leaderboardPrefab, researchList.transform);
                 instantiated[prefab.Details.Idx] = leaderboard.GiveLevelPrefab(prefab);
                 SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
                 prefab = prefab.NextLevelPrefab;
             }
-            if (learningFinished)
+
+            if (IsLearningFinished())
             {
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white; // remove transparency
@@ -143,7 +149,7 @@ namespace EcoBuilder.UI
         {
             var prefab = firstLearningLevel;
             while (prefab != null) {
-                if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) <= 0) {
+                if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) < 0) {
                     return false;
                 }
                 prefab = prefab.NextLevelPrefab;

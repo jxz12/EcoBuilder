@@ -111,15 +111,24 @@ namespace EcoBuilder
             // add species
             for (int i=0; i<details.NumInitSpecies; i++)
             {
-                inspector.SpawnNotIncubated(i,
-                    details.Plants[i],
-                    details.Sizes[i],
-                    details.Greeds[i],
-                    details.RandomSeeds[i],
-                    details.Editables[i]);
+                inspector.SpawnNotIncubated( i, details.Types[i]==LevelDetails.SpeciesType.Producer, details.Sizes[i], details.Greeds[i], details.RandomSeeds[i]);
 
                 inspector.SetSpeciesRemovable(i, false);
-                nodelink.OutlineNode(i, details.Editables[i]? cakeslice.Outline.Colour.Clear : cakeslice.Outline.Colour.Blue);
+                if (details.Edits[i]==LevelDetails.SpeciesEdit.None || details.Edits[i]==LevelDetails.SpeciesEdit.GreedOnly) {
+                    inspector.FixSpeciesSize(i);
+                }
+                if (details.Edits[i]==LevelDetails.SpeciesEdit.None || details.Edits[i]==LevelDetails.SpeciesEdit.SizeOnly) {
+                    inspector.FixSpeciesGreed(i);
+                }
+
+                // standard producer or consumer should be covered already
+                if (details.Types[i]==LevelDetails.SpeciesType.Apex) {
+                    nodelink.SetIfNodeCanBeSource(i, false);
+                }
+                if (details.Types[i]==LevelDetails.SpeciesType.Specialist) {
+                    nodelink.SetIfNodeCanBeTarget(i, false);
+                }
+                nodelink.OutlineNode(i, details.Edits[i]==LevelDetails.SpeciesEdit.None? cakeslice.Outline.Colour.Blue : cakeslice.Outline.Colour.Clear);
             }
             // add interactions
             for (int ij=0; ij<details.NumInitInteractions; ij++)
@@ -228,7 +237,7 @@ namespace EcoBuilder
                         numInteractions += 1;
                     }
                 }
-                Level.SaveAsNewPrefab(randomSeeds, plants, sizes, greeds, editables, sources, targets, DateTime.Now.Ticks.ToString());
+                Level.SaveAsNewPrefab(randomSeeds, plants, sizes, greeds, sources, targets, DateTime.Now.Ticks.ToString());
             }
         }
 #endif

@@ -35,8 +35,8 @@ namespace EcoBuilder.Tutorials
             pointerIm = GetComponent<Image>();
             pointerRT = GetComponent<RectTransform>();
 
-            var rtCanvas  = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
-            canvasRefRes = new Vector2(rtCanvas.sizeDelta.x, rtCanvas.sizeDelta.y);
+            var rootRT  = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
+            canvasRefRes = new Vector2(rootRT.sizeDelta.x, rootRT.sizeDelta.y);
             mainCam = Camera.main;
 
             targetPos = pointerRT.anchoredPosition;

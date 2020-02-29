@@ -42,7 +42,7 @@ namespace EcoBuilder.UI
         }
         public void SetHealth(float normalisedHealth)
         {
-            Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1);
+            Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1, $"given health of {normalisedHealth}");
 
             if (normalisedHealth >= 0)
             {
@@ -51,7 +51,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                health.color = Color.yellow;
+                health.color = Color.grey;
                 health.fillAmount = -normalisedHealth;
             }
         }

@@ -214,12 +214,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.02322891, g: 0.16981131, b: 0.14342646, a: 1}
+  m_Color: {r: 0.16731933, g: 0.754717, b: 0.6619701, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9b1ff74b62005774ab1d2f19430b2bc3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 43e17fb59bccf0748b04cccfc220a522, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -329,7 +329,7 @@ GameObject:
   - component: {fileID: 1443870616455656146}
   - component: {fileID: 1443870616455656145}
   m_Layer: 0
-  m_Name: Reg Toggle
+  m_Name: Registration Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

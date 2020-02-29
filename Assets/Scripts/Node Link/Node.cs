@@ -11,7 +11,7 @@ namespace EcoBuilder.NodeLink
             get { return shapeRenderer!=null? shapeRenderer.material.color : Color.black; }
         }
         
-        // these are not get/set for performance
+        // these are not get/set for performance in the hot path
         public enum PositionState { Stress, Focus }
         public PositionState State = PositionState.Stress;
         public Vector2 StressPos;

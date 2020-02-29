@@ -2,6 +2,7 @@
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -32,12 +33,14 @@ namespace EcoBuilder
         [SerializeField] bool superfocusAllowed;
 
         // vertices and edges
+        public enum SpeciesType { Producer=0, Consumer, Apex, Specialist };
+        public enum SpeciesEdit { General=0, None, SizeOnly, GreedOnly };
         [SerializeField] int numInitSpecies;
-        [SerializeField] List<bool> plants;
+        [SerializeField] List<SpeciesEdit> edits;
+        [SerializeField] List<SpeciesType> types;
         [SerializeField] List<int> randomSeeds;
         [SerializeField] List<int> sizes;
         [SerializeField] List<int> greeds;
-        [SerializeField] List<bool> editables;
 
         [SerializeField] int numInitInteractions;
         [SerializeField] List<int> sources;
@@ -70,11 +73,11 @@ namespace EcoBuilder
         public bool SuperfocusAllowed { get { return superfocusAllowed; } }
 
         public int NumInitSpecies { get { return numInitSpecies; } }
-        public IReadOnlyList<bool> Plants { get { return plants; } }
+        public IReadOnlyList<SpeciesEdit> Edits { get { return edits; } }
+        public IReadOnlyList<SpeciesType> Types { get { return types; } }
         public IReadOnlyList<int> RandomSeeds { get { return randomSeeds; } }
         public IReadOnlyList<int> Sizes { get { return sizes; } }
         public IReadOnlyList<int> Greeds { get { return greeds; } }
-        public IReadOnlyList<bool> Editables { get { return editables; } }
 
         public int NumInitInteractions { get { return numInitInteractions; } }
         public IReadOnlyList<int> Sources { get { return sources; } }
@@ -86,14 +89,14 @@ namespace EcoBuilder
         public int TargetScore1 { get { return targetScore1; } }
         public int TargetScore2 { get { return targetScore2; } }
 
-        public void SetEcosystem(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets)
+        public void SetEcosystem(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets)
         {
             numInitSpecies = plants.Count;
             this.randomSeeds = randomSeeds;
-            this.plants = plants;
+            this.edits = new List<SpeciesEdit>(Enumerable.Repeat(SpeciesEdit.General, numInitSpecies));
+            this.types = new List<SpeciesType>(plants.Select(b=> b? SpeciesType.Producer : SpeciesType.Consumer)); // 
             this.sizes = sizes;
             this.greeds = greeds;
-            this.editables = editables;
             numInitInteractions = sources.Count;
             this.sources = sources;
             this.targets = targets;
@@ -122,10 +125,6 @@ namespace EcoBuilder
         [SerializeField] Button playButton;
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
-
-        // finish
-        [SerializeField] Button finishFlag;
-        [SerializeField] RectTransform nextLevelParent;
 
         [SerializeField] Canvas canvas;
         [SerializeField] UI.Effect fireworksPrefab, confettiPrefab;
@@ -326,28 +325,22 @@ namespace EcoBuilder
         public void Quit()
         {
             GameManager.Instance.ReturnToMenu();
-            GameManager.Instance.HelpText.Showing = false;
-            GameManager.Instance.OnSceneLoaded += DestroyWhenMenuLoads;
-        }
-        void DestroyWhenMenuLoads(string sceneName)
-        {
-            Assert.IsTrue(sceneName == "Menu", "Menu scene not loaded when expected");
-
-            GameManager.Instance.OnSceneLoaded -= DestroyWhenMenuLoads;
-            Destroy(gameObject);
         }
 
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Chain.prefab");
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Loop 1.prefab");
+                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
-        public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<bool> editables, List<int> sources, List<int> targets, string name)
+        public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets, string name)
         {
+            Assert.IsTrue(seeds.Count==plants.Count && plants.Count==sizes.Count && sizes.Count==greeds.Count);
+            Assert.IsTrue(sources.Count==targets.Count);
+
             var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(DefaultPrefab);
-            newPrefab.details.SetEcosystem(seeds, plants, sizes, greeds, editables, sources, targets);
+            newPrefab.details.SetEcosystem(seeds, plants, sizes, greeds, sources, targets);
 
             bool success;
             UnityEditor.PrefabUtility.SaveAsPrefabAsset(newPrefab.gameObject, $"Assets/Prefabs/Levels/{name}.prefab", out success);

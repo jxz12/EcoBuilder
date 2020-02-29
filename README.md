@@ -1,23 +1,15 @@
 dad
 claim moneys
 
-make report card quit disable its button
+LEVELS:
+apparent 3
+chain 3
+all loops, including tutorial
+a final boss
+research tutorial, make score constraint shiny, max instead of min producers or consumers
 
-one level with num edges constraints
-one level with a heavy species and chain
-one level with a heavy species and loop
-
-hide health and traits if empty tap
-score explanation and show highest on tap
-
-
-make status bars pretty and hide and on finish
-make results looks pretty and fix confetti
 are you sure button
-remove animators from all UI if poss
 
-max instead of min producers or consumers
-make score constraint shiny
 
 # Menu
 make icons for reversing drag direction
@@ -36,8 +28,13 @@ finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other
+score explanation and show highest on tap
+fix health and traits rendering beind and hide if empty tap and make pretty and hide and on finish
 double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
 more fidelity in link balls
+masks on menu screen
+remove/disable layout groups as soon as levels are spawned
+remove animators from all UI (especially in menu)
 release game with australian fires as angle?
 
 experiments to see how the score changes over time

@@ -125,8 +125,9 @@ namespace EcoBuilder.UI
         }
 
         bool starsDisabled;
-        public void DisableStarCalculation(bool disabled)
+        public void DisableStarCalculation(bool disabled=true)
         {
+            // this is separate from Hide() because of the first level lol
             starsDisabled = disabled;
         }
 
@@ -145,9 +146,9 @@ namespace EcoBuilder.UI
         public void Hide(bool hidden=true)
         {
             GetComponent<Animator>().enabled = !hidden;
-            if (hidden) {
-                transform.localPosition = new Vector2(0,1000); // hack
-            }
+            // if (hidden) {
+            //     transform.localPosition = new Vector2(0,1000); // hack
+            // }
         }
     }
 }

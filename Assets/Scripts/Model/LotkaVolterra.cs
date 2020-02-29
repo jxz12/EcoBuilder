@@ -133,10 +133,12 @@ namespace EcoBuilder.Model
             bool feasible = true;
             for (int i=0; i<n; i++)
             {
-                if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i]) || abundance[i] < 0) {
+                if (double.IsNaN(abundance[i]) || double.IsInfinity(abundance[i])) {
                     abundance[i] = 0;
+                } else if (abundance[i] > 0) {
+                    TotalAbundance += abundance[i];
                 }
-                TotalAbundance += abundance[i];
+
                 if (abundance[i] <= 0) {
                     feasible = false;
                 }

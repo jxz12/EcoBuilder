@@ -30,6 +30,9 @@ namespace EcoBuilder.UI
             prevLvl.transform.SetParent(prevLevelAnchor, false);
             if (nextLvl != null) {
                 nextLvl.transform.SetParent(nextLevelAnchor, false);
+                nextLvl.Unlock();
+            }
+            else {
                 print("TODO: credits?");
             }
             this.prevLvl = prevLvl;
@@ -66,20 +69,28 @@ namespace EcoBuilder.UI
                 points.sprite = pointSprite;
             }
 
-            average.text = average.ToString();
-            print("TODO: check if avg is valid");
+            if (worldAvg < 0)
+            {
+                print("TODO: maybe just hide world average");
+                worldAvg = 0;
+            }
+            average.text = worldAvg.ToString();
             if (score > worldAvg)
             {
-                average.text = score.ToString();
                 averageMsg.text = "You beat the world average!";
                 StartCoroutine(WiggleSprite(globe));
             }
             else
             {
-                average.text = "";
                 averageMsg.text = "World average";
             }
             this.numStars = numStars;
+            star1.SetTrigger("Reset");
+            star1.SetBool("Filled", false);
+            star2.SetTrigger("Reset");
+            star2.SetBool("Filled", false);
+            star3.SetTrigger("Reset");
+            star3.SetBool("Filled", false);
         }
         public void ShowResults()
         {

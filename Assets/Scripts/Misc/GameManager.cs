@@ -56,6 +56,45 @@ namespace EcoBuilder
             
 
 
+        ///////////////////
+        // scene loading //
+        ///////////////////
+
+        [SerializeField] UI.LoadingBar loadingBar;
+        // public event Action<string> OnSceneLoaded;
+        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad, Action OnLoaded=null)
+        {
+            loadingBar.Show(true);
+            if (toUnload != null)
+            {
+                var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
+                while (unloading!=null && !unloading.isDone)
+                {
+                    loadingBar.SetProgress(unloading.progress * .333f);
+                    yield return null;
+                }
+            }
+            loadingBar.SetProgress(.333f);
+#if UNITY_EDITOR
+            // yield return new WaitForSeconds(1);
+#endif
+            if (toLoad != null)
+            {
+                var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
+                while (loading!=null && !loading.isDone)
+                {
+                    loadingBar.SetProgress(.333f + .667f*loading.progress);
+                    yield return null;
+                }
+            }
+            loadingBar.Show(false);
+            // OnSceneLoaded?.Invoke(toLoad);
+            OnLoaded?.Invoke();
+
+            report.HideIfShowing(); // smelly that this is here
+        }
+
+
         ////////////////////////////////////////////////
         // functions to persist levels through scenes //
         ////////////////////////////////////////////////
@@ -69,6 +108,7 @@ namespace EcoBuilder
                 if (playedLevel == null)
                 {
                     playedLevel = Instantiate(Level.DefaultPrefab);
+                    // playedLevel.transform.SetParent(PlayAnchor, false);
                     playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
 
                     playedLevel.Unlock();
@@ -111,44 +151,6 @@ namespace EcoBuilder
         }
 
 
-        ///////////////////
-        // scene loading //
-        ///////////////////
-
-        [SerializeField] UI.LoadingBar loadingBar;
-        public event Action<string> OnSceneLoaded;
-        private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad)
-        {
-            loadingBar.Show(true);
-#if UNITY_EDITOR
-            yield return new WaitForSeconds(1);
-#endif
-            if (toUnload != null)
-            {
-                var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
-                while (!unloading.isDone)
-                {
-                    loadingBar.SetProgress(unloading.progress/4f);
-                    yield return null;
-                }
-            }
-            loadingBar.SetProgress(.25f);
-            if (toLoad != null)
-            {
-                var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
-                while (!loading.isDone)
-                {
-                    loadingBar.SetProgress(.25f + .75f*loading.progress);
-                    yield return null;
-                }
-            }
-            loadingBar.Show(true);
-            OnSceneLoaded?.Invoke(toLoad);
-
-            report.HideIfShowing(); // smelly that this is here
-        }
-
-
 
         // for levels to attach to in order to persist across scenes
         [SerializeField] RectTransform cardAnchor, playAnchor;
@@ -159,10 +161,11 @@ namespace EcoBuilder
 
         public void ReturnToMenu()
         {
-            if (playedLevel != null) {
-                playedLevel = null; // level destroys itself so probably no need to do it here
-            }
-            StartCoroutine(UnloadSceneThenLoad("Play", "Menu"));
+            // if (playedLevel != null) {
+            //     playedLevel = null; // level destroys itself so probably no need to do it here
+            // }
+            GameManager.Instance.HelpText.Showing = false;
+            StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>Destroy(playedLevel)));
         }
 
 
@@ -204,6 +207,10 @@ namespace EcoBuilder
             {
                 int worldAvg = GetLeaderboardMedian(idx);
                 report.SetResults(nStars, score, prevScore, worldAvg);
+            }
+            else
+            {
+                report.SetResults(3, 0, 0, 0);
             }
 
             if (LoggedIn) {

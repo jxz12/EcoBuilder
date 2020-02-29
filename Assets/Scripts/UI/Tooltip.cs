@@ -20,9 +20,9 @@ namespace EcoBuilder.UI
                 size = Mathf.SmoothDamp(size, 1, ref sizocity, sizeSmoothTime);
             } else {
                 size = Mathf.SmoothDamp(size, 0, ref sizocity, sizeSmoothTime);
-            }
-            if (size < 1e-10f) {
-                size = 0; // prevents invalid AABB error
+                if (size < 1e-10f) {
+                    size = 0; // prevents invalid AABB error
+                }
             }
             transform.localScale = new Vector3(size, size, 1);
         }
@@ -33,11 +33,7 @@ namespace EcoBuilder.UI
         bool visible = false;
         public void Enable()
         {
-            // if (!visible)
-            // {
-                visible = true;
-                // transform.localScale = Vector3.zero;
-            // }
+            visible = true;
         }
         public void Disable()
         {

@@ -251,9 +251,9 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        public void SetIfNodeInteractable(int idx, bool canBeFocused)
+        public void SetIfNodeInteractable(int idx, bool interactable)
         {
-            nodes[idx].Interactable = canBeFocused;
+            nodes[idx].Interactable = interactable;
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {

@@ -58,11 +58,11 @@ namespace EcoBuilder.UI
             }
             else if (threshold == 0) // display but do not track
             {
-                constraintMap[type].counter.text = prefix + "0";
+                constraintMap[type].counter.text = prefix + constraintMap[type].value.ToString();
             }
             else
             {
-                constraintMap[type].counter.text = prefix + "0/" + threshold;
+                constraintMap[type].counter.text = prefix + constraintMap[type].value.ToString() + "/" + threshold;
             }
             constraintMap[type].threshold = threshold;
         }
@@ -186,10 +186,9 @@ namespace EcoBuilder.UI
                    IsSatisfied(Type.Chain) &&
                    IsSatisfied(Type.Loop);
         }
-        public void Show(bool visible)
+        public void Hide(bool hidden=true)
         {
-            // GetComponent<Animator>().SetBool("Visible", visible);
-            gameObject.SetActive(visible);
+            gameObject.SetActive(!hidden);
         }
         public void Finish()
         {

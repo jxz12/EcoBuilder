@@ -157,6 +157,10 @@ namespace EcoBuilder.UI
             RecordAction(">");
             OnUndoOrRedo?.Invoke();
         }
+        public void Hide(bool hidden=true)
+        {
+            gameObject.SetActive(!hidden);
+        }
         public string GetActions()
         {
             return string.Join(";", record);

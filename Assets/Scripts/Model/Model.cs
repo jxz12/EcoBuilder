@@ -40,6 +40,8 @@ namespace EcoBuilder.Model
         [ReadOnly] [SerializeField]
         double a_min = 1e-5,
                a_max = 1;
+        // double a_min = 1e-4,
+        //        a_max = 1e-1;
 
         [ReadOnly] [SerializeField]
         float minRealAbund = 2e-10f,
@@ -236,7 +238,7 @@ namespace EcoBuilder.Model
             isCalculatingAsync = false;
             OnEquilibrium.Invoke();
         }
-        public void EquilibrateSync(Func<int, IEnumerable<int>> Consumers)
+        public void EquilibrateSync()
         {
             Feasible = simulation.SolveFeasibility(GetConsumers);
             Stable = simulation.SolveStability();
@@ -272,7 +274,7 @@ namespace EcoBuilder.Model
                 if (-realAbund < minRealAbund) {
                     return 0;
                 } else if (-realAbund <= maxRealAbund) {
-                    return (float)(-Math.Log10(-realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+                    return -(float)(Math.Log10(-realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
                 } else {
                     return -1;
                 }

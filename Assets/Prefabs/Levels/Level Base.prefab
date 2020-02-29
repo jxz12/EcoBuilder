@@ -1359,11 +1359,11 @@ MonoBehaviour:
     conflictsAllowed: 1
     superfocusAllowed: 0
     numInitSpecies: 0
-    plants: 
+    edits: 
+    types: 
     randomSeeds: 
     sizes: 
     greeds: 
-    editables: 
     numInitInteractions: 0
     sources: 
     targets: 
@@ -1388,8 +1388,6 @@ MonoBehaviour:
   playButton: {fileID: 8352292836414973085}
   quitButton: {fileID: 1020050105958342126}
   replayButton: {fileID: 5138229676841934199}
-  finishFlag: {fileID: 7411520785661143741}
-  nextLevelParent: {fileID: 0}
   canvas: {fileID: 8067456375923808527}
   fireworksPrefab: {fileID: 6047318902721678427, guid: e8c59575ef85bfe49b00632e5351780c,
     type: 3}
@@ -1719,7 +1717,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3983220213858341483}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 

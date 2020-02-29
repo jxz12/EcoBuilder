@@ -14,7 +14,7 @@ namespace EcoBuilder.Tutorials
             inspector.HideRemoveButton();
             score.Hide();
             recorder.gameObject.SetActive(false); 
-            constraints.Show(false);
+            constraints.Hide();
             score.DisableStarCalculation(true);
             targetSize = new Vector2(100,100);
             targetZRot = 45;  
@@ -29,7 +29,6 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainIntro(bool showText)
         {
-            DetachSmellyListeners();
             StopAllCoroutines();
 
             // in case the user goes back
@@ -41,6 +40,7 @@ namespace EcoBuilder.Tutorials
             }
             
             StartCoroutine(Track(plant.transform));
+            DetachSmellyListeners();
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
         }
 
@@ -64,7 +64,6 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            help.Showing = false;
             nodelink.ForceUnfocus();
 
             nodelink.SetIfNodeInteractable(animal.Idx, true);
@@ -72,7 +71,8 @@ namespace EcoBuilder.Tutorials
 
             smoothTime = .3f;
             targetSize = Vector2.zero;
-
+            
+            help.Showing = false;
             StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100); }));
 
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainInterference());

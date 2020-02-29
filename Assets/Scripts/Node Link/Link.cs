@@ -11,7 +11,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] int curveSegments;
         [SerializeField] float numBalls;
 
-        // these are not get set for performance
+        // these are not get set for performance in the hot path
         public bool Curved = false;
         public float TileSpeed = 0;
         public bool Removable = true;

@@ -43,7 +43,9 @@ namespace EcoBuilder.UI
             public bool IsProducer;
             public int BodySize = 0;
             public int Greediness = 0;
-            public bool Editable = true;
+
+            public bool SizeEditable = true;
+            public bool GreedEditable = true;
 
             public bool Removable = true;
 
@@ -360,7 +362,9 @@ namespace EcoBuilder.UI
             sizeTrait.SetValueWithoutCallback(inspected.BodySize);
             greedTrait.SetValueWithoutCallback(inspected.Greediness);
 
-            sizeTrait.Interactable = greedTrait.Interactable = inspected.Editable;
+            // if (inspected.SizeEditable && !)
+            sizeTrait.Interactable = inspected.SizeEditable;
+            greedTrait.Interactable = inspected.GreedEditable;
             refroveButton.interactable = inspected.Removable;
 
             refroveButton.gameObject.SetActive(!removeHidden);
@@ -417,7 +421,7 @@ namespace EcoBuilder.UI
         ///////////////////////////
         // loading from level
 
-        public void SpawnNotIncubated(int idx, bool isProducer, int size, int greed, int randomSeed, bool editable)
+        public void SpawnNotIncubated(int idx, bool isProducer, int size, int greed, int randomSeed)
         {
             Assert.IsFalse(spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx), "idx already added");
             Assert.IsNull(inspected, "somehow inspecting??");
@@ -431,7 +435,6 @@ namespace EcoBuilder.UI
 
             toSpawn.BodySize = size;
             toSpawn.Greediness = greed;
-            toSpawn.Editable = editable;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, sizeTrait.NormaliseValue(size), greedTrait.NormaliseValue(greed), randomSeed);
 
             toSpawn.Status = Instantiate(statusPrefab, transform.parent);
@@ -442,6 +445,14 @@ namespace EcoBuilder.UI
         public void SetSpeciesRemovable(int idx, bool removable)
         {
             spawnedSpecies[idx].Removable = removable;
+        }
+        public void FixSpeciesSize(int idx)
+        {
+            spawnedSpecies[idx].SizeEditable = false;
+        }
+        public void FixSpeciesGreed(int idx)
+        {
+            spawnedSpecies[idx].GreedEditable = false;
         }
 
         ////////////////////

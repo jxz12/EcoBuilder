@@ -36,8 +36,7 @@ namespace EcoBuilder
         [SerializeField] PlayerDetails player = null;
 
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
-        // public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
-        public bool ConstrainTrophic { get { return true; } }
+        public bool ConstrainTrophic { get { return true; } }//return player.team != PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
@@ -96,12 +95,12 @@ namespace EcoBuilder
         }
         private void DeletePlayerDetailsLocal()
         {
+            player = new PlayerDetails();
 #if UNITY_WEBGL
             return;
 #endif
             try {
                 File.Delete(playerPath);
-                player = new PlayerDetails();
             } catch (Exception e) {
                 Debug.LogError("could not delete player: " + e.Message);
             }
@@ -111,8 +110,12 @@ namespace EcoBuilder
         ///////////////////
         // web form things
 
-        static readonly string serverURL = "127.0.0.1/ecobuilder/";
-        // static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+#if UNITY_EDITOR
+        // static readonly string serverURL = "127.0.0.1/ecobuilder/";
+        static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+#else
+        static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+#endif
         [SerializeField] Postman pat;
         public void RegisterLocal(string username, string password, string email)
         {
@@ -253,6 +256,7 @@ namespace EcoBuilder
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
                 return -1;
+                // return 0;
             }
             return player.highScores[levelIdx];
         }
@@ -303,11 +307,14 @@ namespace EcoBuilder
             var data = new Dictionary<string, string>() {
                 { "n_scores", n_scores.ToString() }, { "__address__", serverURL+"leaderboards.php" },
             };
-            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
+            pat.Post(data, (b,s)=>{ if (b) { ParseLeaderboards(s); OnCompletion?.Invoke(); } });
         }
         private Dictionary<int, LeaderboardCache> cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
         private void ParseLeaderboards(string returned)
         {
+            print("".Split(';').Length);
+
+            print(returned);
             cachedLeaderboards.Clear();
             var levels = returned.Split(';');
             foreach (var level in levels)

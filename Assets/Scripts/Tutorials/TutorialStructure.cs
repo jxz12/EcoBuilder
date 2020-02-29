@@ -10,9 +10,9 @@ namespace EcoBuilder.Tutorials
         protected override void StartLesson()
         {
             inspector.HideRemoveButton();
+            constraints.Hide();
+            recorder.Hide();
             score.Hide();
-            constraints.Show(false);
-            recorder.gameObject.SetActive(false);
             score.DisableStarCalculation(true);
 
             inspector.SetConsumerAvailability(false);
@@ -59,9 +59,9 @@ namespace EcoBuilder.Tutorials
         int firstIdx;
         void ExplainSpawn(int idx, bool isProducer, GameObject first)
         {
+            DetachSmellyListeners();
             Assert.IsTrue(isProducer, "first species should be producer");
 
-            DetachSmellyListeners();
             targetAnchor = new Vector2(1,0);
             targetPos = new Vector2(-61, 60);
             targetZRot = 270;
@@ -84,9 +84,9 @@ namespace EcoBuilder.Tutorials
         int secondIdx;
         void ExplainInteraction(int idx, bool isProducer, GameObject second)
         {
+            DetachSmellyListeners();
             Assert.IsFalse(isProducer, "second species should be consumer");
 
-            DetachSmellyListeners();
             secondSpecies = second;
             secondIdx = idx;
 
@@ -178,7 +178,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             help.SetPivotHeight(1);
             help.SetAnchorHeight(.8f);
-            recorder.gameObject.SetActive(true); 
+            recorder.Hide(false); 
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."; }));
 
@@ -222,14 +222,15 @@ namespace EcoBuilder.Tutorials
         void ExplainNavigation(float delay)
         {
             DetachSmellyListeners();
-            targetAnchor = new Vector2(.5f,0);
-            targetZRot = 405;
-            targetPos = new Vector2(140, 70);
-            smoothTime = .5f;
+            targetSize = Vector2.zero;
+            // targetAnchor = new Vector2(.5f,0);
+            // targetZRot = 405;
+            // targetPos = new Vector2(140, 70);
+            // smoothTime = .5f;
 
-            help.Showing = false;
-            help.SetPixelWidth(400);
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetPivotHeight(0); help.SetAnchorHeight(.2f); help.Message = "Great! You can access the next level by tapping it here."; }));
+            // help.Showing = false;
+            // help.SetPixelWidth(400);
+            // StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetPivotHeight(0); help.SetAnchorHeight(.2f); help.Message = "Great! You can access the next level by tapping it here."; }));
 
         }
 
