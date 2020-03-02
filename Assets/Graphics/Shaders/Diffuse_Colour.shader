@@ -3,7 +3,6 @@ Shader "Mobile/Diffuse Color"
     Properties
     {
         _Color("Color",COLOR)=(0.5,0.5,0.5,1.0)
-        // _MainTex ("Base (RGB)", 2D) = "white" {}
     }
  
     SubShader
@@ -13,19 +12,17 @@ Shader "Mobile/Diffuse Color"
         CGPROGRAM
         #pragma surface surf Lambert noforwardadd
  
-        sampler2D _MainTex;
         fixed4 _Color;
  
         struct Input
         {
-            float2 uv_MainTex;
+            float foo; // optimised away?
         };
  
         void surf (Input IN, inout SurfaceOutput o)
         {
-            // fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = _Color.rgb;
-            // o.Alpha = _Color.a;
+            // o.Albedo = IN.color.rgb;
         }
         ENDCG
     }

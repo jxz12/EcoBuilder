@@ -62,11 +62,15 @@ SpriteAtlas:
     - {fileID: 21300000, guid: d3d77b4d37359f04cb754ba29b2a3f09, type: 3}
     - {fileID: 21300000, guid: 031411cfd15824643a4ccdedb8d36bc2, type: 3}
     - {fileID: 21300000, guid: 4acc179c0277ddf4fa72e6d397096d84, type: 3}
-    totalSpriteSurfaceArea: 165396
+    - {fileID: 21300000, guid: e73dd9c018a08e74e9e3b6b52eba48b4, type: 3}
+    - {fileID: 21300000, guid: 4c79770f0c7023c4ab5849b588b6245c, type: 3}
+    - {fileID: 21300000, guid: 4dc97b674b42af8449588878f6a1a706, type: 3}
+    totalSpriteSurfaceArea: 194405
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: e4430d406d9e002418f1d3cf864fb0ff, type: 3}
+  - {fileID: 21300000, guid: e73dd9c018a08e74e9e3b6b52eba48b4, type: 3}
   - {fileID: 21300000, guid: cdcc1931095dc8544b4ab733bf2b3fde, type: 3}
   - {fileID: 21300000, guid: 4d2c74121b9d52d42aa59140289fef72, type: 3}
   - {fileID: 21300000, guid: 99a70f9254d08cb4b95ab06982f729a5, type: 3}
@@ -81,6 +85,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 5ce583f5eeb793649bba951c6052c148, type: 3}
   - {fileID: 21300000, guid: 9c0068a62e7a92d40824e0b03460035a, type: 3}
   - {fileID: 21300000, guid: 7017830725262a140b5d8a3d39a0b11a, type: 3}
+  - {fileID: 21300000, guid: 4dc97b674b42af8449588878f6a1a706, type: 3}
   - {fileID: 21300000, guid: 77d4a09729c897249a3eb01c02486635, type: 3}
   - {fileID: 21300000, guid: f7420318a046742439fc1f7e0fb33dc7, type: 3}
   - {fileID: 21300000, guid: f6c1dea84b7a31e4b81d0f719c477e2e, type: 3}
@@ -96,10 +101,12 @@ SpriteAtlas:
   - {fileID: 21300000, guid: d3d77b4d37359f04cb754ba29b2a3f09, type: 3}
   - {fileID: 21300000, guid: 2cd75ecd937092548af742d256771336, type: 3}
   - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
+  - {fileID: 21300000, guid: 4c79770f0c7023c4ab5849b588b6245c, type: 3}
   - {fileID: 21300000, guid: 7cd59d7fb38a77f4ca92099e8d101b73, type: 3}
   - {fileID: 21300000, guid: 031411cfd15824643a4ccdedb8d36bc2, type: 3}
   m_PackedSpriteNamesToIndex:
   - textinput_a
+  - point_beige
   - box_a_02
   - constraint loop
   - kg
@@ -114,6 +121,7 @@ SpriteAtlas:
   - target1
   - btn_c_beige
   - btn_c_emerald
+  - exit
   - collision
   - box_a_01
   - gage_b_empty
@@ -129,6 +137,7 @@ SpriteAtlas:
   - star white
   - paw
   - box_b_04
+  - finish
   - box_a_03
   - icon_arrowdown
   m_Tag: Play Atlas

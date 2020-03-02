@@ -37,7 +37,7 @@ namespace EcoBuilder
             inspector.OnUnincubated +=   ()=> nodelink.MoveHorizontal(0);
 
             nodelink.OnEmptyTapped += ()=> inspector.CancelIncubation();
-            nodelink.OnEmptyTapped += ()=> inspector.HideStatusBars();
+            nodelink.OnEmptyTapped += ()=> inspector.ToggleStatusBars();
 
             ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things
@@ -111,7 +111,7 @@ namespace EcoBuilder
             // add species
             for (int i=0; i<details.NumInitSpecies; i++)
             {
-                inspector.SpawnNotIncubated( i, details.Types[i]==LevelDetails.SpeciesType.Producer, details.Sizes[i], details.Greeds[i], details.RandomSeeds[i]);
+                inspector.SpawnNotIncubated( i, details.Types[i]==LevelDetails.SpeciesType.Producer, details.Sizes[i], details.Greeds[i]);
 
                 inspector.SetSpeciesRemovable(i, false);
                 if (details.Edits[i]==LevelDetails.SpeciesEdit.None || details.Edits[i]==LevelDetails.SpeciesEdit.GreedOnly) {
@@ -168,7 +168,7 @@ namespace EcoBuilder
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
 
-            score.SetStarThresholds(details.Metric, details.TargetScore1, details.TargetScore2);
+            score.SetStarThresholds(details.Metric, details.TwoStarScore, details.ThreeStarScore);
             score.OnLevelCompletabled +=  ()=> GameManager.Instance.MakePlayedLevelFinishable();
             score.OnLevelCompletabled +=  ()=> nodelink.ForceUnfocus();
             score.OnLevelCompletabled +=  ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);

@@ -70,7 +70,7 @@ namespace EcoBuilder.NodeLink
                 focusedNode = null;
 
                 focusState = FocusState.Unfocus;
-                OnUnfocused.Invoke(idx);
+                OnUnfocused?.Invoke(idx);
             }
             else if (focusState == FocusState.SuperFocus)
             {

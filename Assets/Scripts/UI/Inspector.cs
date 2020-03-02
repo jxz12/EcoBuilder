@@ -33,7 +33,9 @@ namespace EcoBuilder.UI
         
         [SerializeField] Incubator incubator;
         [SerializeField] ProceduralMeshGenerator factory;
+
         [SerializeField] StatusBar statusPrefab;
+        [SerializeField] Canvas statusCanvas;
 
         private class Species
         {
@@ -116,8 +118,8 @@ namespace EcoBuilder.UI
             nameField.SetNameWithoutCallback(incubated.GObject.name);
             nameField.SetDefaultColour();
 
-            incubated.Status = Instantiate(statusPrefab, transform.parent);
-            incubated.Status.FollowSpecies(incubated.GObject.transform, sizeTrait.PositivifyValue(incubated.BodySize), greedTrait.PositivifyValue(incubated.Greediness));
+            incubated.Status = Instantiate(statusPrefab, statusCanvas.transform);
+            incubated.Status.FollowSpecies(incubated.GObject, sizeTrait.PositivifyValue(incubated.BodySize), greedTrait.PositivifyValue(incubated.Greediness));
 
             nameField.Interactable = true;
             sizeTrait.Interactable = true;
@@ -184,8 +186,8 @@ namespace EcoBuilder.UI
                 graveyard.Remove(toSpawn.Idx);
             }
             spawnedSpecies[toSpawn.Idx] = toSpawn;
-            toSpawn.Status.ShowTraits(true);
-            toSpawn.Status.ShowHealth(true);
+            // toSpawn.Status.ShowTraits(true);
+            // toSpawn.Status.ShowHealth(true);
 
             // must be invoked first so that nodelink focuses after adding
             OnSpawned?.Invoke(toSpawn.Idx, toSpawn.IsProducer, toSpawn.GObject);
@@ -198,8 +200,8 @@ namespace EcoBuilder.UI
             spawnedSpecies.Remove(toBury.Idx);
 
             graveyard[toBury.Idx] = toBury;
-            toBury.Status.ShowTraits(false);
-            toBury.Status.ShowHealth(false);
+            // toBury.Status.ShowTraits(false);
+            // toBury.Status.ShowHealth(false);
 
             OnDespawned?.Invoke(toBury.Idx);
         }
@@ -421,7 +423,7 @@ namespace EcoBuilder.UI
         ///////////////////////////
         // loading from level
 
-        public void SpawnNotIncubated(int idx, bool isProducer, int size, int greed, int randomSeed)
+        public void SpawnNotIncubated(int idx, bool isProducer, int size, int greed)
         {
             Assert.IsFalse(spawnedSpecies.ContainsKey(idx) || graveyard.ContainsKey(idx), "idx already added");
             Assert.IsNull(inspected, "somehow inspecting??");
@@ -431,14 +433,15 @@ namespace EcoBuilder.UI
             norm = greedTrait.NormaliseValue(greed);
             Assert.IsFalse(greed < 0 || greed > 1, "greed not in bounds");
 
-            var toSpawn = new Species(idx, isProducer, randomSeed);
+            int seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            var toSpawn = new Species(idx, isProducer, seed);
 
             toSpawn.BodySize = size;
             toSpawn.Greediness = greed;
-            toSpawn.GObject = factory.GenerateSpecies(isProducer, sizeTrait.NormaliseValue(size), greedTrait.NormaliseValue(greed), randomSeed);
+            toSpawn.GObject = factory.GenerateSpecies(isProducer, sizeTrait.NormaliseValue(size), greedTrait.NormaliseValue(greed), seed);
 
-            toSpawn.Status = Instantiate(statusPrefab, transform.parent);
-            toSpawn.Status.FollowSpecies(toSpawn.GObject.transform, sizeTrait.PositivifyValue(toSpawn.BodySize), greedTrait.PositivifyValue(toSpawn.Greediness));
+            toSpawn.Status = Instantiate(statusPrefab, statusCanvas.transform);
+            toSpawn.Status.FollowSpecies(toSpawn.GObject, sizeTrait.PositivifyValue(toSpawn.BodySize), greedTrait.PositivifyValue(toSpawn.Greediness));
             
             SpawnWithNonUserEvents(toSpawn);
         }
@@ -542,8 +545,12 @@ namespace EcoBuilder.UI
         }
         public void HideStatusBars(bool hidden=true)
         {
-            print("TODO: hide");
-            // StatusBar.HideAll = hidden;
+            statusCanvas.enabled = !hidden;
+        }
+        public void ToggleStatusBars()
+        {
+            print("TODO: maybe make this come back on focus instead");
+            // statusCanvas.enabled = !statusCanvas.enabled;
         }
         
         public void Finish()

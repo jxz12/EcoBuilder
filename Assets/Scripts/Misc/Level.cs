@@ -38,7 +38,6 @@ namespace EcoBuilder
         [SerializeField] int numInitSpecies;
         [SerializeField] List<SpeciesEdit> edits;
         [SerializeField] List<SpeciesType> types;
-        [SerializeField] List<int> randomSeeds;
         [SerializeField] List<int> sizes;
         [SerializeField] List<int> greeds;
 
@@ -51,8 +50,8 @@ namespace EcoBuilder
         [SerializeField] ScoreMetric metric;
         [SerializeField] float mainMultiplier;
         [SerializeField] float altMultiplier;
-        [SerializeField] int targetScore1;
-        [SerializeField] int targetScore2;
+        [SerializeField] int twoStarScore;
+        [SerializeField] int threeStarScore;
 
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
@@ -75,7 +74,6 @@ namespace EcoBuilder
         public int NumInitSpecies { get { return numInitSpecies; } }
         public IReadOnlyList<SpeciesEdit> Edits { get { return edits; } }
         public IReadOnlyList<SpeciesType> Types { get { return types; } }
-        public IReadOnlyList<int> RandomSeeds { get { return randomSeeds; } }
         public IReadOnlyList<int> Sizes { get { return sizes; } }
         public IReadOnlyList<int> Greeds { get { return greeds; } }
 
@@ -86,13 +84,12 @@ namespace EcoBuilder
         public ScoreMetric Metric { get { return metric; } }
         public float MainMultiplier { get { return mainMultiplier; } }
         public float AltMultiplier { get { return altMultiplier; } }
-        public int TargetScore1 { get { return targetScore1; } }
-        public int TargetScore2 { get { return targetScore2; } }
+        public int TwoStarScore { get { return twoStarScore; } }
+        public int ThreeStarScore { get { return threeStarScore; } }
 
         public void SetEcosystem(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets)
         {
             numInitSpecies = plants.Count;
-            this.randomSeeds = randomSeeds;
             this.edits = new List<SpeciesEdit>(Enumerable.Repeat(SpeciesEdit.General, numInitSpecies));
             this.types = new List<SpeciesType>(plants.Select(b=> b? SpeciesType.Producer : SpeciesType.Consumer)); // 
             this.sizes = sizes;
@@ -126,15 +123,14 @@ namespace EcoBuilder
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
 
-        [SerializeField] Canvas canvas;
         [SerializeField] UI.Effect fireworksPrefab, confettiPrefab;
 
         void Awake()
         {
             int n = details.NumInitSpecies;
             int m = details.NumInitInteractions;
-            Assert.IsFalse(n!=details.RandomSeeds.Count || n!=details.Sizes.Count || n!=details.Greeds.Count, "num species and sizes or greeds do not match");
-            Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, "num edge sources and targets do not match");
+            Assert.IsFalse(n!=details.Sizes.Count || n!=details.Greeds.Count || n!=details.Types.Count || n!=details.Edits.Count, $"num species and sizes or greeds do not match in {name}");
+            Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, $"num edge sources and targets do not match in {name}");
 
             titleText.text = details.Title;
             descriptionText.text = details.Description;
@@ -143,8 +139,8 @@ namespace EcoBuilder
         }
         public void SetScoreTexts()
         {
-            target1.text = details.TargetScore1.ToString();
-            target2.text = details.TargetScore2.ToString();
+            target1.text = details.TwoStarScore.ToString();
+            target2.text = details.ThreeStarScore.ToString();
 
             int score = GameManager.Instance.GetHighScoreLocal(details.Idx);
             highScore.text = score<0? "0" : score.ToString();
@@ -152,12 +148,12 @@ namespace EcoBuilder
             if (score > 0) {
                 numStars += 1;
             }
-            if (score >= details.TargetScore1)
+            if (score >= details.TwoStarScore)
             {
                 numStars += 1;
                 target1.color = new Color(1,1,1,.3f);
             }
-            if (score >= details.TargetScore2)
+            if (score >= details.ThreeStarScore)
             {
                 numStars += 1;
                 target2.color = new Color(1,1,1,.3f);
@@ -243,14 +239,19 @@ namespace EcoBuilder
 
 
         // a hack to keep the card on top of the other thumbnails
+        Canvas canvas;
+        GraphicRaycaster gRaycaster;
         public void RenderOnTop(int sortOrder)
         {
+            canvas = gameObject.AddComponent<Canvas>();
+            gRaycaster = gameObject.AddComponent<GraphicRaycaster>();
             canvas.overrideSorting = true;
             canvas.sortingOrder = sortOrder;
         }
         public void RenderBelow()
         {
-            canvas.overrideSorting = false;
+            Destroy(gRaycaster);
+            Destroy(canvas);
         }
 
         ///////////////////////
@@ -330,8 +331,8 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Loop 1.prefab");
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Loop 1.prefab");
+                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
         public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets, string name)

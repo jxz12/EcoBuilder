@@ -454,7 +454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: af7485232731a42408b55532ff50e547, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
@@ -1257,8 +1257,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3298662015735737885}
-  - component: {fileID: 8067456375923808527}
-  - component: {fileID: 5196994472568905525}
   - component: {fileID: 4551156237783506342}
   - component: {fileID: 8998872397350653752}
   m_Layer: 5
@@ -1292,44 +1290,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!223 &8067456375923808527
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3298662015735737884}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 25
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
---- !u!114 &5196994472568905525
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3298662015735737884}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 32
 --- !u!114 &4551156237783506342
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1361,7 +1321,6 @@ MonoBehaviour:
     numInitSpecies: 0
     edits: 
     types: 
-    randomSeeds: 
     sizes: 
     greeds: 
     numInitInteractions: 0
@@ -1370,8 +1329,8 @@ MonoBehaviour:
     metric: 1
     mainMultiplier: 1000
     altMultiplier: 10000
-    targetScore1: 0
-    targetScore2: 0
+    twoStarScore: 0
+    threeStarScore: 0
   nextLevelPrefab: {fileID: 0}
   tutorialPrefab: {fileID: 0}
   starsImage: {fileID: 3298662015200627692}
@@ -1388,7 +1347,7 @@ MonoBehaviour:
   playButton: {fileID: 8352292836414973085}
   quitButton: {fileID: 1020050105958342126}
   replayButton: {fileID: 5138229676841934199}
-  canvas: {fileID: 8067456375923808527}
+  canvas: {fileID: 0}
   fireworksPrefab: {fileID: 6047318902721678427, guid: e8c59575ef85bfe49b00632e5351780c,
     type: 3}
   confettiPrefab: {fileID: 2354476291600607311, guid: b9e80853802ac784aa11b54c39acefdf,

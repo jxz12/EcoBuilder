@@ -74,8 +74,8 @@ namespace EcoBuilder.UI
                 if (lvl.Details.Metric != LevelDetails.ScoreMetric.None)
                 {
                     if (score >= 0) collectedStars += 1;
-                    if (score > lvl.Details.TargetScore1) collectedStars += 1;
-                    if (score > lvl.Details.TargetScore2) collectedStars += 1;
+                    if (score > lvl.Details.TwoStarScore) collectedStars += 1;
+                    if (score > lvl.Details.ThreeStarScore) collectedStars += 1;
                     totalStars += 3;
                 }
             };
@@ -148,7 +148,7 @@ namespace EcoBuilder.UI
         bool IsLearningFinished()
         {
 #if UNITY_EDITOR
-            // return true;
+            return true;
 #endif
             var prefab = firstLearningLevel;
             while (prefab != null) {

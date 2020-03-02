@@ -37,7 +37,9 @@ score explanation and show highest on tap (or make it blink?)
 fix health and traits rendering beind and hide if empty tap and make pretty and hide and on finish
 double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
 more fidelity in link balls
+proper outlining (add another simpler mesh as outline within the same sprite. Links can be done in the shader)
 masks on menu screen
+batch levels on menu together by only adding a canvas when it is in card mode (as before lol)
 remove/disable layout groups as soon as levels are spawned
 remove animators from all UI (especially in menu)
 release game with australian fires as angle?
@@ -58,5 +60,19 @@ The species with the... is...
 
 Phone Simulator
 
-This level is the same as the last, but this time you are only allowed one plant.
-This level gives you a species of weight 8 again, but this time you are only allowed one plant.This level is the same as the last, except that this time you cannot add an extra plant to make the heavy speces survive. See if you can still save it!
+
+structure 1 1
+traits 920 1000
+link 3000 4000
+heavy 1 1100 1900
+heavy 2 2000 2800
+heavy 3 1700 2000
+exclusion 1 1000 1500
+          2 700 750
+          3 900 950
+apparent 1 885 1080
+         2 850 900
+         3 ? ?
+chain 1 900 1000
+      2 950 1000
+      3 ? ?

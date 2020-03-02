@@ -14,6 +14,7 @@ namespace EcoBuilder.Tutorials
             recorder.Hide();
             score.Hide();
             score.DisableStarCalculation(true);
+            inspector.HideStatusBars();
 
             inspector.SetConsumerAvailability(false);
 

@@ -100,26 +100,27 @@ namespace EcoBuilder.Tutorials
         {
             GetComponent<Animator>().SetInteger("State", 2);
         }
-        protected Vector2 ScreenPos(Vector2 viewportPos)
+        protected Vector2 ToAnchoredPos(Vector2 worldPos)
         {
+            Vector2 viewportPos = mainCam.WorldToViewportPoint(worldPos);
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
         protected IEnumerator Shuffle(Transform grab, Transform drop, float period)
         {
             float start = Time.time;
-            transform.position = ScreenPos(mainCam.WorldToViewportPoint(grab.position));
+            transform.position = ToAnchoredPos(grab.position);
 
             targetAnchor = new Vector3(0f,0f);
             while (true)
             {
                 if (((Time.time - start) % period) < (period/2f))
                 {
-                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(drop.position)) + new Vector2(0,-20);
+                    targetPos = ToAnchoredPos(drop.position) + new Vector2(0,-20);
                     Grab();
                 }
                 else
                 {
-                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(grab.position)) + new Vector2(0,-20);
+                    targetPos = ToAnchoredPos(grab.position) + new Vector2(0,-20);
                     Pan();
                 }
                 yield return null;
@@ -130,7 +131,7 @@ namespace EcoBuilder.Tutorials
             Point();
             while (true)
             {
-                targetPos = ScreenPos(mainCam.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                targetPos = ToAnchoredPos(tracked.position) + new Vector2(0,-20);
                 yield return null;
             }
         }

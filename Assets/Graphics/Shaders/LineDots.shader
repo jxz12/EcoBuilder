@@ -23,6 +23,9 @@ Shader "Unlit/DottedLineShader"
             #pragma vertex vert
             #pragma fragment frag
 
+            // this is not possible because of different Properties per line
+            // #pragma multi_compile_instancing
+
             #include "UnityCG.cginc"
 
             float _RepeatCount;
