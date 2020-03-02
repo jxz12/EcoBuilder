@@ -330,8 +330,8 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Loop 1.prefab");
-                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
+                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Loop 1.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
         public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets, string name)

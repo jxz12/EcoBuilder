@@ -107,12 +107,12 @@ namespace EcoBuilder.NodeLink
             }
             MoveNodesToTrophicLevel();
 
-            var heights = HeightBFS(basal);
-            LaplacianDetZero = (heights.Count != nodes.Count);
+            CalculateChainLengths(basal);
+            LaplacianDetZero = (chainLengths.Count != nodes.Count);
 
             MaxChain = 0;
             NumMaxChain = 0;
-            foreach (int height in heights.Values)
+            foreach (int height in chainLengths.Values)
             {
                 if (height == MaxChain)
                 {
@@ -125,8 +125,8 @@ namespace EcoBuilder.NodeLink
                 }
             }
             TallestNodes = new List<int>();
-            foreach (int idx in heights.Keys) {
-                if (heights[idx] == MaxChain) {
+            foreach (int idx in chainLengths.Keys) {
+                if (chainLengths[idx] == MaxChain) {
                     TallestNodes.Add(idx);
                 }
             }
@@ -179,34 +179,28 @@ namespace EcoBuilder.NodeLink
         }
 
         // different BFS because it is directed
-        private Dictionary<int, int> HeightBFS(IEnumerable<int> sources)
+        private Dictionary<int, int> chainLengths = new Dictionary<int, int>();
+        private void CalculateChainLengths(IEnumerable<int> sources)
         {
-            var d = new Dictionary<int, int>();
+            chainLengths.Clear();
             var q = new Queue<int>();
             foreach (int source in sources)
             {
                 q.Enqueue(source);
-                d[source] = 0;
+                chainLengths[source] = 0;
             }
             while (q.Count > 0)
             {
                 int prev = q.Dequeue();
                 foreach (int next in links.GetColumnIndicesInRow(prev))
                 {
-                    if (!d.ContainsKey(next))
+                    if (!chainLengths.ContainsKey(next))
                     {
                         q.Enqueue(next);
-                        d[next] = d[prev] + 1;
+                        chainLengths[next] = chainLengths[prev] + 1;
                     }
-                    // int d_prev;
-                    // if (!d.TryGetValue(next, out d_prev))
-                    // {
-                    //     d[next] = d_prev + 1;
-                    //     q.Enqueue(next);
-                    // }
                 }
             }
-            return d;
         }
 
         ///////////////////////////////////

@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Play Atlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 0
+    variantMultiplier: 1
+    packables:
+    - {fileID: 21300000, guid: ed3b4c75a68320349a9f4481bab4876c, type: 3}
+    - {fileID: 21300000, guid: f7420318a046742439fc1f7e0fb33dc7, type: 3}
+    - {fileID: 21300000, guid: cdcc1931095dc8544b4ab733bf2b3fde, type: 3}
+    - {fileID: 21300000, guid: 7cd59d7fb38a77f4ca92099e8d101b73, type: 3}
+    - {fileID: 21300000, guid: 0b216ed8876b73945ad75ea6feaba010, type: 3}
+    - {fileID: 21300000, guid: cd5efc45d507a414c81bd895a5528a0b, type: 3}
+    - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
+    - {fileID: 21300000, guid: 4dc79b73247092e4ab1b277f39e3f809, type: 3}
+    - {fileID: 21300000, guid: e4430d406d9e002418f1d3cf864fb0ff, type: 3}
+    - {fileID: 21300000, guid: 9c0068a62e7a92d40824e0b03460035a, type: 3}
+    - {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
+    - {fileID: 21300000, guid: 6e66bb159c14d844580544244bf0d9d5, type: 3}
+    - {fileID: 21300000, guid: 7017830725262a140b5d8a3d39a0b11a, type: 3}
+    - {fileID: 21300000, guid: 652fca555eeb9b14ba2044a843f6e69b, type: 3}
+    - {fileID: 21300000, guid: 2cd75ecd937092548af742d256771336, type: 3}
+    - {fileID: 21300000, guid: ac72d49ad4e38cc4687522deb4e615ca, type: 3}
+    - {fileID: 21300000, guid: 0efa60c8cf5ef304fbb22bf75c2c8781, type: 3}
+    - {fileID: 21300000, guid: 4d2c74121b9d52d42aa59140289fef72, type: 3}
+    - {fileID: 21300000, guid: 9fe58d09934c1f240aa9645667fb1dac, type: 3}
+    - {fileID: 21300000, guid: ed7900f571304804fa07d13860b4cae4, type: 3}
+    - {fileID: 21300000, guid: 77d4a09729c897249a3eb01c02486635, type: 3}
+    - {fileID: 21300000, guid: 99a70f9254d08cb4b95ab06982f729a5, type: 3}
+    - {fileID: 21300000, guid: bedd3acb531621c4ca84c09e6e0d67b9, type: 3}
+    - {fileID: 21300000, guid: 5ce583f5eeb793649bba951c6052c148, type: 3}
+    - {fileID: 21300000, guid: 78acd9c5b0fbabc4ab30b80f083a4587, type: 3}
+    - {fileID: 21300000, guid: f6c1dea84b7a31e4b81d0f719c477e2e, type: 3}
+    - {fileID: 21300000, guid: bcb5b4fb84e360f4ab517305cc7ea5ab, type: 3}
+    - {fileID: 21300000, guid: 5f800e8c23f52d9439d7929cf06cd922, type: 3}
+    - {fileID: 21300000, guid: 9e2d10e868bfcc2459840cd98bcfde42, type: 3}
+    - {fileID: 21300000, guid: d3d77b4d37359f04cb754ba29b2a3f09, type: 3}
+    - {fileID: 21300000, guid: 031411cfd15824643a4ccdedb8d36bc2, type: 3}
+    - {fileID: 21300000, guid: 4acc179c0277ddf4fa72e6d397096d84, type: 3}
+    totalSpriteSurfaceArea: 165396
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: e4430d406d9e002418f1d3cf864fb0ff, type: 3}
+  - {fileID: 21300000, guid: cdcc1931095dc8544b4ab733bf2b3fde, type: 3}
+  - {fileID: 21300000, guid: 4d2c74121b9d52d42aa59140289fef72, type: 3}
+  - {fileID: 21300000, guid: 99a70f9254d08cb4b95ab06982f729a5, type: 3}
+  - {fileID: 21300000, guid: 4dc79b73247092e4ab1b277f39e3f809, type: 3}
+  - {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
+  - {fileID: 21300000, guid: 6e66bb159c14d844580544244bf0d9d5, type: 3}
+  - {fileID: 21300000, guid: cd5efc45d507a414c81bd895a5528a0b, type: 3}
+  - {fileID: 21300000, guid: 652fca555eeb9b14ba2044a843f6e69b, type: 3}
+  - {fileID: 21300000, guid: ed3b4c75a68320349a9f4481bab4876c, type: 3}
+  - {fileID: 21300000, guid: 78acd9c5b0fbabc4ab30b80f083a4587, type: 3}
+  - {fileID: 21300000, guid: ed7900f571304804fa07d13860b4cae4, type: 3}
+  - {fileID: 21300000, guid: 5ce583f5eeb793649bba951c6052c148, type: 3}
+  - {fileID: 21300000, guid: 9c0068a62e7a92d40824e0b03460035a, type: 3}
+  - {fileID: 21300000, guid: 7017830725262a140b5d8a3d39a0b11a, type: 3}
+  - {fileID: 21300000, guid: 77d4a09729c897249a3eb01c02486635, type: 3}
+  - {fileID: 21300000, guid: f7420318a046742439fc1f7e0fb33dc7, type: 3}
+  - {fileID: 21300000, guid: f6c1dea84b7a31e4b81d0f719c477e2e, type: 3}
+  - {fileID: 21300000, guid: 0efa60c8cf5ef304fbb22bf75c2c8781, type: 3}
+  - {fileID: 21300000, guid: 0b216ed8876b73945ad75ea6feaba010, type: 3}
+  - {fileID: 21300000, guid: 9e2d10e868bfcc2459840cd98bcfde42, type: 3}
+  - {fileID: 21300000, guid: 9fe58d09934c1f240aa9645667fb1dac, type: 3}
+  - {fileID: 21300000, guid: ac72d49ad4e38cc4687522deb4e615ca, type: 3}
+  - {fileID: 21300000, guid: bedd3acb531621c4ca84c09e6e0d67b9, type: 3}
+  - {fileID: 21300000, guid: bcb5b4fb84e360f4ab517305cc7ea5ab, type: 3}
+  - {fileID: 21300000, guid: 5f800e8c23f52d9439d7929cf06cd922, type: 3}
+  - {fileID: 21300000, guid: 4acc179c0277ddf4fa72e6d397096d84, type: 3}
+  - {fileID: 21300000, guid: d3d77b4d37359f04cb754ba29b2a3f09, type: 3}
+  - {fileID: 21300000, guid: 2cd75ecd937092548af742d256771336, type: 3}
+  - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
+  - {fileID: 21300000, guid: 7cd59d7fb38a77f4ca92099e8d101b73, type: 3}
+  - {fileID: 21300000, guid: 031411cfd15824643a4ccdedb8d36bc2, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - textinput_a
+  - box_a_02
+  - constraint loop
+  - kg
+  - innerbox_a_btn
+  - btn_c_red
+  - btn_c_grey
+  - box_b_03
+  - leaf
+  - box_a
+  - target2
+  - refresh
+  - target1
+  - btn_c_beige
+  - btn_c_emerald
+  - collision
+  - box_a_01
+  - gage_b_empty
+  - constraint edge
+  - box_a_04
+  - gage_b_fill06
+  - undo
+  - constraint chain
+  - nametag
+  - gage_b_fill02
+  - gage_b_fill05
+  - box_c_03
+  - star white
+  - paw
+  - box_b_04
+  - box_a_03
+  - icon_arrowdown
+  m_Tag: Play Atlas
+  m_IsVariant: 0

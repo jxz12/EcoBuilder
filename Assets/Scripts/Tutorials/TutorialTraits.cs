@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace EcoBuilder.Tutorials
 {
@@ -20,8 +21,10 @@ namespace EcoBuilder.Tutorials
             targetZRot = 45;  
 
             var nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
-            animal = nodes[1];
+            Assert.IsTrue(nodes.Length == 2);
+
             plant = nodes[0];
+            animal = nodes[1];
 
             nodelink.SetIfNodeInteractable(animal.Idx, false);
 
@@ -39,6 +42,7 @@ namespace EcoBuilder.Tutorials
                 help.ResetPosition();
             }
             
+            smoothTime = .3f;
             StartCoroutine(Track(plant.transform));
             DetachSmellyListeners();
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
@@ -69,8 +73,8 @@ namespace EcoBuilder.Tutorials
             nodelink.SetIfNodeInteractable(animal.Idx, true);
             nodelink.SetIfNodeInteractable(plant.Idx, false);
 
-            smoothTime = .3f;
             targetSize = Vector2.zero;
+            smoothTime = .3f;
             
             help.Showing = false;
             StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100); }));
@@ -109,25 +113,6 @@ namespace EcoBuilder.Tutorials
 
             print("TODO: fix the report card");
             StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
-        }
-        IEnumerator WaitThenDo(float seconds, Action Todo)
-        {
-            if (seconds > 0) {
-                yield return new WaitForSeconds(seconds);
-            }
-            Todo();
-        }
-        IEnumerator Track(Transform tracked)
-        {
-            targetAnchor = new Vector2(0,0);
-            targetSize = new Vector2(100,100);
-            smoothTime = .2f;
-            Point();
-            while (true)
-            {
-                targetPos = ScreenPos(mainCam.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
-                yield return null;
-            }
         }
         IEnumerator ShuffleOnSlider(float period, float yPos)
         {

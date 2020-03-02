@@ -7,16 +7,15 @@ namespace EcoBuilder.UI
     public class StatusBar : MonoBehaviour
     {
         [SerializeField] Image health, healthBG;
-        [SerializeField] TMPro.TextMeshProUGUI sizeText, greedText;
-        [SerializeField] Canvas canvas;
+        [SerializeField] TMPro.TextMeshProUGUI traitsText;
 
         RectTransform rt;
         void Awake()
         {
             rt = GetComponent<RectTransform>();
-            canvas.worldCamera = Camera.main;
         }
-
+        Camera eye;
+        Transform target;
         public void FollowSpecies(Transform target, int size, int greed)
         {
             SetSize(size);
@@ -24,16 +23,17 @@ namespace EcoBuilder.UI
             ShowTraits(true);
             ShowHealth(false);
 
-            rt.SetParent(target);
-            rt.localScale = new Vector3(.01f, .01f, .01f);
-            rt.localPosition = new Vector3(0, 0, -.5f);
-            rt.localRotation = Quaternion.identity;
+            this.target = target;
+            this.eye = Camera.main;
+
+            // rt.SetParent(target);
+            // rt.localScale = new Vector3(.01f, .01f, .01f);
+            // rt.localPosition = new Vector3(0, 0, -.5f);
+            // rt.localRotation = Quaternion.identity;
         }
         public void ShowTraits(bool visible)
         {
-            sizeText.enabled = visible;
-            greedText.enabled = false;
-            // print("TODO: greed");
+            traitsText.enabled = true;
         }
         public void ShowHealth(bool visible)
         {
@@ -57,19 +57,19 @@ namespace EcoBuilder.UI
         }
         public void SetSize(int size)
         {
-            sizeText.text = size.ToString();
+            traitsText.text = $" {size}";
         }
         public void SetGreed(int greed)
         {
-            greedText.text = greed.ToString();
+            print("TODO: greed status bar");
         }
-        void Update()
+        void LateUpdate()
         {
-            // if (toFollow == null) {
-            //     Destroy(gameObject);
-            // } else {
-            //     rt.position = Camera.main.WorldToScreenPoint(toFollow.position);
-            // }
+            if (target == null) {
+                Destroy(gameObject);
+            } else {
+                rt.position = eye.WorldToScreenPoint(target.position);
+            }
         }
     }
 }

@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Face Atlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 2ced268f6dcb9a848aad6ce8b60d130a, type: 3}
+    - {fileID: 2800000, guid: 9524ae47136a1e54399305cacc05c1b8, type: 3}
+    - {fileID: 2800000, guid: 1197f90b1e3ca42558b658ed2d76b149, type: 3}
+    - {fileID: 2800000, guid: 4d55ef837b84a4a3480a86707c18c3c1, type: 3}
+    - {fileID: 2800000, guid: ac8a85510ea9e41c0b08a82f68a363cd, type: 3}
+    - {fileID: 2800000, guid: 14b770542ac834cbeadfc6dc8e0f14d2, type: 3}
+    - {fileID: 2800000, guid: 85abd32f6c2ee4ab6b122f8a98c1b457, type: 3}
+    - {fileID: 2800000, guid: 9461eca521b48468385e7821de253c22, type: 3}
+    - {fileID: 2800000, guid: 97c89b32349c84f3bb8a2e13b425b34f, type: 3}
+    - {fileID: 2800000, guid: 2afa9230980714a97bec84e55f0c567a, type: 3}
+    - {fileID: 2800000, guid: 13881bf5d864042efae2e61a8191f6d2, type: 3}
+    - {fileID: 2800000, guid: 629354f28addb4f3f935f13fdb71636a, type: 3}
+    - {fileID: 2800000, guid: 5bc38df8af2cd55468d093897890533c, type: 3}
+    - {fileID: 2800000, guid: e5c5834ec0c9b4e7ca444cfa3a2f22ed, type: 3}
+    - {fileID: 2800000, guid: 06bcdf080e608426aa1ea780b2a4a038, type: 3}
+    - {fileID: 2800000, guid: e0418f6f76b454ef4ba2465203cfa0f6, type: 3}
+    - {fileID: 2800000, guid: 8b9235b157b24498489e923540904503, type: 3}
+    - {fileID: 2800000, guid: 853ba6cb419a3407381f1c4c282990ec, type: 3}
+    - {fileID: 2800000, guid: 4c670d76532bf45dba251ad05e4597eb, type: 3}
+    - {fileID: 2800000, guid: eca6d910c880441e0895842ca74f2579, type: 3}
+    - {fileID: 2800000, guid: c751e071c9b3f4a8db2c6cd4de76da83, type: 3}
+    - {fileID: 2800000, guid: de41a2dcab7f1436e8d4710b7e82d7ed, type: 3}
+    totalSpriteSurfaceArea: 0
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_Tag: Face Atlas
+  m_IsVariant: 0

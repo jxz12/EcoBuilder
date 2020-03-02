@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -78,6 +79,13 @@ namespace EcoBuilder.Tutorials
             pointerRT.anchorMax = pointerRT.anchorMin = Vector2.SmoothDamp(pointerRT.anchorMin, targetAnchor, ref anchosity, smoothTime);
             zRotation = Mathf.SmoothDamp(zRotation, targetZRot, ref rotocity, smoothTime);
             pointerRT.rotation = Quaternion.Euler(0, 0, zRotation);
+
+// #if UNITY_EDITOR
+//             if (Input.GetKeyDown(KeyCode.R))
+//             {
+//                 print("TODO: restart");
+//             }
+// #endif
         }
 
         protected void Point()
@@ -96,8 +104,48 @@ namespace EcoBuilder.Tutorials
         {
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
+        protected IEnumerator Shuffle(Transform grab, Transform drop, float period)
+        {
+            float start = Time.time;
+            transform.position = ScreenPos(mainCam.WorldToViewportPoint(grab.position));
 
-        // protected Action Detach;
+            targetAnchor = new Vector3(0f,0f);
+            while (true)
+            {
+                if (((Time.time - start) % period) < (period/2f))
+                {
+                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(drop.position)) + new Vector2(0,-20);
+                    Grab();
+                }
+                else
+                {
+                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(grab.position)) + new Vector2(0,-20);
+                    Pan();
+                }
+                yield return null;
+            }
+        }
+        protected IEnumerator Track(Transform tracked)
+        {
+            Point();
+            while (true)
+            {
+                targetPos = ScreenPos(mainCam.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
+                yield return null;
+            }
+        }
+        protected IEnumerator WaitThenDo(float seconds, Action Todo)
+        {
+            if (seconds > 0) {
+                yield return new WaitForSeconds(seconds);
+            }
+            Todo();
+        }
+
+
+        ////////////////////////
+        // attaching to events
+
         List<Action> smellyListeners = new List<Action>(); // eww
         protected void DetachSmellyListeners()
         {

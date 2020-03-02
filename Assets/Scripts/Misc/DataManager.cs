@@ -312,8 +312,6 @@ namespace EcoBuilder
         private Dictionary<int, LeaderboardCache> cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
         private void ParseLeaderboards(string returned)
         {
-            print("".Split(';').Length);
-
             print(returned);
             cachedLeaderboards.Clear();
             var levels = returned.Split(';');

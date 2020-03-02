@@ -114,6 +114,19 @@ namespace EcoBuilder.UI
             Display(Type.Loop, lenLoop);
         }
 
+        public void HighlightPaw(bool highlighted=true)
+        {
+            print("TODO: hightlight paw");
+        }
+        public void HighlightChain(bool highlighted=true)
+        {
+            print("TODO: highlight chain");
+        }
+        public void HighlightLoop(bool highlighted=true)
+        {
+            print("TODO: highlight loop");
+        }
+
         public void UpdateDisjoint(bool disjoint)
         {
             Disjoint = disjoint;

@@ -141,12 +141,15 @@ namespace EcoBuilder.UI
                 deleteAccount.gameObject.SetActive(false);
             }
 
-            GetComponent<Animator>().SetTrigger("Reveal");
             StartCoroutine(WaitThenShowLogo(.7f));
+            Reveal();
             GameManager.Instance.HelpText.Message = splashHelp;
         }
         bool IsLearningFinished()
         {
+#if UNITY_EDITOR
+            // return true;
+#endif
             var prefab = firstLearningLevel;
             while (prefab != null) {
                 if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) < 0) {
@@ -229,6 +232,71 @@ namespace EcoBuilder.UI
         public void HideHelp()
         {
             GameManager.Instance.HelpText.Showing = false;
+        }
+
+        ///////////////
+        // animation
+        [SerializeField] RectTransform splashRT, levelsRT, settingsRT, returnRT;
+        enum State { Hidden, Splash, Levels, Settings };
+        private State state;
+        void Reveal()
+        {
+            StopAllCoroutines();
+            StartCoroutine(TweenY(splashRT, -1000, 0));
+
+            Assert.IsTrue(state == State.Hidden);
+            state = State.Splash;
+        }
+        public void ShowSplash()
+        {
+            StopAllCoroutines();
+            StartCoroutine(TweenY(splashRT, -1000, 0));
+            StartCoroutine(TweenY(returnRT, 60, -60));
+
+            Assert.IsTrue(state==State.Levels || state==State.Settings);
+            if (state == State.Levels) {
+                StartCoroutine(TweenY(levelsRT, 0, -1000));
+            } else if (state == State.Settings) {
+                StartCoroutine(TweenY(settingsRT, 0, -1000));
+            }
+        }
+        public void ShowLevels()
+        {
+            StopAllCoroutines();
+            StartCoroutine(TweenY(splashRT, 0, -1000));
+            StartCoroutine(TweenY(levelsRT, -1000, 0));
+            StartCoroutine(TweenY(returnRT, -60, 60));
+
+            state = State.Levels;
+        }
+        public void ShowSettings()
+        {
+            StopAllCoroutines();
+            StartCoroutine(TweenY(splashRT, 0, -1000));
+            StartCoroutine(TweenY(settingsRT, -1000, 0));
+            StartCoroutine(TweenY(returnRT, -60, 60));
+
+            state = State.Settings;
+        }
+        [SerializeField] float tweenDuration;
+        IEnumerator TweenY(RectTransform toMove, float startY, float endY)
+        {
+            Vector3 startPos = toMove.anchoredPosition;
+            float startTime = Time.time;
+            while (Time.time < startTime+tweenDuration)
+            {
+                float t = (Time.time-startTime) / tweenDuration;
+                // quadratic ease in-out
+                if (t < .5f) {
+                    t = 2*t*t;
+                } else {
+                    t = -1 + (4-2*t)*t;
+                }
+                float y = Mathf.Lerp(startY, endY, t);
+                toMove.anchoredPosition = new Vector3(startPos.x, y, startPos.z);
+                yield return null;
+            }
+            toMove.anchoredPosition = new Vector3(startPos.x, endY, startPos.z);
         }
     }
 }

@@ -117,7 +117,7 @@ namespace EcoBuilder.UI
             }
         }
 
-        // TODO: SMELLY
+        // TODO: this is a smelly mess
         public string Message {
             get { return message.text; }
             set { StopAllCoroutines(); message.text = value; ForceUpdateLayout(); }

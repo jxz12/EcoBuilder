@@ -12,7 +12,7 @@ namespace EcoBuilder.Tutorials
             targetSize = Vector2.zero;
             recorder.Hide();
             inspector.HideSizeSlider();
-            // inspector.HideGreedSlider();
+            inspector.HideGreedSlider();
             inspector.HideRemoveButton();
             score.Hide();
             score.DisableStarCalculation();
@@ -23,7 +23,7 @@ namespace EcoBuilder.Tutorials
             ExplainIntro();
         }
         int producerIdx=-1, herbivoreIdx=-1;
-        void ListenForIdxs(int idx, bool isProducer, GameObject gameObject)
+        void ListenForInitIdxs(int idx, bool isProducer, GameObject gameObject)
         {
             if (isProducer) {
                 producerIdx = idx;
@@ -34,7 +34,7 @@ namespace EcoBuilder.Tutorials
         void ExplainIntro()
         {
             DetachSmellyListeners();
-            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ListenForIdxs);
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ListenForInitIdxs);
             AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(1, ExplainChainOfOne));
         }
         void CheckChainOfHeight(int heightGoal, Action Todo)
@@ -61,18 +61,12 @@ namespace EcoBuilder.Tutorials
             nodelink.SetIfNodeCanBeTarget(herbivoreIdx, false);
             nodelink.SetIfNodeCanBeSource(producerIdx, false);
 
-            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ListenForIdxs2);
             AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainChainOfTwo(1.5f)));
         }
-        int carnivoreIdx=-1;
-        void ListenForIdxs2(int idx, bool isProducer, GameObject gameObject)
-        {
-            carnivoreIdx = idx;
-        }
+        int carnivoreIdx=2; // nodes are not removable so this must be true
         void ExplainChainOfTwo(float delay)
         {
             DetachSmellyListeners();
-            Assert.IsTrue(carnivoreIdx!=-1);
 
             nodelink.ForceUnfocus();
             help.Showing = false;
@@ -106,13 +100,6 @@ namespace EcoBuilder.Tutorials
             recorder.Hide(false);
             constraints.ConstrainChain(2);
             nodelink.SetIfNodeCanBeTarget(herbivoreIdx, true);
-        }
-
-        
-        IEnumerator WaitThenDo(float seconds, Action Todo)
-        {
-            yield return new WaitForSeconds(seconds);
-            Todo();
         }
     }
 }

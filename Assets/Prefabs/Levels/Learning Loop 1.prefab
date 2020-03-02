@@ -108,7 +108,8 @@ PrefabInstance:
       propertyPath: details.introduction
       value: This level will teach you the final feature of food webs that you will
         need to know, known as a loop. Let's construct one! The first step is to
-        build a chain of length three. Try doing that now.
+        build a chain of length three. Some species will go extinct, but do not worry
+        about that for now.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

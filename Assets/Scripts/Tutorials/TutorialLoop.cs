@@ -1,52 +1,70 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace EcoBuilder.Tutorials
 {
     // this tutorial teaches the idea of loops
     public class TutorialLoop : Tutorial
     {
+        NodeLink.Node[] nodes = new NodeLink.Node[4];
         protected override void StartLesson()
         {
             targetSize = Vector2.zero;
 
             inspector.HideSizeSlider();
-            // inspector.HideGreedSlider();
+            inspector.HideGreedSlider();
             inspector.HideRemoveButton();
             score.Hide();
             score.DisableStarCalculation();
+
+            constraints.ConstrainLeaf(1);
+            constraints.ConstrainPaw(3);
+
+            nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
+            Assert.IsTrue(nodes.Length == 4);
+
+            nodelink.SetIfNodeInteractable(0, false);
+            nodelink.SetIfNodeCanBeTarget(1, false);
+            nodelink.SetIfNodeInteractable(2, false);
+            nodelink.SetIfNodeCanBeSource(3, false);
 
             ExplainIntro();
         }
         void ExplainIntro()
         {
-            // ask the user to make a chain of three first
-            // help.Message = "This level will teach you the final feature of food webs that you will need to know, known as a loop. Let's construct one! The first step is to build a chain of length three. Try doing that now.";
+            DetachSmellyListeners();
 
             DetachSmellyListeners();
-            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(3, ExplainChainThree));
+            help.Showing = true;
+            // now make them connect the lowest animal to the highest
+
+            targetSize = new Vector2(100, 100);
+            smoothTime = .6f;
+            if (GameManager.Instance.ReverseDragDirection) {
+                StartCoroutine(Shuffle(nodes[3].transform, nodes[1].transform, 2.5f));
+            } else {
+                StartCoroutine(Shuffle(nodes[1].transform, nodes[3].transform, 2.5f));
+            }
+
+            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainWrongLoop(1.5f)));
         }
+
         void CheckChainOfHeight(int heightGoal, Action Todo)
         {
             if (nodelink.MaxChain == heightGoal) {
                 Todo.Invoke();
             }
         }
-        void ExplainChainThree()
-        {
-            help.Message = "Now make the animal with the longest chain eat the one eating the plant.";
-            help.Showing = true;
-            // now make them connect the lowest animal to the highest
-            print("TODO: disallow other actions somehow, and add track coroutine");
-
-            DetachSmellyListeners();
-            AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainWrongLoop(1.5f)));
-        }
         void ExplainWrongLoop(float delay)
         {
+            StopAllCoroutines();
+
+            targetSize = Vector2.zero;
+
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Oops! You may think that this is a loop, because there is a ring of species connected to the plant, but it is not. This is because the direction around the ring does not go all the way round. Let's fix that by removing the link you just made."; help.Showing = true; }));
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Oops! You may think that this is a loop, because there is a ring of species connected to the plant, but it is not. This is because the links to not all flow around in one direction. Let's fix that by first removing the link you just made."; help.Showing = true; }));
 
             DetachSmellyListeners();
             AttachSmellyListener(nodelink, "OnLayedOut", ()=>CheckChainOfHeight(3, ExplainWrongLoop2));
@@ -91,14 +109,6 @@ namespace EcoBuilder.Tutorials
         void ExplainDoubleLoop2()
         {
             help.Message = "Good! There are now two loops in the same ecosystem. However, your score will only ";
-        }
-
-        // create another loop attached to the same one
-        // task with 
-        IEnumerator WaitThenDo(float seconds, Action Todo)
-        {
-            yield return new WaitForSeconds(seconds);
-            Todo();
         }
     }
 }

@@ -87,26 +87,25 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             Assert.IsFalse(isProducer, "second species should be consumer");
 
+            inspector.HideIncubatorButtons();
+            targetSize = new Vector3(100,100);
+            targetZRot = 360;
+
             secondSpecies = second;
             secondIdx = idx;
-
             smoothTime = .7f;
+
             if (GameManager.Instance.ReverseDragDirection)
             {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from it to the " + firstSpecies.name + " to make them interact.";
-                StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
+                StartCoroutine(Shuffle(secondSpecies.transform, firstSpecies.transform, 2f));
             }
             else
             {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from the " + firstSpecies.name + " to it to make them interact.";
-                StartCoroutine(Shuffle(secondSpecies.transform, firstSpecies.transform, 2f));
+                StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
             }
             help.Showing = true;
-
-            targetSize = new Vector3(100,100);
-            targetAnchor = new Vector3(0f,0f);
-            targetZRot = 360;
-            inspector.HideIncubatorButtons();
 
             AttachSmellyListener<int,int>(nodelink, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
         }
@@ -119,7 +118,6 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             nodelink.ForceUnfocus();
 
-            smoothTime = .3f;
             if (GameManager.Instance.ReverseDragDirection)
             {
                 StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."; }));
@@ -139,6 +137,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
+            smoothTime = .3f;
 
             nodelink.ForceUnfocus();
             nodelink.SetIfNodeInteractable(firstIdx, false);
@@ -232,44 +231,6 @@ namespace EcoBuilder.Tutorials
             // help.SetPixelWidth(400);
             // StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetPivotHeight(0); help.SetAnchorHeight(.2f); help.Message = "Great! You can access the next level by tapping it here."; }));
 
-        }
-
-        IEnumerator WaitThenDo(float seconds, Action Todo)
-        {
-            if (seconds > 0) {
-                yield return new WaitForSeconds(seconds);
-            }
-            Todo();
-        }
-        IEnumerator Shuffle(Transform grab, Transform drop, float time)
-        {
-            float start = Time.time;
-            transform.position = ScreenPos(mainCam.WorldToViewportPoint(grab.position));
-
-            float prevSmoothTime = smoothTime;
-            while (true)
-            {
-                if (((Time.time - start) % time) < (time/2f))
-                {
-                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(grab.position)) + new Vector2(0,-20);
-                    Grab();
-                }
-                else
-                {
-                    targetPos = ScreenPos(mainCam.WorldToViewportPoint(drop.position)) + new Vector2(0,-20);
-                    Pan();
-                }
-                yield return null;
-            }
-        }
-        IEnumerator Track(Transform tracked)
-        {
-            Point();
-            while (true)
-            {
-                targetPos = ScreenPos(mainCam.WorldToViewportPoint(tracked.position)) + new Vector2(0,-20);
-                yield return null;
-            }
         }
     }
 }

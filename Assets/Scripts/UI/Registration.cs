@@ -45,7 +45,7 @@ namespace EcoBuilder.UI
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
             privacyOpen.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
 
-            StartCoroutine(yTween(1,-1000,0,true));
+            StartCoroutine(TweenY(1,-1000,0,true));
         }
         public void Begin()
         {
@@ -120,7 +120,7 @@ namespace EcoBuilder.UI
                 if (_state == State.Demographics) { // on register
                     GameManager.Instance.HelpText.DelayThenShow(2f, null);
                 }
-                StartCoroutine(yTween(1,0,-1000,false));
+                StartCoroutine(TweenY(1,0,-1000,false));
                 break;
             }
             _state = state;
@@ -151,7 +151,7 @@ namespace EcoBuilder.UI
             navObj.SetActive(true);
         }
 
-        IEnumerator yTween(float duration, float yStart, float yEnd, bool applyShade)
+        IEnumerator TweenY(float duration, float yStart, float yEnd, bool applyShade)
         {
             Color startCol = new Color(0,0,0,applyShade?0:.5f);
             Vector3 startPos = new Vector3(0, yStart, 0);

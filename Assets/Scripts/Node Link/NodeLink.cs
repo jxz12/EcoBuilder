@@ -265,6 +265,12 @@ namespace EcoBuilder.NodeLink
         {
             return links.GetColumnIndicesInRow(source);
         }
+        // for tutorial
+        public int GetNodeChainLength(int idx)
+        {
+            Assert.IsTrue(chainLengths.ContainsKey(idx));
+            return chainLengths[idx];
+        }
 
 
         ////////////
@@ -386,7 +392,7 @@ namespace EcoBuilder.NodeLink
             tooltip.Enable();
             tweenNodes = dragging = false;
 
-            print("TODO: this is a bit messy and doesn't work if graph is spinning");
+            print("TODO: doesn't work if graph is spinning");
         }
         public void UntooltipNode(int idx)
         {

@@ -4,9 +4,9 @@ claim moneys
 LEVELS:
 apparent 3
 chain 3
-all loops, including tutorial
+all loops, including TUTORIAL
 a final boss
-research tutorial, make score constraint shiny, max instead of min producers or consumers
+research TUTORIAL, make score constraint shiny, max instead of min producers or consumers
 
 are you sure button
 
@@ -21,6 +21,9 @@ to test layout, add nodes and links and make sure stress is lower than a certain
 double check the score for certiain combinations too
 automated random graphs to test for no NaN
 
+check all UI.Image components to make sure they have materials
+check all serializefields to make sure they are not null
+
 # Research world
 fix superfocus small nodes
 make leaderboards more explorable
@@ -28,7 +31,9 @@ finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other
-score explanation and show highest on tap
+do cholesky instead of SGD
+center the status bars, but attach them with an offset to species world position
+score explanation and show highest on tap (or make it blink?)
 fix health and traits rendering beind and hide if empty tap and make pretty and hide and on finish
 double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
 more fidelity in link balls
