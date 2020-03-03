@@ -227,6 +227,7 @@ namespace EcoBuilder
         public void ShowResultsScreen()
         {
             report.ShowResults();
+            GameManager.Instance.HelpText.Showing = false;
         }
     }
 }
