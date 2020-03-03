@@ -78,7 +78,7 @@ namespace EcoBuilder.UI
             Display(type, constraintMap[type].value); // make sure colour matches
 
             // only add the divider if there's something beneath it
-            divider.gameObject.SetActive(constraintMap[Type.Edge].Active && constraintMap[Type.Chain].Active && constraintMap[Type.Loop].Active);
+            divider.gameObject.SetActive(constraintMap[Type.Edge].Active || constraintMap[Type.Chain].Active || constraintMap[Type.Loop].Active);
         }
         private void Display(Type type, int value)
         {
@@ -91,7 +91,6 @@ namespace EcoBuilder.UI
             }
             else
             {
-                constraint.counter.text = 
                 constraint.counter.text = prefix + value + "/" + constraintMap[type].threshold;
                 constraint.icon.color = value<constraint.threshold? Color.white : (type==Type.Leaf||type==Type.Paw? new Color(1,1,1,.5f) : Color.green);
             }

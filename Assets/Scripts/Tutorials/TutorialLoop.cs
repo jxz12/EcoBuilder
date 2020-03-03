@@ -126,7 +126,7 @@ namespace EcoBuilder.Tutorials
             targetZRot = 0;
             StartCoroutine(WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "And now make this animal eat the new species."; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(extraTransform, nodes[3].transform, 3f));}));
 
-            AttachSmellyListener(nodelink, "OnLayedOut", ()=>ExplainDoubleLoop(1.5f));
+            AttachSmellyListener(nodelink, "OnLayedOut", ()=>ExplainDoubleLoop(2f));
         }
         void ExplainDoubleLoop(float delay)
         {

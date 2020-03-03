@@ -106,7 +106,7 @@ namespace EcoBuilder.Tutorials
                 grab = drop;
                 drop = temp;
             }
-            transform.position = ToAnchoredPos(grab.position);
+            // transform.position = ToAnchoredPos(grab.position);
 
             targetAnchor = new Vector3(0f,0f);
             while (true)

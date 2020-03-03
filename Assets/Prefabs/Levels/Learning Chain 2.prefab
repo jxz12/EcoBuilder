@@ -207,6 +207,16 @@ PrefabInstance:
       value: Great job! You may have noticed that the highest score you can get in
         this level is not much higher than in the previous.
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.twoStarScore
+      value: 950
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.threeStarScore
+      value: 1000
+      objectReference: {fileID: 0}
     - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount

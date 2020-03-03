@@ -26,6 +26,14 @@ namespace EcoBuilder
         [SerializeField] int minChain;
         [SerializeField] int minLoop;
 
+        // score
+        public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
+        [SerializeField] ScoreMetric metric;
+        [SerializeField] float mainMultiplier;
+        [SerializeField] float altMultiplier;
+        [SerializeField] int twoStarScore;
+        [SerializeField] int threeStarScore;
+
         // gameplay
         [SerializeField] bool sizeSliderHidden;
         [SerializeField] bool greedSliderHidden;
@@ -45,14 +53,6 @@ namespace EcoBuilder
         [SerializeField] List<int> sources;
         [SerializeField] List<int> targets;
 
-        // score
-        public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
-        [SerializeField] ScoreMetric metric;
-        [SerializeField] float mainMultiplier;
-        [SerializeField] float altMultiplier;
-        [SerializeField] int twoStarScore;
-        [SerializeField] int threeStarScore;
-
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
         public string Description { get { return description; } }
@@ -65,6 +65,12 @@ namespace EcoBuilder
         public int MinEdges { get { return minEdges; } }
         public int MinChain { get { return minChain; } }
         public int MinLoop { get { return minLoop; } }
+
+        public ScoreMetric Metric { get { return metric; } }
+        public float MainMultiplier { get { return mainMultiplier; } }
+        public float AltMultiplier { get { return altMultiplier; } }
+        public int TwoStarScore { get { return twoStarScore; } }
+        public int ThreeStarScore { get { return threeStarScore; } }
 
         public bool SizeSliderHidden { get { return sizeSliderHidden; } }
         public bool GreedSliderHidden { get { return greedSliderHidden; } }
@@ -80,12 +86,6 @@ namespace EcoBuilder
         public int NumInitInteractions { get { return numInitInteractions; } }
         public IReadOnlyList<int> Sources { get { return sources; } }
         public IReadOnlyList<int> Targets { get { return targets; } }
-
-        public ScoreMetric Metric { get { return metric; } }
-        public float MainMultiplier { get { return mainMultiplier; } }
-        public float AltMultiplier { get { return altMultiplier; } }
-        public int TwoStarScore { get { return twoStarScore; } }
-        public int ThreeStarScore { get { return threeStarScore; } }
 
         public void SetEcosystem(List<int> randomSeeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets)
         {
@@ -333,7 +333,7 @@ namespace EcoBuilder
 #if UNITY_EDITOR
         public static Level DefaultPrefab {
             get {
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Loop 1.prefab");
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Chain 1.prefab");
                 // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
             }
         }
