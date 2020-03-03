@@ -1,4 +1,4 @@
-Shader "UI/Fast-Default"
+Shader "UI/Fast"
 {
     Properties
     {
