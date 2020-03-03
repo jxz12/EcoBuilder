@@ -28,7 +28,7 @@ namespace EcoBuilder
             inspector.OnDespawned +=    (i)=> constraints.RemoveIdx(i);
             inspector.OnSizeSet +=    (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=   (i,x)=> model.SetSpeciesInterference(i,x);
-            inspector.OnConflicted += (i,m)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
+            inspector.OnConflicted += (i,m)=> nodelink.OutlineNode(i, Color.red);
             inspector.OnConflicted += (i,m)=> nodelink.TooltipNode(i, m);
             inspector.OnUnconflicted += (i)=> nodelink.UnoutlineNode(i);
             inspector.OnUnconflicted += (i)=> nodelink.UntooltipNode(i);
@@ -38,6 +38,7 @@ namespace EcoBuilder
 
             nodelink.OnEmptyTapped += ()=> inspector.CancelIncubation();
             nodelink.OnEmptyTapped += ()=> inspector.ToggleStatusBars();
+            nodelink.AttachOutliner(inspector.OutlineSpecies);
 
             ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things
@@ -61,13 +62,13 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> constraints.UpdateStability(model.Stable);
             model.OnEndangered += (i)=> inspector.MakeSpeciesObjectExtinct(i);
             model.OnRescued +=    (i)=> inspector.MakeSpeciesObjectRescued(i);
-            model.OnEndangered += (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
+            // model.OnEndangered += (i)=> nodelink.FlashNode(i);
+            // model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
 
             constraints.OnLeafFilled +=    (b)=> inspector.SetProducerAvailability(b);
             constraints.OnPawFilled +=     (b)=> inspector.SetConsumerAvailability(b);
-            constraints.OnChainHovered +=   ()=> nodelink.OutlineChain(cakeslice.Outline.Colour.Red);
-            constraints.OnLoopHovered +=    ()=> nodelink.OutlineLoop(cakeslice.Outline.Colour.Red);
+            constraints.OnChainHovered +=   ()=> nodelink.OutlineChain(Color.red);
+            constraints.OnLoopHovered +=    ()=> nodelink.OutlineLoop(Color.red);
             constraints.OnChainUnhovered += ()=> nodelink.UnoutlineChainOrLoop();
             constraints.OnLoopUnhovered +=  ()=> nodelink.UnoutlineChainOrLoop();
 
@@ -136,7 +137,7 @@ namespace EcoBuilder
                 if (details.Types[i]==LevelDetails.SpeciesType.Specialist) {
                     nodelink.SetIfNodeCanBeTarget(i, false);
                 }
-                nodelink.OutlineNode(i, details.Edits[i]==LevelDetails.SpeciesEdit.None? cakeslice.Outline.Colour.Blue : cakeslice.Outline.Colour.Clear);
+                nodelink.OutlineNode(i, details.Edits[i]==LevelDetails.SpeciesEdit.None? Color.blue : Color.clear);
             }
             // add interactions
             for (int ij=0; ij<details.NumInitInteractions; ij++)
@@ -146,7 +147,7 @@ namespace EcoBuilder
 
                 nodelink.AddLink(i, j);
                 nodelink.SetIfLinkRemovable(i, j, false);
-                nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
+                nodelink.OutlineLink(i, j, Color.blue);
             }
 
             // set up scoring

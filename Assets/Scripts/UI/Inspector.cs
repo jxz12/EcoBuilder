@@ -32,7 +32,7 @@ namespace EcoBuilder.UI
         [SerializeField] Trait greedTrait;
         
         [SerializeField] Incubator incubator;
-        [SerializeField] ProceduralMeshGenerator factory;
+        [SerializeField] Archie.ProceduralMeshGenerator factory;
 
         [SerializeField] StatusBar statusPrefab;
         [SerializeField] Canvas statusCanvas;
@@ -408,6 +408,10 @@ namespace EcoBuilder.UI
         public void MakeSpeciesObjectRescued(int idx)
         {
             factory.RescueSpecies(spawnedSpecies[idx].GObject);
+        }
+        public void OutlineSpecies(int idx, Color colour)
+        {
+            factory.OutlineSpecies(spawnedSpecies[idx].GObject, colour);
         }
 
         public void SetProducerAvailability(bool available)

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,7 +8,7 @@ namespace EcoBuilder.NodeLink
     public class Node : MonoBehaviour
     {
         public int Idx;
-        public Color Col {
+        public Color Colour {
             get { return shapeRenderer!=null? shapeRenderer.material.color : Color.black; }
         }
         
@@ -25,7 +26,6 @@ namespace EcoBuilder.NodeLink
         GameObject shape;
         public GameObject Shape { get { return shape; } }
         Renderer shapeRenderer;
-        cakeslice.Outline outline;
 
         public void Init(int idx)
         {
@@ -38,7 +38,7 @@ namespace EcoBuilder.NodeLink
         {
             shape = shapeObject;
             shapeRenderer = shape.GetComponentInChildren<Renderer>();
-            outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
+            // outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
 
             // drop it in at the point at shapeObject's position
             transform.position = shapeObject.transform.position;
@@ -52,22 +52,16 @@ namespace EcoBuilder.NodeLink
             shape.SetActive(!hidden);
             GetComponent<Collider>().enabled = !hidden;
         }
-        Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
-        public void PushOutline(cakeslice.Outline.Colour colour)
+
+        Stack<Color> outlines = new Stack<Color>();
+        public Color OutlineColour { get { return outlines.Count>0? outlines.Peek() : Color.clear; } }
+        public void PushOutlineColour(Color colour)
         {
-            outline.enabled = true;
-            outline.colour = colour;
             outlines.Push(colour);
         }
-        public void PopOutline()
+        public void PopOutlineColour()
         {
             outlines.Pop();
-            if (outlines.Count > 0) {
-                outline.colour = outlines.Peek();
-            }
-            else {
-                outline.enabled = false;
-            }
         }
         public void SetNewParentKeepPos(Transform newParent)
         {
@@ -78,15 +72,12 @@ namespace EcoBuilder.NodeLink
 
         public void Highlight()
         {
-            // defaultSize *= 1.2f;
-            // transform.localScale = Vector3.one * defaultSize;
+            print("TODO:");
         }
         public void Unhighlight()
         {
-            // defaultSize /= 1.2f;
-            // transform.localScale = Vector3.one * defaultSize;
+            print("TODO:");
         }
-
 
         IEnumerator flashRoutine;
         public void Flash(bool isFlashing)

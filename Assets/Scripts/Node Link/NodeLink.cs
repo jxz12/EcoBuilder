@@ -15,6 +15,7 @@ namespace EcoBuilder.NodeLink
         // called regardless of user
         public event Action<int> OnFocused;
         public event Action<int> OnUnfocused;
+
         public event Action OnLayedOut;
         public event Action OnLinked;
 
@@ -306,21 +307,52 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Flash(false);
         }
-        public void OutlineNode(int idx, cakeslice.Outline.Colour colour)
+
+        private Action<int, Color> OutlineNodeCallback;
+        public void AttachOutliner(Action<int, Color> Outline)
         {
-            nodes[idx].PushOutline(colour);
+            OutlineNodeCallback = Outline;
+        }
+        private void PushNodeOutline(Node node, Color colour)
+        {
+            Assert.IsNotNull(OutlineNodeCallback);
+            node.PushOutlineColour(colour);
+            OutlineNodeCallback(node.Idx, node.OutlineColour);
+        }
+        private void PopNodeOutline(Node node)
+        {
+            Assert.IsNotNull(OutlineNodeCallback);
+            node.PopOutlineColour();
+            OutlineNodeCallback(node.Idx, node.OutlineColour);
+        }
+        private void PushLinkOutline(Link link, Color colour)
+        {
+            link.PushOutlineColour(colour);
+        }
+        private void PopLinkOutline(Link link)
+        {
+            link.PopOutlineColour();
+        }
+
+        // public outlining
+        public void OutlineNode(int idx, Color colour)
+        {
+            PushNodeOutline(nodes[idx], colour);
         }
         public void UnoutlineNode(int idx)
         {
-            nodes[idx].PopOutline();
+            PopNodeOutline(nodes[idx]);
         }
-        public void OutlineLink(int src, int tgt, cakeslice.Outline.Colour colour)
+        public void OutlineLink(int src, int tgt, Color colour)
         {
-            links[src, tgt].PushOutline(colour);
+            PushLinkOutline(links[src, tgt], colour);
         }
-
+        public void UnoutlineLink(int src, int tgt)
+        {
+            PopLinkOutline(links[src, tgt]);
+        }
         private List<Action> toUnoutline = new List<Action>();
-        public void OutlineChain(cakeslice.Outline.Colour colour)
+        public void OutlineChain(Color colour)
         {
             Assert.IsTrue(toUnoutline.Count == 0, "previous outline not undone");
             if (MaxChain == 0) {
@@ -328,7 +360,7 @@ namespace EcoBuilder.NodeLink
             }
             StartCoroutine(WaitThenOutlineChain(colour));
         }
-        public void OutlineLoop(cakeslice.Outline.Colour colour)
+        public void OutlineLoop(Color colour)
         {
             Assert.IsTrue(toUnoutline.Count == 0, "previous outline not undone");
             if (MaxLoop == 0) {
@@ -336,7 +368,7 @@ namespace EcoBuilder.NodeLink
             }
             StartCoroutine(WaitThenOutlineLoop(colour));
         }
-        private IEnumerator WaitThenOutlineChain(cakeslice.Outline.Colour colour)
+        private IEnumerator WaitThenOutlineChain(Color colour)
         {
             // if calculating then we could potentially try to outline inactive or destroyed nodes
             while (isCalculatingAsync) {
@@ -344,11 +376,11 @@ namespace EcoBuilder.NodeLink
             }
             foreach (int idx in TallestNodes)
             {
-                nodes[idx].PushOutline(colour);
-                toUnoutline.Add(()=> nodes[idx].PopOutline());
+                PushNodeOutline(nodes[idx], colour);
+                toUnoutline.Add(()=> PopNodeOutline(nodes[idx]));
             }
         }
-        private IEnumerator WaitThenOutlineLoop(cakeslice.Outline.Colour colour)
+        private IEnumerator WaitThenOutlineLoop(Color colour)
         {
             // if calculating then we could potentially try to outline inactive or destroyed nodes
             while (isCalculatingAsync) {
@@ -356,14 +388,23 @@ namespace EcoBuilder.NodeLink
             }
             for (int i=0; i<LongestLoop.Count; i++)
             {
-                var loopLink = links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]];
-                var loopNode = nodes[LongestLoop[i]];
+                // var loopLink = links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]];
+                // var loopNode = nodes[LongestLoop[i]];
 
-                loopNode.PushOutline(colour);
-                loopLink.PushOutline(colour);
+                // loopNode.PushOutline(colour);
+                // loopLink.PushOutline(colour);
 
-                toUnoutline.Add(()=> loopNode.PopOutline());
-                toUnoutline.Add(()=> loopLink.PopOutline());
+                // toUnoutline.Add(()=> loopNode.PopOutline());
+                // toUnoutline.Add(()=> loopLink.PopOutline());
+
+                var src = LongestLoop[i];
+                var tgt = LongestLoop[(i+1) % LongestLoop.Count];
+
+                PushNodeOutline(nodes[src], colour);
+                PushLinkOutline(links[src,tgt], colour);
+
+                toUnoutline.Add(()=> PopNodeOutline(nodes[src]));
+                toUnoutline.Add(()=> PopLinkOutline(links[src,tgt]));
             }
         }
         public void UnoutlineChainOrLoop()

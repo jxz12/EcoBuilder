@@ -26,32 +26,25 @@ namespace EcoBuilder.NodeLink
             name = Source.Idx + " " + Target.Idx;
         }
 
-        cakeslice.Outline outline;
         float defaultLineWidth;
         void Awake()
         {
-            outline = gameObject.AddComponent<cakeslice.Outline>();
-            // outline.eraseRenderer = true;
-            outline.enabled = false;
             lr.material.SetFloat("_RepeatCount", numBalls);
             defaultLineWidth = lr.widthMultiplier;
         }
 
-        Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
-        public void PushOutline(cakeslice.Outline.Colour colour)
+        Stack<Color> outlines = new Stack<Color>();
+        public void PushOutlineColour(Color colour)
         {
-            outline.enabled = true;
-            outline.colour = colour;
             outlines.Push(colour);
+            if (outlines.Count == 1)
+            {
+
+            }
         }
-        public void PopOutline()
+        public void PopOutlineColour()
         {
             outlines.Pop();
-            if (outlines.Count > 0) {
-                outline.colour = outlines.Peek();
-            } else {
-                outline.enabled = false;
-            }
         }
         bool show = true;
         public void Show(bool showing=true)
@@ -96,9 +89,9 @@ namespace EcoBuilder.NodeLink
             float height = (Source.transform.position - Target.transform.position).magnitude;
             lr.material.SetFloat("_Spacing", height/(lossyWidth*numBalls) - 1);
 
-            Color c = Target.Col;
+            Color c = Target.Colour;
             lr.startColor = c;
-            c = Source.Col;
+            c = Source.Colour;
             lr.endColor = c;
 
             tileOffset -= TileSpeed * Time.deltaTime;

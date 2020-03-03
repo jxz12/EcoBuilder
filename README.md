@@ -10,7 +10,8 @@ research TUTORIAL, make score constraint shiny, max instead of min producers or 
 
 are you sure button
 make health go blue if above a super threshold (will need another fill sprite)
-proper outlining (add another simpler mesh as outline within the same sprite. Links can be done in the shader)
+
+animate outline colour to draw attention
 
 # Menu
 make icons for reversing drag direction
@@ -36,7 +37,7 @@ do cholesky instead of SGD
 score explanation and show highest on tap (or make it blink?)
 health and traits hide if empty tap and on finish
 double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
-more fidelity in link balls
+a nice congratulation for tutorial steps
 remove/disable layout groups as soon as levels are spawned
 release game with australian fires as angle?
 

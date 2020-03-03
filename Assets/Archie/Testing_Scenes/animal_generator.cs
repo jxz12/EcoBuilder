@@ -99,7 +99,7 @@ namespace EcoBuilder.Archie
             Instantiate(skullPrefab, created_species.transform);
             created_species.Die();
 
-            created_species.Renderer.materials[1].SetTexture("_MainTex", DeadEyeTexture);
+            created_species.Renderer.materials[2].SetTexture("_MainTex", DeadEyeTexture);
         }
         public override void RescueSpecies(GameObject species)
         {
@@ -109,7 +109,14 @@ namespace EcoBuilder.Archie
             Instantiate(heartPrefab, created_species.transform);
             created_species.Live();
 
-            created_species.Renderer.materials[1].SetTexture("_MainTex", created_species.Eyes);
+            created_species.Renderer.materials[2].SetTexture("_MainTex", created_species.Eyes);
+        }
+        public override void OutlineSpecies(GameObject species, Color colour)
+        {
+            var created_species = species.GetComponent<animal_object>();
+            Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
+
+            created_species.Renderer.materials[1].SetColor("_Color", colour);
         }
 
         [SerializeField] Texture2D[] EyeTextures, MouthTextures, CheeckTextures, NoseTextures; // arranged in ascending order of size they represent
@@ -127,29 +134,30 @@ namespace EcoBuilder.Archie
                 var cheek = pick_random(CheeckTextures);
 
                 obj.Eyes = eyes; // used for dying later
-                if (obj.Renderer.materials[1].GetTexture("_MainTex") != DeadEyeTexture)
+                if (obj.Renderer.materials[2].GetTexture("_MainTex") != DeadEyeTexture)
                 {
                     // only change if not dead
-                    obj.Renderer.materials[1].SetTexture("_MainTex", eyes);
+                    obj.Renderer.materials[2].SetTexture("_MainTex", eyes);
                 }
-                obj.Renderer.materials[1].SetTexture("_MainTex2", mouth);
-                obj.Renderer.materials[1].SetTexture("_MainTex3", nose);
-                obj.Renderer.materials[1].SetTexture("_MainTex4", cheek);
+                obj.Renderer.materials[2].SetTexture("_MainTex2", mouth);
+                obj.Renderer.materials[2].SetTexture("_MainTex3", nose);
+                obj.Renderer.materials[2].SetTexture("_MainTex4", cheek);
             }
 
             // for baobab lol
-            if (obj.Renderer.sharedMesh.subMeshCount == 3 && obj.Renderer.materials.Length < 3)
+            if (obj.Renderer.sharedMesh.subMeshCount == 4 && obj.Renderer.materials.Length < 4)
             {
                 var prevMaterials = new List<Material>(obj.Renderer.materials);
                 prevMaterials.Add(WoodMaterial);
 
                 obj.Renderer.materials = prevMaterials.ToArray();
             }
-            else if (obj.Renderer.sharedMesh.subMeshCount == 2 && obj.Renderer.materials.Length > 2)
+            else if (obj.Renderer.sharedMesh.subMeshCount == 3 && obj.Renderer.materials.Length > 3)
             {
                 var prevMaterials = new List<Material>();
                 prevMaterials.Add(obj.Renderer.materials[0]);
                 prevMaterials.Add(obj.Renderer.materials[1]);
+                prevMaterials.Add(obj.Renderer.materials[2]);
 
                 obj.Renderer.materials = prevMaterials.ToArray();
             }

@@ -24,11 +24,11 @@ namespace EcoBuilder.NodeLink
 
             if (focusedNode != nodes[idx])
             {
-                nodes[idx].PushOutline(cakeslice.Outline.Colour.Yellow);
+                PushNodeOutline(nodes[idx], Color.yellow);
                 nodes[idx].Highlight();
                 if (focusedNode != null) // focus switched
                 {
-                    focusedNode.PopOutline();
+                    PopNodeOutline(focusedNode);
                     focusedNode.Unhighlight();
                 }
             }
@@ -64,7 +64,7 @@ namespace EcoBuilder.NodeLink
             }
             else if (focusState == FocusState.Focus)
             {
-                focusedNode.PopOutline();
+                PopNodeOutline(focusedNode);
                 focusedNode.Highlight();
                 int idx = focusedNode.Idx;
                 focusedNode = null;
@@ -255,6 +255,7 @@ namespace EcoBuilder.NodeLink
         ///////////////////////////////
         // Event Systems (link adding)
 
+        readonly Color ColorOrange = new Color(1f, .7f, 0);
         Node pressedNode;
         bool tweenNodes = true;
         public void OnPointerDown(PointerEventData ped)
@@ -269,7 +270,7 @@ namespace EcoBuilder.NodeLink
                 {
                     tooltip.Enable();
                     tooltip.SetPos(mainCam.WorldToScreenPoint(pressedNode.transform.position));
-                    pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
+                    PushNodeOutline(pressedNode, ColorOrange);
                     if (pressedNode.CanBeFocused) {
                         tooltip.ShowInspect();
                     } else {
@@ -284,7 +285,8 @@ namespace EcoBuilder.NodeLink
             if (ped.pointerId==-1 || ped.pointerId==0)
             {
                 if (pressedNode != null) {
-                    pressedNode.PopOutline(); // remove initial orange press outline
+                    // remove initial orange press outline
+                    PopNodeOutline(pressedNode);
                 }
                 if (!ped.dragging) // if click
                 {
@@ -334,8 +336,8 @@ namespace EcoBuilder.NodeLink
                         dummyLink.Target = dummyTarget;
                         dummyLink.TileSpeed = DragFromTarget? -minLinkFlow : minLinkFlow;
 
-                        pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
-                        dummyLink.PushOutline(cakeslice.Outline.Colour.Orange);
+                        PushNodeOutline(pressedNode, ColorOrange);
+                        PushLinkOutline(dummyLink, ColorOrange);
                     }
                     else
                     {
@@ -357,9 +359,9 @@ namespace EcoBuilder.NodeLink
             {
                 if (potentialTarget != null) // remove previous outline if needed
                 {
-                    pressedNode.PopOutline();
-                    potentialTarget.PopOutline();
-                    potentialLink.PopOutline();
+                    PopNodeOutline(pressedNode);
+                    PopNodeOutline(potentialTarget);
+                    PopLinkOutline(potentialLink);
                     potentialTarget = null;
                     potentialLink = null;
                 }
@@ -390,9 +392,9 @@ namespace EcoBuilder.NodeLink
                         dummyLink.Target = snappedNode;
                         potentialLink = dummyLink;
 
-                        pressedNode.PushOutline(cakeslice.Outline.Colour.Green);
-                        potentialTarget.PushOutline(cakeslice.Outline.Colour.Green);
-                        potentialLink.PushOutline(cakeslice.Outline.Colour.Green);
+                        PushNodeOutline(pressedNode, Color.green);
+                        PushNodeOutline(potentialTarget, Color.green);
+                        PushLinkOutline(potentialLink, Color.green);
 
                         tooltip.ShowAddLink();
                     }
@@ -401,9 +403,9 @@ namespace EcoBuilder.NodeLink
                         dummyLink.Target = pressedNode; // hide dummyLink
                         potentialLink = linkToRemove;
 
-                        pressedNode.PushOutline(cakeslice.Outline.Colour.Red);
-                        potentialTarget.PushOutline(cakeslice.Outline.Colour.Red);
-                        potentialLink.PushOutline(cakeslice.Outline.Colour.Red);
+                        PushNodeOutline(pressedNode, Color.red);
+                        PushNodeOutline(potentialTarget, Color.red);
+                        PushLinkOutline(potentialLink, Color.red);
 
                         tooltip.ShowUnlink();
                     }
@@ -487,9 +489,9 @@ namespace EcoBuilder.NodeLink
                         OnUserUnlinked?.Invoke(i, j);
                     }
 
-                    pressedNode.PopOutline();
-                    potentialTarget.PopOutline();
-                    potentialLink.PopOutline();
+                    PopNodeOutline(pressedNode);
+                    PopNodeOutline(potentialTarget);
+                    PopLinkOutline(potentialLink);
                     potentialTarget = null;
                     potentialLink = null;
                 }
@@ -503,7 +505,7 @@ namespace EcoBuilder.NodeLink
                         Destroy(dummyTarget.gameObject);
                     }
 
-                    pressedNode.PopOutline(); // orange outline from drag
+                    PopNodeOutline(pressedNode);
                     pressedNode = null;
                 }
             }
