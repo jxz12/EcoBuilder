@@ -1,0 +1,17 @@
+{
+    "name": "EcoBuilder.Tutorials",
+    "references": [
+        "GUID:fb757379fa8e6e44f837830f7a5a1088",
+        "GUID:0dca2eef63737ce43a952b5a5a815cd3",
+        "GUID:f1a81dc8209d5e448b29197fb02a34eb"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

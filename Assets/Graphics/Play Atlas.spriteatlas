@@ -35,6 +35,7 @@ SpriteAtlas:
     - {fileID: 21300000, guid: cdcc1931095dc8544b4ab733bf2b3fde, type: 3}
     - {fileID: 21300000, guid: 7cd59d7fb38a77f4ca92099e8d101b73, type: 3}
     - {fileID: 21300000, guid: 0b216ed8876b73945ad75ea6feaba010, type: 3}
+    - {fileID: 21300000, guid: 7ff78b329f164464ea5df9a3227b3f0d, type: 3}
     - {fileID: 21300000, guid: cd5efc45d507a414c81bd895a5528a0b, type: 3}
     - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
     - {fileID: 21300000, guid: 4dc79b73247092e4ab1b277f39e3f809, type: 3}
@@ -65,7 +66,8 @@ SpriteAtlas:
     - {fileID: 21300000, guid: e73dd9c018a08e74e9e3b6b52eba48b4, type: 3}
     - {fileID: 21300000, guid: 4c79770f0c7023c4ab5849b588b6245c, type: 3}
     - {fileID: 21300000, guid: 4dc97b674b42af8449588878f6a1a706, type: 3}
-    totalSpriteSurfaceArea: 194405
+    - {fileID: 21300000, guid: 4d0c72ca523bbd647aaee383ecde1808, type: 3}
+    totalSpriteSurfaceArea: 196522
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -73,6 +75,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: e73dd9c018a08e74e9e3b6b52eba48b4, type: 3}
   - {fileID: 21300000, guid: cdcc1931095dc8544b4ab733bf2b3fde, type: 3}
   - {fileID: 21300000, guid: 4d2c74121b9d52d42aa59140289fef72, type: 3}
+  - {fileID: 21300000, guid: 7ff78b329f164464ea5df9a3227b3f0d, type: 3}
   - {fileID: 21300000, guid: 99a70f9254d08cb4b95ab06982f729a5, type: 3}
   - {fileID: 21300000, guid: 4dc79b73247092e4ab1b277f39e3f809, type: 3}
   - {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
@@ -94,6 +97,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9e2d10e868bfcc2459840cd98bcfde42, type: 3}
   - {fileID: 21300000, guid: 9fe58d09934c1f240aa9645667fb1dac, type: 3}
   - {fileID: 21300000, guid: ac72d49ad4e38cc4687522deb4e615ca, type: 3}
+  - {fileID: 21300000, guid: 4d0c72ca523bbd647aaee383ecde1808, type: 3}
   - {fileID: 21300000, guid: bedd3acb531621c4ca84c09e6e0d67b9, type: 3}
   - {fileID: 21300000, guid: bcb5b4fb84e360f4ab517305cc7ea5ab, type: 3}
   - {fileID: 21300000, guid: 5f800e8c23f52d9439d7929cf06cd922, type: 3}
@@ -109,6 +113,7 @@ SpriteAtlas:
   - point_beige
   - box_a_02
   - constraint loop
+  - box_b
   - kg
   - innerbox_a_btn
   - btn_c_red
@@ -130,6 +135,7 @@ SpriteAtlas:
   - gage_b_fill06
   - undo
   - constraint chain
+  - 1
   - nametag
   - gage_b_fill02
   - gage_b_fill05

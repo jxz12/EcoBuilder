@@ -36,7 +36,7 @@ namespace EcoBuilder.Tutorials
             pointerIm = GetComponent<Image>();
             pointerRT = GetComponent<RectTransform>();
 
-            var rootRT  = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
+            var rootRT = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
             canvasRefRes = new Vector2(rootRT.sizeDelta.x, rootRT.sizeDelta.y);
             mainCam = Camera.main;
 
@@ -75,63 +75,83 @@ namespace EcoBuilder.Tutorials
         void Update()
         {
             pointerRT.anchoredPosition = Vector2.SmoothDamp(pointerRT.anchoredPosition, targetPos, ref velocity, smoothTime);
-            pointerRT.sizeDelta = Vector2.SmoothDamp(pointerRT.sizeDelta, targetSize, ref sizocity, smoothTime);
             pointerRT.anchorMax = pointerRT.anchorMin = Vector2.SmoothDamp(pointerRT.anchorMin, targetAnchor, ref anchosity, smoothTime);
             zRotation = Mathf.SmoothDamp(zRotation, targetZRot, ref rotocity, smoothTime);
             pointerRT.rotation = Quaternion.Euler(0, 0, zRotation);
 
-// #if UNITY_EDITOR
-//             if (Input.GetKeyDown(KeyCode.R))
-//             {
-//                 print("TODO: restart");
-//             }
-// #endif
+            float mag = (pointerRT.sizeDelta-targetSize).sqrMagnitude;
+            if (mag > 1) {
+                pointerRT.sizeDelta = Vector2.SmoothDamp(pointerRT.sizeDelta, targetSize, ref sizocity, smoothTime);
+            } else if (mag > 0) {
+                pointerRT.sizeDelta = targetSize;
+            }
         }
 
         protected void Point()
         {
             GetComponent<Animator>().SetInteger("State", 0);
         }
-        protected void Grab()
-        {
-            GetComponent<Animator>().SetInteger("State", 1);
-        }
-        protected void Pan()
-        {
-            GetComponent<Animator>().SetInteger("State", 2);
-        }
-        protected Vector2 ToAnchoredPos(Vector2 worldPos)
+        private Vector2 ToAnchoredPos(Vector3 worldPos)
         {
             Vector2 viewportPos = mainCam.WorldToViewportPoint(worldPos);
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
-        protected IEnumerator Shuffle(Transform grab, Transform drop, float period)
+        protected IEnumerator DragAndDrop(Transform grab, Transform drop, float period)
         {
             float start = Time.time;
+
+            if (GameManager.Instance.ReverseDragDirection)
+            {
+                Transform temp = grab;
+                grab = drop;
+                drop = temp;
+            }
             transform.position = ToAnchoredPos(grab.position);
 
             targetAnchor = new Vector3(0f,0f);
             while (true)
             {
-                if (((Time.time - start) % period) < (period/2f))
-                {
+                if (((Time.time - start) % period) < (period/2f)) {
                     targetPos = ToAnchoredPos(drop.position) + new Vector2(0,-20);
-                    Grab();
-                }
-                else
-                {
+                } else {
                     targetPos = ToAnchoredPos(grab.position) + new Vector2(0,-20);
-                    Pan();
+                }
+
+                if (((Time.time - start + 3*period/5) % period) < (period/2f)) {
+                    GetComponent<Animator>().SetInteger("State", 2); // pan
+                } else {
+                    GetComponent<Animator>().SetInteger("State", 1); // grab
                 }
                 yield return null;
             }
         }
         protected IEnumerator Track(Transform tracked)
         {
-            Point();
             while (true)
             {
                 targetPos = ToAnchoredPos(tracked.position) + new Vector2(0,-20);
+                yield return null;
+            }
+        }
+        protected IEnumerator ShuffleOnSlider(float period, float yPos)
+        {
+            float start = Time.time - period/4;
+            targetAnchor = new Vector2(.5f, 0);
+            targetSize = new Vector2(50,50);
+            targetZRot = 0;
+            smoothTime = .7f;
+            GetComponent<Animator>().SetInteger("State", 1); // grab
+            while (true)
+            {
+                if (((Time.time - start) % period) < (period/2f))
+                {
+                    targetPos = new Vector2(-60,yPos);
+                }
+                else
+                {
+                    targetPos = new Vector2(130,yPos);
+                    smoothTime = 1f;
+                }
                 yield return null;
             }
         }

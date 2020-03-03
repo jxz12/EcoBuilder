@@ -12,13 +12,12 @@ namespace EcoBuilder.Tutorials
             targetSize = Vector2.zero;
             recorder.Hide();
             inspector.HideSizeSlider();
-            inspector.HideGreedSlider();
             inspector.HideRemoveButton();
             score.Hide();
             score.DisableStarCalculation();
 
-            constraints.ConstrainLeaf(1);
-            constraints.ConstrainPaw(1);
+            constraints.LimitLeaf(1);
+            constraints.LimitPaw(1);
 
             ExplainIntro();
         }
@@ -48,13 +47,18 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             Assert.IsTrue(producerIdx!=-1 && herbivoreIdx!=-1);
 
-            help.Message = "You should notice that the number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. If you press that icon, you can highlight all species with that chain length. Try adding another animal and making it eat the current one.";
+            help.Message = "You should notice that this number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. If you press that icon, you can highlight all species with that chain length. Try adding another animal and making it eat the current herbivore.";
             help.Showing = true;
 
+            // point at constraints panel
+            Point();
+            targetZRot = 30;
+            targetSize = new Vector2(100,100);
+            targetAnchor = new Vector2(0,1);
+            targetPos = new Vector2(55, -350);
 
             // allow animal again, but only one more
-            constraints.ConstrainPaw(2);
-            inspector.SetConsumerAvailability(true); // this is a hack because I didn't code constraints well
+            constraints.LimitPaw(2);
 
             // stop user from removing the link
             nodelink.SetIfLinkRemovable(producerIdx, herbivoreIdx, false);
@@ -97,9 +101,11 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to any plant, and so the path going through both animals is overridden by the path from the plant. To finish this level, reconstruct the ecosystem with a chain of 2."; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); })); 
 
-            recorder.Hide(false);
             constraints.ConstrainChain(2);
+            recorder.Hide(false);
             nodelink.SetIfNodeCanBeTarget(herbivoreIdx, true);
+            score.Hide(false);
+            score.DisableStarCalculation(false);
         }
     }
 }

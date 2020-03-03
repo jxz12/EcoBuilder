@@ -11,7 +11,7 @@ namespace EcoBuilder.NodeLink
         IBeginDragHandler, IDragHandler, IEndDragHandler,
         IScrollHandler
     {
-        [SerializeField] UI.Tooltip tooltip;
+        [SerializeField] Tooltip tooltip;
         [SerializeField] float rotationPerInch, zoomPerInch, panPerInch;
 
         public bool AllowSuperfocus { get; set; }
@@ -270,7 +270,7 @@ namespace EcoBuilder.NodeLink
                     tooltip.Enable();
                     tooltip.SetPos(mainCam.WorldToScreenPoint(pressedNode.transform.position));
                     pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
-                    if (pressedNode.Interactable) {
+                    if (pressedNode.CanBeFocused) {
                         tooltip.ShowInspect();
                     } else {
                         tooltip.ShowBanned();
@@ -290,7 +290,7 @@ namespace EcoBuilder.NodeLink
                 {
                     if (pressedNode != null)
                     {
-                        if (pressedNode.Interactable) {
+                        if (pressedNode.CanBeFocused) {
                             TapNode(pressedNode.Idx);
                         }
                         pressedNode = null;
@@ -320,13 +320,13 @@ namespace EcoBuilder.NodeLink
                 {
                     // tooltip.Enable();
 
-                    if (pressedNode.Interactable &&
+                    if (//pressedNode.Interactable &&
                         ((pressedNode.CanBeSource && !DragFromTarget) ||
                          (pressedNode.CanBeTarget && DragFromTarget)))
                     {
                         dummyTarget = Instantiate(nodePrefab, nodesParent);
                         dummyTarget.transform.localScale = Vector3.zero;
-                        dummyTarget.transform.position = pressedNode.transform.position;
+                        dummyTarget.transform.position = pressedNode.transform.position + Vector3.back;
                         dummyTarget.enabled = false;
 
                         dummyLink = Instantiate(linkPrefab, linksParent);
@@ -367,7 +367,7 @@ namespace EcoBuilder.NodeLink
 
                 // a load of crap to determine if a snap occurs
                 if (snappedNode!=null && snappedNode!=pressedNode &&
-                    snappedNode.Interactable &&
+                    // snappedNode.Interactable &&
                     (((!DragFromTarget && snappedNode.CanBeTarget)
                          && ((links[snappedNode.Idx, pressedNode.Idx]==null &&
                               links[pressedNode.Idx, snappedNode.Idx]==null) ||
@@ -412,7 +412,7 @@ namespace EcoBuilder.NodeLink
                 {
                     Vector3 screenPoint = ped.position;
                     screenPoint.z = pressedNode.transform.position.z - mainCam.transform.position.z;
-                    dummyTarget.transform.position = mainCam.ScreenToWorldPoint(screenPoint);
+                    dummyTarget.transform.position = mainCam.ScreenToWorldPoint(screenPoint + Vector3.back);
 
                     tooltip.SetPos(screenPoint);
                     if (snappedNode!=null && snappedNode!=pressedNode)

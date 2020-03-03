@@ -983,8 +983,8 @@ GameObject:
   - component: {fileID: 223523872}
   - component: {fileID: 223523870}
   - component: {fileID: 223523867}
-  - component: {fileID: 223523869}
   - component: {fileID: 223523868}
+  - component: {fileID: 223523869}
   m_Layer: 5
   m_Name: Learning
   m_TagString: Untagged
@@ -1078,12 +1078,11 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 223523865}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
+  m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 0
 --- !u!222 &223523870
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1099,7 +1098,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 223523865}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 2
   m_Camera: {fileID: 0}
@@ -1109,7 +1108,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -2215,7 +2214,7 @@ PrefabInstance:
     - target: {fileID: 5387030296556663153, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000091552734
+      value: -0.0000076293945
       objectReference: {fileID: 0}
     - target: {fileID: 6022533344129605131, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
@@ -3120,7 +3119,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 350}
   m_SizeDelta: {x: 500, y: 210}
   m_Pivot: {x: 0.5, y: 1.2}
 --- !u!114 &557722614
@@ -3167,7 +3166,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 557722612}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 36dfc349e5248874d98258a20282d42d, type: 2}
   m_CullingMode: 0
@@ -5662,8 +5661,8 @@ GameObject:
   - component: {fileID: 1050504091}
   - component: {fileID: 1050504089}
   - component: {fileID: 1050504088}
-  - component: {fileID: 1050504087}
   - component: {fileID: 1050504086}
+  - component: {fileID: 1050504087}
   m_Layer: 5
   m_Name: Research
   m_TagString: Untagged
@@ -5727,12 +5726,11 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050504084}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
+  m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 0
 --- !u!114 &1050504088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10201,7 +10199,7 @@ PrefabInstance:
     - target: {fileID: 5387030296556663153, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000038146973
+      value: 0.00002670288
       objectReference: {fileID: 0}
     - target: {fileID: 6022533344129605131, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
@@ -11703,7 +11701,9 @@ MonoBehaviour:
     type: 3}
   firstResearchLevel: {fileID: 7864806509372148198, guid: 333e9416c36f6cf4e9bd7be6e915f335,
     type: 3}
-  logo: {fileID: 557722612}
+  logoAnim: {fileID: 557722616}
+  learningCanvas: {fileID: 223523871}
+  researchCanvas: {fileID: 1050504090}
   splashHelp: Welcome to EcoBuilder! This help message will be available throughout
     the game to guide you through your journey. If it goes away, simply tap the green
     arrow to the left of this text. Settings can be reached by tapping the gear button
@@ -13001,7 +13001,7 @@ PrefabInstance:
     - target: {fileID: 5387030296556663153, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0000038146973
+      value: -0.00002670288
       objectReference: {fileID: 0}
     - target: {fileID: 6022533344129605131, guid: 309a73376d4d3c04bb08e59604049d6c,
         type: 3}

@@ -99,13 +99,12 @@ namespace EcoBuilder.Tutorials
             if (GameManager.Instance.ReverseDragDirection)
             {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from it to the " + firstSpecies.name + " to make them interact.";
-                StartCoroutine(Shuffle(secondSpecies.transform, firstSpecies.transform, 2f));
             }
             else
             {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from the " + firstSpecies.name + " to it to make them interact.";
-                StartCoroutine(Shuffle(firstSpecies.transform, secondSpecies.transform, 2f));
             }
+            StartCoroutine(DragAndDrop(firstSpecies.transform, secondSpecies.transform, 2f));
             help.Showing = true;
 
             AttachSmellyListener<int,int>(nodelink, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
@@ -141,9 +140,11 @@ namespace EcoBuilder.Tutorials
             smoothTime = .3f;
 
             nodelink.ForceUnfocus();
-            nodelink.SetIfNodeInteractable(firstIdx, false);
+            nodelink.SetIfNodeCanBeFocused(firstIdx, false);
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; targetSize = new Vector3(100,100); targetZRot = 360; }));
+
+            Point();
             StartCoroutine(Track(secondSpecies.transform));
 
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainRemove2());
@@ -195,7 +196,7 @@ namespace EcoBuilder.Tutorials
             score.DisableStarCalculation(false); 
             help.SetAnchorHeight(.9f);
             help.Showing = false;
-            nodelink.SetIfNodeInteractable(firstIdx, true);
+            nodelink.SetIfNodeCanBeFocused(firstIdx, true);
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; }));
 

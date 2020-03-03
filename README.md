@@ -9,7 +9,8 @@ a final boss
 research TUTORIAL, make score constraint shiny, max instead of min producers or consumers
 
 are you sure button
-
+make health go blue if above a super threshold (will need another fill sprite)
+proper outlining (add another simpler mesh as outline within the same sprite. Links can be done in the shader)
 
 # Menu
 make icons for reversing drag direction
@@ -32,16 +33,11 @@ verify high scores by checking matrices
 
 # Other
 do cholesky instead of SGD
-center the status bars, but attach them with an offset to species world position
 score explanation and show highest on tap (or make it blink?)
-fix health and traits rendering beind and hide if empty tap and make pretty and hide and on finish
+health and traits hide if empty tap and on finish
 double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
 more fidelity in link balls
-proper outlining (add another simpler mesh as outline within the same sprite. Links can be done in the shader)
-masks on menu screen
-batch levels on menu together by only adding a canvas when it is in card mode (as before lol)
 remove/disable layout groups as soon as levels are spawned
-remove animators from all UI (especially in menu)
 release game with australian fires as angle?
 
 experiments to see how the score changes over time

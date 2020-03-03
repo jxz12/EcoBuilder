@@ -22,7 +22,7 @@ namespace EcoBuilder
             ////////////////////////////////////
             inspector.OnSpawned +=  (i,b,g)=> { nodelink.AddNode(i,g); nodelink.SetIfNodeCanBeTarget(i,!b); };
             inspector.OnSpawned +=  (i,b,g)=> model.AddSpecies(i,b);
-            inspector.OnSpawned +=  (i,b,g)=> constraints.AddIdx(i,b);
+            inspector.OnSpawned +=  (i,b,g)=> { if (b) constraints.AddLeafIdx(i); else constraints.AddPawIdx(i); };
             inspector.OnDespawned +=    (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=    (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=    (i)=> constraints.RemoveIdx(i);
@@ -64,12 +64,12 @@ namespace EcoBuilder
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
 
-            constraints.OnProducersAvailable += (b)=> inspector.SetProducerAvailability(b);
-            constraints.OnConsumersAvailable += (b)=> inspector.SetConsumerAvailability(b);
-            constraints.OnChainHovered +=        ()=> nodelink.OutlineChain(cakeslice.Outline.Colour.Red);
-            constraints.OnLoopHovered +=         ()=> nodelink.OutlineLoop(cakeslice.Outline.Colour.Red);
-            constraints.OnChainUnhovered +=      ()=> nodelink.UnoutlineChainOrLoop();
-            constraints.OnLoopUnhovered +=       ()=> nodelink.UnoutlineChainOrLoop();
+            constraints.OnLeafFilled +=    (b)=> inspector.SetProducerAvailability(b);
+            constraints.OnPawFilled +=     (b)=> inspector.SetConsumerAvailability(b);
+            constraints.OnChainHovered +=   ()=> nodelink.OutlineChain(cakeslice.Outline.Colour.Red);
+            constraints.OnLoopHovered +=    ()=> nodelink.OutlineLoop(cakeslice.Outline.Colour.Red);
+            constraints.OnChainUnhovered += ()=> nodelink.UnoutlineChainOrLoop();
+            constraints.OnLoopUnhovered +=  ()=> nodelink.UnoutlineChainOrLoop();
 
             inspector.OnUserSpawned +=      (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
@@ -95,15 +95,23 @@ namespace EcoBuilder
             //////////////////////
             var details = GameManager.Instance.PlayedLevelDetails;
 
-            inspector.HideSizeSlider(details.SizeSliderHidden);
-            inspector.HideGreedSlider(details.GreedSliderHidden);
+            if (details.SizeSliderHidden)
+            {
+                inspector.HideSizeSlider();
+                inspector.FixSizeInitialValue();
+            }
+            if (details.GreedSliderHidden)
+            {
+                inspector.HideGreedSlider();
+                inspector.FixGreedInitialValue();
+            }
             inspector.AllowConflicts(details.ConflictsAllowed);
             nodelink.AllowSuperfocus = details.SuperfocusAllowed;
             nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
 
-            constraints.ConstrainLeaf(details.NumProducers);
-            constraints.ConstrainPaw(details.NumConsumers);
+            constraints.LimitLeaf(details.NumProducers);
+            constraints.LimitPaw(details.NumConsumers);
             constraints.ConstrainEdge(details.MinEdges);
             constraints.ConstrainChain(details.MinChain);
             constraints.ConstrainLoop(details.MinLoop);
@@ -152,17 +160,17 @@ namespace EcoBuilder
             case LevelDetails.ScoreMetric.Richness:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> constraints.PawValue * details.AltMultiplier);
-                constraints.HighlightPaw();
+                constraints.EmphasisePaw();
                 break;
             case LevelDetails.ScoreMetric.Chain:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> nodelink.MaxChain * details.AltMultiplier);
-                constraints.HighlightChain();
+                constraints.EmphasiseChain();
                 break;
             case LevelDetails.ScoreMetric.Loop:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> nodelink.MaxLoop * details.AltMultiplier);
-                constraints.HighlightLoop();
+                constraints.EmphasiseLoop();
                 break;
             }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());

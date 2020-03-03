@@ -30,6 +30,8 @@ Shader "UI/Fast-Colour"
 
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
+
+            float4 _ClipRect;
             
             struct appdata_t
             {
@@ -55,9 +57,9 @@ Shader "UI/Fast-Colour"
 
                 OUT.texcoord = IN.texcoord;
                 
-                #ifdef UNITY_HALF_TEXEL_OFFSET
+#ifdef UNITY_HALF_TEXEL_OFFSET
                 OUT.vertex.xy += (_ScreenParams.zw-1.0)*float2(-1,1);
-                #endif
+#endif
                 
                 OUT.color = IN.color;
                 return OUT;
@@ -66,6 +68,11 @@ Shader "UI/Fast-Colour"
             sampler2D _MainTex;
             fixed4 frag(v2f IN) : SV_Target
             {
+                IN.color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
+#ifdef UNITY_UI_ALPHACLIP
+                clip(color.a - 0.001);
+#endif
+       
                 return (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
             }
         ENDCG

@@ -20,7 +20,7 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float defaultSize = .5f;
         public bool CanBeSource = true;
         public bool CanBeTarget = true;
-        public bool Interactable = true;
+        public bool CanBeFocused = true;
 
         GameObject shape;
         public GameObject Shape { get { return shape; } }

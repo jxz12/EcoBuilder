@@ -14,7 +14,7 @@ namespace EcoBuilder.Tutorials
             inspector.HideIncubatorButtons();
             inspector.HideRemoveButton();
             score.Hide();
-            recorder.gameObject.SetActive(false); 
+            recorder.Hide();
             constraints.Hide();
             score.DisableStarCalculation(true);
             targetSize = new Vector2(100,100);
@@ -26,7 +26,7 @@ namespace EcoBuilder.Tutorials
             plant = nodes[0];
             animal = nodes[1];
 
-            nodelink.SetIfNodeInteractable(animal.Idx, false);
+            nodelink.SetIfNodeCanBeFocused(animal.Idx, false);
 
             ExplainIntro(false);
         }
@@ -43,6 +43,7 @@ namespace EcoBuilder.Tutorials
             }
             
             smoothTime = .3f;
+            Point();
             StartCoroutine(Track(plant.transform));
             DetachSmellyListeners();
             AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
@@ -70,8 +71,8 @@ namespace EcoBuilder.Tutorials
 
             nodelink.ForceUnfocus();
 
-            nodelink.SetIfNodeInteractable(animal.Idx, true);
-            nodelink.SetIfNodeInteractable(plant.Idx, false);
+            nodelink.SetIfNodeCanBeFocused(animal.Idx, true);
+            nodelink.SetIfNodeCanBeFocused(plant.Idx, false);
 
             targetSize = Vector2.zero;
             smoothTime = .3f;
@@ -105,7 +106,7 @@ namespace EcoBuilder.Tutorials
 
             recorder.gameObject.SetActive(true); 
 
-            nodelink.SetIfNodeInteractable(plant.Idx, true);
+            nodelink.SetIfNodeCanBeFocused(plant.Idx, true);
 
             nodelink.ForceUnfocus();
             help.SetSide(false,false);
@@ -113,28 +114,6 @@ namespace EcoBuilder.Tutorials
 
             print("TODO: fix the report card");
             StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. You can tap your score to get a detailed report of what is coming from where. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
-        }
-        IEnumerator ShuffleOnSlider(float period, float yPos)
-        {
-            float start = Time.time - period/4;
-            targetAnchor = new Vector2(.5f, 0);
-            targetSize = new Vector2(50,50);
-            targetZRot = 0;
-            smoothTime = .7f;
-            Grab();
-            while (true)
-            {
-                if (((Time.time - start) % period) < (period/2f))
-                {
-                    targetPos = new Vector2(-60,yPos);
-                }
-                else
-                {
-                    targetPos = new Vector2(130,yPos);
-                    smoothTime = 1f;
-                }
-                yield return null;
-            }
         }
     }
 }

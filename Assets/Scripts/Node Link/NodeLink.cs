@@ -64,28 +64,34 @@ namespace EcoBuilder.NodeLink
         {
             isCalculatingAsync = true;
 
-            await Task.Run(()=> LayoutSGD());
+            SGD.InitSGD((i)=>nodes[i].StressPos, (i,v)=>nodes[i].StressPos=v, undirected);
+            await Task.Run(()=> SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps));
 
             CountConnectedComponents();
             RefreshTrophicAndFindChain();
             NumEdges = links.Count();
 
-            JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
-            LongestLoop = await Task.Run(()=> JohnsonsAlgorithm());
+            Johnson.JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            var loop = await Task.Run(()=> Johnson.JohnsonsAlgorithm());
+            NumMaxLoop = loop.Item1;
+            LongestLoop = loop.Item2;
 
             isCalculatingAsync = false;
             OnLayedOut.Invoke();
         }
         public void LayoutSync()
         {
-            LayoutSGD();
+            SGD.InitSGD((i)=>nodes[i].StressPos, (i,v)=>nodes[i].StressPos=v, undirected);
+            SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps);
 
             CountConnectedComponents();
             RefreshTrophicAndFindChain();
             NumEdges = links.Count();
 
-            JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
-            LongestLoop = JohnsonsAlgorithm();
+            Johnson.JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            var loop = Johnson.JohnsonsAlgorithm();
+            NumMaxLoop = loop.Item1;
+            LongestLoop = loop.Item2;
 
             OnLayedOut.Invoke();
         }
@@ -251,9 +257,9 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].CanBeTarget = canBeTarget;
         }
-        public void SetIfNodeInteractable(int idx, bool interactable)
+        public void SetIfNodeCanBeFocused(int idx, bool canBeFocused)
         {
-            nodes[idx].Interactable = interactable;
+            nodes[idx].CanBeFocused = canBeFocused;
         }
         public void SetIfLinkRemovable(int i, int j, bool removable)
         {

@@ -61,7 +61,7 @@ namespace EcoBuilder.UI
         }
         public IEnumerable<int> PossibleInitialValues {
             get {
-                if (!RandomiseInitialValue)
+                if (!randomiseInitialValue)
                 {
                     yield return UnnormalisedValue;
                 }
@@ -76,10 +76,16 @@ namespace EcoBuilder.UI
         }
 
         // does not set randomly if initial value is fixed
-        public bool RandomiseInitialValue { get; set; } = true;
+        // public bool RandomiseInitialValue { get; set; } = true;
+        bool randomiseInitialValue;
+        public void FixInitialValue(int initialValue)
+        {
+            randomiseInitialValue = false;
+            SetValueWithoutCallback(initialValue);
+        }
         public void SetValueFromRandomSeed(int randomSeed)
         {
-            if (RandomiseInitialValue)
+            if (randomiseInitialValue)
             {
                 UnityEngine.Random.InitState(randomSeed);
                 SetValueWithoutCallback(UnityEngine.Random.Range((int)slider.minValue, (int)slider.maxValue));

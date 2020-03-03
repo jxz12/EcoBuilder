@@ -9,8 +9,8 @@ namespace EcoBuilder.UI
 {
     public class Menu : MonoBehaviour
     {
-        // NOTE: most of the functionality of this class is in UnityEvents!
-        //       don't ask me why I chose to do it this way and opposite in Registration
+        // NOTE: most of the functionality of this class is in scene UnityEvents!
+        //       don't ask me why I do the opposite in Registration...
         [SerializeField] GridLayoutGroup learningGrid;
         [SerializeField] VerticalLayoutGroup researchList;
         [SerializeField] Registration form;
@@ -142,8 +142,8 @@ namespace EcoBuilder.UI
             }
 
             StartCoroutine(WaitThenShowLogo(.7f));
+            StartCoroutine(WaitThenDisableCanvases());
             Reveal();
-            GameManager.Instance.HelpText.Message = splashHelp;
         }
         bool IsLearningFinished()
         {
@@ -160,11 +160,18 @@ namespace EcoBuilder.UI
             return true;
         }
 
-        [SerializeField] GameObject logo;
+        [SerializeField] Animator logoAnim;
         IEnumerator WaitThenShowLogo(float waitSeconds)
         {
             yield return new WaitForSeconds(waitSeconds);
-            logo.SetActive(true);
+            logoAnim.enabled = true;
+        }
+        [SerializeField] Canvas learningCanvas, researchCanvas;
+        IEnumerator WaitThenDisableCanvases()
+        {
+            yield return null;
+            learningCanvas.enabled = researchCanvas.enabled = false;
+            // this is so that textmeshpro components don't get messed up
         }
 
         ////////////////////////
@@ -241,45 +248,60 @@ namespace EcoBuilder.UI
         private State state;
         void Reveal()
         {
-            StopAllCoroutines();
-            StartCoroutine(TweenY(splashRT, -1000, 0));
+            TweenY(splashRT, -1000, 0);
 
             Assert.IsTrue(state == State.Hidden);
             state = State.Splash;
+            GameManager.Instance.HelpText.Message = splashHelp;
         }
         public void ShowSplash()
         {
-            StopAllCoroutines();
-            StartCoroutine(TweenY(splashRT, -1000, 0));
-            StartCoroutine(TweenY(returnRT, 60, -60));
+            ClearTweens();
+            TweenY(splashRT, -1000, 0);
+            TweenY(returnRT, 60, -60);
 
             Assert.IsTrue(state==State.Levels || state==State.Settings);
             if (state == State.Levels) {
-                StartCoroutine(TweenY(levelsRT, 0, -1000));
+                TweenY(levelsRT, 0, -1000);
             } else if (state == State.Settings) {
-                StartCoroutine(TweenY(settingsRT, 0, -1000));
+                TweenY(settingsRT, 0, -1000);
             }
         }
         public void ShowLevels()
         {
-            StopAllCoroutines();
-            StartCoroutine(TweenY(splashRT, 0, -1000));
-            StartCoroutine(TweenY(levelsRT, -1000, 0));
-            StartCoroutine(TweenY(returnRT, -60, 60));
+            ClearTweens();
+            TweenY(splashRT, 0, -1000);
+            TweenY(levelsRT, -1000, 0);
+            TweenY(returnRT, -60, 60);
 
             state = State.Levels;
         }
         public void ShowSettings()
         {
-            StopAllCoroutines();
-            StartCoroutine(TweenY(splashRT, 0, -1000));
-            StartCoroutine(TweenY(settingsRT, -1000, 0));
-            StartCoroutine(TweenY(returnRT, -60, 60));
+            ClearTweens();
+            TweenY(splashRT, 0, -1000);
+            TweenY(settingsRT, -1000, 0);
+            TweenY(returnRT, -60, 60);
 
             state = State.Settings;
         }
+
+        private List<IEnumerator> navigationRoutines = new List<IEnumerator>();
+        private void ClearTweens()
+        {
+            foreach (var routine in navigationRoutines) {
+                StopCoroutine(routine);
+            }
+            navigationRoutines.Clear();
+        }
+        private void TweenY(RectTransform toMove, float startY, float endY)
+        {
+            var routine = TweenYRoutine(toMove, startY, endY);
+            StartCoroutine(routine);
+            navigationRoutines.Add(routine);
+        }
         [SerializeField] float tweenDuration;
-        IEnumerator TweenY(RectTransform toMove, float startY, float endY)
+        private IEnumerator TweenYRoutine(RectTransform toMove, float startY, float endY)
         {
             Vector3 startPos = toMove.anchoredPosition;
             float startTime = Time.time;

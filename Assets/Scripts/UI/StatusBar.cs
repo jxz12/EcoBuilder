@@ -6,7 +6,7 @@ namespace EcoBuilder.UI
 {
     public class StatusBar : MonoBehaviour
     {
-        [SerializeField] Image health, healthBG;
+        [SerializeField] Image health, healthBorder;
         [SerializeField] TMPro.TextMeshProUGUI traitsText;
 
         RectTransform rt;
@@ -46,18 +46,18 @@ namespace EcoBuilder.UI
 
             if (normalisedHealth >= 0)
             {
-                health.color = Color.green;
+                health.color = new Color(.2f, 1f, .2f, 1);
                 health.fillAmount = normalisedHealth;
             }
             else
             {
-                health.color = Color.grey;
+                health.color = new Color(.4f, .2f, .2f, .2f);
                 health.fillAmount = -normalisedHealth;
             }
         }
         public void SetSize(int size)
         {
-            traitsText.text = $" {size}";
+            traitsText.text = $"{size}";
         }
         public void SetGreed(int greed)
         {
@@ -72,14 +72,15 @@ namespace EcoBuilder.UI
             else if (target.activeSelf)
             {
                 if (!health.enabled) {
-                    health.enabled = healthBG.enabled = traitsText.enabled = true;
+                    health.enabled = healthBorder.enabled = traitsText.enabled = true;
                 }
-                Vector2 trackedPos = eye.WorldToScreenPoint(target.transform.position);
+                Vector3 worldPos = target.transform.TransformPoint(new Vector3(.4f,-.4f,0));
+                Vector2 trackedPos = eye.WorldToScreenPoint(worldPos);
                 rt.position = trackedPos;
             }
             else if (health.enabled)
             {
-                health.enabled = healthBG.enabled = traitsText.enabled = false;
+                health.enabled = healthBorder.enabled = traitsText.enabled = false;
             }
         }
     }

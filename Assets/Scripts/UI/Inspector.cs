@@ -536,12 +536,18 @@ namespace EcoBuilder.UI
         public void HideSizeSlider(bool hidden=true)
         {
             sizeTrait.gameObject.SetActive(!hidden);
-            sizeTrait.RandomiseInitialValue = !hidden;
         }
         public void HideGreedSlider(bool hidden=true)
         {
             greedTrait.gameObject.SetActive(!hidden);
-            greedTrait.RandomiseInitialValue = !hidden;
+        }
+        public void FixSizeInitialValue(int initialValue=0)
+        {
+            sizeTrait.FixInitialValue(initialValue);
+        }
+        public void FixGreedInitialValue(int initialValue=0)
+        {
+            greedTrait.FixInitialValue(initialValue);
         }
         public void HideStatusBars(bool hidden=true)
         {

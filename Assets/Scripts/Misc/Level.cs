@@ -105,7 +105,8 @@ namespace EcoBuilder
         public LevelDetails Details { get { return details; } }
         [SerializeField] Level nextLevelPrefab;
         public Level NextLevelPrefab { get { return nextLevelPrefab; } }
-        [SerializeField] Tutorials.Tutorial tutorialPrefab;
+        // [SerializeField] Tutorials.Tutorial tutorialPrefab;
+        [SerializeField] GameObject tutorialPrefab;
 
         public event Action OnThumbnailed, OnCarded, OnFinished;
 
@@ -262,7 +263,8 @@ namespace EcoBuilder
             GameManager.Instance.LoadLevelScene(this);
         }
 
-        Tutorials.Tutorial teacher;
+        // Tutorials.Tutorial teacher;
+        GameObject teacher;
         public void BeginPlay()
         {
             Assert.IsTrue(GameManager.Instance.PlayedLevelDetails == details, "wrong level beginning");
