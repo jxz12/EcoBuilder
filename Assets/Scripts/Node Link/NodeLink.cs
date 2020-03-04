@@ -38,11 +38,7 @@ namespace EcoBuilder.NodeLink
             if (layoutTriggered && !isCalculatingAsync)
             {
                 layoutTriggered = false;
-#if UNITY_WEBGL
-                LayoutSync();
-#else
-                LayoutAsync();
-#endif
+                Layout();
             }
 
             FineTuneLayout();
@@ -60,42 +56,40 @@ namespace EcoBuilder.NodeLink
         private bool layoutTriggered = false;
         private bool isCalculatingAsync = false;
         public bool GraphLayedOut { get { return !layoutTriggered && !isCalculatingAsync; } }
-        public async void LayoutAsync()
-        {
+
+// because webgl does not support threads
+#if !UNITY_WEBGL
+        public async void Layout() {
+#else
+        public void Layout() {
+#endif
             isCalculatingAsync = true;
 
-            SGD.InitSGD((i)=>nodes[i].StressPos, (i,v)=>nodes[i].StressPos=v, undirected);
-            await Task.Run(()=> SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps));
-
             CountConnectedComponents();
-            RefreshTrophicAndFindChain();
+            RefreshTrophicAndFindChain(1);
             NumEdges = links.Count();
 
+            SGD.InitSGD((i)=>nodes[i].StressPos, undirected); // not async to ensure synchronize state
+#if !UNITY_WEBGL
+            await Task.Run(()=> SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps));
+            SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // in case node is deleted
+#else
+            SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps);
+            SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
+#endif
+
             Johnson.JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+#if !UNITY_WEBGL
             var loop = await Task.Run(()=> Johnson.JohnsonsAlgorithm());
+#else
+            var loop = Johnson.JohnsonsAlgorithm();
+#endif
             NumMaxLoop = loop.Item1;
             LongestLoop = loop.Item2;
 
             isCalculatingAsync = false;
             OnLayedOut.Invoke();
         }
-        public void LayoutSync()
-        {
-            SGD.InitSGD((i)=>nodes[i].StressPos, (i,v)=>nodes[i].StressPos=v, undirected);
-            SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps);
-
-            CountConnectedComponents();
-            RefreshTrophicAndFindChain();
-            NumEdges = links.Count();
-
-            Johnson.JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
-            var loop = Johnson.JohnsonsAlgorithm();
-            NumMaxLoop = loop.Item1;
-            LongestLoop = loop.Item2;
-
-            OnLayedOut.Invoke();
-        }
-
 
         ///////////////////////////////////
         // structure changing functions
@@ -282,6 +276,17 @@ namespace EcoBuilder.NodeLink
         ////////////
         // effects
 
+        public void SpawnEffectOnNode(int idx, GameObject effect)
+        {
+            Instantiate(effect, nodes[idx].transform);
+        }
+        public void SpawnEffectOnLink(int src, int tgt, GameObject effect)
+        {
+            var instantiated = Instantiate(effect, transform);
+            instantiated.transform.position = (nodes[src].transform.position + nodes[tgt].transform.position) / 2;
+            // TODO: better this
+        }
+
         [SerializeField] float minLinkFlow, maxLinkFlow;
         public void ReflowLinks(Func<int, int, float> flows)
         {
@@ -306,6 +311,12 @@ namespace EcoBuilder.NodeLink
         {
             nodes[idx].Flash(false);
         }
+
+
+
+
+        ///////////////
+        // outlining
         public void OutlineNode(int idx, cakeslice.Outline.Colour colour)
         {
             nodes[idx].PushOutline(colour);

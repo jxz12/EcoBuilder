@@ -385,11 +385,11 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.introduction
-      value: From this point on there will be more constraints to satisfy in order
-        to pass each level. Here you must add two plants and three animals, but must
-        also have at least eight links between them. If you get stuck and do not
-        know why, then you can press and hold this panel to the left to receive an
-        explanation. Good luck!
+      value: From this point on there will be extra conditions to satisfy in order
+        to pass each level. Here you are given two plants and three animals, but
+        must also have at least eight links between them, as shown by the panel to
+        the left. If you get stuck and do not know why, then you can press and hold
+        this panel to receive an explanation. Good luck!
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

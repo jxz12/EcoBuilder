@@ -4,19 +4,18 @@ claim moneys
 LEVELS:
 apparent 3
 chain 3
-all loops, including TUTORIAL
+loop 2 & 3
 a final boss
-research TUTORIAL, make score constraint shiny, max instead of min producers or consumers
+research TUTORIAL, make score constraint shiny
 
 are you sure button
 make health go blue if above a super threshold (will need another fill sprite)
-proper outlining (add another simpler mesh as outline within the same sprite. Links can be done in the shader)
 
 # Menu
 make icons for reversing drag direction
 
 # TESTS
-add nodes and links and make sure adjacency is correct
+add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links)
 also make sure undoing and redoing keeps this correct
 to test layout, add nodes and links and make sure stress is lower than a certain amount
 double check the score for certiain combinations too
@@ -32,10 +31,11 @@ finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other
-do cholesky instead of SGD
+score number colour can be green when it shouldn't
+procrustes thing for SGD
 score explanation and show highest on tap (or make it blink?)
 health and traits hide if empty tap and on finish
-double check the teams visualisations (better constrain for trophic, procrustes for nontrophic)
+double check the teams visualisations (do procrustes for both)
 more fidelity in link balls
 remove/disable layout groups as soon as levels are spawned
 release game with australian fires as angle?

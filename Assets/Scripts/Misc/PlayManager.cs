@@ -15,6 +15,8 @@ namespace EcoBuilder
         [SerializeField] UI.Recorder recorder;
         [SerializeField] UI.Score score;
 
+        [SerializeField] UI.Effect heartPrefab, skullPrefab, poofPrefab;
+
         void Start()
         {
             ////////////////////////////////////
@@ -61,6 +63,8 @@ namespace EcoBuilder
             model.OnEquilibrium += ()=> constraints.UpdateStability(model.Stable);
             model.OnEndangered += (i)=> inspector.MakeSpeciesObjectExtinct(i);
             model.OnRescued +=    (i)=> inspector.MakeSpeciesObjectRescued(i);
+            model.OnEndangered += (i)=> nodelink.SpawnEffectOnNode(i, skullPrefab.gameObject);
+            model.OnRescued +=    (i)=> nodelink.SpawnEffectOnNode(i, heartPrefab.gameObject);
             model.OnEndangered += (i)=> nodelink.FlashNode(i);
             model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
 
@@ -77,6 +81,8 @@ namespace EcoBuilder
             inspector.OnUserGreedSet += (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
             nodelink.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
+            // nodelink.OnUserLinked +=      (i,j)=> nodelink.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
+            nodelink.OnUserUnlinked +=    (i,j)=> nodelink.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
 
             recorder.OnSpeciesTraitsChanged += (i)=> nodelink.ForceFocus(i);
             recorder.OnSpeciesMemoryLeak +=    (i)=> nodelink.RemoveNodeCompletely(i);

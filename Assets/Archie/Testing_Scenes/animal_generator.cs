@@ -90,15 +90,14 @@ namespace EcoBuilder.Archie
 
             Generate_and_Apply(plant, seed, rgb);
         }
-        [SerializeField] animal_effect skullPrefab, heartPrefab;
+        // [SerializeField] animal_effect skullPrefab, heartPrefab;
         public override void KillSpecies(GameObject species)
         {
             var created_species = species.GetComponent<animal_object>();
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
 
-            Instantiate(skullPrefab, created_species.transform);
+            // Instantiate(skullPrefab, created_species.transform);
             created_species.Die();
-
             created_species.Renderer.materials[1].SetTexture("_MainTex", DeadEyeTexture);
         }
         public override void RescueSpecies(GameObject species)
@@ -106,9 +105,8 @@ namespace EcoBuilder.Archie
             var created_species = species.GetComponent<animal_object>();
             Assert.IsNotNull(created_species, "gameobject corrupted since generation to have no animal_object");
 
-            Instantiate(heartPrefab, created_species.transform);
+            // Instantiate(heartPrefab, created_species.transform);
             created_species.Live();
-
             created_species.Renderer.materials[1].SetTexture("_MainTex", created_species.Eyes);
         }
 

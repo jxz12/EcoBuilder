@@ -216,11 +216,7 @@ namespace EcoBuilder.Model
             if (solveTriggered && !isCalculatingAsync)
             {
                 solveTriggered = false;
-#if UNITY_WEBGL
-                EquilibrateSync();
-#else
-                EquilibrateAsync();
-#endif
+                Equilibrate();
             }
         }
 
@@ -228,23 +224,27 @@ namespace EcoBuilder.Model
         private bool solveTriggered = false;
         private bool isCalculatingAsync = false;
         public bool EquilibriumSolved { get { return !solveTriggered && !isCalculatingAsync; } }
-        public async void EquilibrateAsync()
-        {
+
+// because webgl does not support threads
+#if !UNITY_WEBGL
+        public async void Equilibrate() {
+#else
+        public void Equilibrate() {
+#endif
             isCalculatingAsync = true;
 
+#if !UNITY_WEBGL
             Feasible = await Task.Run(()=> simulation.SolveFeasibility(GetConsumers));
             Stable = await Task.Run(()=> simulation.SolveStability());
+#else
+            Feasible = simulation.SolveFeasibility(GetConsumers);
+            Stable = simulation.SolveStability();
+#endif
 
             isCalculatingAsync = false;
             OnEquilibrium.Invoke();
         }
-        public void EquilibrateSync()
-        {
-            Feasible = simulation.SolveFeasibility(GetConsumers);
-            Stable = simulation.SolveStability();
 
-            OnEquilibrium.Invoke();
-        }
         public float GetNormalisedAbundance(int idx)
         {
             Species s = idxToSpecies[idx];
