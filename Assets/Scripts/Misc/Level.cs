@@ -331,18 +331,12 @@ namespace EcoBuilder
         }
 
 #if UNITY_EDITOR
-        public static Level DefaultPrefab {
-            get {
-                // return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Learning Apparent 3.prefab");
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>("Assets/Prefabs/Levels/Level Base.prefab");
-            }
-        }
         public static bool SaveAsNewPrefab(List<int> seeds, List<bool> plants, List<int> sizes, List<int> greeds, List<int> sources, List<int> targets, string name)
         {
             Assert.IsTrue(seeds.Count==plants.Count && plants.Count==sizes.Count && sizes.Count==greeds.Count);
             Assert.IsTrue(sources.Count==targets.Count);
 
-            var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(DefaultPrefab);
+            var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(GameManager.Instance.DefaultLevelPrefab);
             newPrefab.details.SetEcosystem(seeds, plants, sizes, greeds, sources, targets);
 
             bool success;

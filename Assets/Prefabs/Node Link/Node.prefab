@@ -44,7 +44,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbcce0ab1e920e344aeb923fa4534813, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Idx: 0
+  State: 0
+  StressPos: {x: 0, y: 0}
+  FocusPos: {x: 0, y: 0, z: 0}
   defaultSize: 0.5
+  CanBeSource: 1
+  CanBeTarget: 1
+  CanBeFocused: 1
 --- !u!135 &-903821243978865509
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -56,5 +63,5 @@ SphereCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.8
+  m_Radius: 0.00001
   m_Center: {x: 0, y: 0, z: 0}

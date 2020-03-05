@@ -56,16 +56,13 @@ namespace EcoBuilder.UI
             current.text = score.ToString();
             if (score > prevScore)
             {
-                current.text = score.ToString();
                 currentMsg.text = "You got a new high score!";
                 points.sprite = trophySprite;
                 StartCoroutine(WiggleSprite(points));
             }
             else
             {
-                current.text = "";
                 currentMsg.text = "Well done!";
-                current.text = prevScore.ToString();
                 points.sprite = pointSprite;
             }
 
@@ -112,13 +109,7 @@ namespace EcoBuilder.UI
             float startTime = Time.time;
             while (Time.time < startTime+duration)
             {
-                float t = (Time.time-startTime)/duration;
-                // quadratic ease in-out
-                if (t < .5f) {
-                    t = 2*t*t;
-                } else {
-                    t = -1 + (4-2*t)*t;
-                }
+                float t = Tweens.CubicInOut((Time.time-startTime)/duration);
                 float y = Mathf.Lerp(y0, y1, t);
                 float a = Mathf.Lerp(a0, a1, t);
 

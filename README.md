@@ -2,13 +2,13 @@ dad
 claim moneys
 
 LEVELS:
-chain 3
 loop 2 & 3
 some final bosses
 research TUTORIAL!!!, make score constraint shiny
 
 make leaderboards more explorable
 are you sure button
+fix help text on constraints
 
 # Menu
 make icons for reversing drag direction

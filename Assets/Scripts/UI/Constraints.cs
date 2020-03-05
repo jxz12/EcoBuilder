@@ -53,6 +53,15 @@ namespace EcoBuilder.UI
             // prevents scene getting dirty, Unity autolayout sucks
             GetComponent<VerticalLayoutGroup>().enabled = true;
             GetComponent<ContentSizeFitter>().enabled = true;
+
+            OnChainHovered += ()=> HighlightChain(true);
+            OnChainUnhovered += ()=> HighlightChain(false);
+            OnLoopHovered += ()=> HighlightLoop(true);
+            OnLoopUnhovered += ()=> HighlightLoop(false);
+        }
+        void Start()
+        {
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(1,1), new Vector2(0,1)));
         }
 
         private void Constrain(Type type, int threshold)
@@ -236,7 +245,8 @@ namespace EcoBuilder.UI
         }
         public void Finish()
         {
-            GetComponent<Animator>().SetBool("Visible", false);
+            StopAllCoroutines();
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1)));
         }
 
         // [SerializeField] Tooltip tooltip;
@@ -304,6 +314,15 @@ namespace EcoBuilder.UI
             }
             OnErrorShown?.Invoke(false);
         }
+        void HighlightChain(bool highlighted)
+        {
+            constraintMap[Type.Chain].icon.color = highlighted? Color.red : Color.white;
+        }
+        void HighlightLoop(bool highlighted)
+        {
+            constraintMap[Type.Loop].icon.color = highlighted? Color.red : Color.white;
+        }
+        
         public bool Feasible { get; private set; }
         public bool Stable { get; private set; }
         public bool Disjoint { get; private set; }

@@ -160,13 +160,7 @@ namespace EcoBuilder.UI
             float startTime = Time.time;
             while (Time.time < startTime+duration)
             {
-                float t = (Time.time-startTime)/duration;
-                // quadratic ease in-out
-                if (t < .5f) {
-                    t = 2*t*t;
-                } else {
-                    t = -1 + (4-2*t)*t;
-                }
+                float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
                 transform.localPosition = Vector3.Lerp(startPos, endPos, t);
                 shade.color = Color.Lerp(startCol, new Color(0,0,0,applyShade?.5f:0), t);
                 yield return null;

@@ -34,19 +34,13 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        public static List<int> LongestLoop {
-            get {
-                johnsonLongestLoop.Reverse(); // because made from stack
-                return new List<int>(johnsonLongestLoop);
-            }
-        }
+        public static IReadOnlyList<int> LongestLoop { get; private set; }
         public static int MaxLoop {
             get { return LongestLoop.Count; }
         }
         public static int NumMaxLoop {
             get { return johnsonNumLongest; }
         }
-
 
 
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
@@ -75,6 +69,8 @@ namespace EcoBuilder.NodeLink
                     set.Remove(idx);
                 }
             }
+            johnsonLongestLoop.Reverse();
+            LongestLoop = new List<int>(johnsonLongestLoop);
         }
         static Stack<int> johnsonStack = new Stack<int>();
         static HashSet<int> johnsonSet = new HashSet<int>();

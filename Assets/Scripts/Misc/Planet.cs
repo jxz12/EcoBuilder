@@ -40,17 +40,8 @@ namespace EcoBuilder
             Vector3 startScale = transform.localScale;
             while (Time.time < startTime+duration)
             {
-                float t = (Time.time-startTime)/duration;
+                float t = UI.Tweens.CubicInOut((Time.time-startTime)/duration);
 
-                // cubic ease in-out
-                if (t < .5f) {
-                    // t = 2*t*t;
-                    t = 4*t*t*t;
-                } else {
-                    // t = -1 + (4-2*t)*t;
-                    t -= 1;
-                    t = 4*t*t*t + 1;
-                }
                 transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
                 transform.localScale = Vector3.Lerp(startScale, Vector3.one, t);
                 yield return null;

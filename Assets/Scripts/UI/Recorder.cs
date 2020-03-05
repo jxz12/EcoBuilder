@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace EcoBuilder.UI
@@ -42,6 +43,10 @@ namespace EcoBuilder.UI
             record = new List<string>();
             RecordAction("");
             print("TODO: limit the size of the record to something like a million or something");
+        }
+        void Start()
+        {
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(1,0), new Vector2(0,0)));
         }
         void PushMove(Move move)
         {
@@ -167,7 +172,8 @@ namespace EcoBuilder.UI
         }
         public void Finish()
         {
-            GetComponent<Animator>().SetBool("Visible", false);
+            StopAllCoroutines();
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,0), new Vector2(1,0)));
         }
     }
 }

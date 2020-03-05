@@ -845,6 +845,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 225447110}
   m_CullTransparentMesh: 0
+--- !u!84 &233609696
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 657
+  m_Height: 1146
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthFormat: 1
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &259885488
 GameObject:
   m_ObjectHideFlags: 0
@@ -1281,41 +1316,6 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!84 &396035312
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 657
-  m_Height: 1146
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthFormat: 1
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &453364903
 GameObject:
   m_ObjectHideFlags: 0
@@ -2022,7 +2022,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_EventMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 23
   m_MaxRayIntersections: 0
 --- !u!114 &1047668690
 MonoBehaviour:
@@ -2041,7 +2041,7 @@ MonoBehaviour:
   fillAmount: 0.07
   lineColor0: {r: 1, g: 1, b: 0, a: 1}
   lineColor1: {r: 0, g: 0.9245283, b: 0, a: 1}
-  lineColor2: {r: 1, g: 0.495283, b: 0.68255025, a: 1}
+  lineColor2: {r: 1, g: 0, b: 0.33333334, a: 1}
   lineColor3: {r: 0, g: 1, b: 1, a: 1}
   lineColor4: {r: 1, g: 0.8500817, b: 0.18431373, a: 1}
   lineColor5: {r: 0, g: 0, b: 0, a: 1}
@@ -2057,8 +2057,8 @@ MonoBehaviour:
   outlineShader: {fileID: 4800000, guid: 3c30d1a2a85b9d4499dfc9ebea9ade8b, type: 3}
   outlineBufferShader: {fileID: 4800000, guid: 17f3e80406929b64f90154b46d4f453c, type: 3}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1355223025}
-  extraRenderTexture: {fileID: 396035312}
+  renderTexture: {fileID: 233609696}
+  extraRenderTexture: {fileID: 1386953489}
 --- !u!1 &1088296398
 GameObject:
   m_ObjectHideFlags: 0
@@ -2608,7 +2608,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1269030970}
   m_CullTransparentMesh: 0
---- !u!84 &1355223025
+--- !u!84 &1386953489
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2979,7 +2979,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1355223025}
+  m_TargetTexture: {fileID: 233609696}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -4562,6 +4562,7 @@ MonoBehaviour:
     reverseDrag: 1
   pat: {fileID: 1634369686}
   loadingBar: {fileID: 1799815275}
+  defaultLevelName: Level Base
   cardAnchor: {fileID: 1623094543}
   playAnchor: {fileID: 1972433609}
   tutorialCanvas: {fileID: 158104607}

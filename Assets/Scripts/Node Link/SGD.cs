@@ -135,8 +135,8 @@ namespace EcoBuilder.NodeLink
                     Vector3 X_ij = sgdPos[term.i] - sgdPos[term.j];
 
                     // float mag = X_ij.magnitude;
-                    // float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y + zMag*X_ij.z*X_ij.z);
-                    float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y);
+                    float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y + zMag*X_ij.z*X_ij.z);
+                    // float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y);
 
                     float mu = Math.Min(term.w * eta, 1f);
                     Vector3 r = ((mag-term.d)/2f) * (X_ij/mag);
@@ -149,16 +149,9 @@ namespace EcoBuilder.NodeLink
                     sgdPos[term.i] -= mu * r;
                     sgdPos[term.j] += mu * r;
                 }
-
-                // // clamp back y position
-                // if (keepY) {
-                //     for (int i=0; i<sgdPos.Count; i++) {
-                //         sgdPos[i] = new Vector3(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, sgdKeptY[i], yLerp), sgdPos[i].z);
-                //     }
-                // }
             }
         }
-        static readonly float zMagMin=.001f, yLerp=1f;
+        static readonly float zMagMin=.001f;
 
 
         private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)

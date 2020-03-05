@@ -51,7 +51,6 @@ namespace EcoBuilder.NodeLink
                     basal.Add(i);
                 }
             }
-            // UnityEngine.Debug.Log(trophicA.ToString(x=>x.ToString()));
 
             // then use basal species as roots to chain 
             var q = new Queue<int>();
@@ -110,7 +109,6 @@ namespace EcoBuilder.NodeLink
             if (MaxTrophicLevel-1 > MaxChain)
             {
                 trophicScaling = MaxChain / (MaxTrophicLevel-1);
-                UnityEngine.Debug.Log($"{MaxTrophicLevel} {MaxChain}");
             }
             // Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
             foreach (int i in indices)

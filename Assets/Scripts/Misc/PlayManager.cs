@@ -158,7 +158,6 @@ namespace EcoBuilder
             }
             // ensure initial layout has correct trophic levels
             nodelink.SolveTrophicLevels(details.NumInitSpecies);
-            nodelink.SolveTrophicLevels(100);
 
             // set up scoring
             switch (GameManager.Instance.PlayedLevelDetails.Metric)

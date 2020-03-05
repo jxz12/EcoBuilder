@@ -15,15 +15,7 @@ namespace EcoBuilder.NodeLink
         {
             if (focusState != FocusState.SuperFocus)
             {
-                // get average of all positions, and center
-                // Vector2 centroid;
-                // centroid = Vector3.zero;
-                // foreach (Node no in nodes)
-                // {
-                //     Vector2 pos = no.StressPos;
-                //     centroid += pos;
-                // }
-                // centroid /= nodes.Count;
+                // get bounds of layout and center to middle
                 Vector2 minPos = new Vector2(float.MaxValue, float.MaxValue);
                 Vector2 maxPos = new Vector2(float.MinValue, float.MinValue);
                 foreach (Node no in nodes)
@@ -127,7 +119,6 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////////////////
         // fine tune with majorization every frame
 
-
         [SerializeField] int t_max;
         [SerializeField] float eps;
 
@@ -141,7 +132,7 @@ namespace EcoBuilder.NodeLink
             if (ConstrainTrophic)
             {
                 Trophic.IterateAndSet((i,y)=> nodes[i].StressPos.y = y);
-                // LayoutMajorizationHorizontal(idx);
+                LayoutMajorizationHorizontal(idx);
             }
             else
             {
@@ -195,7 +186,7 @@ namespace EcoBuilder.NodeLink
             if (botSum > 0)
             {
                 // nodes[i].StressPos = new Vector2(topSumX/botSum, topSumY/botSum);
-                nodes[i].StressPos = new Vector2(topSumX/botSum, nodes[i].StressPos.y);
+                nodes[i].StressPos.x = topSumX / botSum;
             }
         }
         private static Dictionary<int, int> visitedBFS = new Dictionary<int, int>();

@@ -77,7 +77,7 @@ namespace EcoBuilder.UI
 
         // does not set randomly if initial value is fixed
         // public bool RandomiseInitialValue { get; set; } = true;
-        bool randomiseInitialValue;
+        bool randomiseInitialValue = true;
         public void FixInitialValue(int initialValue)
         {
             randomiseInitialValue = false;

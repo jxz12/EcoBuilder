@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -23,6 +24,10 @@ namespace EcoBuilder.UI
         {
             feasibleScoreCol = scoreText.color;
             scoreText.color = infeasibleScoreCol;
+        }
+        void Start()
+        {
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,0), new Vector2(0,1)));
         }
         public void SetStarThresholds(LevelDetails.ScoreMetric metric, int target1, int target2)
         {
@@ -137,7 +142,7 @@ namespace EcoBuilder.UI
         {
             Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
-            GetComponent<Animator>().SetBool("Visible", false);
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(0,0)));
         }
 
 
@@ -147,10 +152,8 @@ namespace EcoBuilder.UI
 
         public void Hide(bool hidden=true)
         {
-            GetComponent<Animator>().enabled = !hidden;
-            // if (hidden) {
-            //     transform.localPosition = new Vector2(0,1000); // hack
-            // }
+            StopAllCoroutines();
+            GetComponent<RectTransform>().pivot = new Vector2(0,0);
         }
     }
 }

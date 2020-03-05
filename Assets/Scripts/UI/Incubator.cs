@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -18,7 +19,8 @@ namespace EcoBuilder.UI
         [SerializeField] Image pickupZone, dropZone;
         [SerializeField] float planeDistance;
 
-        [SerializeField] Animator buttonsAnim;
+        // [SerializeField] Animator buttonsAnim;
+        [SerializeField] RectTransform buttons;
         [SerializeField] Button producerButton;
         [SerializeField] Button consumerButton;
 
@@ -37,20 +39,21 @@ namespace EcoBuilder.UI
 
             producerButton.onClick.AddListener(()=> StartIncubation(true));
             consumerButton.onClick.AddListener(()=> StartIncubation(false));
+            ShowButtons(true, 1f);
         }
         private void StartIncubation(bool isProducer)
         {
             OnIncubationWanted?.Invoke(isProducer);
             GetComponent<Animator>().SetBool("Droppable", false);
             GetComponent<Animator>().SetTrigger("Incubate");
-            buttonsAnim.SetBool("Visible", false);
+            ShowButtons(false);
         }
         public void Unincubate()
         {
             GetComponent<Animator>().SetTrigger("Unincubate");
-            buttonsAnim.SetBool("Visible", true);
             Destroy(incubatedObj);
             incubatedObj = null;
+            ShowButtons(true);
         }
 
         GameObject incubatedObj;
@@ -69,13 +72,13 @@ namespace EcoBuilder.UI
                 Destroy(incubatedObj);
                 GetComponent<Animator>().SetTrigger("Unincubate");
             }
-            buttonsAnim.SetBool("Visible", false);
+            ShowButtons(false);
         }
 
         // for tutorials
         public void HideTypeButtons(bool hidden=true)
         {
-            buttonsAnim.gameObject.SetActive(!hidden);
+            buttons.gameObject.SetActive(!hidden);
         }
         public void EnableProducerButton(bool enabled)
         {
@@ -129,9 +132,20 @@ namespace EcoBuilder.UI
             {
                 OnDropped?.Invoke();
                 GetComponent<Animator>().SetTrigger("Spawn");
-                buttonsAnim.SetBool("Visible", true);
-                // OnUnincubated?.Invoke();
+
+                ShowButtons(true);
             }
+        }
+        IEnumerator buttonsRoutine;
+        private void ShowButtons(bool showing, float duration=.5f)
+        {
+            buttons.GetComponent<CanvasGroup>().interactable = showing;
+            if (buttonsRoutine != null) {
+                StopCoroutine(buttonsRoutine);
+            }
+            var start = showing? new Vector2(0,0) : new Vector2(1,0);
+            var end = showing? new Vector2(1,0) : new Vector2(0,0);
+            StartCoroutine(buttonsRoutine = Tweens.Pivot(buttons, start, end, duration));
         }
     }
 }
