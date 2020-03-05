@@ -4,8 +4,9 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-// for heavy calculations
+#if !UNITY_WEBGL
 using System.Threading.Tasks;
+#endif
 
 namespace EcoBuilder.Model
 {
@@ -161,14 +162,14 @@ namespace EcoBuilder.Model
 
         // we need this because the graveyard in nodelink makes it nontrivial
         // to store a copy of the whole graph by only relying on OnLinked<int,int>
-        Func<int, IEnumerable<int>> IdxAdjacency;
-        public void AttachAdjacency(Func<int, IEnumerable<int>> IdxAdjacency)
+        Func<int, IEnumerable<int>> AttachedAdjacency;
+        public void AttachAdjacency(Func<int, IEnumerable<int>> Adjacency)
         {
-            this.IdxAdjacency = IdxAdjacency;
+            AttachedAdjacency = Adjacency;
         }
         private IEnumerable<Species> GetConsumers(Species resource)
         {
-            foreach (int con in IdxAdjacency(speciesToIdx[resource]))
+            foreach (int con in AttachedAdjacency(speciesToIdx[resource]))
             {
                 yield return idxToSpecies[con];
             }
@@ -227,9 +228,9 @@ namespace EcoBuilder.Model
 
 // because webgl does not support threads
 #if !UNITY_WEBGL
-        public async void Equilibrate() {
+        async void Equilibrate() {
 #else
-        public void Equilibrate() {
+        void Equilibrate() {
 #endif
             isCalculatingAsync = true;
 

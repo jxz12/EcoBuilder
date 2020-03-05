@@ -267,6 +267,15 @@ namespace EcoBuilder.NodeLink
             sb.Append("}");
             return sb.ToString();
         }
+        public void RemoveIndex(int idx)
+        {
+            foreach (int col in GetColumnIndicesInRow(idx).ToArray()) {
+                RemoveAt(idx, col);
+            }
+            foreach (int row in GetRowIndicesInColumn(idx).ToArray()) {
+                RemoveAt(row, idx);
+            }
+        }
 
         public T[,] ToArray(int minIdx, int range) {
             if (range < 1) throw new System.InvalidOperationException("range < 1");

@@ -38,30 +38,30 @@ namespace EcoBuilder.UI
         int realisedScore = 0;
 
         // to fetch the score
-        List<Func<float>> ScoreSources = new List<Func<float>>();
+        List<Func<float>> AttachedSources = new List<Func<float>>();
         public void AttachScoreSource(Func<float> Source)
         {
-            ScoreSources.Add(Source);
+            AttachedSources.Add(Source);
         }
         // to check whether constraints have been met
-        Func<bool> CheckSatisfied = ()=>false;
+        Func<bool> AttachedSatisfied = ()=>false;
         public void AttachConstraintsSatisfied(Func<bool> IsSatisfied)
         {
-            CheckSatisfied = IsSatisfied;
+            AttachedSatisfied = IsSatisfied;
         }
         // this needs to be here to ensure that the calculated components
         // are synced before moving every frame
         // we want the score to update even if the model is calculating
         // but no events triggered in case of false positive due to being out of sync
-        Func<bool> CheckValid = ()=>false;
+        Func<bool> AttachedValidity = ()=>false;
         public void AttachScoreValidity(Func<bool> IsValid)
         {
-            CheckValid = IsValid;
+            AttachedValidity = IsValid;
         }
         public void Update() //, string explanation, string explanationSupplement)
         {
             float newScore = 0;
-            foreach (var Source in ScoreSources) {
+            foreach (var Source in AttachedSources) {
                 newScore += Source.Invoke();
             }
             Assert.IsTrue(newScore >= 0, "cannot have negative score");
@@ -76,12 +76,14 @@ namespace EcoBuilder.UI
             realisedScore = (int)currentScore;
             scoreText.text = realisedScore.ToString();
 
+            //////////////////////////////////
             // only continue if allowed
-            if (starsDisabled || !CheckValid.Invoke()) {
+            if (starsDisabled || !AttachedValidity.Invoke()) {
                 return;
             }
+
             int newNumStars = 0;
-            if (CheckSatisfied.Invoke())
+            if (AttachedSatisfied.Invoke())
             {
                 newNumStars += 1;
 

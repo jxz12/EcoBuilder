@@ -11,7 +11,7 @@ namespace EcoBuilder.NodeLink
 
         static Dictionary<int, HashSet<int>> johnsonIncoming = new Dictionary<int, HashSet<int>>();
         static Dictionary<int, HashSet<int>> johnsonOutgoing = new Dictionary<int, HashSet<int>>();
-        public static void JohnsonInit(IEnumerable<int> indices, IEnumerable<Tuple<int, int>> indexPairs)
+        public static void InitJohnson(IEnumerable<int> indices, Func<int, IEnumerable<int>> Targets)
         {
             // a function to initialise outgoing and incoming edges for johnson's algorithm below
             // ignores 'graveyard' species
@@ -24,19 +24,36 @@ namespace EcoBuilder.NodeLink
                 johnsonOutgoing[i] = new HashSet<int>();
                 johnsonIncoming[i] = new HashSet<int>();
             }
-            foreach (var ij in indexPairs)
+            foreach (int i in indices)
             {
-                int i=ij.Item1, j=ij.Item2;
-                johnsonOutgoing[i].Add(j);
-                johnsonIncoming[j].Add(i);
+                foreach (int j in Targets(i))
+                {
+                    johnsonOutgoing[i].Add(j);
+                    johnsonIncoming[j].Add(i);
+                }
             }
         }
+
+        public static List<int> LongestLoop {
+            get {
+                johnsonLongestLoop.Reverse(); // because made from stack
+                return new List<int>(johnsonLongestLoop);
+            }
+        }
+        public static int MaxLoop {
+            get { return LongestLoop.Count; }
+        }
+        public static int NumMaxLoop {
+            get { return johnsonNumLongest; }
+        }
+
+
 
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
         // can be very slow, so run async if possible
         static List<int> johnsonLongestLoop = new List<int>();
         static int johnsonNumLongest = 0;
-        public static Tuple<int, List<int>> JohnsonsAlgorithm()
+        public static void JohnsonsAlgorithm()
         {
             johnsonLongestLoop = new List<int>(); // empty list is no loop
             var indices = new List<int>(johnsonOutgoing.Keys);
@@ -58,8 +75,6 @@ namespace EcoBuilder.NodeLink
                     set.Remove(idx);
                 }
             }
-            johnsonLongestLoop.Reverse();
-            return Tuple.Create(johnsonNumLongest, new List<int>(johnsonLongestLoop));
         }
         static Stack<int> johnsonStack = new Stack<int>();
         static HashSet<int> johnsonSet = new HashSet<int>();

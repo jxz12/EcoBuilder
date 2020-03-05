@@ -128,7 +128,7 @@ namespace EcoBuilder.NodeLink
         // fine tune with majorization every frame
 
 
-        [SerializeField] int t_init, t_max;
+        [SerializeField] int t_max;
         [SerializeField] float eps;
 
         private Queue<int> todoBFS = new Queue<int>();
@@ -137,37 +137,22 @@ namespace EcoBuilder.NodeLink
             if (nodes.Count==0 || focusState==FocusState.SuperFocus) {
                 return;
             }
-            int i = todoBFS.Dequeue(); // only do one vertex at a time
+            int idx = todoBFS.Dequeue(); // only do one vertex at a time
             if (ConstrainTrophic)
             {
-                if (!LaplacianDetZero)
-                {
-                    TrophicGaussSeidel();
-                    MoveNodesToTrophicLevel(.1f);
-                }
-                LayoutMajorizationHorizontal(i);
+                Trophic.IterateAndSet((i,y)=> nodes[i].StressPos.y = y);
+                // LayoutMajorizationHorizontal(idx);
             }
             else
             {
-                LayoutMajorization(i);
+                LayoutMajorization(idx);
             }
-
-            todoBFS.Enqueue(i);
+            todoBFS.Enqueue(idx);
         }
-        private void MoveNodesToTrophicLevel(float lerp=1)
+        public void SolveTrophicLevels(int nIter)
         {
-            Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
-
-            float trophicScaling = 1;
-            if (MaxTrophicLevel-1 > MaxChain)
-            {
-                trophicScaling = MaxChain / (MaxTrophicLevel-1);
-            }
-            foreach (Node no in nodes)
-            {
-                float y = Mathf.Lerp(no.StressPos.y, trophicScaling * (trophicLevels[no.Idx]-1), lerp);
-                no.StressPos = new Vector2(no.StressPos.x, y);
-            }
+            Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
+            Trophic.IterateAndSet((i,y)=> nodes[i].StressPos.y=y, nIter);
         }
         private void LayoutMajorization(int i)
         {
@@ -237,90 +222,6 @@ namespace EcoBuilder.NodeLink
             visitedBFS.Remove(source);
             return visitedBFS;
         }
-
-        /////////////////////////////////
-        // cholesky factorization
-        /*
-        private void InitCholesky(int seed)
-        {
-            sgdPos.Clear();
-            sgdSquished.Clear();
-            sgdUnsquished.Clear();
-
-            var rand = new System.Random(seed);
-            foreach (int i in nodes.Indices)
-            {
-                sgdSquished[i] = sgdUnsquished.Count;
-                sgdUnsquished.Add(i);
-                // if (!ConstrainTrophic) {
-                    sgdPos.Add(new Vector2(sgdSquished[i], (float)rand.NextDouble()));
-                // } else {
-                //     sgdPos.Add(new Vector2(sgdSquished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
-                //     // still add a little jitter to prevent NaN
-                // }
-                // sgdPos.Add(nodes[i].StressPos);
-            }
-            sgdSources.Clear();
-            sgdTargets.Clear();
-            foreach (int i in nodes.Indices)
-            {
-                sgdSources.Add(sgdTargets.Count);
-                foreach (int j in undirected[i])
-                {
-                    sgdTargets.Add(sgdSquished[j]);
-                }
-            }
-            sgdSources.Add(sgdTargets.Count); // for iteration to next
-
-
-            int n = sgdPos.Count;
-            var Lw = Matrix<float>.Build.Dense(n-1, n-1);
-            var Lz = Matrix<float>
-
-            // calculate terms with BFS
-            sgdTerms.Clear();
-            int d_max = 0;
-            var q = new Queue<int>();
-            for (int source=0; source<sgdSources.Count-1; source++)
-            {
-                // BFS for each node
-                q.Enqueue(source);
-                var d = new Dictionary<int, int>();
-                d[source] = 0;
-                while (q.Count > 0)
-                {
-                    int prev = q.Dequeue();
-                    for (int i=sgdSources[prev]; i<sgdSources[prev+1]; i++)
-                    {
-                        int next = sgdTargets[i];
-                        if (!d.ContainsKey(next))
-                        {
-                            d[next] = d[prev] + 1;
-                            q.Enqueue(next);
-
-                            // if (source < next) // only add every other term
-                            // {
-                            //     sgdTerms.Add(new StressTerm () {
-                            //         i=source,
-                            //         j=next,
-                            //         d=d[next],
-                            //         w=1f/(d[next]*d[next])
-                            //     });
-                            //     d_max = Math.Max(d[next], d_max);
-                            // }
-                        }
-                    }
-                }
-            }
-
-            // keep memory tidy
-            sgdTerms.TrimExcess();
-            sgdPos.TrimExcess();
-            sgdUnsquished.TrimExcess();
-            sgdSources.TrimExcess();
-            sgdTargets.TrimExcess();
-        }
-        */
 
     }
 }

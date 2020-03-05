@@ -94,7 +94,9 @@ namespace EcoBuilder
             inspector.OnDespawned +=   (i)=> model.TriggerSolve();
             inspector.OnSizeSet +=   (i,x)=> model.TriggerSolve();
             inspector.OnGreedSet +=  (i,x)=> model.TriggerSolve();
-            nodelink.OnLinked +=        ()=> model.TriggerSolve();
+            // nodelink.OnLinked +=        ()=> model.TriggerSolve();
+            nodelink.OnUserLinked +=   (i,j)=> model.TriggerSolve();
+            nodelink.OnUserUnlinked += (i,j)=> model.TriggerSolve();
 
             //////////////////////
             // initialise level //
@@ -154,6 +156,9 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
+            // ensure initial layout has correct trophic levels
+            nodelink.SolveTrophicLevels(details.NumInitSpecies);
+            nodelink.SolveTrophicLevels(100);
 
             // set up scoring
             switch (GameManager.Instance.PlayedLevelDetails.Metric)

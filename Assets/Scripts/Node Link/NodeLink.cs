@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
 using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-// for heavy calculations
+#if !UNITY_WEBGL
 using System.Threading.Tasks;
+#endif
 
 namespace EcoBuilder.NodeLink
 {
@@ -16,7 +16,7 @@ namespace EcoBuilder.NodeLink
         public event Action<int> OnFocused;
         public event Action<int> OnUnfocused;
         public event Action OnLayedOut;
-        public event Action OnLinked;
+        // public event Action OnLinked;
 
         // called only when user does something
         public event Action<int, int> OnUserLinked;
@@ -25,8 +25,18 @@ namespace EcoBuilder.NodeLink
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
-        [SerializeField] Transform graphParent, nodesParent, linksParent, unfocusParent;
+        [SerializeField] Transform unfocusParent;
 
+        Transform graphParent, nodesParent, linksParent;
+        void Awake()
+        {
+            graphParent = new GameObject("Graph").transform;
+            nodesParent = new GameObject("Nodes").transform;
+            linksParent = new GameObject("Links").transform;
+            graphParent.SetParent(transform);
+            nodesParent.SetParent(graphParent);
+            linksParent.SetParent(graphParent);
+        }
         Camera mainCam;
         void Start()
         {
@@ -56,36 +66,41 @@ namespace EcoBuilder.NodeLink
         private bool layoutTriggered = false;
         private bool isCalculatingAsync = false;
         public bool GraphLayedOut { get { return !layoutTriggered && !isCalculatingAsync; } }
+        public bool ConstrainTrophic { private get; set; }
 
 // because webgl does not support threads
 #if !UNITY_WEBGL
-        public async void Layout() {
+        async void Layout() {
 #else
-        public void Layout() {
+        void Layout() {
 #endif
             isCalculatingAsync = true;
 
             CountConnectedComponents();
-            RefreshTrophicAndFindChain(1);
             NumEdges = links.Count();
 
-            SGD.InitSGD((i)=>nodes[i].StressPos, undirected); // not async to ensure synchronize state
+            Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
+            Trophic.IterateAndSet((i,y)=>nodes[i].StressPos.y=y, 3);
+            
+            if (!ConstrainTrophic) {
+                SGD.InitSGD(undirected, null); // not async to ensure synchronize state
+            } else {
+                SGD.InitSGD(undirected, (i)=>nodes[i].StressPos.y); // not async to ensure synchronize state
+            }
 #if !UNITY_WEBGL
-            await Task.Run(()=> SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps));
+            await Task.Run(()=> SGD.LayoutSGD(t_max, eps));
             SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // in case node is deleted
 #else
-            SGD.LayoutSGD(ConstrainTrophic, t_init, t_max, eps);
+            SGD.LayoutSGD(t_max, eps);
             SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
 
-            Johnson.JohnsonInit(nodes.Indices, links.IndexPairs); // not async to ensure synchronize state
+            Johnson.InitJohnson(nodes.Indices, links.GetColumnIndicesInRow); // not async to ensure synchronize state
 #if !UNITY_WEBGL
-            var loop = await Task.Run(()=> Johnson.JohnsonsAlgorithm());
+            await Task.Run(()=> Johnson.JohnsonsAlgorithm());
 #else
-            var loop = Johnson.JohnsonsAlgorithm();
+            Johnson.JohnsonsAlgorithm();
 #endif
-            NumMaxLoop = loop.Item1;
-            LongestLoop = loop.Item2;
 
             isCalculatingAsync = false;
             OnLayedOut.Invoke();
@@ -205,13 +220,7 @@ namespace EcoBuilder.NodeLink
 
             Destroy(nodeGrave[idx].gameObject);
             nodeGrave.RemoveAt(idx);
-
-            foreach (int col in linkGrave.GetColumnIndicesInRow(idx).ToArray()) {
-                linkGrave.RemoveAt(idx, col);
-            }
-            foreach (int row in linkGrave.GetRowIndicesInColumn(idx).ToArray()) {
-                linkGrave.RemoveAt(row, idx);
-            }
+            linkGrave.RemoveIndex(idx);
         }
 
         public void AddLink(int i, int j)
@@ -226,7 +235,7 @@ namespace EcoBuilder.NodeLink
             undirected[i].Add(j);
             undirected[j].Add(i);
 
-            OnLinked?.Invoke();
+            // OnLinked?.Invoke();
             layoutTriggered = true;
         }
         public void RemoveLink(int i, int j)
@@ -239,7 +248,7 @@ namespace EcoBuilder.NodeLink
             undirected[i].Remove(j);
             undirected[j].Remove(i);
 
-            OnLinked?.Invoke();
+            // OnLinked?.Invoke();
             layoutTriggered = true;
         }
 
@@ -268,8 +277,7 @@ namespace EcoBuilder.NodeLink
         // for tutorial
         public int GetNodeChainLength(int idx)
         {
-            Assert.IsTrue(chainLengths.ContainsKey(idx));
-            return chainLengths[idx];
+            return Trophic.GetChainLength(idx);
         }
 
 
@@ -313,10 +321,9 @@ namespace EcoBuilder.NodeLink
         }
 
 
-
-
         ///////////////
         // outlining
+
         public void OutlineNode(int idx, cakeslice.Outline.Colour colour)
         {
             nodes[idx].PushOutline(colour);
@@ -330,30 +337,33 @@ namespace EcoBuilder.NodeLink
             links[src, tgt].PushOutline(colour);
         }
 
+        // chain and loop
+        public int MaxChain { get { return Trophic.MaxChain; } }
+        public int NumMaxChain { get { return Trophic.NumMaxChain; } }
+        public int MaxLoop { get { return Johnson.MaxLoop; } }
+        public int NumMaxLoop { get { return Johnson.NumMaxLoop; } }
+
         private List<Action> toUnoutline = new List<Action>();
         public void OutlineChain(cakeslice.Outline.Colour colour)
         {
             Assert.IsTrue(toUnoutline.Count == 0, "previous outline not undone");
-            if (MaxChain == 0) {
-                return;
-            }
             StartCoroutine(WaitThenOutlineChain(colour));
         }
         public void OutlineLoop(cakeslice.Outline.Colour colour)
         {
             Assert.IsTrue(toUnoutline.Count == 0, "previous outline not undone");
-            if (MaxLoop == 0) {
-                return;
-            }
             StartCoroutine(WaitThenOutlineLoop(colour));
         }
         private IEnumerator WaitThenOutlineChain(cakeslice.Outline.Colour colour)
         {
+            if (Trophic.MaxChain == 0) {
+                yield break;
+            }
             // if calculating then we could potentially try to outline inactive or destroyed nodes
             while (isCalculatingAsync) {
                 yield return null;
             }
-            foreach (int idx in TallestNodes)
+            foreach (int idx in Trophic.TallestNodes)
             {
                 nodes[idx].PushOutline(colour);
                 toUnoutline.Add(()=> nodes[idx].PopOutline());
@@ -361,18 +371,22 @@ namespace EcoBuilder.NodeLink
         }
         private IEnumerator WaitThenOutlineLoop(cakeslice.Outline.Colour colour)
         {
+            if (Johnson.MaxLoop == 0) {
+                yield break;
+            }
             // if calculating then we could potentially try to outline inactive or destroyed nodes
             while (isCalculatingAsync) {
                 yield return null;
             }
-            for (int i=0; i<LongestLoop.Count; i++)
+            for (int i=0; i<Johnson.MaxLoop; i++)
             {
-                var loopLink = links[LongestLoop[i], LongestLoop[(i+1)%LongestLoop.Count]];
-                var loopNode = nodes[LongestLoop[i]];
+                int src = Johnson.LongestLoop[i];
+                int tgt = Johnson.LongestLoop[(i+1) % Johnson.MaxLoop];
+                var loopNode = nodes[src];
+                var loopLink = links[src,tgt];
 
                 loopNode.PushOutline(colour);
                 loopLink.PushOutline(colour);
-
                 toUnoutline.Add(()=> loopNode.PopOutline());
                 toUnoutline.Add(()=> loopLink.PopOutline());
             }

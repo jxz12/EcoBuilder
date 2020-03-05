@@ -2,14 +2,13 @@ dad
 claim moneys
 
 LEVELS:
-apparent 3
 chain 3
 loop 2 & 3
-a final boss
-research TUTORIAL, make score constraint shiny
+some final bosses
+research TUTORIAL!!!, make score constraint shiny
 
+make leaderboards more explorable
 are you sure button
-make health go blue if above a super threshold (will need another fill sprite)
 
 # Menu
 make icons for reversing drag direction
@@ -26,18 +25,17 @@ check all serializefields to make sure they are not null
 
 # Research world
 fix superfocus small nodes
-make leaderboards more explorable
-finish the tutorial for this as well.
 verify high scores by checking matrices
 
 # Other
 score number colour can be green when it shouldn't
 procrustes thing for SGD
 score explanation and show highest on tap (or make it blink?)
-health and traits hide if empty tap and on finish
+health and traits hide if empty tap
 double check the teams visualisations (do procrustes for both)
 more fidelity in link balls
 remove/disable layout groups as soon as levels are spawned
+make health go blue if above a super threshold (will need another fill sprite)
 release game with australian fires as angle?
 
 experiments to see how the score changes over time
@@ -53,6 +51,9 @@ The species with the... is...
 2 hours Thursday 1 Friday, week 27th Jan
 2 hours Thursday 1 Friday, week 3rd Feb
 1 hour Thursday,           week 10th Feb
+2 hours Thursday 1 Friday, week 17th Feb
+nothing                    week 24th Feb
+2 hours Thursday 1 Friday, week 5th Mar
 
 Phone Simulator
 

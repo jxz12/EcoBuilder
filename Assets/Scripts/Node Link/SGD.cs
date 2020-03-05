@@ -21,13 +21,16 @@ namespace EcoBuilder.NodeLink
         static List<Vector3> sgdPos = new List<Vector3>();
         static List<float> sgdKeptY = new List<float>();
         static System.Random sgdRand;
-        public static void InitSGD(Func<int, Vector2> GetPos, Dictionary<int, HashSet<int>> undirected, int seed=0)
+        static bool sgdKeepY = false;
+        public static void InitSGD(Dictionary<int, HashSet<int>> undirected, Func<int, float> YConstraint=null, int seed=0)
         {
             sgdSquished.Clear();
             sgdUnsquished.Clear();
             sgdPos.Clear(); // node positions
-            sgdKeptY.Clear();
+
             sgdRand = new System.Random(seed);
+            sgdKeepY = YConstraint!=null;
+            sgdKeptY.Clear();
             foreach (int i in undirected.Keys)
             {
                 sgdSquished[i] = sgdUnsquished.Count;
@@ -44,8 +47,9 @@ namespace EcoBuilder.NodeLink
                 // sgdPos[sgdPos.Count-1] += .1f * new Vector2((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble());
 
                 sgdPos.Add(new Vector3((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble(), (float)sgdRand.NextDouble()));
-
-                sgdKeptY.Add(GetPos(i).y);
+                if (sgdKeepY) {
+                    sgdKeptY.Add(YConstraint(i));
+                }
             }
             sgdSources.Clear();
             sgdTargets.Clear();
@@ -65,7 +69,7 @@ namespace EcoBuilder.NodeLink
             public float d, w;
         }
         static List<StressTerm> sgdTerms = new List<StressTerm>();
-        public static void LayoutSGD(bool keepY=false, int t_init=5, int t_max=10, float eps=.1f)
+        public static void LayoutSGD(int t_max=10, float eps=.1f)
         {
             // calculate terms with BFS
             sgdTerms.Clear();
@@ -109,63 +113,56 @@ namespace EcoBuilder.NodeLink
             sgdUnsquished.TrimExcess();
             sgdSources.TrimExcess();
             sgdTargets.TrimExcess();
+            sgdKeptY.TrimExcess();
 
             // init y-position if constrained
-            if (keepY) {
+            if (sgdKeepY) {
                 for (int i=0; i<sgdPos.Count; i++) {
-                    sgdPos[i] = new Vector2(sgdPos[i].x, sgdKeptY[i]);
-                    // sgdPos[i] = new Vector2(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, sgdKeptY[i], .5f));
+                    sgdPos[i] = new Vector3(sgdPos[i].x, sgdKeptY[i], sgdPos[i].z);
                 }
             }
-            // perform optimisation
-            for (int t=0; t<t_init; t++)
+            var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
+            var zMags = new List<float>(ExpoSchedule(1, t_max, zMagMin));
+            for (int t=0; t<t_max; t++)
             {
+                float eta = etas[t];
+                float zMag = zMags[t];
+                // UnityEngine.Debug.Log($"{eta} {zMag}");
+
                 FYShuffle(sgdTerms, sgdRand);
                 foreach (var term in sgdTerms)
                 {
                     Vector3 X_ij = sgdPos[term.i] - sgdPos[term.j];
 
-                    float mag = X_ij.magnitude;
-                    Vector3 r = ((mag-term.d)/2f) * (X_ij/mag);
-                    if (keepY) {
-                        r.y = 0;
-                    }
+                    // float mag = X_ij.magnitude;
+                    // float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y + zMag*X_ij.z*X_ij.z);
+                    float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y);
 
-                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), "r=NaN for SGD");
-                   
-                    sgdPos[term.i] -= r;
-                    sgdPos[term.j] += r;
-                }
-            }
-            // squish z axis to make 2d
-            for (int i=0; i<sgdPos.Count; i++)
-            {
-                sgdPos[i] = new Vector3(sgdPos[i].x, sgdPos[i].y, 0);
-            }
-            foreach (float eta in SGDSchedule(d_max, t_max, eps))
-            {
-                FYShuffle(sgdTerms, sgdRand);
-                foreach (var term in sgdTerms)
-                {
-                    Vector3 X_ij = sgdPos[term.i] - sgdPos[term.j];
-
-                    float mag = X_ij.magnitude;
                     float mu = Math.Min(term.w * eta, 1f);
                     Vector3 r = ((mag-term.d)/2f) * (X_ij/mag);
-                    if (keepY) {
+                    if (sgdKeepY) {
                         r.y = 0;
                     }
 
-                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), "r=NaN for SGD");
+                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
                    
                     sgdPos[term.i] -= mu * r;
                     sgdPos[term.j] += mu * r;
                 }
+
+                // // clamp back y position
+                // if (keepY) {
+                //     for (int i=0; i<sgdPos.Count; i++) {
+                //         sgdPos[i] = new Vector3(sgdPos[i].x, Mathf.Lerp(sgdPos[i].y, sgdKeptY[i], yLerp), sgdPos[i].z);
+                //     }
+                // }
             }
         }
-        private static IEnumerable<float> SGDSchedule(int d_max, int t_max, float eps)
+        static readonly float zMagMin=.001f, yLerp=1f;
+
+
+        private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)
         {
-            float eta_max = d_max*d_max;
             float lambda = Mathf.Log(eta_max/eps) / (t_max-1);
             for (int t=0; t<t_max; t++)
             {
@@ -178,6 +175,7 @@ namespace EcoBuilder.NodeLink
             {
                 SetPos(sgdUnsquished[i], sgdPos[i]);
             }
+            UnityEngine.Debug.Log("TODO: do a procrustes analysis forgetting about the old connected components and using only sgdPos");
         }
         // // reassigns positions, but flips components if it will preserve distances better
         // static List<float> oldCentroids = new List<float>();
@@ -243,5 +241,89 @@ namespace EcoBuilder.NodeLink
                 deck[i] = temp;
             }
         }
+
+        /////////////////////////////////
+        // cholesky factorization
+        /*
+        private void InitCholesky(int seed)
+        {
+            sgdPos.Clear();
+            sgdSquished.Clear();
+            sgdUnsquished.Clear();
+
+            var rand = new System.Random(seed);
+            foreach (int i in nodes.Indices)
+            {
+                sgdSquished[i] = sgdUnsquished.Count;
+                sgdUnsquished.Add(i);
+                // if (!ConstrainTrophic) {
+                    sgdPos.Add(new Vector2(sgdSquished[i], (float)rand.NextDouble()));
+                // } else {
+                //     sgdPos.Add(new Vector2(sgdSquished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
+                //     // still add a little jitter to prevent NaN
+                // }
+                // sgdPos.Add(nodes[i].StressPos);
+            }
+            sgdSources.Clear();
+            sgdTargets.Clear();
+            foreach (int i in nodes.Indices)
+            {
+                sgdSources.Add(sgdTargets.Count);
+                foreach (int j in undirected[i])
+                {
+                    sgdTargets.Add(sgdSquished[j]);
+                }
+            }
+            sgdSources.Add(sgdTargets.Count); // for iteration to next
+
+
+            int n = sgdPos.Count;
+            var Lw = Matrix<float>.Build.Dense(n-1, n-1);
+            var Lz = Matrix<float>
+
+            // calculate terms with BFS
+            sgdTerms.Clear();
+            int d_max = 0;
+            var q = new Queue<int>();
+            for (int source=0; source<sgdSources.Count-1; source++)
+            {
+                // BFS for each node
+                q.Enqueue(source);
+                var d = new Dictionary<int, int>();
+                d[source] = 0;
+                while (q.Count > 0)
+                {
+                    int prev = q.Dequeue();
+                    for (int i=sgdSources[prev]; i<sgdSources[prev+1]; i++)
+                    {
+                        int next = sgdTargets[i];
+                        if (!d.ContainsKey(next))
+                        {
+                            d[next] = d[prev] + 1;
+                            q.Enqueue(next);
+
+                            // if (source < next) // only add every other term
+                            // {
+                            //     sgdTerms.Add(new StressTerm () {
+                            //         i=source,
+                            //         j=next,
+                            //         d=d[next],
+                            //         w=1f/(d[next]*d[next])
+                            //     });
+                            //     d_max = Math.Max(d[next], d_max);
+                            // }
+                        }
+                    }
+                }
+            }
+
+            // keep memory tidy
+            sgdTerms.TrimExcess();
+            sgdPos.TrimExcess();
+            sgdUnsquished.TrimExcess();
+            sgdSources.TrimExcess();
+            sgdTargets.TrimExcess();
+        }
+        */
     }
 }
