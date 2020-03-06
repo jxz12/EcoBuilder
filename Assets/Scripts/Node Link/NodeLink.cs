@@ -68,6 +68,9 @@ namespace EcoBuilder.NodeLink
         public bool GraphLayedOut { get { return !layoutTriggered && !isCalculatingAsync; } }
         public bool ConstrainTrophic { private get; set; }
 
+        [SerializeField] int t_max=30;
+        [SerializeField] float epsSGD=.01f, epsGS=.1f;
+
 // because webgl does not support threads
 #if !UNITY_WEBGL
         async void Layout() {
@@ -79,27 +82,21 @@ namespace EcoBuilder.NodeLink
             CountConnectedComponents();
             NumEdges = links.Count();
 
+            // these are not async to ensure synchronized adjacency
+            Johnson.InitJohnson(nodes.Indices, links.GetColumnIndicesInRow);
             Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
-            Trophic.IterateAndSet((i,y)=>nodes[i].StressPos.y=y, 3);
-            
-            if (!ConstrainTrophic) {
-                SGD.InitSGD(undirected, null); // not async to ensure synchronize state
-            } else {
-                SGD.InitSGD(undirected, (i)=>nodes[i].StressPos.y); // not async to ensure synchronize state
-            }
-#if !UNITY_WEBGL
-            await Task.Run(()=> SGD.LayoutSGD(t_max, eps));
-            SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // in case node is deleted
-#else
-            SGD.LayoutSGD(t_max, eps);
-            SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
-#endif
+            SGD.InitSGD(undirected);
 
-            Johnson.InitJohnson(nodes.Indices, links.GetColumnIndicesInRow); // not async to ensure synchronize state
 #if !UNITY_WEBGL
             await Task.Run(()=> Johnson.JohnsonsAlgorithm());
+            await Task.Run(()=> Trophic.SolveTrophic(epsGS));
+            await Task.Run(()=> SGD.LayoutSGD(t_max, epsSGD, Trophic.GetTrophicLevel));
+            SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
 #else
             Johnson.JohnsonsAlgorithm();
+            Trophic.SolveTrophic(epsGS);
+            SGD.LayoutSGD(t_max, epsSGD, Trophic.GetTrophicLevel);
+            SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
 
             isCalculatingAsync = false;

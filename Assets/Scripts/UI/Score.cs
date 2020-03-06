@@ -71,15 +71,20 @@ namespace EcoBuilder.UI
             }
             Assert.IsTrue(newScore >= 0, "cannot have negative score");
 
+            realisedScore = (int)newScore;
+            scoreText.text = realisedScore.ToString();
+
             if (newScore > currentScore) {
                 scoreText.color = new Color(.2f,.8f,.2f);
             } else if (newScore < currentScore) {
                 scoreText.color = new Color(.9f,.1f,.1f);
-            } 
+            } else {
+                if (HighestScore > realisedScore)
+                {
+                    print("TODO: blink the highest");
+                }
+            }
             currentScore = newScore;
-
-            realisedScore = (int)currentScore;
-            scoreText.text = realisedScore.ToString();
 
             //////////////////////////////////
             // only continue if allowed

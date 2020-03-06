@@ -119,9 +119,6 @@ namespace EcoBuilder.NodeLink
         /////////////////////////////////////////////
         // fine tune with majorization every frame
 
-        [SerializeField] int t_max;
-        [SerializeField] float eps;
-
         private Queue<int> todoBFS = new Queue<int>();
         private void FineTuneLayout()
         {
@@ -131,20 +128,21 @@ namespace EcoBuilder.NodeLink
             int idx = todoBFS.Dequeue(); // only do one vertex at a time
             if (ConstrainTrophic)
             {
-                Trophic.IterateAndSet((i,y)=> nodes[i].StressPos.y = y);
+                Trophic.IterateTrophic((i,y)=> nodes[i].StressPos.y = y);
                 LayoutMajorizationHorizontal(idx);
             }
             else
             {
                 LayoutMajorization(idx);
             }
+
             todoBFS.Enqueue(idx);
         }
-        public void SolveTrophicLevels(int nIter)
-        {
-            Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
-            Trophic.IterateAndSet((i,y)=> nodes[i].StressPos.y=y, nIter);
-        }
+        // public void SolveTrophicLevels()
+        // {
+        //     Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
+        //     Trophic.SolveTrophic((i,y)=> nodes[i].StressPos.y=y);
+        // }
         private void LayoutMajorization(int i)
         {
             Vector2 X_i = nodes[i].StressPos;
@@ -161,7 +159,7 @@ namespace EcoBuilder.NodeLink
                 topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
                 botSum += w_ij;
             }
-            if (botSum > 0)
+            if (botSum != 0)
             {
                 nodes[i].StressPos = new Vector2(topSumX/botSum, topSumY/botSum);
             }
@@ -183,7 +181,7 @@ namespace EcoBuilder.NodeLink
                 // topSumY += w_ij * (X_j.y + (d_ij*(X_i.y - X_j.y))/mag);
                 botSum += w_ij;
             }
-            if (botSum > 0)
+            if (botSum != 0)
             {
                 // nodes[i].StressPos = new Vector2(topSumX/botSum, topSumY/botSum);
                 nodes[i].StressPos.x = topSumX / botSum;

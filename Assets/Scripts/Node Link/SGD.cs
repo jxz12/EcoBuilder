@@ -19,37 +19,20 @@ namespace EcoBuilder.NodeLink
         static List<int> sgdTargets = new List<int>();
 
         static List<Vector3> sgdPos = new List<Vector3>();
-        static List<float> sgdKeptY = new List<float>();
         static System.Random sgdRand;
-        static bool sgdKeepY = false;
-        public static void InitSGD(Dictionary<int, HashSet<int>> undirected, Func<int, float> YConstraint=null, int seed=0)
+        public static void InitSGD(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
             sgdSquished.Clear();
             sgdUnsquished.Clear();
             sgdPos.Clear(); // node positions
 
             sgdRand = new System.Random(seed);
-            sgdKeepY = YConstraint!=null;
-            sgdKeptY.Clear();
             foreach (int i in undirected.Keys)
             {
                 sgdSquished[i] = sgdUnsquished.Count;
                 sgdUnsquished.Add(i);
 
-                /*if (!keepY) {
-                    sgdPos.Add(new Vector2(i, (float)sgdRand.NextDouble()));
-                } else {
-                    sgdPos.Add(new Vector2(i, GetPos(i).y + .1f*(float)sgdRand.NextDouble()));
-                    // still add a little jitter to prevent NaN
-                }*/
-
-                // sgdPos.Add(GetPos(i));
-                // sgdPos[sgdPos.Count-1] += .1f * new Vector2((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble());
-
                 sgdPos.Add(new Vector3((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble(), (float)sgdRand.NextDouble()));
-                if (sgdKeepY) {
-                    sgdKeptY.Add(YConstraint(i));
-                }
             }
             sgdSources.Clear();
             sgdTargets.Clear();
@@ -69,7 +52,7 @@ namespace EcoBuilder.NodeLink
             public float d, w;
         }
         static List<StressTerm> sgdTerms = new List<StressTerm>();
-        public static void LayoutSGD(int t_max=10, float eps=.1f)
+        public static void LayoutSGD(int t_max=10, float eps=.1f, Func<int, float> YConstraint=null)
         {
             // calculate terms with BFS
             sgdTerms.Clear();
@@ -113,13 +96,14 @@ namespace EcoBuilder.NodeLink
             sgdUnsquished.TrimExcess();
             sgdSources.TrimExcess();
             sgdTargets.TrimExcess();
-            sgdKeptY.TrimExcess();
 
             // init y-position if constrained
-            if (sgdKeepY) {
+            float yMultiplier = 1;
+            if (YConstraint != null) {
                 for (int i=0; i<sgdPos.Count; i++) {
-                    sgdPos[i] = new Vector3(sgdPos[i].x, sgdKeptY[i], sgdPos[i].z);
+                    sgdPos[i] = new Vector3(sgdPos[i].x, YConstraint(i), sgdPos[i].z);
                 }
+                yMultiplier = 0;
             }
             var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
             var zMags = new List<float>(ExpoSchedule(1, t_max, zMagMin));
@@ -138,11 +122,11 @@ namespace EcoBuilder.NodeLink
                     float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y + zMag*X_ij.z*X_ij.z);
                     // float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y);
 
-                    float mu = Math.Min(term.w * eta, 1f);
+                    float mu = Math.Min(term.w * eta, muMax);
                     Vector3 r = ((mag-term.d)/2f) * (X_ij/mag);
-                    if (sgdKeepY) {
-                        r.y = 0;
-                    }
+
+                    // for constraining y
+                    r.y *= yMultiplier;
 
                     Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
                    
@@ -151,7 +135,8 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        static readonly float zMagMin=.001f;
+        static readonly float zMagMin=.01f;
+        static readonly float muMax=1f;
 
 
         private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)

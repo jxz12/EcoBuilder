@@ -3076,6 +3076,9 @@ MonoBehaviour:
   linkPrefab: {fileID: 114706499656277630, guid: f379656aba023c74f82548dad4dbb0eb,
     type: 3}
   unfocusParent: {fileID: 1412613650}
+  t_max: 30
+  epsSGD: 0.01
+  epsGS: 0.1
   minLinkFlow: 0.1
   maxLinkFlow: 2
   tooltip: {fileID: 464567629}
@@ -3086,8 +3089,6 @@ MonoBehaviour:
   focusHeight: 1.2
   layoutSmoothTime: 0.7
   zoomSmoothTime: 1
-  t_max: 30
-  eps: 0.01
 --- !u!114 &1084005247 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1918289444444130885, guid: 2e13ac69c39a1304d92c166058b73812,

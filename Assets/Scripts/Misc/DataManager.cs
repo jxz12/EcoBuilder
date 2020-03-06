@@ -36,7 +36,7 @@ namespace EcoBuilder
         [SerializeField] PlayerDetails player = null;
 
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
-        public bool ConstrainTrophic { get { return true; } }//return player.team != PlayerDetails.Team.Lion; } }
+        public bool ConstrainTrophic { get { return false; } }//return player.team != PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }

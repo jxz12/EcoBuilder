@@ -105,7 +105,6 @@ namespace EcoBuilder
         public LevelDetails Details { get { return details; } }
         [SerializeField] Level nextLevelPrefab;
         public Level NextLevelPrefab { get { return nextLevelPrefab; } }
-        // [SerializeField] Tutorials.Tutorial tutorialPrefab;
         [SerializeField] GameObject tutorialPrefab;
 
         public event Action OnThumbnailed, OnCarded, OnFinished;
@@ -336,7 +335,8 @@ namespace EcoBuilder
             Assert.IsTrue(seeds.Count==plants.Count && plants.Count==sizes.Count && sizes.Count==greeds.Count);
             Assert.IsTrue(sources.Count==targets.Count);
 
-            var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(GameManager.Instance.DefaultLevelPrefab);
+            var basePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<Level>($"Assets/Prefabs/Levels/Level Base.prefab");
+            var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(basePrefab);
             newPrefab.details.SetEcosystem(seeds, plants, sizes, greeds, sources, targets);
 
             bool success;

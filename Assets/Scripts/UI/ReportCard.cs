@@ -24,15 +24,23 @@ namespace EcoBuilder.UI
             quitBtn.onClick.AddListener(Quit);
         }
 
+        [SerializeField] TMPro.TextMeshProUGUI nextLvlMsg;
+        [SerializeField] Image nextLvlCompleteIcon;
         Level prevLvl, nextLvl;
         public void GiveNavigation(Level prevLvl, Level nextLvl)
         {
             prevLvl.transform.SetParent(prevLevelAnchor, false);
-            if (nextLvl != null) {
+            if (nextLvl != null)
+            {
                 nextLvl.transform.SetParent(nextLevelAnchor, false);
                 nextLvl.Unlock();
+                nextLvlMsg.text = "Next Level";
+                nextLvlCompleteIcon.enabled = false;
             }
-            else {
+            else
+            {
+                nextLvlMsg.text = "World Finished!";
+                nextLvlCompleteIcon.enabled = true;
                 print("TODO: credits?");
             }
             this.prevLvl = prevLvl;

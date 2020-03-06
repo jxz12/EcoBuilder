@@ -102,13 +102,16 @@ namespace EcoBuilder
         private Level playedLevel;
         public event Action OnPlayedLevelFinished; // listened by playmanager
 
+#if UNITY_EDITOR
+        [SerializeField] Level defaultLevelPrefab;
+#endif
         public LevelDetails PlayedLevelDetails {
             get {
 #if UNITY_EDITOR
                 // for convenience in editor
                 if (playedLevel == null)
                 {
-                    playedLevel = Instantiate(DefaultLevelPrefab);
+                    playedLevel = Instantiate(defaultLevelPrefab);
                     // playedLevel.transform.SetParent(PlayAnchor, false);
                     playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
 
@@ -119,14 +122,6 @@ namespace EcoBuilder
                 return playedLevel.Details;
             }
         }
-#if UNITY_EDITOR
-        [SerializeField] string defaultLevelName = "Level Base";
-        public Level DefaultLevelPrefab {
-            get {
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Level>($"Assets/Prefabs/Levels/{defaultLevelName}.prefab");
-            }
-        }
-#endif
 
         public void LoadLevelScene(Level toPlay)
         {

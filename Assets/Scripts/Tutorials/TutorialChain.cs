@@ -50,7 +50,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             Assert.IsTrue(producerIdx!=-1 && herbivoreIdx!=-1);
 
-            help.Message = "You should notice that this number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By pressing this icon, you can highlight species with that chain. Now try adding another animal.";
+            help.Message = "You should notice that this number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By interacting with this icon, you can highlight species with that chain. Now try adding another animal.";
             help.Showing = true;
 
             // point at constraints panel

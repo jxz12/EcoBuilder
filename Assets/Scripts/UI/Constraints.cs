@@ -97,11 +97,12 @@ namespace EcoBuilder.UI
             if (constraint.threshold <= 0)
             {
                 constraint.counter.text = prefix + value;
+                constraint.icon.color = Color.white;
             }
             else
             {
                 constraint.counter.text = prefix + value + "/" + constraintMap[type].threshold;
-                constraint.icon.color = value<constraint.threshold? Color.white : (type==Type.Leaf||type==Type.Paw? new Color(1,1,1,.5f) : Color.green);
+                constraint.icon.color = IsSatisfied(type)? (type==Type.Leaf||type==Type.Paw? new Color(1,1,1,.5f) : Color.green) : Color.white;
             }
         }
         private bool IsSatisfied(Type type)
@@ -316,11 +317,19 @@ namespace EcoBuilder.UI
         }
         void HighlightChain(bool highlighted)
         {
-            constraintMap[Type.Chain].icon.color = highlighted? Color.red : Color.white;
+            if (highlighted) {
+                constraintMap[Type.Chain].icon.color = Color.red;
+            } else {
+                Display(Type.Chain, constraintMap[Type.Chain].value);
+            }
         }
         void HighlightLoop(bool highlighted)
         {
-            constraintMap[Type.Loop].icon.color = highlighted? Color.red : Color.white;
+            if (highlighted) {
+                constraintMap[Type.Loop].icon.color = Color.red;
+            } else {
+                Display(Type.Loop, constraintMap[Type.Loop].value);
+            }
         }
         
         public bool Feasible { get; private set; }
@@ -337,7 +346,7 @@ namespace EcoBuilder.UI
             } else if (!Feasible) {
                 return "At least one species is going extinct.";
             } else if (Disjoint) {
-                return "Your network is not connected.";
+                return "You have more than one separate ecosystem.";
             // } else if (!stable) {
             //     return "Your ecosystem is not stable.";
             } else if (!IsSatisfied(Type.Edge)) {
@@ -347,7 +356,8 @@ namespace EcoBuilder.UI
             } else if (!IsSatisfied(Type.Loop)) {
                 return "You do not have a long enough loop.";
             } else {
-                return "";//"Your ecosystem has no errors!";
+                Assert.IsTrue(AllSatisfied(), "no error but level not passed");
+                return "You have passed the level!";
             }
         }
     }

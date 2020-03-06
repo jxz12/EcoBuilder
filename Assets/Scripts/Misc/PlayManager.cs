@@ -156,8 +156,6 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
-            // ensure initial layout has correct trophic levels
-            nodelink.SolveTrophicLevels(details.NumInitSpecies);
 
             // set up scoring
             switch (GameManager.Instance.PlayedLevelDetails.Metric)

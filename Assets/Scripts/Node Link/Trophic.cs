@@ -96,32 +96,33 @@ namespace EcoBuilder.NodeLink
             }
         }
         // public to allow outside to force convergence
-        public static void IterateAndSet(Action<int, float> SetY, int nIter=1)
+        private static float trophicScaling = 1;
+        public static void SolveTrophic(float eps=.01f)
         {
             if (LaplacianDetZero) {
                 return;
             }
-            for (int i=0; i<nIter; i++) {
-                TrophicGaussSeidel();
+            bool converged = false;
+            int iter=0;
+            while (!converged) {
+                converged = TrophicGaussSeidel(eps);
+                iter++;
             }
 
-            float trophicScaling = 1;
+            trophicScaling = 1;
             if (MaxTrophicLevel-1 > MaxChain)
             {
                 trophicScaling = MaxChain / (MaxTrophicLevel-1);
             }
-            // Assert.IsTrue(lerp>=0 && lerp<=1, $"lerp {lerp} is out of bounds");
-            foreach (int i in indices)
-            {
-                // float y = Mathf.Lerp(no.StressPos.y, trophicScaling * (trophicLevels[no.Idx]-1), lerp);
-                // no.StressPos = new Vector2(no.StressPos.x, y);
-                float y = trophicScaling * (trophicLevels[i]-1);
-                SetY(i, y);
-            }
+        }
+        public static void IterateTrophic(Action<int, float> SetY)
+        {
+            SolveTrophic(float.MaxValue); // ensures only 1 iteration
         }
 
         // tightly optimised gauss-seidel iteration because of the simplicity of the laplacian
-        private static void TrophicGaussSeidel()
+        // returns if converged
+        private static bool TrophicGaussSeidel(float eps)
         {
             Assert.IsNotNull(indices);
             Assert.IsNotNull(Targets);
@@ -133,12 +134,21 @@ namespace EcoBuilder.NodeLink
                     temp[j] += trophicA[j] * trophicLevels[i];
                 }
             }
+            bool converged = true;
             MaxTrophicLevel = 0;
             foreach (int i in indices)
             {
+                float newTrophicLevel = (1-temp[i]);
+                converged &= Mathf.Abs(trophicLevels[i]-newTrophicLevel) < eps;
+
                 trophicLevels[i] = (1 - temp[i]);
                 MaxTrophicLevel = Mathf.Max(trophicLevels[i], MaxTrophicLevel);
             }
+            return converged;
+        }
+        public static float GetTrophicLevel(int idx)
+        {
+            return trophicScaling * (trophicLevels[idx]-1);
         }
         public static int GetChainLength(int idx)
         {

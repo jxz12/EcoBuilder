@@ -92,7 +92,7 @@ namespace EcoBuilder.Tutorials
 
             help.Showing = false;
             targetSize = Vector2.zero;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "Great! You have now created an ecosystem loop, and the icon on the left panel should reflect this. You can press this icon to highlight the species in your loop. Let's try one more thing. First add one more species."; Point(); targetZRot = 30; targetSize = new Vector2(100,100); targetAnchor = new Vector2(0,1); targetPos = new Vector2(55, -400); constraints.LimitPaw(4); }));
+            StartCoroutine(WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "Great! You have now created an ecosystem loop, and the icon on the left panel should reflect this. You can interact with this icon to highlight the species in your loop. Let's try one more thing. First add one more species."; Point(); targetZRot = 30; targetSize = new Vector2(100,100); targetAnchor = new Vector2(0,1); targetPos = new Vector2(55, -400); constraints.LimitPaw(4); }));
 
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ Assert.IsTrue(i == 4); extraTransform=g.transform; });

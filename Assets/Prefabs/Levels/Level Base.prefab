@@ -1314,6 +1314,11 @@ MonoBehaviour:
     minEdges: 0
     minChain: 0
     minLoop: 0
+    metric: 1
+    mainMultiplier: 1000
+    altMultiplier: 10000
+    twoStarScore: 0
+    threeStarScore: 0
     sizeSliderHidden: 0
     greedSliderHidden: 1
     conflictsAllowed: 1
@@ -1326,11 +1331,6 @@ MonoBehaviour:
     numInitInteractions: 0
     sources: 
     targets: 
-    metric: 1
-    mainMultiplier: 1000
-    altMultiplier: 10000
-    twoStarScore: 0
-    threeStarScore: 0
   nextLevelPrefab: {fileID: 0}
   tutorialPrefab: {fileID: 0}
   starsImage: {fileID: 3298662015200627692}
@@ -1347,7 +1347,6 @@ MonoBehaviour:
   playButton: {fileID: 8352292836414973085}
   quitButton: {fileID: 1020050105958342126}
   replayButton: {fileID: 5138229676841934199}
-  canvas: {fileID: 0}
   fireworksPrefab: {fileID: 6047318902721678427, guid: e8c59575ef85bfe49b00632e5351780c,
     type: 3}
   confettiPrefab: {fileID: 2354476291600607311, guid: b9e80853802ac784aa11b54c39acefdf,
