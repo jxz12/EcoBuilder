@@ -61,7 +61,7 @@ namespace EcoBuilder.UI
         }
         void Start()
         {
-            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(1,1), new Vector2(0,1)));
+            Hide(false);
         }
 
         private void Constrain(Type type, int threshold)
@@ -242,7 +242,10 @@ namespace EcoBuilder.UI
         }
         public void Hide(bool hidden=true)
         {
-            gameObject.SetActive(!hidden);
+            GetComponent<Canvas>().enabled = !hidden;
+            if (!hidden) {
+                StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(1,1), new Vector2(0,1)));
+            }
         }
         public void Finish()
         {

@@ -9,7 +9,7 @@ namespace EcoBuilder.UI
 {
     public class Score : MonoBehaviour
     {
-        public event Action OnLevelCompletabled;
+        public event Action OnOneStarAchieved;
         public event Action OnThreeStarsAchieved;
 
         [SerializeField] Animator star1, star2, star3;
@@ -19,15 +19,17 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
 
         int target1, target2;
-        [SerializeField] Color feasibleScoreCol, infeasibleScoreCol;
+        Color defaultScoreCol, displayedScoreCol;
+        [SerializeField] Color unsatisfiedScoreCol, reminderScoreCol, higherScoreCol, lowerScoreCol;
         void Awake()
         {
-            feasibleScoreCol = scoreText.color;
-            scoreText.color = infeasibleScoreCol;
+            defaultScoreCol = scoreText.color;
+            displayedScoreCol = unsatisfiedScoreCol;
+            scoreIcon.enabled = false;
         }
         void Start()
         {
-            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,0), new Vector2(0,1)));
+            Hide(false);
         }
         public void SetStarThresholds(LevelDetails.ScoreMetric metric, int target1, int target2)
         {
@@ -37,10 +39,6 @@ namespace EcoBuilder.UI
 
         //////////////////////
         // score calculation
-        public int HighestScore { get; private set; } = 0;
-        public int HighestStars { get; private set; } = 0;
-        float currentScore = 0;
-        int realisedScore = 0;
 
         // to fetch the score
         List<Func<float>> AttachedSources = new List<Func<float>>();
@@ -63,54 +61,68 @@ namespace EcoBuilder.UI
         {
             AttachedValidity = IsValid;
         }
+
+
+        public int HighestScore { get; private set; } = 0;
+        int displayedScore = 0;
+        public int HighestStars { get; private set; } = 0;
+        int displayedStars = 0;
+        float latestValidScore = 0;
+
         public void Update() //, string explanation, string explanationSupplement)
         {
-            float newScore = 0;
+            float score = 0;
             foreach (var Source in AttachedSources) {
-                newScore += Source.Invoke();
+                score += Source.Invoke();
             }
-            Assert.IsTrue(newScore >= 0, "cannot have negative score");
+            Assert.IsTrue(score >= 0, "cannot have negative score");
 
-            realisedScore = (int)newScore;
-            scoreText.text = realisedScore.ToString();
-
-            if (newScore > currentScore) {
-                scoreText.color = new Color(.2f,.8f,.2f);
-            } else if (newScore < currentScore) {
-                scoreText.color = new Color(.9f,.1f,.1f);
-            } else {
-                if (HighestScore > realisedScore)
-                {
-                    print("TODO: blink the highest");
-                }
+            if (score > latestValidScore) {
+                displayedScoreCol = higherScoreCol;
+            } else if (score < latestValidScore) {
+                displayedScoreCol = lowerScoreCol;
             }
-            currentScore = newScore;
+
+            displayedScore = (int)score;
+            scoreText.text = displayedScore.ToString();
 
             //////////////////////////////////
             // only continue if allowed
             if (starsDisabled || !AttachedValidity.Invoke()) {
                 return;
             }
-
-            int newNumStars = 0;
+            latestValidScore = score;
+            displayedStars = 0;
             if (AttachedSatisfied.Invoke())
             {
-                newNumStars += 1;
-
-                if (realisedScore >= target1)
-                {
-                    newNumStars += 1;
-                    if (realisedScore >= target2) {
-                        newNumStars += 1;
+                displayedStars += 1;
+                if (displayedScore >= target1) {
+                    displayedStars += 1;
+                    if (displayedScore >= target2) {
+                        displayedStars += 1;
                     }
                 }
-                scoreText.color = Color.Lerp(scoreText.color, feasibleScoreCol, .5f*Time.deltaTime);
+
+                int prevHighestStars = HighestStars;
+                HighestStars = Math.Max(HighestStars, displayedStars);
+                int prevHighestScore = HighestScore;
+                HighestScore = Math.Max(HighestScore, displayedScore);
+                // do not set off events yet if finish is disabled
+                if (prevHighestStars == 0 && HighestStars > 0) {
+                    OnOneStarAchieved?.Invoke();
+                }
+                // always call OnThreeStarsAchieved second
+                if (prevHighestStars <= 2 && HighestStars == 3) {
+                    OnThreeStarsAchieved?.Invoke();
+                }
+
+                displayedScoreCol = Color.Lerp(displayedScoreCol, defaultScoreCol, .5f*Time.deltaTime);
             }
             else
             {
-                scoreText.color = Color.Lerp(scoreText.color, infeasibleScoreCol, 5f*Time.deltaTime);
+                displayedScoreCol = Color.Lerp(displayedScoreCol, unsatisfiedScoreCol, 5f*Time.deltaTime);
             }
-            if (newNumStars < 2)
+            if (displayedStars < 2)
             {
                 scoreTargetText.text = target1.ToString();
                 scoreTargetImage.sprite = targetSprite1;
@@ -120,20 +132,60 @@ namespace EcoBuilder.UI
                 scoreTargetText.text = target2.ToString();
                 scoreTargetImage.sprite = targetSprite2;
             }
-            star1.SetBool("Filled", newNumStars>=1);
-            star2.SetBool("Filled", newNumStars>=2);
-            star3.SetBool("Filled", newNumStars==3);
+            star1.SetBool("Filled", displayedStars>=1);
+            star2.SetBool("Filled", displayedStars>=2);
+            star3.SetBool("Filled", displayedStars==3);
 
-            // do not set off events yet if finish is disabled
-            if (HighestStars == 0 && newNumStars > 0) {
-                OnLevelCompletabled?.Invoke();
+            // periodically flash the highest score if needed
+            if ((displayedStars==0 && HighestStars>0) || (displayedStars>0 && displayedScore<HighestScore)) {
+                StartReminding();
+            } else {
+                EndReminding();
             }
-            // always call onthreestarsachieved second
-            if (HighestStars <= 2 && newNumStars == 3) {
-                OnThreeStarsAchieved?.Invoke();
+        }
+        [SerializeField] Image scoreIcon;
+        [SerializeField] float remindPeriod, remindDuration;
+        void StartReminding()
+        {
+            if (remindRoutine == null) {
+                StartCoroutine(remindRoutine = RemindHighest());
             }
-            HighestStars = Math.Max(HighestStars, newNumStars);
-            HighestScore = Math.Max(HighestScore, realisedScore);
+        }
+        void EndReminding()
+        {
+            if (remindRoutine != null) {
+                StopCoroutine(remindRoutine);
+                remindRoutine = null;
+            }
+            star1.SetBool("Reminding", false);
+            star2.SetBool("Reminding", false);
+            star3.SetBool("Reminding", false);
+            scoreIcon.enabled = HighestStars>0;
+        }
+        IEnumerator remindRoutine;
+        bool reminding = false;
+        IEnumerator RemindHighest()
+        {
+            Assert.IsTrue(remindDuration <= remindPeriod);
+            float tStart = Time.time;
+            while (true)
+            {
+                reminding = ((Time.time-tStart) % remindPeriod) > (remindPeriod-remindDuration);
+                if (reminding) {
+                    scoreText.text = $"{HighestScore}";
+                } else {
+                    scoreText.text = $"{displayedScore}";
+                }
+                scoreIcon.enabled = reminding;
+                star1.SetBool("Reminding", reminding);
+                star2.SetBool("Reminding", reminding);
+                star3.SetBool("Reminding", reminding);
+                yield return null;
+            }
+        }
+        void LateUpdate()
+        {
+            scoreText.color = reminding? reminderScoreCol : displayedScoreCol;
         }
 
         bool starsDisabled;
@@ -157,8 +209,10 @@ namespace EcoBuilder.UI
 
         public void Hide(bool hidden=true)
         {
-            StopAllCoroutines();
-            GetComponent<RectTransform>().pivot = new Vector2(0,0);
+            GetComponent<Canvas>().enabled = !hidden;
+            if (!hidden) {
+                StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,0), new Vector2(0,1)));
+            }
         }
     }
 }

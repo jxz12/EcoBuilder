@@ -185,9 +185,9 @@ namespace EcoBuilder
             score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
 
             score.SetStarThresholds(details.Metric, details.TwoStarScore, details.ThreeStarScore);
-            score.OnLevelCompletabled +=  ()=> GameManager.Instance.MakePlayedLevelFinishable();
-            score.OnLevelCompletabled +=  ()=> nodelink.ForceUnfocus();
-            score.OnLevelCompletabled +=  ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
+            score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
+            score.OnOneStarAchieved +=    ()=> nodelink.ForceUnfocus();
+            score.OnOneStarAchieved +=    ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
             score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
             score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
 

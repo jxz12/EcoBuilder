@@ -8,7 +8,7 @@ research TUTORIAL!!!, make score constraint shiny
 
 are you sure button
 fix help text on constraints
-double check the teams visualisations (do procrustes for both)
+do procrustes for SGD layouts
 
 # Menu
 make icons for reversing drag direction
@@ -29,7 +29,6 @@ fix superfocus small nodes
 verify high scores by checking matrices
 
 # Other
-score number colour can be green when it shouldn't
 make leaderboards more explorable
 score explanation and show highest on tap (or make it blink?)
 health and traits hide if empty tap
