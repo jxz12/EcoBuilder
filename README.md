@@ -2,7 +2,6 @@ dad
 claim moneys
 
 LEVELS:
-loop 2 (fixed loop of 3, need to add edges) & 3 (loop of 4)
 some final bosses
 research TUTORIAL!!!, make score constraint shiny
 
@@ -30,7 +29,6 @@ verify high scores by checking matrices
 
 # Other
 make leaderboards more explorable
-score explanation and show highest on tap (or make it blink?)
 health and traits hide if empty tap
 more fidelity in link balls
 remove/disable layout groups as soon as levels are spawned
@@ -41,7 +39,7 @@ experiments to see how the score changes over time
 
 # REPORT CARD
 Your final score was XXX
-This was made up of X nodes, and X edges
+Use the 'i' icon thingy to show the explanation This was made up of X nodes, and X edges
 The species with the... is...
 (extra info on click such as stability (eigenvalue), nonreactive)
 

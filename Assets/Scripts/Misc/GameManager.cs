@@ -76,7 +76,7 @@ namespace EcoBuilder
             }
             loadingBar.SetProgress(.333f);
 #if UNITY_EDITOR
-            // yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(1);
 #endif
             if (toLoad != null)
             {
@@ -90,8 +90,6 @@ namespace EcoBuilder
             loadingBar.Show(false);
             // OnSceneLoaded?.Invoke(toLoad);
             OnLoaded?.Invoke();
-
-            report.HideIfShowing(); // smelly that this is here
         }
 
 
@@ -101,6 +99,14 @@ namespace EcoBuilder
 
         private Level playedLevel;
         public event Action OnPlayedLevelFinished; // listened by playmanager
+        public void BeginPlayedLevel() // called by playmanager
+        {
+            playedLevel.BeginPlay();
+        }
+        public void MakePlayedLevelFinishable() // called by playmanager
+        {
+            playedLevel.ShowFinishFlag();
+        }
 
 #if UNITY_EDITOR
         [SerializeField] Level defaultLevelPrefab;
@@ -112,7 +118,6 @@ namespace EcoBuilder
                 if (playedLevel == null)
                 {
                     playedLevel = Instantiate(defaultLevelPrefab);
-                    // playedLevel.transform.SetParent(PlayAnchor, false);
                     playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
 
                     playedLevel.Unlock();
@@ -146,15 +151,6 @@ namespace EcoBuilder
             }
         }
 
-        public void BeginPlayedLevel() // called by playmanager
-        {
-            playedLevel.BeginPlay();
-        }
-        public void MakePlayedLevelFinishable() // called by playmanager
-        {
-            playedLevel.ShowFinishFlag();
-        }
-
 
 
         // for levels to attach to in order to persist across scenes
@@ -166,13 +162,10 @@ namespace EcoBuilder
 
         public void ReturnToMenu()
         {
-            // if (playedLevel != null) {
-            //     playedLevel = null; // level destroys itself so probably no need to do it here
-            // }
-            GameManager.Instance.HelpText.Showing = false;
-            StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>Destroy(playedLevel)));
+            HelpText.Showing = false;
+            StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ playedLevel.LeaveThenDestroyFromNextFrame(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
+            // wait until next frame to avoid the frame spike caused by Awake and Start()
         }
-
 
         [SerializeField] Planet earth;
         Transform earthParent;
@@ -187,7 +180,7 @@ namespace EcoBuilder
         {
             Assert.IsNotNull(earth, "earth was destroyed :(");
             earth.transform.SetParent(earthParent, true);
-            earth.TweenToRestPositionFromNextFrame(2);
+            // TweenToRestPosition called in ReturnToMenu() above
         }
 
 
@@ -232,7 +225,7 @@ namespace EcoBuilder
         public void ShowResultsScreen()
         {
             report.ShowResults();
-            GameManager.Instance.HelpText.Showing = false;
+            HelpText.Showing = false;
         }
     }
 }

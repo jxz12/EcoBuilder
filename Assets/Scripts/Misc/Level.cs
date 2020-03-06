@@ -164,7 +164,7 @@ namespace EcoBuilder
         //////////////////////////////
         // animations states
 
-        enum State { Thumbnail=0, Card=1, FinishFlag=2 }
+        enum State { Thumbnail=0, Card=1, FinishFlag=2, Leave=3 }
 
         IEnumerator tweenRoutine;
         IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
@@ -181,21 +181,15 @@ namespace EcoBuilder
         }
         IEnumerator TweenToZeroPos(float duration)
         {
-            Vector3 startPos = transform.localPosition;
+            Vector2 startPos = transform.localPosition;
             float startTime = Time.time;
             while (Time.time < startTime+duration)
             {
-                float t = (Time.time-startTime)/duration;
-                // quadratic ease in-out
-                if (t < .5f) {
-                    t = 2*t*t;
-                } else {
-                    t = -1 + (4-2*t)*t;
-                }
-                transform.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
+                float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                transform.localPosition = Vector2.Lerp(startPos, Vector2.zero, t);
                 yield return null;
             }
-            transform.localPosition = Vector3.zero;
+            transform.localPosition = Vector2.zero;
         }
 
         public void Unlock()
@@ -208,7 +202,7 @@ namespace EcoBuilder
         {
             ShowThumbnail(.5f);
         }
-        public void ShowThumbnail(float tweenTime)
+        private void ShowThumbnail(float tweenTime)
         {
             StartCoroutine(TweenToZeroPosFrom(tweenTime, thumbnailedParent));
 
@@ -311,13 +305,7 @@ namespace EcoBuilder
             GameManager.Instance.ShowResultsScreen();
         }
 
-        void OnDestroy()
-        {
-            if (teacher != null) {
-                Destroy(teacher.gameObject);
-            }
-        }
-        public void Replay()
+        public void Replay() // for button
         {
             if (teacher != null) {
                 Destroy(teacher.gameObject);
@@ -326,7 +314,41 @@ namespace EcoBuilder
         }
         public void Quit()
         {
+            // prevent any more buttons being called
+            var group = gameObject.AddComponent<CanvasGroup>();
+            group.interactable = false;
             GameManager.Instance.ReturnToMenu();
+        }
+        public void LeaveThenDestroyFromNextFrame() // for GameManager to trigger after menu is loaded
+        {
+            StopAllCoroutines();
+            StartCoroutine(LeaveThenDestroyFromNextFrame(-1000, 1));
+        }
+        [SerializeField] Image shade, back;
+        IEnumerator LeaveThenDestroyFromNextFrame(float targetY, float duration)
+        {
+            yield return null;
+            shade.enabled = false;
+            if (teacher != null) {
+                Destroy(teacher.gameObject);
+            }
+            float startY = back.transform.localPosition.y;
+            float startTime = Time.time;
+            while (Time.time < startTime+duration)
+            {
+                float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+
+                float y = Mathf.Lerp(startY, targetY, t);
+                back.transform.localPosition = new Vector2(transform.localPosition.x, y);
+                yield return null;
+            }
+            Destroy(gameObject);
+        }
+        void OnDestroy()
+        {
+            if (teacher != null) {
+                Destroy(teacher.gameObject);
+            }
         }
 
 #if UNITY_EDITOR

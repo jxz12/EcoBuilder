@@ -105,6 +105,11 @@ namespace EcoBuilder.UI
                 }
             }
         }
+        public void ForceHide() // for returning to menu
+        {
+            targetPivot.x = 0;
+            rt.pivot = targetPivot;
+        }
         public void Toggle()
         {
             // flips pivot to opposite of current state
