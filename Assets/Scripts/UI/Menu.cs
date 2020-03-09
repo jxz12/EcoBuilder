@@ -141,8 +141,8 @@ namespace EcoBuilder.UI
                 deleteAccount.gameObject.SetActive(false);
             }
 
-            StartCoroutine(WaitThenShowLogo(.7f));
-            StartCoroutine(WaitThenDisableCanvases());
+            WaitThenShowLogo(.7f);
+            WaitThenDisableLevelCanvases();
             Reveal();
         }
         bool IsLearningFinished()
@@ -158,21 +158,6 @@ namespace EcoBuilder.UI
                 prefab = prefab.NextLevelPrefab;
             }
             return true;
-        }
-
-        [SerializeField] Animator logoAnim;
-        IEnumerator WaitThenShowLogo(float waitSeconds)
-        {
-            yield return new WaitForSeconds(waitSeconds);
-            logoAnim.enabled = true;
-        }
-        [SerializeField] Canvas learningCanvas, researchCanvas;
-        IEnumerator WaitThenDisableCanvases(float delay=0)
-        {
-            // this delay is so that textmeshpro components don't get messed up
-            yield return null;
-            yield return new WaitForSeconds(delay);
-            learningCanvas.enabled = researchCanvas.enabled = false;
         }
 
         ////////////////////////
@@ -244,6 +229,30 @@ namespace EcoBuilder.UI
 
         ///////////////
         // animation
+
+        [SerializeField] Animator logoAnim;
+        public void WaitThenShowLogo(float delay)
+        {
+            IEnumerator WaitThenShow()
+            {
+                yield return new WaitForSeconds(delay);
+                logoAnim.enabled = true;
+            }
+            StartCoroutine(WaitThenShow());
+        }
+        public void WaitThenDisableLevelCanvases(float delay=0)
+        {
+            IEnumerator WaitThenDisable()
+            {
+                // this delay is so that textmeshpro components don't get messed up
+                yield return null;
+                yield return new WaitForSeconds(delay);
+                learningCanvas.enabled = researchCanvas.enabled = false;
+            }
+            StartCoroutine(WaitThenDisable());
+        }
+        [SerializeField] Canvas learningCanvas, researchCanvas;
+
         [SerializeField] RectTransform splashRT, levelsRT, settingsRT, returnRT;
         enum State { Hidden, Splash, Levels, Settings };
         private State state;
@@ -295,31 +304,25 @@ namespace EcoBuilder.UI
             }
             navigationRoutines.Clear();
         }
+        [SerializeField] float tweenDuration;
         private void TweenY(RectTransform toMove, float startY, float endY)
         {
-            var routine = TweenYRoutine(toMove, startY, endY);
+            IEnumerator TweenYRoutine()
+            {
+                Vector3 startPos = toMove.anchoredPosition;
+                float startTime = Time.time;
+                while (Time.time < startTime+tweenDuration)
+                {
+                    float t = Tweens.QuadraticInOut((Time.time-startTime) / tweenDuration);
+                    float y = Mathf.Lerp(startY, endY, t);
+                    toMove.anchoredPosition = new Vector3(startPos.x, y, startPos.z);
+                    yield return null;
+                }
+                toMove.anchoredPosition = new Vector3(startPos.x, endY, startPos.z);
+            }
+            var routine = TweenYRoutine();
             StartCoroutine(routine);
             navigationRoutines.Add(routine);
-        }
-        [SerializeField] float tweenDuration;
-        private IEnumerator TweenYRoutine(RectTransform toMove, float startY, float endY)
-        {
-            Vector3 startPos = toMove.anchoredPosition;
-            float startTime = Time.time;
-            while (Time.time < startTime+tweenDuration)
-            {
-                float t = (Time.time-startTime) / tweenDuration;
-                // quadratic ease in-out
-                if (t < .5f) {
-                    t = 2*t*t;
-                } else {
-                    t = -1 + (4-2*t)*t;
-                }
-                float y = Mathf.Lerp(startY, endY, t);
-                toMove.anchoredPosition = new Vector3(startPos.x, y, startPos.z);
-                yield return null;
-            }
-            toMove.anchoredPosition = new Vector3(startPos.x, endY, startPos.z);
         }
     }
 }

@@ -19,23 +19,21 @@ namespace EcoBuilder.UI
             fitter.enabled = true;
             layout.enabled = true;
         }
-        Action OnYes, OnNo;
+        Action YesCallback;
         void Yes()
         {
-            OnYes?.Invoke();
+            YesCallback?.Invoke();
             GetComponent<Canvas>().enabled = false;
         }
         void No()
         {
-            OnNo?.Invoke();
             GetComponent<Canvas>().enabled = false;
         }
 
 
         public void GiveChoice(Action OnYes, string action=null)
         {
-            this.OnYes = OnYes;
-            OnNo = null;
+            YesCallback = OnYes;
             if (action == null) {
                 question.text = "Are you sure?";
             } else {
@@ -43,18 +41,21 @@ namespace EcoBuilder.UI
             }
             GetComponent<Canvas>().enabled = true;
         }
-        public void GiveChoiceWithCompletionCallback(Action<Action<bool, string>> OnYes, string action)
-        {
-            this.OnYes = ()=>DoCompletionCallback(OnYes);
-            OnSuccess += DoCompletionCallback;
-            confirmation.GiveChoice(()=> DeleteAccountRemote((b,s)=> print("TODO: show error if could not delete")));
-
-        }
-        private void DoCompletionCallback(bool successful, string error)
-        {
-            if (b) question.text = "done!"; else question.text = s;
-            // TODO: change buttons and shit
-        }
-        // TODO: add tweening
+        // public void GiveChoiceWithCompletionCallback(Action<Action<bool, string>> OnYes, string action)
+        // {
+        //     GiveChoice(()=> OnYes(DoCompletionCallback), action);
+        // }
+        // private void DoCompletionCallback(bool successful, string error)
+        // {
+        //     if (successful)
+        //     {
+        //         question.text = "done!";
+        //     }
+        //     else
+        //     {
+        //         question.text = error;
+        //     }
+        //     // TODO: change buttons and shit
+        // }
     }
 }

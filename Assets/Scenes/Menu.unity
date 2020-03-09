@@ -3996,7 +3996,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 293.10342, y: -552.45}
+  m_AnchoredPosition: {x: 293.10352, y: -552.4492}
   m_SizeDelta: {x: 312.3, y: 80.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &745093157
@@ -9714,7 +9714,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 60, y: -60.00006}
+  m_AnchoredPosition: {x: 60, y: -60}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1524483742
@@ -12407,15 +12407,15 @@ MonoBehaviour:
     type: 3}
   firstResearchLevel: {fileID: 7864806509372148198, guid: 333e9416c36f6cf4e9bd7be6e915f335,
     type: 3}
-  logoAnim: {fileID: 557722616}
-  learningCanvas: {fileID: 223523871}
-  researchCanvas: {fileID: 1050504090}
   splashHelp: Welcome to EcoBuilder! This help message will be available throughout
     the game to guide you through your journey. If it goes away, simply tap the green
     arrow to the left of this text. Settings can be reached by tapping the gear button
     at the bottom of the screen.
   lockHelp: The Research World contains more difficult levels designed to be a real
     challenge! It is accessible once you complete all of the levels in Learning World.
+  logoAnim: {fileID: 557722616}
+  learningCanvas: {fileID: 223523871}
+  researchCanvas: {fileID: 1050504090}
   splashRT: {fileID: 195544323}
   levelsRT: {fileID: 1977438747}
   settingsRT: {fileID: 1882168187}

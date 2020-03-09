@@ -8,10 +8,11 @@ research TUTORIAL!!!, make score constraint shiny
 are you sure button
 fix help text on constraints
 do procrustes for SGD layouts
+menu levels LAG SPIKE (possibly layout groups?)
 
 # TESTS
-add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links)
-also make sure undoing and redoing keeps this correct
+add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard)
+also make sure undoing and redoing keeps this correct (check adjacency before and after)
 to test layout, add nodes and links and make sure stress is lower than a certain amount
 double check the score for certiain combinations too
 automated random graphs to test for no NaN
@@ -33,6 +34,7 @@ health and traits hide if empty tap
 more fidelity in link balls
 remove/disable layout groups as soon as levels are spawned
 make health go blue if above a super threshold (will need another fill sprite)
+make shade a global thing (with a stack) because it's stupid to have it everywhere
 release game with australian fires as angle?
 
 experiments to see how the score changes over time

@@ -194,7 +194,8 @@ namespace EcoBuilder
         public void DeleteAccount()
         {
             Assert.IsFalse(LoggedIn);
-            confirmation.GiveChoice(DeleteAccountRemote(), "delete");
+            print("TODO: delete without the spaghetti pls");
+            // confirmation.GiveChoiceWithCompletionCallback(DeleteAccountRemote, "delete");
         }
 
         [SerializeField] Planet earth;
