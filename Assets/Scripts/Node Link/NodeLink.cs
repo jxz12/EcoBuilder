@@ -52,9 +52,6 @@ namespace EcoBuilder.NodeLink
             }
 
             FineTuneLayout();
-            if (GraphLayedOut) {
-                SeparateConnectedComponents();
-            }
             if (tweenNodes) {
                 TweenNodesToStress();
                 TweenZoomToFit();
@@ -73,29 +70,29 @@ namespace EcoBuilder.NodeLink
 
 // because webgl does not support threads
 #if !UNITY_WEBGL
-        async void Layout() {
+        async void Layout()
 #else
-        void Layout() {
+        void Layout()
 #endif
+        {
             isCalculatingAsync = true;
 
-            CountConnectedComponents();
             NumEdges = links.Count();
 
             // these are not async to ensure synchronized adjacency
-            Johnson.InitJohnson(nodes.Indices, links.GetColumnIndicesInRow);
-            Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
-            SGD.InitSGD(undirected);
+            Johnson.Init(nodes.Indices, links.GetColumnIndicesInRow);
+            Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow);
+            SGD.Init(undirected);
 
 #if !UNITY_WEBGL
-            await Task.Run(()=> Johnson.JohnsonsAlgorithm());
+            await Task.Run(()=> Johnson.SolveLoop());
             await Task.Run(()=> Trophic.SolveTrophic(epsGS));
-            await Task.Run(()=> SGD.LayoutSGD(t_max, epsSGD, Trophic.GetTrophicLevel));
+            await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel));
             SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
 #else
-            Johnson.JohnsonsAlgorithm();
+            Johnson.SolveLoop();
             Trophic.SolveTrophic(epsGS);
-            SGD.LayoutSGD(t_max, epsSGD, Trophic.GetTrophicLevel);
+            SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel);
             SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
 
@@ -335,6 +332,8 @@ namespace EcoBuilder.NodeLink
         }
 
         // chain and loop
+        public int NumEdges { get; private set; } = 0;
+        public int NumComponents { get; private set; } = 1;
         public int MaxChain { get { return Trophic.MaxChain; } }
         public int NumMaxChain { get { return Trophic.NumMaxChain; } }
         public int MaxLoop { get { return Johnson.MaxLoop; } }

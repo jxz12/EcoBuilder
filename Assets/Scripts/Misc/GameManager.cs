@@ -41,14 +41,6 @@ namespace EcoBuilder
             // Screen.fullScreen = true;
 #endif
         }
-        public void Quit()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-        }
         void OnDestroy()
         {
             print("TODO: send data if possible? and also on every level finish?");
@@ -160,11 +152,49 @@ namespace EcoBuilder
         [SerializeField] Canvas tutorialCanvas;
         public Canvas TutCanvas { get { return tutorialCanvas; } }
 
+        [SerializeField] UI.Confirmation confirmation;
         public void ReturnToMenu()
         {
+            confirmation.GiveChoice(BackToMenu, "return to the main menu");
+        }
+        private void BackToMenu()
+        {
             HelpText.Showing = false;
+
+            // make level uninteractable
+            var group = playedLevel.gameObject.AddComponent<CanvasGroup>();
+            group.interactable = false;
+
             StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ playedLevel.LeaveThenDestroyFromNextFrame(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
             // wait until next frame to avoid the frame spike caused by Awake and Start()
+        }
+
+        public void Quit()
+        {
+            confirmation.GiveChoice(CloseGameFully, "quit");
+        }
+        public void CloseGameFully()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+        public void LogOut()
+        {
+            Assert.IsFalse(LoggedIn);
+            confirmation.GiveChoice(LogOutAndReload, "log out");
+        }
+        private void LogOutAndReload()
+        {
+            DeletePlayerDetailsLocal();
+            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
+        }
+        public void DeleteAccount()
+        {
+            Assert.IsFalse(LoggedIn);
+            confirmation.GiveChoice(DeleteAccountRemote(), "delete");
         }
 
         [SerializeField] Planet earth;

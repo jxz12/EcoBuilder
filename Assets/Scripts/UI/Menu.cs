@@ -128,7 +128,7 @@ namespace EcoBuilder.UI
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             if (GameManager.Instance.LoggedIn)
             {
-                accountStatus.text = "Hello, " + GameManager.Instance.Username + "! You have collected " + collectedStars + " out of " + totalStars + " stars.";
+                accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
                 createAccount.gameObject.SetActive(false);
                 logout.gameObject.SetActive(true);
                 deleteAccount.gameObject.SetActive(true);
@@ -167,11 +167,12 @@ namespace EcoBuilder.UI
             logoAnim.enabled = true;
         }
         [SerializeField] Canvas learningCanvas, researchCanvas;
-        IEnumerator WaitThenDisableCanvases()
+        IEnumerator WaitThenDisableCanvases(float delay=0)
         {
+            // this delay is so that textmeshpro components don't get messed up
             yield return null;
+            yield return new WaitForSeconds(delay);
             learningCanvas.enabled = researchCanvas.enabled = false;
-            // this is so that textmeshpro components don't get messed up
         }
 
         ////////////////////////
@@ -182,7 +183,7 @@ namespace EcoBuilder.UI
         }
         public void DeleteAccount()
         {
-            GameManager.Instance.DeleteAccountRemote((b,s)=> print("TODO: show error if could not delete"));
+            GameManager.Instance.DeleteAccount();
         }
         public void CreateAccount()
         {

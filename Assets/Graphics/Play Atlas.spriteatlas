@@ -69,7 +69,8 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 4d0c72ca523bbd647aaee383ecde1808, type: 3}
     - {fileID: 21300000, guid: 14fa2e3f5314cf94989ddfc7a4c07dfd, type: 3}
     - {fileID: 21300000, guid: 8aa2ac852714f2a469ee62ff1f33ee3d, type: 3}
-    totalSpriteSurfaceArea: 211178
+    - {fileID: 21300000, guid: 0b95be4d0202541579c04879f0bcfaf6, type: 3}
+    totalSpriteSurfaceArea: 215018
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -106,6 +107,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 5f800e8c23f52d9439d7929cf06cd922, type: 3}
   - {fileID: 21300000, guid: 4acc179c0277ddf4fa72e6d397096d84, type: 3}
   - {fileID: 21300000, guid: d3d77b4d37359f04cb754ba29b2a3f09, type: 3}
+  - {fileID: 21300000, guid: 0b95be4d0202541579c04879f0bcfaf6, type: 3}
   - {fileID: 21300000, guid: 2cd75ecd937092548af742d256771336, type: 3}
   - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
   - {fileID: 21300000, guid: 4c79770f0c7023c4ab5849b588b6245c, type: 3}
@@ -146,6 +148,7 @@ SpriteAtlas:
   - gage_b_fill05
   - box_c_03
   - star white
+  - trophy
   - paw
   - box_b_04
   - finish

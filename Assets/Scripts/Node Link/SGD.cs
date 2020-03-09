@@ -18,13 +18,17 @@ namespace EcoBuilder.NodeLink
         static List<int> sgdSources = new List<int>();
         static List<int> sgdTargets = new List<int>();
 
+        // for components and procrustes
+        private static List<int> sgdComponents = new List<int>();
+
         static List<Vector3> sgdPos = new List<Vector3>();
         static System.Random sgdRand;
-        public static void InitSGD(Dictionary<int, HashSet<int>> undirected, int seed=0)
+        public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
             sgdSquished.Clear();
             sgdUnsquished.Clear();
             sgdPos.Clear(); // node positions
+            sgdComponents.Clear();
 
             sgdRand = new System.Random(seed);
             foreach (int i in undirected.Keys)
@@ -33,6 +37,7 @@ namespace EcoBuilder.NodeLink
                 sgdUnsquished.Add(i);
 
                 sgdPos.Add(new Vector3((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble(), (float)sgdRand.NextDouble()));
+                sgdComponents.Add(-1);
             }
             sgdSources.Clear();
             sgdTargets.Clear();
@@ -52,7 +57,7 @@ namespace EcoBuilder.NodeLink
             public float d, w;
         }
         static List<StressTerm> sgdTerms = new List<StressTerm>();
-        public static void LayoutSGD(int t_max=10, float eps=.1f, Func<int, float> YConstraint=null)
+        public static void SolveStress(int t_max=10, float eps=.1f, Func<int, float> YConstraint=null)
         {
             // calculate terms with BFS
             sgdTerms.Clear();
@@ -61,7 +66,6 @@ namespace EcoBuilder.NodeLink
             for (int source=0; source<sgdSources.Count-1; source++)
             {
                 // BFS for each node
-                q.Enqueue(source);
                 var d = new Dictionary<int, int>();
                 d[source] = 0;
                 while (q.Count > 0)
@@ -89,6 +93,34 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
+            // calculate connected components
+            int ncc = 0;
+            for (int source=0; source<sgdSources.Count-1; source++)
+            {
+                if (sgdComponents[source] != -1) {
+                    continue;
+                }
+                sgdComponents[source] = ncc;
+                q.Clear();
+                
+                q.Enqueue(source);
+                while (q.Count > 0)
+                {
+                    int prev = q.Dequeue();
+                    for (int i=sgdSources[prev]; i<sgdSources[prev+1]; i++)
+                    {
+                        int next = sgdTargets[i];
+                        if (sgdComponents[next] == -1) // if not seen yet
+                        {
+                            // Assert.IsFalse(componentMap.ContainsKey(next), $"{next} already in explored component");
+                            sgdComponents[next] = ncc;
+                            q.Enqueue(next);
+                        }
+                    }
+                }
+                ncc += 1;
+            }
+            NumComponents = ncc;
 
             // keep memory tidy
             sgdTerms.TrimExcess();
@@ -149,6 +181,7 @@ namespace EcoBuilder.NodeLink
         }
         public static void RewriteSGD(Action<int, Vector2> SetPos)
         {
+            SeparateConnectedComponents();
             for (int i=0; i<sgdPos.Count; i++)
             {
                 SetPos(sgdUnsquished[i], sgdPos[i]);
@@ -217,6 +250,50 @@ namespace EcoBuilder.NodeLink
                 T temp = deck[j];
                 deck[j] = deck[i];
                 deck[i] = temp;
+            }
+        }
+
+
+        //////////////////////////////////////////////////////////////
+        // to separate components in layout and calculate disjointness
+
+        public static int NumComponents { get; private set; } = 0;
+        private static void SeparateConnectedComponents()
+        {
+            int ncc = NumComponents;
+            if (ncc <= 1) { // don't change layout if ncc is 0 or 1
+                return;
+            }
+
+            // min and max for each component
+            var ranges = new float[ncc, 2];
+            for (int i=0; i<ncc; i++)
+            {
+                ranges[i,0] = float.MaxValue;
+                ranges[i,1] = float.MinValue;
+            }
+            // foreach (int idx in componentMap.Keys)
+            for (int i=0; i<sgdComponents.Count; i++)
+            {
+                int cc = sgdComponents[i];
+                var pos = sgdPos[i];
+                ranges[cc,0] = Mathf.Min(ranges[cc,0], pos.x);
+                ranges[cc,1] = Mathf.Max(ranges[cc,1], pos.x);
+            }
+            var offsets = new float[ncc];
+            offsets[0] = -ranges[0,0]; // move first CC to start at x=0
+            float cumul = ranges[0,1] - ranges[0,0]; // end of CC range
+            for (int i=1; i<ncc; i++)
+            {
+                offsets[i] = cumul - ranges[i,0] + 1;
+                cumul += ranges[i,1] - ranges[i,0] + 1;
+            }
+
+            // place in order on x axis
+            for (int i=0; i<sgdComponents.Count; i++)
+            {
+                int cc = sgdComponents[i];
+                sgdPos[i] += new Vector3(offsets[cc], 0);
             }
         }
 

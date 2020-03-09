@@ -9,9 +9,6 @@ are you sure button
 fix help text on constraints
 do procrustes for SGD layouts
 
-# Menu
-make icons for reversing drag direction
-
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links)
 also make sure undoing and redoing keeps this correct
@@ -21,14 +18,17 @@ automated random graphs to test for no NaN
 
 check all UI.Image components to make sure they have materials
 check all serializefields to make sure they are not null
-check all levels to see if their parent variant is base, and if their flavour texts are not TODO
+check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
+check for any TMPro.TMP_SubMeshUI scripts
 
 # Research world
 fix superfocus small nodes
+SAVE PROGRESS?
 verify high scores by checking matrices
 
 # Other
 make leaderboards more explorable
+send data while not connected
 health and traits hide if empty tap
 more fidelity in link balls
 remove/disable layout groups as soon as levels are spawned
@@ -48,9 +48,9 @@ The species with the... is...
 2 hours Thursday 1 Friday, week 27th Jan
 2 hours Thursday 1 Friday, week 3rd Feb
 1 hour Thursday,           week 10th Feb
-2 hours Thursday 1 Friday, week 17th Feb
+2 hours Thursday 1 Friday, week 17th Feb ???
 1 hour Friday              week 24th Feb
-2 hours Thursday 1 Friday, week 5th Mar
+2 hours Thursday 1 Friday, week 2nd Mar
 
 Phone Simulator
 

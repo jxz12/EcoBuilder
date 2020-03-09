@@ -28,8 +28,9 @@ namespace EcoBuilder.UI
             targetWidth = rt.sizeDelta.x;
             canvasRect = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect;
 
-            // prevents scene getting dirty, Unity autolayout sucks
-            message.transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
+            // enabling here prevents scene getting dirty, Unity autolayout sucks
+            panelLayout.enabled = true;
+            panelFitter.enabled = true;
         }
         void Start()
         {

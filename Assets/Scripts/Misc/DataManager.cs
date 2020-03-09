@@ -213,7 +213,7 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "__address__", serverURL+"delete.php" },
             };
-            pat.Post(data, (b,s)=>{ OnCompletion(b,s); if (b) LogOut(); } );
+            pat.Post(data, (b,s)=>{ OnCompletion(b,s); } );
         }
 
         //////////////////////////////////////////////
@@ -379,11 +379,6 @@ namespace EcoBuilder
             }
             // note that this function purposefully does not delete the player in order to keep their highscore info
             player.team = PlayerDetails.Team.Unassigned;
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
-        }
-        public void LogOut()
-        {
-            DeletePlayerDetailsLocal();
             StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
         }
         public void OpenPrivacyPolicyInBrowser()

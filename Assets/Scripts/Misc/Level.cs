@@ -312,11 +312,8 @@ namespace EcoBuilder
             }
             Play();
         }
-        public void Quit()
+        private void Quit()
         {
-            // prevent any more buttons being called
-            var group = gameObject.AddComponent<CanvasGroup>();
-            group.interactable = false;
             GameManager.Instance.ReturnToMenu();
         }
         public void LeaveThenDestroyFromNextFrame() // for GameManager to trigger after menu is loaded

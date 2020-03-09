@@ -11,7 +11,7 @@ namespace EcoBuilder.NodeLink
 
         static Dictionary<int, HashSet<int>> johnsonIncoming = new Dictionary<int, HashSet<int>>();
         static Dictionary<int, HashSet<int>> johnsonOutgoing = new Dictionary<int, HashSet<int>>();
-        public static void InitJohnson(IEnumerable<int> indices, Func<int, IEnumerable<int>> Targets)
+        public static void Init(IEnumerable<int> indices, Func<int, IEnumerable<int>> Targets)
         {
             // a function to initialise outgoing and incoming edges for johnson's algorithm below
             // ignores 'graveyard' species
@@ -47,7 +47,7 @@ namespace EcoBuilder.NodeLink
         // can be very slow, so run async if possible
         static List<int> johnsonLongestLoop = new List<int>();
         static int johnsonNumLongest = 0;
-        public static void JohnsonsAlgorithm()
+        public static void SolveLoop()
         {
             johnsonLongestLoop = new List<int>(); // empty list is no loop
             var indices = new List<int>(johnsonOutgoing.Keys);

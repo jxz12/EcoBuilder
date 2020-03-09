@@ -22,7 +22,7 @@ namespace EcoBuilder.NodeLink
 
         private static SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector here
         private static SparseVector<float> trophicLevels = new SparseVector<float>();
-        public static void InitTrophic(IEnumerable<int> nodeIndices, Func<int, IEnumerable<int>> GetTargets)
+        public static void Init(IEnumerable<int> nodeIndices, Func<int, IEnumerable<int>> GetTargets)
         {
             indices = nodeIndices;
             Targets = GetTargets;
