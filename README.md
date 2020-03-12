@@ -5,10 +5,10 @@ LEVELS:
 some final bosses
 research TUTORIAL!!!, make score constraint shiny
 
-are you sure button
 fix help text on constraints
 do procrustes for SGD layouts
-menu levels LAG SPIKE (possibly layout groups?)
+remove 0s from first level
+send data while not connected
 
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard)
@@ -21,17 +21,16 @@ check all UI.Image components to make sure they have materials
 check all serializefields to make sure they are not null
 check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
 check for any TMPro.TMP_SubMeshUI scripts
+use reflection to smell the smellylisteners
 
 # Research world
 fix superfocus small nodes
-SAVE PROGRESS?
+SAVE best level config? Could take from server?
 verify high scores by checking matrices
 
 # Other
 make leaderboards more explorable
-send data while not connected
 health and traits hide if empty tap
-more fidelity in link balls
 remove/disable layout groups as soon as levels are spawned
 make health go blue if above a super threshold (will need another fill sprite)
 make shade a global thing (with a stack) because it's stupid to have it everywhere

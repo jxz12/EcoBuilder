@@ -79,8 +79,10 @@ namespace EcoBuilder.UI
 
             if (score > latestValidScore) {
                 displayedScoreCol = higherScoreCol;
+                ResetRemindCycle();
             } else if (score < latestValidScore) {
                 displayedScoreCol = lowerScoreCol;
+                ResetRemindCycle();
             }
 
             displayedScore = (int)score;
@@ -164,24 +166,25 @@ namespace EcoBuilder.UI
         }
         IEnumerator remindRoutine;
         bool reminding = false;
+        float tRemindStart;
         IEnumerator RemindHighest()
         {
             Assert.IsTrue(remindDuration <= remindPeriod);
-            float tStart = Time.time;
+            tRemindStart = Time.time;
             while (true)
             {
-                reminding = ((Time.time-tStart) % remindPeriod) > (remindPeriod-remindDuration);
-                if (reminding) {
-                    scoreText.text = $"{HighestScore}";
-                } else {
-                    scoreText.text = $"{displayedScore}";
-                }
+                reminding = ((Time.time-tRemindStart) % remindPeriod) > (remindPeriod-remindDuration);
+                scoreText.text = reminding? $"{HighestScore}" : $"{displayedScore}";
                 scoreIcon.enabled = reminding;
                 star1.SetBool("Reminding", reminding);
                 star2.SetBool("Reminding", reminding);
                 star3.SetBool("Reminding", reminding);
                 yield return null;
             }
+        }
+        void ResetRemindCycle()
+        {
+            tRemindStart = Time.time;
         }
         void LateUpdate()
         {

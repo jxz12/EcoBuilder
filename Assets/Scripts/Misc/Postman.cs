@@ -13,11 +13,13 @@ namespace EcoBuilder
     {
         [SerializeField] CanvasGroup group;
         [SerializeField] TMPro.TextMeshProUGUI message;
-        [SerializeField] float fadeDuration;
 
         IEnumerator SendPost(string address, WWWForm form, Action<bool, string> ResponseCallback)
         {
             message.text = "Loading...";
+#if UNITY_EDITOR
+            yield return new WaitForSeconds(1);
+#endif
             using (var p = UnityWebRequest.Post(address, form))
             {
                 yield return p.SendWebRequest();
@@ -50,6 +52,7 @@ namespace EcoBuilder
                     message.text = "Success!";
                     Hide();
                 }
+                print(p.error);
             }
         }
         IEnumerator postRoutine = null;
@@ -77,6 +80,7 @@ namespace EcoBuilder
             group.alpha = 1;
             GetComponent<Animator>().enabled = true;
         }
+        [SerializeField] float fadeDuration;
         public void Hide()
         {
             group.interactable = false;

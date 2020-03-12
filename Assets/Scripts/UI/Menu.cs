@@ -79,6 +79,8 @@ namespace EcoBuilder.UI
                     totalStars += 3;
                 }
             };
+            Assert.IsFalse(learningGrid.transform.childCount > 0, "learning levels already spawned");
+            Assert.IsFalse(researchList.transform.childCount > 0, "research levels already spawned");
             Level prefab = firstLearningLevel;
             while (prefab != null)
             {
@@ -166,17 +168,18 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.Quit();
         }
-        public void DeleteAccount()
-        {
-            GameManager.Instance.DeleteAccount();
-        }
         public void CreateAccount()
         {
-            GameManager.Instance.CreateAccount();
+            GameManager.Instance.AskAgainForLogin();
+            Reset();
         }
         public void LogOut()
         {
-            GameManager.Instance.LogOut();
+            GameManager.Instance.LogOut(Reset);
+        }
+        public void DeleteAccount()
+        {
+            GameManager.Instance.DeleteAccount(Reset);
         }
         public void SetReverseDrag(bool reversed)
         {
@@ -263,6 +266,20 @@ namespace EcoBuilder.UI
             Assert.IsTrue(state == State.Hidden);
             state = State.Splash;
             GameManager.Instance.HelpText.Message = splashHelp;
+        }
+        void Reset()
+        {
+            Assert.IsTrue(state == State.Settings, "should only be able to reset from settings");
+            TweenY(settingsRT, 0, -1000);
+            TweenY(returnRT, 60, -60);
+            state = State.Hidden;
+            foreach (Transform child in learningGrid.transform) {
+                Destroy(child.gameObject);
+            }
+            foreach (Transform child in researchList.transform) {
+                Destroy(child.gameObject);
+            }
+            Start();
         }
         public void ShowSplash()
         {

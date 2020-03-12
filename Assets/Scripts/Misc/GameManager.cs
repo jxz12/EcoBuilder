@@ -53,7 +53,6 @@ namespace EcoBuilder
         ///////////////////
 
         [SerializeField] UI.LoadingBar loadingBar;
-        // public event Action<string> OnSceneLoaded;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad, Action OnLoaded=null)
         {
             loadingBar.Show(true);
@@ -141,6 +140,7 @@ namespace EcoBuilder
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
+            report.HideIfShowing();
         }
 
 
@@ -181,21 +181,15 @@ namespace EcoBuilder
             Application.Quit();
 #endif
         }
-        public void LogOut()
+        public void LogOut(Action Reset)
         {
-            Assert.IsFalse(LoggedIn);
-            confirmation.GiveChoice(LogOutAndReload, "log out");
+            Assert.IsTrue(LoggedIn);
+            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); Reset(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
         }
-        private void LogOutAndReload()
+        public void DeleteAccount(Action Reset)
         {
-            DeletePlayerDetailsLocal();
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
-        }
-        public void DeleteAccount()
-        {
-            Assert.IsFalse(LoggedIn);
-            print("TODO: delete without the spaghetti pls");
-            // confirmation.GiveChoiceWithCompletionCallback(DeleteAccountRemote, "delete");
+            Assert.IsTrue(LoggedIn);
+            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(Reset, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
 
         [SerializeField] Planet earth;

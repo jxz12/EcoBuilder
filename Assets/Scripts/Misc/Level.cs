@@ -110,6 +110,7 @@ namespace EcoBuilder
         public event Action OnThumbnailed, OnCarded, OnFinished;
 
         // thumbnail
+        [SerializeField] TMPro.TextMeshProUGUI indexText;
         [SerializeField] Image starsImage;
         [SerializeField] Sprite[] starSprites;
 
@@ -134,6 +135,8 @@ namespace EcoBuilder
 
             titleText.text = details.Title;
             descriptionText.text = details.Description;
+
+            indexText.text = ((details.Idx) % 100).ToString(); // a little smelly
 
             SetScoreTexts();
         }
@@ -164,89 +167,222 @@ namespace EcoBuilder
         //////////////////////////////
         // animations states
 
-        enum State { Thumbnail=0, Card=1, FinishFlag=2, Leave=3 }
+        // enum State { Thumbnail=0, Card=1, FinishFlag=2, Leave=3 }
 
-        IEnumerator tweenRoutine;
-        IEnumerator TweenToZeroPosFrom(float duration, Transform newParent)
-        {
-            while (tweenRoutine != null) {
-                yield return null;
-            }
-            transform.SetParent(newParent, true);
-            transform.localScale = Vector3.one;
-
-            tweenRoutine = TweenToZeroPos(duration);
-            yield return tweenRoutine;
-            tweenRoutine = null;
-        }
-        IEnumerator TweenToZeroPos(float duration)
-        {
-            Vector2 startPos = transform.localPosition;
-            float startTime = Time.time;
-            while (Time.time < startTime+duration)
-            {
-                float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
-                transform.localPosition = Vector2.Lerp(startPos, Vector2.zero, t);
-                yield return null;
-            }
-            transform.localPosition = Vector2.zero;
-        }
-
+        [SerializeField] Image padlock;
         public void Unlock()
         {
-            GetComponent<Animator>().SetTrigger("Unlock");
-        }
-
-        Transform thumbnailedParent;
-        public void ShowThumbnail()
-        {
-            ShowThumbnail(.5f);
-        }
-        private void ShowThumbnail(float tweenTime)
-        {
-            StartCoroutine(TweenToZeroPosFrom(tweenTime, thumbnailedParent));
-
-            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
-            OnThumbnailed?.Invoke();
-        }
-        public void ShowCard()
-        {
-            Assert.IsFalse(GameManager.Instance.CardAnchor.childCount > 1, "more than one card on cardparent?");
-
-            if (GameManager.Instance.CardAnchor.childCount == 1) {
-                GameManager.Instance.CardAnchor.GetComponentInChildren<Level>().ShowThumbnail();
+            // GetComponent<Animator>().SetTrigger("Unlock");
+            // TODO: animation?
+            padlock.enabled = false;
+            indexText.enabled = true;
+            thumbnailGroup.interactable = true;
+            if (Details.Metric != LevelDetails.ScoreMetric.None) {
+                starsImage.enabled = true;
             }
-            thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-            StartCoroutine(TweenToZeroPosFrom(.5f, GameManager.Instance.CardAnchor));
+        }
 
-            GetComponent<Animator>().SetInteger("State", (int)State.Card);
+        public void ShowCard(float duration=.5f)
+        {
+            Assert.IsFalse(GameManager.Instance.CardAnchor.childCount > 0, "card already on cardparent?");
+
+            thumbnailedParent = transform.parent.GetComponent<RectTransform>();
+            TweenToZeroPos(duration, GameManager.Instance.CardAnchor);
+
+            // GetComponent<Animator>().SetInteger("State", (int)State.Card);
+            TweenToCard(.5f);
             OnCarded?.Invoke();
         }
+        Transform thumbnailedParent;
+        public void HideCard(float duration=.5f)
+        {
+            TweenToZeroPos(duration, thumbnailedParent);
+            // GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+            TweenFromCard(.5f);
+            OnThumbnailed?.Invoke();
+        }
 
-        public void ShowFinishFlag()
+        public void ShowFinishFlag(float period=3f)
         {
             Instantiate(fireworksPrefab, transform);
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-            GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
-
+            // GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
+            TweenToFlag(period);
         }
 
+        /////////////////
+        // ANIMATION
+
+        bool tweeningPos;
+        void TweenToZeroPos(float duration, Transform newParent)
+        {
+            IEnumerator Tween()
+            {
+                while (tweeningPos) {
+                    yield return null;
+                }
+                tweeningPos = true;
+                transform.SetParent(newParent, true);
+                transform.localScale = Vector3.one;
+                Vector2 startPos = transform.localPosition;
+                float startTime = Time.time;
+                while (Time.time < startTime+duration)
+                {
+                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    transform.localPosition = Vector2.Lerp(startPos, Vector2.zero, t);
+                    yield return null;
+                }
+                transform.localPosition = Vector2.zero;
+                tweeningPos = false;
+            }
+            StartCoroutine(Tween());
+        }
 
         // a hack to keep the card on top of the other thumbnails
-        Canvas canvas;
-        GraphicRaycaster gRaycaster;
-        public void RenderOnTop(int sortOrder)
+        Canvas extraCanvas;
+        GraphicRaycaster extraRaycaster;
+        private void RenderOnTop(int sortOrder)
         {
-            canvas = gameObject.AddComponent<Canvas>();
-            gRaycaster = gameObject.AddComponent<GraphicRaycaster>();
-            canvas.overrideSorting = true;
-            canvas.sortingOrder = sortOrder;
+            extraCanvas = gameObject.AddComponent<Canvas>();
+            extraRaycaster = gameObject.AddComponent<GraphicRaycaster>();
+            extraCanvas.overrideSorting = true;
+            extraCanvas.sortingOrder = sortOrder;
         }
-        public void RenderBelow()
+        private void RenderBelow()
         {
-            Destroy(gRaycaster);
-            Destroy(canvas);
+            Destroy(extraRaycaster);
+            Destroy(extraCanvas);
         }
+        [SerializeField] Canvas cardCanvas;
+        [SerializeField] CanvasGroup thumbnailGroup, cardGroup;
+        [SerializeField] Image shade, back;
+        bool tweeningCard;
+        void TweenToCard(float duration)
+        {
+            IEnumerator Tween()
+            {
+                while (tweeningCard == true) {
+                    yield return null;
+                }
+                RenderOnTop(2);
+                tweeningCard = true;
+                var rt = GetComponent<RectTransform>();
+                var startSize = rt.sizeDelta;
+                var endSize = new Vector2(400,500);
+                float aShade = shade.color.a;
+                float aThumb = thumbnailGroup.alpha;
+                float aCard = cardGroup.alpha;
+                cardCanvas.enabled = true;
+                cardGroup.interactable = true;
+                cardGroup.blocksRaycasts = true;
+                thumbnailGroup.interactable = false;
+                thumbnailGroup.blocksRaycasts = false;
+                shade.raycastTarget = true;
+                float startTime = Time.time;
+                while (Time.time < startTime+duration)
+                {
+                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    rt.sizeDelta = Vector2.Lerp(startSize, endSize, t);
+                    shade.color = new Color(0,0,0, Mathf.Lerp(aShade,.3f,t));
+                    thumbnailGroup.alpha = Mathf.Lerp(aThumb,0,t);
+                    cardGroup.alpha = Mathf.Lerp(aCard,1,t);
+                    yield return null;
+                }
+                rt.sizeDelta = endSize;
+                shade.color = new Color(0,0,0,.3f);
+                thumbnailGroup.alpha = 0;
+                cardGroup.alpha = 1;
+                tweeningCard = false;
+            }
+            StartCoroutine(Tween());
+        }
+        void TweenFromCard(float duration)
+        {
+            IEnumerator Tween()
+            {
+                while (tweeningCard == true) {
+                    yield return null;
+                }
+                tweeningCard = true;
+                var rt = GetComponent<RectTransform>();
+                var startSize = rt.sizeDelta;
+                var endSize = new Vector2(100,100);
+                float aShade = shade.color.a;
+                float aThumb = thumbnailGroup.alpha;
+                float aCard = cardGroup.alpha;
+                cardGroup.interactable = false;
+                cardGroup.blocksRaycasts = false;
+                thumbnailGroup.interactable = true;
+                thumbnailGroup.blocksRaycasts = true;
+                shade.raycastTarget = false;
+                float startTime = Time.time;
+                while (Time.time < startTime+duration)
+                {
+                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    rt.sizeDelta = Vector2.Lerp(startSize, endSize, t);
+                    shade.color = new Color(0,0,0, Mathf.Lerp(aShade,0,t));
+                    thumbnailGroup.alpha = Mathf.Lerp(aThumb,1,t);
+                    cardGroup.alpha = Mathf.Lerp(aCard,0,t);
+                    yield return null;
+                }
+                rt.sizeDelta = endSize;
+                shade.color = new Color(0,0,0,0);
+                thumbnailGroup.alpha = 1;
+                cardGroup.alpha = 0;
+                cardCanvas.enabled = false;
+                tweeningCard = false;
+                RenderBelow();
+            }
+            StartCoroutine(Tween());
+        }
+        [SerializeField] Image flagBack, flagIcon;
+        bool flagging;
+        void TweenToFlag(float period)
+        {
+            IEnumerator Oscillate()
+            {
+                flagBack.enabled = flagIcon.enabled = true;
+                var rt = GetComponent<RectTransform>();
+                float startTime = Time.time;
+                flagging = true;
+                while (flagging)
+                {
+                    float t = (Time.time - startTime) / period;
+                    float size = 105 + 5*Mathf.Sin(2*Mathf.PI*t);
+                    rt.sizeDelta = new Vector2(size, size);
+                    yield return null;
+                }
+            }
+            StartCoroutine(Oscillate());
+        }
+        void TweenFromFlag(float duration)
+        {
+            flagging = false;
+
+            IEnumerator Tween()
+            {
+                var rt = GetComponent<RectTransform>();
+                float startTime = Time.time;
+                float startSize = rt.sizeDelta.x;
+                while (Time.time < startTime + duration)
+                {
+                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime) / duration);
+                    float size = Mathf.Lerp(startSize, 0, t);
+                    rt.sizeDelta = new Vector2(size, size);
+                    yield return null;
+                }
+                flagBack.enabled = flagIcon.enabled = false;
+                rt.sizeDelta = new Vector2(100,100);
+                playButton.interactable = true;
+                playButton.gameObject.SetActive(true);
+                quitButton.gameObject.SetActive(false);
+                replayButton.gameObject.SetActive(false);
+
+                GameManager.Instance.ShowResultsScreen();
+            }
+            StartCoroutine(Tween());
+        }
+
 
         ///////////////////////
         // Scene changing
@@ -269,7 +405,7 @@ namespace EcoBuilder
             yield return null;
             thumbnailedParent = GameManager.Instance.PlayAnchor; // detach from possibly the menu
 
-            ShowThumbnail(1.5f);
+            HideCard(1.5f);
 
             if (tutorialPrefab != null) {
                 teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutCanvas.transform);
@@ -286,23 +422,13 @@ namespace EcoBuilder
             replayButton.gameObject.SetActive(true);
         }
 
-        public void FinishLevel() // called on finish flag pressed
+        public void FinishLevel(float duration=.5f) // called on finish flag pressed
         {
             Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
-            GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+            // GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
+            TweenFromFlag(duration);
 
             OnFinished?.Invoke();
-            StartCoroutine(EnableQuitReplayThenShowResults());
-        }
-        IEnumerator EnableQuitReplayThenShowResults()
-        {
-            playButton.interactable = true;
-            playButton.gameObject.SetActive(true);
-            quitButton.gameObject.SetActive(false);
-            replayButton.gameObject.SetActive(false);
-            yield return new WaitForSeconds(.5f);
-
-            GameManager.Instance.ShowResultsScreen();
         }
 
         public void Replay() // for button
@@ -321,7 +447,6 @@ namespace EcoBuilder
             StopAllCoroutines();
             StartCoroutine(LeaveThenDestroyFromNextFrame(-1000, 1));
         }
-        [SerializeField] Image shade, back;
         IEnumerator LeaveThenDestroyFromNextFrame(float targetY, float duration)
         {
             yield return null;

@@ -127,6 +127,7 @@ namespace EcoBuilder.Tutorials
         }
         protected IEnumerator Track(Transform tracked)
         {
+            targetAnchor = new Vector3(0f,0f);
             while (true)
             {
                 targetPos = ToAnchoredPos(tracked.position) + new Vector2(0,-20);

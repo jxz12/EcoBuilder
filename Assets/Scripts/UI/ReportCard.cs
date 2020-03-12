@@ -26,10 +26,14 @@ namespace EcoBuilder.UI
 
         [SerializeField] TMPro.TextMeshProUGUI nextLvlMsg;
         [SerializeField] Image nextLvlCompleteIcon;
-        Level prevLvl, nextLvl;
-        public void GiveNavigation(Level prevLvl, Level nextLvl)
+        Level currLvl, nextLvl;
+        public void GiveNavigation(Level currLvl, Level nextLvl)
         {
-            prevLvl.transform.SetParent(prevLevelAnchor, false);
+            currLvl.transform.SetParent(prevLevelAnchor, false);
+            if (currLvl.Details.Metric == LevelDetails.ScoreMetric.None)
+            {
+                print("TODO: remove 0 scores here for first level");
+            }
             if (nextLvl != null)
             {
                 nextLvl.transform.SetParent(nextLevelAnchor, false);
@@ -41,15 +45,14 @@ namespace EcoBuilder.UI
             {
                 nextLvlMsg.text = "World Finished!";
                 nextLvlCompleteIcon.enabled = true;
-                print("TODO: credits?");
             }
-            this.prevLvl = prevLvl;
+            this.currLvl = currLvl;
             this.nextLvl = nextLvl;
         }
         void Quit()
         {
             quitBtn.interactable = false;
-            Destroy(prevLvl);
+            Destroy(currLvl);
             if (nextLvl != null) {
                 Destroy(nextLvl);
             }

@@ -38,6 +38,7 @@ namespace EcoBuilder
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
         public bool ConstrainTrophic { get { return false; } }//return player.team != PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
+        // public bool HasAnyHighScore { get { return player.highScores.Count > 0; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
 
@@ -111,8 +112,8 @@ namespace EcoBuilder
         // web form things
 
 #if UNITY_EDITOR
-        // static readonly string serverURL = "127.0.0.1/ecobuilder/";
-        static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+        static readonly string serverURL = "127.0.0.1/ecobuilder/";
+        // static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
 #else
         static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
 #endif
@@ -372,14 +373,11 @@ namespace EcoBuilder
         {
             player.team = PlayerDetails.Team.NeverAsk;
         }
-        public void CreateAccount()
+        public void AskAgainForLogin()
         {
-            if (player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion) {
-                throw new Exception("should not have option to create account");
-            }
+            Assert.IsFalse(player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion, "should not have option to create account");
             // note that this function purposefully does not delete the player in order to keep their highscore info
             player.team = PlayerDetails.Team.Unassigned;
-            StartCoroutine(UnloadSceneThenLoad("Menu", "Menu"));
         }
         public void OpenPrivacyPolicyInBrowser()
         {

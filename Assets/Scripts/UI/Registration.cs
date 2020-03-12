@@ -23,7 +23,7 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite greyButtonSprite, redButtonSprite;
         [SerializeField] Image shade;
 
-        void Start()
+        void Awake()
         {
             skipButton.onClick.AddListener(()=> SetState(State.Skip));
             backButton.onClick.AddListener(()=> SetState(State.Start));
@@ -44,12 +44,11 @@ namespace EcoBuilder.UI
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
             privacyOpen.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
-
-            StartCoroutine(TweenY(1,-1000,0,true));
         }
         public void Begin()
         {
             SetState(State.Start);
+            StartCoroutine(TweenY(1,-1000,0,true));
         }
 
         [SerializeField] GameObject[] startObj, idObj, gdprObj, resetObj, demoObj, skipObj; // required because hierarchy with sub-layout components causes strange frames
@@ -61,7 +60,6 @@ namespace EcoBuilder.UI
             switch (state)
             {
             case State.Start:
-                GetComponent<Canvas>().enabled = true;
                 ShowObjectsOnly(startObj);
                 username.text = password.text = email.text = "";
                 termsConsent.isOn = emailConsent.isOn = askAgain.isOn = false;
@@ -71,6 +69,10 @@ namespace EcoBuilder.UI
                     errorText.gameObject.SetActive(true);
                     errorText.text = "Account deleted!";
                 }
+                // if (GameManager.Instance.HasAnyHighScore) {
+                //     introText.text = defaultIntro + " Any high scores you have gotten without logging in will be saved to the new account.";
+                // TODO: above, and for logging out
+                // }
                 break;
             case State.Register:
                 ShowObjectsOnly(idObj);
@@ -153,16 +155,17 @@ namespace EcoBuilder.UI
 
         IEnumerator TweenY(float duration, float yStart, float yEnd, bool applyShade)
         {
-            Color startCol = new Color(0,0,0,applyShade?0:.5f);
+            Color startCol = shade.color;
             Vector3 startPos = new Vector3(0, yStart, 0);
             Vector3 endPos = new Vector3(0, yEnd, 0);
 
+            GetComponent<Canvas>().enabled = true;
             float startTime = Time.time;
             while (Time.time < startTime+duration)
             {
                 float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
                 transform.localPosition = Vector3.Lerp(startPos, endPos, t);
-                shade.color = Color.Lerp(startCol, new Color(0,0,0,applyShade?.5f:0), t);
+                shade.color = new Color(0,0,0,Mathf.Lerp(startCol.a, applyShade?.5f:0, t));
                 yield return null;
             }
             if (!applyShade) {

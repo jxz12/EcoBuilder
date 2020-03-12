@@ -200,7 +200,7 @@ namespace EcoBuilder.Tutorials
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; }));
 
-            AttachSmellyListener(score, "OnLevelCompletabled", ExplainFinish);
+            AttachSmellyListener(score, "OnOneStarAchieved", ExplainFinish);
         }
         void ExplainFinish()
         {
