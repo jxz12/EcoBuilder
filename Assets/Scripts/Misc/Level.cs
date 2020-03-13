@@ -172,8 +172,7 @@ namespace EcoBuilder
         [SerializeField] Image padlock;
         public void Unlock()
         {
-            // GetComponent<Animator>().SetTrigger("Unlock");
-            // TODO: animation?
+            // TODO: nice animation?
             padlock.enabled = false;
             indexText.enabled = true;
             thumbnailGroup.interactable = true;
@@ -188,8 +187,6 @@ namespace EcoBuilder
 
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             TweenToZeroPos(duration, GameManager.Instance.CardAnchor);
-
-            // GetComponent<Animator>().SetInteger("State", (int)State.Card);
             TweenToCard(.5f);
             OnCarded?.Invoke();
         }
@@ -197,7 +194,6 @@ namespace EcoBuilder
         public void HideCard(float duration=.5f)
         {
             TweenToZeroPos(duration, thumbnailedParent);
-            // GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             TweenFromCard(.5f);
             OnThumbnailed?.Invoke();
         }
@@ -206,7 +202,6 @@ namespace EcoBuilder
         {
             Instantiate(fireworksPrefab, transform);
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
-            // GetComponent<Animator>().SetInteger("State", (int)State.FinishFlag);
             TweenToFlag(period);
         }
 
@@ -392,7 +387,6 @@ namespace EcoBuilder
             GameManager.Instance.LoadLevelScene(this);
         }
 
-        // Tutorials.Tutorial teacher;
         GameObject teacher;
         public void BeginPlay()
         {
@@ -425,7 +419,6 @@ namespace EcoBuilder
         public void FinishLevel(float duration=.5f) // called on finish flag pressed
         {
             Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
-            // GetComponent<Animator>().SetInteger("State", (int)State.Thumbnail);
             TweenFromFlag(duration);
 
             OnFinished?.Invoke();

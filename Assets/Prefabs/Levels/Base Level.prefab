@@ -1389,7 +1389,7 @@ GameObject:
   - component: {fileID: 3298662015735737885}
   - component: {fileID: 4551156237783506342}
   m_Layer: 5
-  m_Name: Level Base
+  m_Name: Base Level
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1446,9 +1446,9 @@ MonoBehaviour:
     twoStarScore: 0
     threeStarScore: 0
     sizeSliderHidden: 0
-    greedSliderHidden: 1
-    conflictsAllowed: 1
-    superfocusAllowed: 0
+    greedSliderHidden: 0
+    conflictsAllowed: 0
+    superfocusAllowed: 1
     numInitSpecies: 0
     edits: 
     types: 

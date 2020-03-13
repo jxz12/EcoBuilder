@@ -24,6 +24,14 @@ namespace EcoBuilder.UI
                 return 4*t*t*t + 1;
             }
         }
+        public static float QuadraticOut(float t)
+        {
+            return -(--t)*t + 1;
+        }
+        public static float CubicOut(float t)
+        {
+            return (--t)*t*t+1;
+        }
         public static IEnumerator Pivot(RectTransform rt, Vector2 start, Vector2 end, float duration=1)
         {
             float startTime = Time.time;

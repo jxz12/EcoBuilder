@@ -12405,7 +12405,7 @@ MonoBehaviour:
     type: 3}
   firstLearningLevel: {fileID: 1744894759364357133, guid: c2e2e7070b5713f478704ab422e6101e,
     type: 3}
-  firstResearchLevel: {fileID: 7864806509372148198, guid: 333e9416c36f6cf4e9bd7be6e915f335,
+  firstResearchLevel: {fileID: 5135758467454725724, guid: fc254115a2bd0ed4cb574674a707db18,
     type: 3}
   splashHelp: Welcome to EcoBuilder! This help message will be available throughout
     the game to guide you through your journey. If it goes away, simply tap the green

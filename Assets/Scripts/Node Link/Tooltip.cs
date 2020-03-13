@@ -14,14 +14,21 @@ namespace EcoBuilder.NodeLink
         [SerializeField] float sizeSmoothTime;
         float size=0, sizocity=0;
 
+        Canvas canvas;
+        void Start()
+        {
+            canvas = GetComponent<Canvas>();
+        }
         void Update()
         {
             if (visible) {
                 size = Mathf.SmoothDamp(size, 1, ref sizocity, sizeSmoothTime);
+                canvas.enabled = true;
             } else {
                 size = Mathf.SmoothDamp(size, 0, ref sizocity, sizeSmoothTime);
                 if (size < 1e-10f) {
                     size = 0; // prevents invalid AABB error
+                    canvas.enabled = false;
                 }
             }
             transform.localScale = new Vector3(size, size, 1);

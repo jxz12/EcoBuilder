@@ -25,6 +25,7 @@ namespace EcoBuilder
             inspector.OnSpawned +=  (i,b,g)=> { nodelink.AddNode(i,g); nodelink.SetIfNodeCanBeTarget(i,!b); };
             inspector.OnSpawned +=  (i,b,g)=> model.AddSpecies(i,b);
             inspector.OnSpawned +=  (i,b,g)=> { if (b) constraints.AddLeafIdx(i); else constraints.AddPawIdx(i); };
+
             inspector.OnDespawned +=    (i)=> nodelink.RemoveNode(i);
             inspector.OnDespawned +=    (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=    (i)=> constraints.RemoveIdx(i);
@@ -81,20 +82,16 @@ namespace EcoBuilder
             inspector.OnUserGreedSet += (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
             nodelink.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
             nodelink.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            // nodelink.OnUserLinked +=      (i,j)=> nodelink.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
             nodelink.OnUserUnlinked +=    (i,j)=> nodelink.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
 
             recorder.OnSpeciesTraitsChanged += (i)=> nodelink.ForceFocus(i);
             recorder.OnSpeciesMemoryLeak +=    (i)=> nodelink.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak +=    (i)=> inspector.DespawnCompletely(i);
 
-            // these are necessary to give the model adjacency info
-            model.AttachAdjacency(nodelink.GetActiveTargets);
-            inspector.OnSpawned += (i,b,g)=> model.TriggerSolve();
-            inspector.OnDespawned +=   (i)=> model.TriggerSolve();
-            inspector.OnSizeSet +=   (i,x)=> model.TriggerSolve();
-            inspector.OnGreedSet +=  (i,x)=> model.TriggerSolve();
-            // nodelink.OnLinked +=        ()=> model.TriggerSolve();
+            inspector.OnUserSpawned +=   (i)=> model.TriggerSolve();
+            inspector.OnUserDespawned += (i)=> model.TriggerSolve();
+            inspector.OnSizeSet +=     (i,x)=> model.TriggerSolve();
+            inspector.OnGreedSet +=    (i,x)=> model.TriggerSolve();
             nodelink.OnUserLinked +=   (i,j)=> model.TriggerSolve();
             nodelink.OnUserUnlinked += (i,j)=> model.TriggerSolve();
 
@@ -156,6 +153,8 @@ namespace EcoBuilder
                 nodelink.SetIfLinkRemovable(i, j, false);
                 nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
+            // to give the model info on what interactions are made
+            model.AttachAdjacency(nodelink.GetActiveTargets);
 
             // set up scoring
             switch (GameManager.Instance.PlayedLevelDetails.Metric)

@@ -38,7 +38,7 @@ namespace EcoBuilder.UI
         private enum Type { Leaf, Paw, Edge, Chain, Loop}
         Dictionary<Type, Constraint> constraintMap = new Dictionary<Type, Constraint>();
 
-        [SerializeField] TMPro.TextMeshProUGUI leaf, paw, edge, chain, loop;
+        [SerializeField] TMPro.TextMeshProUGUI leaf, paw, edge, chain, loop, error;
         [SerializeField] Image divider;
 
         string prefix = "     ";
@@ -253,59 +253,92 @@ namespace EcoBuilder.UI
             StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1)));
         }
 
-        // [SerializeField] Tooltip tooltip;
         public void OnPointerEnter(PointerEventData ped)
         {
-            // tooltip.Enable();
-            // tooltip.ShowText(Error());
-            followCoroutine = FollowCursor();
-            StartCoroutine(followCoroutine);
+            ShowError(.5f, true);
             OnErrorShown?.Invoke(true);
         }
-        
-        private IEnumerator followCoroutine;
-        bool chainHovered=false, loopHovered=false;
-        IEnumerator FollowCursor()
+        private IEnumerator growCoroutine, followCoroutine;
+        void ShowError(float duration, bool showing)
         {
-            while (true)
+            IEnumerator Follow()
             {
-                // tooltip.SetPos(Input.mousePosition);
-
-                bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Chain].counter.rectTransform, Input.mousePosition);
-                bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Loop].counter.rectTransform, Input.mousePosition);
-
-                Assert.IsFalse(overChain && overLoop, "cannot highlight both chain and loop");
-
-                // always unhighlight first to clear highlighting
-                if (chainHovered && !overChain)
+                var errorRT = error.GetComponent<RectTransform>();
+                while (true)
                 {
-                    OnChainUnhovered?.Invoke();
-                    chainHovered = false;
-                }
-                if (loopHovered && !overLoop)
-                {
-                    OnLoopUnhovered?.Invoke();
-                    loopHovered = false;
-                }
+                    error.text = GetErrorMessage();
+                    errorRT.position = Input.mousePosition;
 
-                if (!chainHovered && overChain)
-                {
-                    OnChainHovered?.Invoke();
-                    chainHovered = true;
-                }
-                if (!loopHovered && overLoop)
-                {
-                    OnLoopHovered?.Invoke();
-                    loopHovered = true;
-                }
+                    bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Chain].counter.rectTransform, Input.mousePosition);
+                    bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Loop].counter.rectTransform, Input.mousePosition);
 
-                yield return null;
+                    Assert.IsFalse(overChain && overLoop, "cannot highlight both chain and loop");
+
+                    // always unhighlight first to clear highlighting
+                    if (chainHovered && !overChain)
+                    {
+                        OnChainUnhovered?.Invoke();
+                        chainHovered = false;
+                    }
+                    if (loopHovered && !overLoop)
+                    {
+                        OnLoopUnhovered?.Invoke();
+                        loopHovered = false;
+                    }
+
+                    if (!chainHovered && overChain)
+                    {
+                        OnChainHovered?.Invoke();
+                        chainHovered = true;
+                    }
+                    if (!loopHovered && overLoop)
+                    {
+                        OnLoopHovered?.Invoke();
+                        loopHovered = true;
+                    }
+                    yield return null;
+                }
             }
+            IEnumerator Grow()
+            {
+                if (showing)
+                {
+                    if (followCoroutine != null) {
+                        StopCoroutine(followCoroutine);
+                    }
+                    StartCoroutine(followCoroutine = Follow());
+                }
+                error.enabled = true;
+                float tStart = Time.time;
+                float scaleStart = error.transform.localScale.x;
+                float targetScale = showing? 1:0;
+                while (Time.time < tStart+duration)
+                {
+                    float t = UI.Tweens.CubicOut((Time.time-tStart) / duration);
+                    float scale = Mathf.Lerp(scaleStart, targetScale, t);
+                    error.transform.localScale = new Vector3(scale, scale, 1);
+                    yield return null;
+                }
+                error.transform.localScale = new Vector3(targetScale, targetScale, 1);
+                if (!showing)
+                {
+                    error.enabled = false;
+                    StopCoroutine(followCoroutine);
+                    followCoroutine = null;
+                }
+            }
+            if (growCoroutine != null)
+            {
+                StopCoroutine(growCoroutine);
+                growCoroutine = null;
+            }
+            StartCoroutine(growCoroutine = Grow());
         }
+        
+        bool chainHovered=false, loopHovered=false;
         public void OnPointerExit(PointerEventData ped)
         {
-            // tooltip.Disable();
-            StopCoroutine(followCoroutine);
+            ShowError(.5f, false);
             if (chainHovered)
             {
                 OnChainUnhovered?.Invoke();
@@ -338,10 +371,10 @@ namespace EcoBuilder.UI
         public bool Feasible { get; private set; }
         public bool Stable { get; private set; }
         public bool Disjoint { get; private set; }
-        string Error()
+        string GetErrorMessage()
         {
             if (constraintMap[Type.Paw].value==0 && constraintMap[Type.Leaf].value==0) {
-                return "Your ecosystem is empty.";
+                return "You have not added any species yet.";
             // } else if (!IsSatisfied(Type.Leaf)) {
             //     return "You have not added enough plants.";
             // } else if (!IsSatisfied(Type.Paw)) {

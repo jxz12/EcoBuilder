@@ -5,10 +5,11 @@ LEVELS:
 some final bosses
 research TUTORIAL!!!, make score constraint shiny
 
-fix help text on constraints
+fix superfocus small nodes
 do procrustes for SGD layouts
 remove 0s from first level
 send data while not connected
+make health bars colour in based on rise or fall
 
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard)
@@ -24,7 +25,6 @@ check for any TMPro.TMP_SubMeshUI scripts
 use reflection to smell the smellylisteners
 
 # Research world
-fix superfocus small nodes
 SAVE best level config? Could take from server?
 verify high scores by checking matrices
 
@@ -35,6 +35,7 @@ remove/disable layout groups as soon as levels are spawned
 make health go blue if above a super threshold (will need another fill sprite)
 make shade a global thing (with a stack) because it's stupid to have it everywhere
 release game with australian fires as angle?
+make nodelink tooltip do something else when links are added and removed
 
 experiments to see how the score changes over time
 

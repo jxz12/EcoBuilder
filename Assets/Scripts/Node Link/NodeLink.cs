@@ -376,8 +376,8 @@ namespace EcoBuilder.NodeLink
             }
             for (int i=0; i<Johnson.MaxLoop; i++)
             {
-                int src = Johnson.LongestLoop[i];
-                int tgt = Johnson.LongestLoop[(i+1) % Johnson.MaxLoop];
+                int src = Johnson.MaxLoopIndices[i];
+                int tgt = Johnson.MaxLoopIndices[(i+1) % Johnson.MaxLoop];
                 var loopNode = nodes[src];
                 var loopLink = links[src,tgt];
 

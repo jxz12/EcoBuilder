@@ -34,9 +34,11 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        public static IReadOnlyList<int> LongestLoop { get; private set; }
         public static int MaxLoop {
-            get { return LongestLoop.Count; }
+            get { return johnsonLongestLoop.Count; }
+        }
+        public static IReadOnlyList<int> MaxLoopIndices {
+            get { return johnsonLongestLoop; }
         }
         public static int NumMaxLoop {
             get { return johnsonNumLongest; }
@@ -70,7 +72,6 @@ namespace EcoBuilder.NodeLink
                 }
             }
             johnsonLongestLoop.Reverse();
-            LongestLoop = new List<int>(johnsonLongestLoop);
         }
         static Stack<int> johnsonStack = new Stack<int>();
         static HashSet<int> johnsonSet = new HashSet<int>();

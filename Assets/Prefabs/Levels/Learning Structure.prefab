@@ -556,6 +556,16 @@ PrefabInstance:
       propertyPath: details.threeStarsMessage
       value: n/a
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.conflictsAllowed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.superfocusAllowed
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5138229676841934199, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target

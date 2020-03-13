@@ -333,7 +333,7 @@ namespace EcoBuilder.UI
 
             if (inspected != null) // only call events on spawned species
             {
-                OnGreedSet?.Invoke(inspected.Idx, newValue);
+                OnGreedSet?.Invoke(inspected.Idx, greedTrait.NormaliseValue(newValue));
                 OnUserGreedSet?.Invoke(inspected.Idx, prevValue, newValue);
             }
         }
