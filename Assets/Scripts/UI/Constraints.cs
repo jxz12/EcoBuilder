@@ -54,10 +54,10 @@ namespace EcoBuilder.UI
             GetComponent<VerticalLayoutGroup>().enabled = true;
             GetComponent<ContentSizeFitter>().enabled = true;
 
-            OnChainHovered += ()=> HighlightChain(true);
-            OnChainUnhovered += ()=> HighlightChain(false);
-            OnLoopHovered += ()=> HighlightLoop(true);
-            OnLoopUnhovered += ()=> HighlightLoop(false);
+            OnChainHovered += ()=> HoverChain(true);
+            OnChainUnhovered += ()=> HoverChain(false);
+            OnLoopHovered += ()=> HoverLoop(true);
+            OnLoopUnhovered += ()=> HoverLoop(false);
         }
         void Start()
         {
@@ -132,17 +132,40 @@ namespace EcoBuilder.UI
             Display(Type.Loop, lenLoop);
         }
 
-        public void EmphasisePaw(bool highlighted=true)
+        [SerializeField] GameObject highlighterPrefab;
+        void HighlightOnTransform(Transform highlighted)
         {
-            print("TODO: Emphasise paw");
+            IEnumerator Flash(Image im, float period)
+            {
+                float startTime = Time.time;
+                while (true)
+                {
+                    float t = (Time.time-startTime) / period;
+                    im.color = new Color(1,1,1, .175f+.075f*Mathf.Sin(2*Mathf.PI*t));
+                    yield return null;
+                }
+            }
+            print("hi");
+            Assert.IsNotNull(highlighterPrefab.GetComponent<LayoutElement>());
+            Assert.IsNotNull(highlighterPrefab.GetComponent<Image>());
+            var highlighter = Instantiate(highlighterPrefab, transform);
+            highlighter.transform.SetAsFirstSibling(); // always render below constraints
+            highlighter.transform.position = highlighted.position;
+            // note: this does not work if the constraints list ever changes order
+
+            StartCoroutine(Flash(highlighter.GetComponent<Image>(), 2f));
         }
-        public void EmphasiseChain(bool highlighted=true)
+        public void HighlightPaw(bool highlighted=true)
         {
-            print("TODO: Emphasise chain");
+            HighlightOnTransform(constraintMap[Type.Paw].counter.transform);
         }
-        public void EmphasiseLoop(bool highlighted=true)
+        public void HighlightChain(bool highlighted=true)
         {
-            print("TODO: Emphasise loop");
+            HighlightOnTransform(constraintMap[Type.Chain].counter.transform);
+        }
+        public void HighlightLoop(bool highlighted=true)
+        {
+            HighlightOnTransform(constraintMap[Type.Loop].counter.transform);
         }
 
         public void UpdateDisjoint(bool disjoint)
@@ -272,7 +295,7 @@ namespace EcoBuilder.UI
                     bool overChain = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Chain].counter.rectTransform, Input.mousePosition);
                     bool overLoop = RectTransformUtility.RectangleContainsScreenPoint(constraintMap[Type.Loop].counter.rectTransform, Input.mousePosition);
 
-                    Assert.IsFalse(overChain && overLoop, "cannot highlight both chain and loop");
+                    Assert.IsFalse(overChain && overLoop, "cannot hover both chain and loop");
 
                     // always unhighlight first to clear highlighting
                     if (chainHovered && !overChain)
@@ -351,17 +374,17 @@ namespace EcoBuilder.UI
             }
             OnErrorShown?.Invoke(false);
         }
-        void HighlightChain(bool highlighted)
+        void HoverChain(bool hovered)
         {
-            if (highlighted) {
+            if (hovered) {
                 constraintMap[Type.Chain].icon.color = Color.red;
             } else {
                 Display(Type.Chain, constraintMap[Type.Chain].value);
             }
         }
-        void HighlightLoop(bool highlighted)
+        void HoverLoop(bool hovered)
         {
-            if (highlighted) {
+            if (hovered) {
                 constraintMap[Type.Loop].icon.color = Color.red;
             } else {
                 Display(Type.Loop, constraintMap[Type.Loop].value);

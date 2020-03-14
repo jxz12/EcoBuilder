@@ -88,7 +88,6 @@ namespace EcoBuilder.UI
             }
 
             displayedScore = (int)score;
-            scoreText.text = displayedScore.ToString();
 
             //////////////////////////////////
             // only continue if allowed
@@ -182,16 +181,31 @@ namespace EcoBuilder.UI
         }
         void LateUpdate()
         {
-            bool hovering = RectTransformUtility.RectangleContainsScreenPoint(scoreRT, Input.mousePosition);
-            scoreText.color = reminding||hovering?  reminderScoreCol : displayedScoreCol;
-            scoreText.text = reminding||hovering? $"{HighestScore}" : $"{displayedScore}";
-            star1.SetBool("Reminding", reminding||hovering);
-            star2.SetBool("Reminding", reminding||hovering);
-            star3.SetBool("Reminding", reminding||hovering);
-            scoreIcon.enabled = reminding||hovering;
-            if (hovering) {
-                ResetRemindCycle();
+            if (remindRoutine != null)
+            {
+                bool hovering = RectTransformUtility.RectangleContainsScreenPoint(scoreRT, Input.mousePosition);
+                scoreText.color = reminding||hovering? reminderScoreCol : displayedScoreCol;
+                FormatAndDisplayScore(reminding||hovering? HighestScore : displayedScore);
+
+                scoreIcon.enabled = reminding||hovering;
+                star1.SetBool("Reminding", reminding||hovering);
+                star2.SetBool("Reminding", reminding||hovering);
+                star3.SetBool("Reminding", reminding||hovering);
+
+                if (hovering) {
+                    ResetRemindCycle();
+                }
             }
+            else
+            {
+                scoreText.color = displayedScoreCol;
+                FormatAndDisplayScore(displayedScore);
+                scoreIcon.enabled = HighestStars > 0;
+            }
+        }
+        void FormatAndDisplayScore(int value)
+        {
+            scoreText.text = displayedScore.ToString("N0");
         }
 
         bool starsDisabled;

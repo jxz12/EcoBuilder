@@ -1442,7 +1442,7 @@ MonoBehaviour:
     minLoop: 0
     metric: 1
     mainMultiplier: 1000
-    altMultiplier: 10000
+    altMultiplier: 1000000
     twoStarScore: 0
     threeStarScore: 0
     sizeSliderHidden: 0

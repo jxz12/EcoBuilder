@@ -167,19 +167,20 @@ namespace EcoBuilder
             case LevelDetails.ScoreMetric.Richness:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> constraints.PawValue * details.AltMultiplier);
-                constraints.EmphasisePaw();
+                constraints.HighlightPaw();
                 break;
             case LevelDetails.ScoreMetric.Chain:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> nodelink.MaxChain * details.AltMultiplier);
-                constraints.EmphasiseChain();
+                constraints.HighlightChain();
                 break;
             case LevelDetails.ScoreMetric.Loop:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> nodelink.MaxLoop * details.AltMultiplier);
-                constraints.EmphasiseLoop();
+                constraints.HighlightLoop();
                 break;
             }
+            constraints.HighlightChain();
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
 

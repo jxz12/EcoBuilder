@@ -5,7 +5,6 @@ LEVELS:
 some final bosses
 research TUTORIAL!!!, make score constraint shiny, make big scores more readable by adding commas
 
-greed status bar
 make health bars colour in based on rise or fall)
 
 fix superfocus small nodes

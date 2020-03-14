@@ -57,13 +57,13 @@ namespace EcoBuilder.UI
                 health.fillAmount = -normalisedHealth;
             }
         }
-        StringBuilder sb = new StringBuilder("   ");
+        StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#ffb284>0");
         public void SetSize(int size)
         {
             Assert.IsFalse(size.ToString().Length != 1);
 
             char digit = size.ToString()[0];
-            sb[0] = sizeShowing? digit : ' ';
+            sb[15] = sizeShowing? digit : ' ';
             traitsText.text = sb.ToString();
         }
         public void SetGreed(int greed)
@@ -71,7 +71,7 @@ namespace EcoBuilder.UI
             Assert.IsFalse(greed.ToString().Length != 1);
 
             char digit = greed.ToString()[0];
-            sb[2] = greedShowing? digit : ' ';
+            sb[32] = greedShowing? digit : ' ';
             traitsText.text = sb.ToString();
         }
         void LateUpdate()
