@@ -62,7 +62,12 @@ namespace EcoBuilder.Archie
             // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
             // // scale mesh
             animal.transform.localScale = Vector3.one * (1+bodySize*.2f);
-            var lab = new LABColor(70-50*bodySize, 10+40*greediness, -50);
+            // var lab = new LABColor(70-50*bodySize, 10+40*greediness, -50);
+
+            float L = 70-50*bodySize;
+            var lab1 = new LABColor(L, 30, 20);
+            var lab2 = new LABColor(L, 50, -80);
+            var lab = LABColor.Lerp(lab1, lab2, greediness);
             Color rgb = lab.ToColor();
 
             Generate_and_Apply(animal, seed, rgb);
@@ -85,7 +90,11 @@ namespace EcoBuilder.Archie
             // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
             // // scale mesh
             plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
-            var lab = new LABColor(80-50*bodySize, -50+40*greediness, 50);
+            // var lab = new LABColor(80-50*bodySize, -50+40*greediness, 50);
+            float L = 80-50*bodySize;
+            var lab1 = new LABColor(L, -20, 70);
+            var lab2 = new LABColor(L, -60, -10);
+            var lab = LABColor.Lerp(lab1, lab2, greediness);
             Color rgb = lab.ToColor();
 
             Generate_and_Apply(plant, seed, rgb);

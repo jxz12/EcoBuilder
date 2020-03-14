@@ -11,7 +11,12 @@ namespace EcoBuilder.NodeLink
     {
         public static bool LaplacianDetZero { get; private set; } = false;
         public static int MaxChain { get; private set; } = 0;
-        public static int NumMaxChain { get; private set; } = 0;
+        public static IEnumerable<int> MaxChainIndices {
+            get { return tallestNodes; }
+        }
+        public static int NumMaxChain {
+            get { return tallestNodes.Count; }
+        }
         public static float MaxTrophicLevel { get; private set; } = 0;
 
         private static List<int> tallestNodes = new List<int>();
@@ -29,7 +34,8 @@ namespace EcoBuilder.NodeLink
 
             // update the system of linear equations (Laplacian)
             int n = 0;
-            foreach (int i in indices) {
+            foreach (int i in indices)
+            {
                 trophicA[i] = 0;
                 n += 1;
             }
@@ -60,6 +66,7 @@ namespace EcoBuilder.NodeLink
                 q.Enqueue(source);
                 chainLengths[source] = 0;
             }
+            MaxChain = 0;
             while (q.Count > 0)
             {
                 int prev = q.Dequeue();
@@ -69,25 +76,12 @@ namespace EcoBuilder.NodeLink
                     {
                         q.Enqueue(next);
                         chainLengths[next] = chainLengths[prev] + 1;
+                        MaxChain = Math.Max(MaxChain, chainLengths[next]);
                     }
                 }
             }
             LaplacianDetZero = (chainLengths.Count != n);
 
-            MaxChain = 0;
-            NumMaxChain = 0;
-            foreach (int height in chainLengths.Values)
-            {
-                if (height == MaxChain)
-                {
-                    NumMaxChain += 1;
-                }
-                else if (height > MaxChain)
-                {
-                    MaxChain = height;
-                    NumMaxChain = 1;
-                }
-            }
             tallestNodes.Clear();
             foreach (int idx in chainLengths.Keys) {
                 if (chainLengths[idx] == MaxChain) {
@@ -109,10 +103,10 @@ namespace EcoBuilder.NodeLink
                 iter++;
             }
 
-            trophicScaling = 1;
-            if (MaxTrophicLevel-1 > MaxChain)
-            {
+            if (MaxTrophicLevel-1 > MaxChain) {
                 trophicScaling = MaxChain / (MaxTrophicLevel-1);
+            } else {
+                trophicScaling = 1;
             }
         }
         public static void IterateTrophic(Action<int, float> SetY)
@@ -154,9 +148,6 @@ namespace EcoBuilder.NodeLink
         {
             Assert.IsTrue(chainLengths.ContainsKey(idx));
             return chainLengths[idx];
-        }
-        public static IEnumerable<int> TallestNodes {
-            get { return tallestNodes; }
         }
 
         /////////////////////////

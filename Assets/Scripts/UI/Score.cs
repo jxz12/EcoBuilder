@@ -20,12 +20,14 @@ namespace EcoBuilder.UI
 
         int target1, target2;
         Color defaultScoreCol, displayedScoreCol;
+        RectTransform scoreRT;
         [SerializeField] Color unsatisfiedScoreCol, reminderScoreCol, higherScoreCol, lowerScoreCol;
         void Awake()
         {
             defaultScoreCol = scoreText.color;
             displayedScoreCol = unsatisfiedScoreCol;
             scoreIcon.enabled = false;
+            scoreRT = scoreText.GetComponent<RectTransform>();
         }
         void Start()
         {
@@ -159,10 +161,7 @@ namespace EcoBuilder.UI
                 StopCoroutine(remindRoutine);
                 remindRoutine = null;
             }
-            star1.SetBool("Reminding", false);
-            star2.SetBool("Reminding", false);
-            star3.SetBool("Reminding", false);
-            scoreIcon.enabled = HighestStars>0;
+            reminding = false;
         }
         IEnumerator remindRoutine;
         bool reminding = false;
@@ -174,11 +173,6 @@ namespace EcoBuilder.UI
             while (true)
             {
                 reminding = ((Time.time-tRemindStart) % remindPeriod) > (remindPeriod-remindDuration);
-                scoreText.text = reminding? $"{HighestScore}" : $"{displayedScore}";
-                scoreIcon.enabled = reminding;
-                star1.SetBool("Reminding", reminding);
-                star2.SetBool("Reminding", reminding);
-                star3.SetBool("Reminding", reminding);
                 yield return null;
             }
         }
@@ -188,7 +182,16 @@ namespace EcoBuilder.UI
         }
         void LateUpdate()
         {
-            scoreText.color = reminding? reminderScoreCol : displayedScoreCol;
+            bool hovering = RectTransformUtility.RectangleContainsScreenPoint(scoreRT, Input.mousePosition);
+            scoreText.color = reminding||hovering?  reminderScoreCol : displayedScoreCol;
+            scoreText.text = reminding||hovering? $"{HighestScore}" : $"{displayedScore}";
+            star1.SetBool("Reminding", reminding||hovering);
+            star2.SetBool("Reminding", reminding||hovering);
+            star3.SetBool("Reminding", reminding||hovering);
+            scoreIcon.enabled = reminding||hovering;
+            if (hovering) {
+                ResetRemindCycle();
+            }
         }
 
         bool starsDisabled;

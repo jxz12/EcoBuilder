@@ -178,5 +178,11 @@ namespace EcoBuilder.UI
             StopAllCoroutines();
             StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,0), new Vector2(1,0)));
         }
+#if UNITY_EDITOR
+        void OnDestroy()
+        {
+            print(GetActions());
+        }
+#endif
     }
 }

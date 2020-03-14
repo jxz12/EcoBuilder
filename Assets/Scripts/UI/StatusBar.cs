@@ -1,6 +1,8 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 using UnityEngine.Assertions;
+using System.Text;
 
 namespace EcoBuilder.UI
 {
@@ -13,36 +15,36 @@ namespace EcoBuilder.UI
         void Awake()
         {
             rt = GetComponent<RectTransform>();
+            health.enabled = healthBorder.enabled = healthShowing;
         }
-        Camera eye;
         GameObject target;
-        public void FollowSpecies(GameObject target, int size, int greed)
+        public void FollowSpecies(GameObject target)
         {
-            SetSize(size);
-            SetGreed(greed);
-            // ShowTraits(true);
-            // ShowHealth(false);
-
             this.target = target;
-            this.eye = Camera.main;
-
-            // rt.SetParent(target);
-            // rt.localScale = new Vector3(.01f, .01f, .01f);
-            // rt.localPosition = new Vector3(0, 0, -.5f);
-            // rt.localRotation = Quaternion.identity;
         }
-        // public void ShowTraits(bool visible)
-        // {
-        //     traitsText.enabled = true;
-        // }
-        // public void ShowHealth(bool visible)
-        // {
-        //     health.enabled = visible;
-        //     healthBG.enabled = visible;
-        // }
+        static Camera eye;
+        public static void SetCamera(Camera cam)
+        {
+            StatusBar.eye = cam;
+        }
+        static bool sizeShowing=true, greedShowing=true;
+        public static void HideSize(bool hidden=true)
+        {
+            sizeShowing = !hidden;
+        }
+        public static void HideGreed(bool hidden=true)
+        {
+            greedShowing = !hidden;
+        }
+        bool healthShowing=false;
+        public void ShowHealth(bool visible=true)
+        {
+            health.enabled = healthBorder.enabled = healthShowing = visible;
+        }
         public void SetHealth(float normalisedHealth)
         {
             Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1, $"given health of {normalisedHealth}");
+            print("TODO: make this flash and shit");
 
             if (normalisedHealth >= 0)
             {
@@ -55,13 +57,22 @@ namespace EcoBuilder.UI
                 health.fillAmount = -normalisedHealth;
             }
         }
+        StringBuilder sb = new StringBuilder("   ");
         public void SetSize(int size)
         {
-            traitsText.text = $"{size}";
+            Assert.IsFalse(size.ToString().Length != 1);
+
+            char digit = size.ToString()[0];
+            sb[0] = sizeShowing? digit : ' ';
+            traitsText.text = sb.ToString();
         }
         public void SetGreed(int greed)
         {
-            print("TODO: greed status bar");
+            Assert.IsFalse(greed.ToString().Length != 1);
+
+            char digit = greed.ToString()[0];
+            sb[2] = greedShowing? digit : ' ';
+            traitsText.text = sb.ToString();
         }
         void LateUpdate()
         {
@@ -71,14 +82,15 @@ namespace EcoBuilder.UI
             }
             else if (target.activeSelf)
             {
-                if (!health.enabled) {
-                    health.enabled = healthBorder.enabled = traitsText.enabled = true;
+                if (!traitsText.enabled) {
+                    health.enabled = healthBorder.enabled = healthShowing;
+                    traitsText.enabled = true;
                 }
                 Vector3 worldPos = target.transform.TransformPoint(new Vector3(.4f,-.4f,0));
                 Vector2 trackedPos = eye.WorldToScreenPoint(worldPos);
                 rt.position = trackedPos;
             }
-            else if (health.enabled)
+            else if (traitsText.enabled)
             {
                 health.enabled = healthBorder.enabled = traitsText.enabled = false;
             }

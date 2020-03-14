@@ -40,7 +40,7 @@ namespace EcoBuilder
             inspector.OnUnincubated +=   ()=> nodelink.MoveHorizontal(0);
 
             nodelink.OnEmptyTapped += ()=> inspector.CancelIncubation();
-            nodelink.OnEmptyTapped += ()=> inspector.ToggleStatusBars();
+            nodelink.OnEmptyTapped += ()=> print("TODO: maybe make this come back on focus");
 
             ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things

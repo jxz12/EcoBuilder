@@ -333,7 +333,7 @@ namespace EcoBuilder.NodeLink
 
         // chain and loop
         public int NumEdges { get; private set; } = 0;
-        public int NumComponents { get; private set; } = 1;
+        public int NumComponents { get { return SGD.NumComponents; } }
         public int MaxChain { get { return Trophic.MaxChain; } }
         public int NumMaxChain { get { return Trophic.NumMaxChain; } }
         public int MaxLoop { get { return Johnson.MaxLoop; } }
@@ -352,14 +352,14 @@ namespace EcoBuilder.NodeLink
         }
         private IEnumerator WaitThenOutlineChain(cakeslice.Outline.Colour colour)
         {
-            if (Trophic.MaxChain == 0) {
+            if (nodes.Count == 0) {
                 yield break;
             }
             // if calculating then we could potentially try to outline inactive or destroyed nodes
             while (isCalculatingAsync) {
                 yield return null;
             }
-            foreach (int idx in Trophic.TallestNodes)
+            foreach (int idx in Trophic.MaxChainIndices)
             {
                 nodes[idx].PushOutline(colour);
                 toUnoutline.Add(()=> nodes[idx].PopOutline());

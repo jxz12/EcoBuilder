@@ -39,10 +39,18 @@ namespace EcoBuilder.NodeLink
             }
             else if (focusState == FocusState.Focus)
             {
-                if (focusedNode == nodes[idx] && AllowSuperfocus)
+                if (focusedNode == nodes[idx])
                 {
-                    SuperFocus(idx);
-                    focusState = FocusState.SuperFocus;
+                    if (AllowSuperfocus)
+                    {
+                        SuperFocus(idx);
+                        focusState = FocusState.SuperFocus;
+                    }
+                    else
+                    {
+                        TapEmpty();
+                        return;
+                    }
                 }
             }
             else if (focusState == FocusState.SuperFocus)

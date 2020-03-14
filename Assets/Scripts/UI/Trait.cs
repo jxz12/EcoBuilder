@@ -22,7 +22,6 @@ namespace EcoBuilder.UI
         public bool Interactable {
             set { 
                 slider.interactable = value;
-                // slider.targetGraphic.color = value? Color.white : Color.blue;
                 slider.targetGraphic.enabled = value;
                 fill.sprite = value? defaultFillSprite : blueFillSprite;
             }
@@ -35,11 +34,11 @@ namespace EcoBuilder.UI
 
             defaultFillSprite = fill.sprite;
             slider.onValueChanged.AddListener(x=> UserChangeValue());
-            currentValue = UnnormalisedValue;
+            currentValue = Value;
         }
 
         int currentValue;
-        public int UnnormalisedValue {
+        public int Value {
             get {
                 return (int)(slider.value);
             }
@@ -54,8 +53,8 @@ namespace EcoBuilder.UI
         }
 
         // if this function return false, the slider will 'snap' back
-        Func<int, int> FindConflict;
-        public void AddExternalConflict(Func<int, int> Rule)
+        Func<int, int?> FindConflict;
+        public void AddExternalConflict(Func<int, int?> Rule)
         {
             FindConflict = Rule;
         }
@@ -63,7 +62,7 @@ namespace EcoBuilder.UI
             get {
                 if (!randomiseInitialValue)
                 {
-                    yield return UnnormalisedValue;
+                    yield return Value;
                 }
                 else
                 {
@@ -92,55 +91,55 @@ namespace EcoBuilder.UI
             }
             // otherwise leave slider alone
         }
-        public void SetValueWithoutCallback(int unnormalisedValue)
+        public void SetValueWithoutCallback(int value)
         {
             Assert.IsFalse(dragging, "should not be dragging while setting value externally");
 
-            slider.value = unnormalisedValue;
-            currentValue = UnnormalisedValue;
+            slider.value = value;
+            currentValue = Value;
 
             Assert.IsTrue(slider.value == currentValue, "somehow normalisation has failed");
         }
 
-        int conflict = -1;
-        int toSnapBack = -1;
+        int? conflictIdx = null;
+        int? snapBackValue = null;
         private void UserChangeValue()
         {
             if (!dragging) {
                 return; 
             }
-            int newValue = UnnormalisedValue;
-            if (conflict >= 0) {
-                OnUnconflicted?.Invoke(conflict);
+            int newValue = Value;
+            if (conflictIdx != null) {
+                OnUnconflicted?.Invoke((int)conflictIdx);
             }
-            conflict = FindConflict(newValue);
-            if (conflict >= 0)
+            conflictIdx = FindConflict(newValue);
+            if (conflictIdx != null)
             {
-                OnConflicted?.Invoke(conflict);
-                toSnapBack = currentValue;
-                slider.targetGraphic.color = Color.red;
+                OnConflicted?.Invoke((int)conflictIdx);
+                snapBackValue = currentValue;
+                slider.targetGraphic.color = fill.color = Color.red;
             }
             else
             {
                 OnUserSlid?.Invoke(currentValue, newValue);
-                conflict = -1;
-                toSnapBack = -1;
+                conflictIdx = null;
+                snapBackValue = null;
                 currentValue = newValue;
-                slider.targetGraphic.color = Color.white;
+                slider.targetGraphic.color = fill.color = Color.white;
             }
         }
         private void UndoConflict()
         {
-            if (toSnapBack >= 0)
+            if (snapBackValue != null)
             {
-                SetValueWithoutCallback(toSnapBack);
-                toSnapBack = -1;
+                SetValueWithoutCallback((int)snapBackValue);
+                snapBackValue = null;
             }
-            if (conflict >= 0)
+            if (conflictIdx != null)
             {
-                OnUnconflicted?.Invoke(conflict);
-                conflict = -1;
-                slider.targetGraphic.color = Color.white;
+                OnUnconflicted?.Invoke((int)conflictIdx);
+                conflictIdx = null;
+                slider.targetGraphic.color = fill.color = Color.white;
             }
         }
         bool dragging;

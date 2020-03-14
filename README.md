@@ -3,16 +3,18 @@ claim moneys
 
 LEVELS:
 some final bosses
-research TUTORIAL!!!, make score constraint shiny
+research TUTORIAL!!!, make score constraint shiny, make big scores more readable by adding commas
+
+greed status bar
+make health bars colour in based on rise or fall)
 
 fix superfocus small nodes
 do procrustes for SGD layouts
 remove 0s from first level
 send data while not connected
-make health bars colour in based on rise or fall
 
 # TESTS
-add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard)
+add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
 also make sure undoing and redoing keeps this correct (check adjacency before and after)
 to test layout, add nodes and links and make sure stress is lower than a certain amount
 double check the score for certiain combinations too

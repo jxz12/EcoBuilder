@@ -35,6 +35,22 @@ namespace EcoBuilder.Archie
         public static LABColor Lerp(LABColor a, LABColor b, float t){
             return new LABColor(Mathf.Lerp(a.L, b.L, t), Mathf.Lerp(a.A, b.A, t), Mathf.Lerp(a.B, b.B, t));
         }
+
+        // public static LABColor LerpLCH(LABColor a, LABColor b, float t){
+        //     float C0 = Mathf.Sqrt(a.A*a.A + a.B*a.B);
+        //     float C1 = Mathf.Sqrt(b.A*b.A + b.B*b.B);
+        //     float h0 = Mathf.Atan2(a.B, a.A);
+        //     float h1 = Mathf.Atan2(b.B, b.A);
+
+        //     float C = Mathf.Lerp(C0, C1, t);
+        //     float h = Mathf.Lerp(h0, h1, t);
+
+        //     float L = Mathf.Lerp(a.L, b.L, t);
+        //     float A = C*Mathf.Cos(h);
+        //     float B = C*Mathf.Sin(h);
+
+        //     return new LABColor(L, A, B);
+        // }
     
         // static function for interpolation between two Unity Colors through normalized colorspace
         public static Color Lerp(Color a, Color b, float t){

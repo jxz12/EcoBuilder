@@ -45,6 +45,7 @@ namespace EcoBuilder.UI
             public bool IsProducer;
             public int BodySize = 0;
             public int Greediness = 0;
+            // 0 is average for both these traits
 
             public bool SizeEditable = true;
             public bool GreedEditable = true;
@@ -79,6 +80,10 @@ namespace EcoBuilder.UI
         Dictionary<int, Species> graveyard = new Dictionary<int, Species>();
         Species incubated = null, inspected = null;
 
+        void Awake()
+        {
+            StatusBar.SetCamera(Camera.main);
+        }
         void Start()
         {
             nameField.OnUserNameChanged += s=> SetNameFromInputField(s);
@@ -119,7 +124,9 @@ namespace EcoBuilder.UI
             nameField.SetDefaultColour();
 
             incubated.Status = Instantiate(statusPrefab, statusCanvas.transform);
-            incubated.Status.FollowSpecies(incubated.GObject, sizeTrait.PositivifyValue(incubated.BodySize), greedTrait.PositivifyValue(incubated.Greediness));
+            incubated.Status.FollowSpecies(incubated.GObject);
+            incubated.Status.SetSize(sizeTrait.PositivifyValue(incubated.BodySize));
+            incubated.Status.SetGreed(greedTrait.PositivifyValue(incubated.Greediness));
 
             nameField.Interactable = true;
             sizeTrait.Interactable = true;
@@ -186,6 +193,7 @@ namespace EcoBuilder.UI
                 graveyard.Remove(toSpawn.Idx);
             }
             spawnedSpecies[toSpawn.Idx] = toSpawn;
+            toSpawn.Status.ShowHealth();
             // toSpawn.Status.ShowTraits(true);
             // toSpawn.Status.ShowHealth(true);
 
@@ -214,8 +222,8 @@ namespace EcoBuilder.UI
                 // these set randomly or from fixed value
                 sizeTrait.SetValueFromRandomSeed(incubated.RandomSeed);
                 greedTrait.SetValueFromRandomSeed(incubated.RandomSeed);
-                incubated.BodySize = sizeTrait.UnnormalisedValue;
-                incubated.Greediness = greedTrait.UnnormalisedValue;
+                incubated.BodySize = sizeTrait.Value;
+                incubated.Greediness = greedTrait.Value;
             }
             else
             {
@@ -252,10 +260,10 @@ namespace EcoBuilder.UI
         }
 
         // these return the idx of any conflicted species
-        int CheckSizeConflict(float newSize)
+        int? CheckSizeConflict(int newSize)
         {
             if (allowConflicts) {
-                return -1;
+                return null;
             }
             Species toCheck = incubated!=null? incubated : inspected;
             foreach (Species s in spawnedSpecies.Values)
@@ -268,12 +276,12 @@ namespace EcoBuilder.UI
                     return s.Idx;
                 }
             }
-            return -1;
+            return null;
         }
-        int CheckGreedConflict(float newGreed)
+        int? CheckGreedConflict(int newGreed)
         {
             if (allowConflicts) {
-                return -1;
+                return null;
             }
             Species toCheck = incubated!=null? incubated : inspected;
             foreach (Species s in spawnedSpecies.Values)
@@ -286,7 +294,7 @@ namespace EcoBuilder.UI
                     return s.Idx;
                 }
             }
-            return -1;
+            return null;
         }
         void SetNameFromInputField(string newName)
         {
@@ -441,7 +449,9 @@ namespace EcoBuilder.UI
             toSpawn.GObject = factory.GenerateSpecies(isProducer, sizeTrait.NormaliseValue(size), greedTrait.NormaliseValue(greed), seed);
 
             toSpawn.Status = Instantiate(statusPrefab, statusCanvas.transform);
-            toSpawn.Status.FollowSpecies(toSpawn.GObject, sizeTrait.PositivifyValue(toSpawn.BodySize), greedTrait.PositivifyValue(toSpawn.Greediness));
+            toSpawn.Status.FollowSpecies(toSpawn.GObject);
+            toSpawn.Status.SetSize(sizeTrait.PositivifyValue(toSpawn.BodySize));
+            toSpawn.Status.SetGreed(greedTrait.PositivifyValue(toSpawn.Greediness));
             
             SpawnWithNonUserEvents(toSpawn);
         }
@@ -536,10 +546,12 @@ namespace EcoBuilder.UI
         public void HideSizeSlider(bool hidden=true)
         {
             sizeTrait.gameObject.SetActive(!hidden);
+            StatusBar.HideSize(hidden);
         }
         public void HideGreedSlider(bool hidden=true)
         {
             greedTrait.gameObject.SetActive(!hidden);
+            StatusBar.HideGreed(hidden);
         }
         public void FixSizeInitialValue(int initialValue=0)
         {
@@ -552,11 +564,6 @@ namespace EcoBuilder.UI
         public void HideStatusBars(bool hidden=true)
         {
             statusCanvas.enabled = !hidden;
-        }
-        public void ToggleStatusBars()
-        {
-            print("TODO: maybe make this come back on focus instead");
-            // statusCanvas.enabled = !statusCanvas.enabled;
         }
         
         public void Finish()
