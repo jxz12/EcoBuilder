@@ -63,7 +63,7 @@ namespace EcoBuilder.UI
             // lol
             Action<Level> CheckUnlocked = (lvl)=> {
                 Assert.IsFalse(instantiated.ContainsKey(lvl.Details.Idx), "two level prefabs with same idx");
-                int score = GameManager.Instance.GetHighScoreLocal(lvl.Details.Idx);
+                long score = GameManager.Instance.GetHighScoreLocal(lvl.Details.Idx);
                 if (score >= 0)
                 {
                     unlockedIdxs.Add(lvl.Details.Idx);

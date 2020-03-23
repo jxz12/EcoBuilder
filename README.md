@@ -1,9 +1,12 @@
-dad
+DO THIS NOW:
+graphviz
 claim moneys
+dad
+easy mode and app store for styf
 
 LEVELS:
 some final bosses
-research TUTORIAL!!!, make score constraint shiny, make big scores more readable by adding commas
+research TUTORIAL!!!
 
 make health bars colour in based on rise or fall)
 
@@ -46,30 +49,33 @@ Use the 'i' icon thingy to show the explanation This was made up of X nodes, and
 The species with the... is...
 (extra info on click such as stability (eigenvalue), nonreactive)
 
-3 hours Friday,            week 13th Jan
-2 hours Thursday 1 Friday, week 20th Jan
-2 hours Thursday 1 Friday, week 27th Jan
-2 hours Thursday 1 Friday, week 3rd Feb
-1 hour Thursday,           week 10th Feb
-2 hours Thursday 1 Friday, week 17th Feb ???
-1 hour Friday              week 24th Feb
-2 hours Thursday 1 Friday, week 2nd Mar
 
 Phone Simulator
 
 
-structure 1 1
-traits 920 1000
-link 3000 4000
-heavy 1 1100 1900
-heavy 2 2000 2800
-heavy 3 1700 2000
-exclusion 1 1000 1500
-          2 700 750
-          3 900 950
-apparent 1 885 1080
-         2 850 900
-         3 ? ?
-chain 1 900 1000
-      2 950 1000
-      3 ? ?
+apparent
+1 885 1080
+2 850 900
+3 1100 1500
+chain
+1 950 1000
+2 950 1000
+3 1300 1600
+exclusion
+1 1000 1500
+2 700 750
+3 900 950
+heavy
+1 1100 1900
+2 2000 2800
+3 ? ?
+link
+1 3000 4000
+loop
+1 1000 1500
+2 1300 1400
+3 1000 2000
+structure
+1 1 1
+traits
+1 920 1000

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
-using UnityEngine.Assertions;
 using System.Text;
 
 namespace EcoBuilder.UI

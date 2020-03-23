@@ -58,8 +58,8 @@ namespace EcoBuilder
             nodelink.OnLayedOut += ()=> constraints.DisplayChain(nodelink.MaxChain);
             nodelink.OnLayedOut += ()=> constraints.DisplayLoop(nodelink.MaxLoop);
 
-            model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> model.GetNormalisedAbundance(i));
-            model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> model.GetNormalisedFlux(i,j));
+            model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> (float)model.GetNormalisedAbundance(i));
+            model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> (float)model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> constraints.UpdateFeasibility(model.Feasible);
             model.OnEquilibrium += ()=> constraints.UpdateStability(model.Stable);
             model.OnEndangered += (i)=> inspector.MakeSpeciesObjectExtinct(i);

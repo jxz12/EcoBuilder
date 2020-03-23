@@ -75,16 +75,20 @@ namespace EcoBuilder
         
         public void Show()
         {
+			if (hideRoutine != null) {
+				StopCoroutine(hideRoutine);
+			}
             group.blocksRaycasts = true;
             group.interactable = true;
             group.alpha = 1;
             GetComponent<Animator>().enabled = true;
         }
         [SerializeField] float fadeDuration;
+		IEnumerator hideRoutine;
         public void Hide()
         {
             group.interactable = false;
-            StartCoroutine(FadeAway(fadeDuration));
+            StartCoroutine(hideRoutine = FadeAway(fadeDuration));
         }
         IEnumerator FadeAway(float duration)
         {

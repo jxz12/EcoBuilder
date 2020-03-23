@@ -29,10 +29,10 @@ namespace EcoBuilder
         // score
         public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
         [SerializeField] ScoreMetric metric;
-        [SerializeField] float mainMultiplier;
-        [SerializeField] float altMultiplier;
-        [SerializeField] int twoStarScore;
-        [SerializeField] int threeStarScore;
+        [SerializeField] double mainMultiplier;
+        [SerializeField] double altMultiplier;
+        [SerializeField] long twoStarScore;
+        [SerializeField] long threeStarScore;
 
         // gameplay
         [SerializeField] bool sizeSliderHidden;
@@ -67,10 +67,10 @@ namespace EcoBuilder
         public int MinLoop { get { return minLoop; } }
 
         public ScoreMetric Metric { get { return metric; } }
-        public float MainMultiplier { get { return mainMultiplier; } }
-        public float AltMultiplier { get { return altMultiplier; } }
-        public int TwoStarScore { get { return twoStarScore; } }
-        public int ThreeStarScore { get { return threeStarScore; } }
+        public double MainMultiplier { get { return mainMultiplier; } }
+        public double AltMultiplier { get { return altMultiplier; } }
+        public long TwoStarScore { get { return twoStarScore; } }
+        public long ThreeStarScore { get { return threeStarScore; } }
 
         public bool SizeSliderHidden { get { return sizeSliderHidden; } }
         public bool GreedSliderHidden { get { return greedSliderHidden; } }
@@ -145,7 +145,7 @@ namespace EcoBuilder
             target1.text = details.TwoStarScore.ToString();
             target2.text = details.ThreeStarScore.ToString();
 
-            int score = GameManager.Instance.GetHighScoreLocal(details.Idx);
+            long score = GameManager.Instance.GetHighScoreLocal(details.Idx);
             highScore.text = score<0? "0" : score.ToString();
             int numStars = 0;
             if (score > 0) {

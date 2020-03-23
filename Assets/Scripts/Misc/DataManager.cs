@@ -31,14 +31,13 @@ namespace EcoBuilder
 
             public bool reverseDrag = true;
 
-            public Dictionary<int, int> highScores = new Dictionary<int, int>();
+            public Dictionary<int, long> highScores = new Dictionary<int, long>();
         }
         [SerializeField] PlayerDetails player = null;
 
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
         public bool ConstrainTrophic { get { return false; } }//return player.team != PlayerDetails.Team.Lion; } }
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
-        // public bool HasAnyHighScore { get { return player.highScores.Count > 0; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
 
@@ -192,9 +191,9 @@ namespace EcoBuilder
             player.highScores.Clear();
             for (int i=2; i<details.Length; i++)
             {
-                var level = details[i].Split(':');
+                string[] level = details[i].Split(':');
                 int idx = int.Parse(level[0]);
-                int score = int.Parse(level[1]);
+                long score = long.Parse(level[1]);
                 SaveHighScoreLocal(idx, score);
             }
             SavePlayerDetailsLocal();
@@ -253,7 +252,7 @@ namespace EcoBuilder
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
-        public int GetHighScoreLocal(int levelIdx)
+        public long GetHighScoreLocal(int levelIdx)
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
                 return -1;
@@ -262,7 +261,7 @@ namespace EcoBuilder
             return player.highScores[levelIdx];
         }
         // returns whether new high score is achieved
-        private bool SaveHighScoreLocal(int levelIdx, int score)
+        private bool SaveHighScoreLocal(int levelIdx, long score)
         {
             if (GetHighScoreLocal(levelIdx) < score)
             {
@@ -272,7 +271,7 @@ namespace EcoBuilder
             }
             return false;
         }
-        private void SavePlaythroughRemote(int levelIdx, int score, string matrix, string actions)
+        private void SavePlaythroughRemote(int levelIdx, long score, string matrix, string actions)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
@@ -295,8 +294,8 @@ namespace EcoBuilder
         private class LeaderboardCache
         {
             public int idx;
-            public int median = 0;
-            public List<Tuple<string, int>> scores = new List<Tuple<string,int>>();
+            public long median = 0;
+            public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
             public LeaderboardCache(int idx) {
                 this.idx = idx;
             }
@@ -313,7 +312,6 @@ namespace EcoBuilder
         private Dictionary<int, LeaderboardCache> cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
         private void ParseLeaderboards(string returned)
         {
-            print(returned);
             cachedLeaderboards.Clear();
             var levels = returned.Split(';');
             foreach (var level in levels)
@@ -322,25 +320,25 @@ namespace EcoBuilder
                 var header = scores[0].Split(':');
 
                 var toCache = new LeaderboardCache(int.Parse(header[0]));
-                toCache.median = int.Parse(header[1]);
+                toCache.median = long.Parse(header[1]);
                 for (int i=1; i<scores.Length; i++)
                 {
                     var score = scores[i].Split(':');
-                    toCache.scores.Add(Tuple.Create(score[0], int.Parse(score[1])));
+                    toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
                 }
                 Assert.IsFalse(cachedLeaderboards.ContainsKey(toCache.idx), "level index already cached");
 
                 cachedLeaderboards[toCache.idx] = toCache;
             }
         }
-        public int GetLeaderboardMedian(int level_idx)
+        public long GetLeaderboardMedian(int level_idx)
         {
             if (cachedLeaderboards==null || !cachedLeaderboards.ContainsKey(level_idx)) {
                 return -1;
             }
             return cachedLeaderboards[level_idx].median;
         }
-        public List<Tuple<string, int>> GetLeaderboardScores(int level_idx)
+        public IReadOnlyList<Tuple<string, long>> GetLeaderboardScores(int level_idx)
         {
             if (cachedLeaderboards==null || !cachedLeaderboards.ContainsKey(level_idx)) {
                 return null;

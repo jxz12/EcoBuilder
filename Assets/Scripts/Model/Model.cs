@@ -45,16 +45,16 @@ namespace EcoBuilder.Model
         //        a_max = 1e-1;
 
         [ReadOnly] [SerializeField]
-        float minRealAbund = 2e-10f,
-              maxRealAbund = 1.95f,
-              minRealFlux = 1e-16f,
-              maxRealFlux = 1e-6f,
-              minRealPlex = 2.1e-5f,
-              maxRealPlex = 6.3e-3f;
+        double minRealAbund = 2e-10f,
+               maxRealAbund = 1.95f,
+               minRealFlux = 1e-16f,
+               maxRealFlux = 1e-6f,
+               minRealPlex = 2.1e-5f,
+               maxRealPlex = 6.3e-3f;
 
-        private float minLogAbund, maxLogAbund,
-                      minLogFlux, maxLogFlux,
-                      minLogPlex, maxLogPlex;
+        private double minLogAbund, maxLogAbund,
+                       minLogFlux, maxLogFlux,
+                       minLogPlex, maxLogPlex;
 
         private class Species
         {
@@ -126,12 +126,12 @@ namespace EcoBuilder.Model
                 (r,c)=> CalculateForaging(r,c), // takes foraging strategy into account
                 (r,c)=> r.Efficiency            // only depends on resource type
             );
-            minLogAbund = Mathf.Log10(minRealAbund);
-            maxLogAbund = Mathf.Log10(maxRealAbund);
-            minLogFlux = Mathf.Log10(minRealFlux);
-            maxLogFlux = Mathf.Log10(maxRealFlux);
-            minLogPlex = Mathf.Log10(minRealPlex);
-            maxLogPlex = Mathf.Log10(maxRealPlex);
+            minLogAbund = Math.Log10(minRealAbund);
+            maxLogAbund = Math.Log10(maxRealAbund);
+            minLogFlux = Math.Log10(minRealFlux);
+            maxLogFlux = Math.Log10(maxRealFlux);
+            minLogPlex = Math.Log10(minRealPlex);
+            maxLogPlex = Math.Log10(maxRealPlex);
         }
         Dictionary<int, Species> idxToSpecies = new Dictionary<int, Species>();
         Dictionary<Species, int> speciesToIdx = new Dictionary<Species, int>();
@@ -180,7 +180,7 @@ namespace EcoBuilder.Model
             solveTriggered = true;
         }
 
-        public void SetSpeciesBodySize(int idx, float sizeNormalised)
+        public void SetSpeciesBodySize(int idx, double sizeNormalised)
         {
             Species s = idxToSpecies[idx];
             s.BodySize = UnNormaliseOnLogScale(sizeNormalised, kg_min, kg_max);
@@ -188,16 +188,16 @@ namespace EcoBuilder.Model
             double sizeScaling = Math.Pow(s.BodySize, beta-1);
             s.Metabolism = s.IsProducer? sizeScaling * r0 : -sizeScaling * z0;
         }
-        public void SetSpeciesInterference(int idx, float greedNormalised)
+        public void SetSpeciesInterference(int idx, double greedNormalised)
         {
             idxToSpecies[idx].Interference = -UnNormaliseOnLogScale(greedNormalised, a_min, a_max);
         }
         static double UnNormaliseOnLogScale(double normalised, double minVal, double maxVal)
         {
-            // float min = Mathf.Log10(minVal);
-            // float max = Mathf.Log10(maxVal);
-            // float mid = min + normalised*(max-min);
-            // return Mathf.Pow(10, mid);
+            // double min = Math.Log10(minVal);
+            // double max = Math.Log10(maxVal);
+            // double mid = min + normalised*(max-min);
+            // return Math.Pow(10, mid);
 
             // same as above commented
             return Math.Pow(minVal, 1-normalised) * Math.Pow(maxVal, normalised);
@@ -246,7 +246,7 @@ namespace EcoBuilder.Model
             OnEquilibrium.Invoke();
         }
 
-        public float GetNormalisedAbundance(int idx)
+        public double GetNormalisedAbundance(int idx)
         {
             Species s = idxToSpecies[idx];
             double realAbund = simulation.GetSolvedAbundance(s);
@@ -265,7 +265,7 @@ namespace EcoBuilder.Model
                 if (realAbund < minRealAbund) {
                     return 0;
                 } else if (realAbund <= maxRealAbund) {
-                    return (float)(Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+                    return (Math.Log10(realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
                 } else {
                     return 1;
                 }
@@ -275,13 +275,13 @@ namespace EcoBuilder.Model
                 if (-realAbund < minRealAbund) {
                     return 0;
                 } else if (-realAbund <= maxRealAbund) {
-                    return -(float)(Math.Log10(-realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
+                    return -(Math.Log10(-realAbund)-minLogAbund) / (maxLogAbund-minLogAbund);
                 } else {
                     return -1;
                 }
             }
         }
-        public float GetNormalisedFlux(int res, int con)
+        public double GetNormalisedFlux(int res, int con)
         {
             double realFlux = simulation.GetSolvedFlux(idxToSpecies[res], idxToSpecies[con]);
             if (realFlux <= minRealFlux) {
@@ -289,26 +289,26 @@ namespace EcoBuilder.Model
             } else if (realFlux >= maxRealFlux) {
                 return 1;
             } else {
-                return (float)(Math.Log10(realFlux)-minLogFlux) / (maxLogFlux-minLogFlux);
+                return (Math.Log10(realFlux)-minLogFlux) / (maxLogFlux-minLogFlux);
             }
         }
-        public float GetNormalisedComplexity()
+        public double GetNormalisedComplexity()
         {
             double realPlex = simulation.HoComplexity;
             if (realPlex < minRealPlex) {
                 return 0;
             } else if (realPlex <= maxRealPlex) {
-                return (float)(Math.Log10(realPlex)-minLogPlex) / (maxLogPlex-minLogPlex);
+                return (Math.Log10(realPlex)-minLogPlex) / (maxLogPlex-minLogPlex);
             } else {
-                return (float)(realPlex / maxRealPlex);
+                return (realPlex / maxRealPlex);
             }
         }
-        public Dictionary<string, float> GetComplexityComponents()
+        public Dictionary<string, double> GetComplexityComponents()
         {
-            return new Dictionary<string, float>() {
+            return new Dictionary<string, double>() {
                 {"# Species",  simulation.Richness},
-                {"# Interactions", (float)simulation.Connectance},
-                {"Total Health", (float)simulation.TotalAbundance}
+                {"# Interactions", simulation.Connectance},
+                {"Total Health", simulation.TotalAbundance}
             };
         }
 

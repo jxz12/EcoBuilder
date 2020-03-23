@@ -18,7 +18,7 @@ namespace EcoBuilder.UI
         [SerializeField] Sprite targetSprite1, targetSprite2;
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
 
-        int target1, target2;
+        long target1, target2;
         Color defaultScoreCol, displayedScoreCol;
         RectTransform scoreRT;
         [SerializeField] Color unsatisfiedScoreCol, reminderScoreCol, higherScoreCol, lowerScoreCol;
@@ -33,7 +33,7 @@ namespace EcoBuilder.UI
         {
             Hide(false);
         }
-        public void SetStarThresholds(LevelDetails.ScoreMetric metric, int target1, int target2)
+        public void SetStarThresholds(LevelDetails.ScoreMetric metric, long target1, long target2)
         {
             this.target1 = target1;
             this.target2 = target2;
@@ -43,8 +43,8 @@ namespace EcoBuilder.UI
         // score calculation
 
         // to fetch the score
-        List<Func<float>> AttachedSources = new List<Func<float>>();
-        public void AttachScoreSource(Func<float> Source)
+        List<Func<double>> AttachedSources = new List<Func<double>>();
+        public void AttachScoreSource(Func<double> Source)
         {
             AttachedSources.Add(Source);
         }
@@ -65,15 +65,15 @@ namespace EcoBuilder.UI
         }
 
 
-        public int HighestScore { get; private set; } = 0;
-        int displayedScore = 0;
+        public long HighestScore { get; private set; } = 0;
+        long displayedScore = 0;
         public int HighestStars { get; private set; } = 0;
         int displayedStars = 0;
-        float latestValidScore = 0;
+        double latestValidScore = 0;
 
         public void Update() //, string explanation, string explanationSupplement)
         {
-            float score = 0;
+            double score = 0;
             foreach (var Source in AttachedSources) {
                 score += Source.Invoke();
             }
@@ -87,7 +87,7 @@ namespace EcoBuilder.UI
                 ResetRemindCycle();
             }
 
-            displayedScore = (int)score;
+            displayedScore = (long)score;
 
             //////////////////////////////////
             // only continue if allowed
@@ -108,7 +108,7 @@ namespace EcoBuilder.UI
 
                 int prevHighestStars = HighestStars;
                 HighestStars = Math.Max(HighestStars, displayedStars);
-                int prevHighestScore = HighestScore;
+                long prevHighestScore = HighestScore;
                 HighestScore = Math.Max(HighestScore, displayedScore);
                 // do not set off events yet if finish is disabled
                 if (prevHighestStars == 0 && HighestStars > 0) {
@@ -203,9 +203,9 @@ namespace EcoBuilder.UI
                 scoreIcon.enabled = HighestStars > 0;
             }
         }
-        void FormatAndDisplayScore(int value)
+        void FormatAndDisplayScore(long value)
         {
-            scoreText.text = displayedScore.ToString("N0");
+            scoreText.text = value.ToString("N0");
         }
 
         bool starsDisabled;

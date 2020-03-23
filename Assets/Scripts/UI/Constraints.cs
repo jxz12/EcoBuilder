@@ -145,7 +145,6 @@ namespace EcoBuilder.UI
                     yield return null;
                 }
             }
-            print("hi");
             Assert.IsNotNull(highlighterPrefab.GetComponent<LayoutElement>());
             Assert.IsNotNull(highlighterPrefab.GetComponent<Image>());
             var highlighter = Instantiate(highlighterPrefab, transform);

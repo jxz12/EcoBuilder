@@ -219,16 +219,16 @@ namespace EcoBuilder
         [SerializeField] UI.ReportCard report;
 
         // called by playmanager
-        public void SetResultsScreen(int nStars, int score, string matrix, string actions)
+        public void SetResultsScreen(int nStars, long score, string matrix, string actions)
         {
             int idx = playedLevel.Details.Idx;
 
-            int prevScore = GetHighScoreLocal(idx);
+            long prevScore = GetHighScoreLocal(idx);
             SaveHighScoreLocal(idx, score);
 
             if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None)
             {
-                int worldAvg = GetLeaderboardMedian(idx);
+                long worldAvg = GetLeaderboardMedian(idx);
                 report.SetResults(nStars, score, prevScore, worldAvg);
             }
             else

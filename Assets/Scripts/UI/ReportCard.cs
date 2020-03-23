@@ -61,7 +61,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Sprite pointSprite, trophySprite;
         int numStars = -1;
-        public void SetResults(int numStars, int score, int prevScore, int worldAvg)
+        public void SetResults(int numStars, long score, long prevScore, long worldAvg)
         {
             StopAllCoroutines();
             current.text = score.ToString();
