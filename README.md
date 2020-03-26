@@ -1,8 +1,6 @@
 DO THIS NOW:
 graphviz
 claim moneys
-dad
-easy mode and app store for styf
 
 LEVELS:
 some final bosses
@@ -13,7 +11,9 @@ make health bars colour in based on rise or fall)
 fix superfocus small nodes
 do procrustes for SGD layouts
 remove 0s from first level
+
 send data while not connected
+only grab leaderboards that we need (but always median)
 
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
@@ -26,6 +26,7 @@ check all UI.Image components to make sure they have materials
 check all serializefields to make sure they are not null
 check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
 check for any TMPro.TMP_SubMeshUI scripts
+check that all UI navigation is disabled
 use reflection to smell the smellylisteners
 
 # Research world
@@ -33,13 +34,12 @@ SAVE best level config? Could take from server?
 verify high scores by checking matrices
 
 # Other
-make leaderboards more explorable
+make leaderboards scrollable, but only top 10 + scores around you (like boris)
 health and traits hide if empty tap
-remove/disable layout groups as soon as levels are spawned
 make health go blue if above a super threshold (will need another fill sprite)
 make shade a global thing (with a stack) because it's stupid to have it everywhere
 release game with australian fires as angle?
-make nodelink tooltip do something else when links are added and removed
+make nodelink tooltip do something more flashy when links are added and removed
 
 experiments to see how the score changes over time
 

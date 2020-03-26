@@ -1446,7 +1446,7 @@ MonoBehaviour:
     twoStarScore: 0
     threeStarScore: 0
     sizeSliderHidden: 0
-    greedSliderHidden: 1
+    greedSliderHidden: 0
     conflictsAllowed: 0
     superfocusAllowed: 0
     numInitSpecies: 0

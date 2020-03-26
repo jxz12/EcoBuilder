@@ -108,6 +108,8 @@ namespace EcoBuilder
         // encryption stuff //
         //////////////////////
         static readonly string publicKey = "<RSAKeyValue><Modulus>inCGRpoW93pLfg/zZRhGaKKPLb9XyDreCbNFDFC5Amsr+I4TxDnzWKwE0hWOV/1JvIh4B3qysxANVhCTYWx8UsjpwDQnvHqGfzgOnvTiHPzUDbAV1DOkweS59kAMBSVJSkvkegFk+YFsoYcUjxz8MvJpsd/mHz1iBV6HtAAjNgk=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+        // note: this encryption will not stop someone from decompiling the code and sending fake high scores
+        //       but it will keep the data safe locally from someone getting access to their phone.
 
         private static RSACryptoServiceProvider rsaCryptoServiceProvider;
         public static string Encrypt(string inputString)

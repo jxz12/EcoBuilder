@@ -32,6 +32,7 @@ namespace EcoBuilder
             public bool reverseDrag = true;
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
+            public Dictionary<int, LeaderboardCache> leaderboards = new Dictionary<int, LeaderboardCache>();
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -95,6 +96,7 @@ namespace EcoBuilder
         }
         private void DeletePlayerDetailsLocal()
         {
+            // this loses the leaderboard cache, but it shouldn't be a problem because this function is only called if player can connect remotely
             player = new PlayerDetails();
 #if UNITY_WEBGL
             return;
@@ -293,57 +295,54 @@ namespace EcoBuilder
 
         private class LeaderboardCache
         {
-            public int idx;
+            // public int idx;
             public long median = 0;
             public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
-            public LeaderboardCache(int idx) {
-                this.idx = idx;
-            }
+            // public LeaderboardCache(int idx) {
+            //     this.idx = idx;
+            // }
         }
         // only leaderboard does not require a login
         public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
         {
-            print("TODO: save to file as well in case startup in tube");
             var data = new Dictionary<string, string>() {
                 { "n_scores", n_scores.ToString() }, { "__address__", serverURL+"leaderboards.php" },
             };
-            pat.Post(data, (b,s)=>{ if (b) { ParseLeaderboards(s); OnCompletion?.Invoke(); } });
+            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
         }
-        private Dictionary<int, LeaderboardCache> cachedLeaderboards = new Dictionary<int, LeaderboardCache>();
         private void ParseLeaderboards(string returned)
         {
-            cachedLeaderboards.Clear();
+            player.leaderboards.Clear();
             var levels = returned.Split(';');
             foreach (var level in levels)
             {
                 var scores = level.Split(',');
                 var header = scores[0].Split(':');
 
-                var toCache = new LeaderboardCache(int.Parse(header[0]));
+                var toCache = new LeaderboardCache();
+                int idx = int.Parse(header[0]);
                 toCache.median = long.Parse(header[1]);
                 for (int i=1; i<scores.Length; i++)
                 {
                     var score = scores[i].Split(':');
                     toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
                 }
-                Assert.IsFalse(cachedLeaderboards.ContainsKey(toCache.idx), "level index already cached");
-
-                cachedLeaderboards[toCache.idx] = toCache;
+                // Assert.IsFalse(player.leaderboards.ContainsKey(idx), "level index already cached");
+                player.leaderboards[idx] = toCache;
             }
         }
         public long GetLeaderboardMedian(int level_idx)
         {
-            if (cachedLeaderboards==null || !cachedLeaderboards.ContainsKey(level_idx)) {
-                return -1;
-            }
-            return cachedLeaderboards[level_idx].median;
+            Assert.IsFalse(player.leaderboards==null || !player.leaderboards.ContainsKey(level_idx));
+            return player.leaderboards[level_idx].median;
         }
+        // TODO: include just above and just below player
         public IReadOnlyList<Tuple<string, long>> GetLeaderboardScores(int level_idx)
         {
-            if (cachedLeaderboards==null || !cachedLeaderboards.ContainsKey(level_idx)) {
+            if (!player.leaderboards.ContainsKey(level_idx)) {
                 return null;
             }
-            return cachedLeaderboards[level_idx].scores;
+            return player.leaderboards[level_idx].scores;
         }
 
         private void SavePost(Dictionary<string, string> data)

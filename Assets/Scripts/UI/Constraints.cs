@@ -133,38 +133,40 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] GameObject highlighterPrefab;
-        void HighlightOnTransform(Transform highlighted)
+        void HighlightOnTransform(RectTransform highlighted)
         {
-            IEnumerator Flash(Image im, float period)
-            {
-                float startTime = Time.time;
-                while (true)
-                {
-                    float t = (Time.time-startTime) / period;
-                    im.color = new Color(1,1,1, .175f+.075f*Mathf.Sin(2*Mathf.PI*t));
-                    yield return null;
-                }
-            }
             Assert.IsNotNull(highlighterPrefab.GetComponent<LayoutElement>());
             Assert.IsNotNull(highlighterPrefab.GetComponent<Image>());
             var highlighter = Instantiate(highlighterPrefab, transform);
             highlighter.transform.SetAsFirstSibling(); // always render below constraints
-            highlighter.transform.position = highlighted.position;
-            // note: this does not work if the constraints list ever changes order
 
-            StartCoroutine(Flash(highlighter.GetComponent<Image>(), 2f));
+            IEnumerator Flash(float period, float padding)
+            {
+                float startTime = Time.time;
+                var im = highlighter.GetComponent<Image>();
+                var rt = highlighter.GetComponent<RectTransform>();
+                while (true)
+                {
+                    float t = (Time.time-startTime) / period;
+                    im.color = new Color(1,1,1, .175f+.075f*Mathf.Sin(2*Mathf.PI*t));
+                    rt.sizeDelta = new Vector2(highlighted.sizeDelta.x+padding, highlighted.sizeDelta.y+padding);
+                    rt.anchoredPosition = new Vector2(highlighted.anchoredPosition.x-padding/2, highlighted.anchoredPosition.y-padding/2);
+                    yield return null;
+                }
+            }
+            StartCoroutine(Flash(2f, 6f));
         }
         public void HighlightPaw(bool highlighted=true)
         {
-            HighlightOnTransform(constraintMap[Type.Paw].counter.transform);
+            HighlightOnTransform(constraintMap[Type.Paw].counter.rectTransform);
         }
         public void HighlightChain(bool highlighted=true)
         {
-            HighlightOnTransform(constraintMap[Type.Chain].counter.transform);
+            HighlightOnTransform(constraintMap[Type.Chain].counter.rectTransform);
         }
         public void HighlightLoop(bool highlighted=true)
         {
-            HighlightOnTransform(constraintMap[Type.Loop].counter.transform);
+            HighlightOnTransform(constraintMap[Type.Loop].counter.rectTransform);
         }
 
         public void UpdateDisjoint(bool disjoint)

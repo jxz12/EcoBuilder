@@ -25,9 +25,9 @@ namespace EcoBuilder.UI
         }
         public void SetFromGameManagerCache()
         {
-            long median = GameManager.Instance.GetLeaderboardMedian(LevelToPlay.Details.Idx);
             var scores = GameManager.Instance.GetLeaderboardScores(LevelToPlay.Details.Idx);
-            if (median == -1) {
+            if (scores == null) {
+                // in case it has never been cached
                 return;
             }
             nameText.text = "";
@@ -39,6 +39,8 @@ namespace EcoBuilder.UI
             }
             nameText.text += "you\nworld average";
             long playerScore = GameManager.Instance.GetHighScoreLocal(LevelToPlay.Details.Idx);
+
+            long? median = GameManager.Instance.GetLeaderboardMedian(LevelToPlay.Details.Idx);
             scoreText.text += playerScore + "\n" + median;
         }
     }
