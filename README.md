@@ -1,19 +1,20 @@
 DO THIS NOW:
 graphviz
 claim moneys
+CV
 
 LEVELS:
 some final bosses
 research TUTORIAL!!!
 
-make health bars colour in based on rise or fall)
+(make health bars colour in based on rise or fall)
 
 fix superfocus small nodes
 do procrustes for SGD layouts
-remove 0s from first level
 
-send data while not connected
+send data collected while not connected
 only grab leaderboards that we need (but always median)
+make leaderboards scrollable
 
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
@@ -34,7 +35,6 @@ SAVE best level config? Could take from server?
 verify high scores by checking matrices
 
 # Other
-make leaderboards scrollable, but only top 10 + scores around you (like boris)
 health and traits hide if empty tap
 make health go blue if above a super threshold (will need another fill sprite)
 make shade a global thing (with a stack) because it's stupid to have it everywhere

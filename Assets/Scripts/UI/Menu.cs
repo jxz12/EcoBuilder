@@ -95,9 +95,6 @@ namespace EcoBuilder.UI
 
                 prefab = prefab.NextLevelPrefab;
             }
-            // then do research levels
-            Action SetResearchLeaderboards = null;
-
             // this is to make sure the tutorial does not have a leaderboard
             var firstResearchParent = new GameObject().AddComponent<RectTransform>();
             firstResearchParent.SetParent(researchList.transform, false);
@@ -109,7 +106,6 @@ namespace EcoBuilder.UI
                 CheckUnlocked.Invoke(prefab);
                 var leaderboard = Instantiate(leaderboardPrefab, researchList.transform);
                 instantiated[prefab.Details.Idx] = leaderboard.GiveLevelPrefab(prefab);
-                SetResearchLeaderboards += leaderboard.SetFromGameManagerCache;
                 prefab = prefab.NextLevelPrefab;
             }
 
@@ -122,9 +118,9 @@ namespace EcoBuilder.UI
             foreach (var idx in unlockedIdxs) {
                 instantiated[idx].Unlock();
             }
-            // get level high scores and medians from server
-            print("TODO: more than just top 3 scores on scroll");
-            GameManager.Instance.CacheLeaderboardsRemote(3, SetResearchLeaderboards);
+            // // get level high scores and medians from server
+            // print("TODO: more than just top 3 scores on scroll");
+            // GameManager.Instance.CacheLeaderboardsRemote(3, SetResearchLeaderboards);
 
             // set up settings menu
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
@@ -187,10 +183,6 @@ namespace EcoBuilder.UI
             if (GameManager.Instance.LoggedIn) {
                 GameManager.Instance.SetDragDirectionRemote();
             }
-        }
-        public void OpenPrivacyPolicy()
-        {
-            GameManager.Instance.OpenPrivacyPolicyInBrowser();
         }
         [SerializeField] string splashHelp;
         [SerializeField] string lockHelp;

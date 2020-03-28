@@ -12,6 +12,7 @@ namespace EcoBuilder.UI
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Button quitBtn;
 
+        [SerializeField] GameObject scoreObject, avgObject;
         [SerializeField] RectTransform prevLevelAnchor, nextLevelAnchor;
 
         RectTransform rt;
@@ -30,10 +31,7 @@ namespace EcoBuilder.UI
         public void GiveNavigation(Level currLvl, Level nextLvl)
         {
             currLvl.transform.SetParent(prevLevelAnchor, false);
-            if (currLvl.Details.Metric == LevelDetails.ScoreMetric.None)
-            {
-                print("TODO: remove 0 scores here for first level");
-            }
+
             if (nextLvl != null)
             {
                 nextLvl.transform.SetParent(nextLevelAnchor, false);
@@ -63,35 +61,47 @@ namespace EcoBuilder.UI
         int numStars = -1;
         public void SetResults(int numStars, long score, long prevScore, long worldAvg)
         {
-            StopAllCoroutines();
-            current.text = score.ToString();
-            if (score > prevScore)
+            if (currLvl.Details.Metric != LevelDetails.ScoreMetric.None)
             {
-                currentMsg.text = "You got a new high score!";
-                points.sprite = trophySprite;
-                StartCoroutine(WiggleSprite(points));
+                scoreObject.SetActive(true);
+                current.text = score.ToString();
+                if (score > prevScore)
+                {
+                    currentMsg.text = "You got a new high score!";
+                    points.sprite = trophySprite;
+                    StartCoroutine(WiggleSprite(points));
+                }
+                else
+                {
+                    currentMsg.text = "Well done!";
+                    points.sprite = pointSprite;
+                }
+
+                if (worldAvg >= 0) // in case average was not cached
+                {
+                    avgObject.SetActive(true);
+                    average.text = worldAvg.ToString();
+                    if (score > worldAvg)
+                    {
+                        averageMsg.text = "You beat the world average!";
+                        StartCoroutine(WiggleSprite(globe));
+                    }
+                    else
+                    {
+                        averageMsg.text = "World average";
+                    }
+                }
+                else
+                {
+                    avgObject.SetActive(false);
+                }
             }
             else
             {
-                currentMsg.text = "Well done!";
-                points.sprite = pointSprite;
+                scoreObject.SetActive(false);
+                avgObject.SetActive(false);
             }
 
-            if (worldAvg < 0)
-            {
-                print("TODO: maybe just hide world average");
-                worldAvg = 0;
-            }
-            average.text = worldAvg.ToString();
-            if (score > worldAvg)
-            {
-                averageMsg.text = "You beat the world average!";
-                StartCoroutine(WiggleSprite(globe));
-            }
-            else
-            {
-                averageMsg.text = "World average";
-            }
             this.numStars = numStars;
             star1.SetTrigger("Reset");
             star1.SetBool("Filled", false);
@@ -102,6 +112,8 @@ namespace EcoBuilder.UI
         }
         public void ShowResults()
         {
+            StopAllCoroutines();
+
             Assert.IsTrue(numStars != -1);
             quitBtn.interactable = true;
 
@@ -110,7 +122,9 @@ namespace EcoBuilder.UI
         }
         public void HideIfShowing()
         {
-            if (canvas.enabled) {
+            if (canvas.enabled)
+            {
+                StopAllCoroutines();
                 StartCoroutine(ShowRoutine(1f, 0, -1000, .5f, 0));
             }
         }

@@ -32,7 +32,7 @@ namespace EcoBuilder
             public bool reverseDrag = true;
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
-            public Dictionary<int, LeaderboardCache> leaderboards = new Dictionary<int, LeaderboardCache>();
+            // public Dictionary<int, LeaderboardCache> leaderboards = new Dictionary<int, LeaderboardCache>();
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -113,10 +113,9 @@ namespace EcoBuilder
         // web form things
 
 #if UNITY_EDITOR
-        static readonly string serverURL = "127.0.0.1/ecobuilder/";
-        // static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+        public string ServerURL { get { return "http://127.0.0.1/ecobuilder/"; } }
 #else
-        static readonly string serverURL = "https://www.ecobuildergame.org/Beta/";
+        public string ServerURL { get { return "https://www.ecobuildergame.org/Beta/"; } }
 #endif
         [SerializeField] Postman pat;
         public void RegisterLocal(string username, string password, string email)
@@ -135,9 +134,9 @@ namespace EcoBuilder
 
                 // these two are potentially set from someone who did not create an account at first
                 { "reversed", player.reverseDrag? "1":"0" },
-                { "scores", ComposeRegistrationScores() },
+                { "highscores", ComposeRegistrationScores() },
 
-                { "__address__", serverURL+"register.php" },
+                { "__address__", ServerURL+"register.php" },
             };
             pat.Post(data, OnCompletion);
         }
@@ -167,7 +166,7 @@ namespace EcoBuilder
                 { "password", player.password },
                 { "team", ((int)player.team).ToString() },
                 { "newsletter", emailConsent? "1":"0" },
-                { "__address__", serverURL+"gdpr.php" },
+                { "__address__", ServerURL+"gdpr.php" },
             };
             pat.Post(data, OnCompletion);
         }
@@ -178,7 +177,7 @@ namespace EcoBuilder
             var data = new Dictionary<string, string>() {
                 { "username", username },
                 { "password", password },
-                { "__address__", serverURL+"login.php" },
+                { "__address__", ServerURL+"login.php" },
             };
             pat.Post(data, (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
         }
@@ -204,7 +203,7 @@ namespace EcoBuilder
         {
             var data = new Dictionary<string, string>() {
                 { "recipient", Postman.Encrypt(recipient) },
-                { "__address__", serverURL+"resetup.php" },
+                { "__address__", ServerURL+"resetup.php" },
             };
             pat.Post(data, OnCompletion);
         }
@@ -213,7 +212,7 @@ namespace EcoBuilder
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.password },
-                { "__address__", serverURL+"delete.php" },
+                { "__address__", ServerURL+"delete.php" },
             };
             pat.Post(data, (b,s)=>{ OnCompletion(b,s); } );
         }
@@ -229,7 +228,7 @@ namespace EcoBuilder
                 { "age", age.ToString() },
                 { "gender", gender.ToString() },
                 { "education", education.ToString() },
-                { "__address__", serverURL+"demographics.php" },
+                { "__address__", ServerURL+"demographics.php" },
             };
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
@@ -246,7 +245,7 @@ namespace EcoBuilder
                 { "username", player.username },
                 { "password", player.password },
                 { "reversed", player.reverseDrag? "1":"0" },
-                { "__address__", serverURL+"drag.php" },
+                { "__address__", ServerURL+"drag.php" },
             };
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
@@ -283,7 +282,7 @@ namespace EcoBuilder
                 { "score", score.ToString() },
                 { "matrix", matrix },
                 { "actions", actions },
-                { "__address__", serverURL+"playthrough.php" },
+                { "__address__", ServerURL+"playthrough.php" },
             };
             Action<bool, string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
@@ -293,57 +292,53 @@ namespace EcoBuilder
         ///////////////////////////////////////////////////////////////////
         // used to cache results from startup in case player goes into tube
 
-        private class LeaderboardCache
-        {
-            // public int idx;
-            public long median = 0;
-            public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
-            // public LeaderboardCache(int idx) {
-            //     this.idx = idx;
-            // }
-        }
-        // only leaderboard does not require a login
-        public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
-        {
-            var data = new Dictionary<string, string>() {
-                { "n_scores", n_scores.ToString() }, { "__address__", serverURL+"leaderboards.php" },
-            };
-            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
-        }
-        private void ParseLeaderboards(string returned)
-        {
-            player.leaderboards.Clear();
-            var levels = returned.Split(';');
-            foreach (var level in levels)
-            {
-                var scores = level.Split(',');
-                var header = scores[0].Split(':');
+        // private class LeaderboardCache
+        // {
+        //     public long median = 0;
+        //     public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
+        // }
+        // // only leaderboard does not require a login
+        // public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
+        // {
+        //     var data = new Dictionary<string, string>() {
+        //         { "n_scores", n_scores.ToString() }, { "__address__", ServerURL+"leaderboards.php" },
+        //     };
+        //     pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
+        // }
+        // private void ParseLeaderboards(string returned)
+        // {
+        //     player.leaderboards.Clear();
+        //     var levels = returned.Split(';');
+        //     foreach (var level in levels)
+        //     {
+        //         var scores = level.Split(',');
+        //         var header = scores[0].Split(':');
 
-                var toCache = new LeaderboardCache();
-                int idx = int.Parse(header[0]);
-                toCache.median = long.Parse(header[1]);
-                for (int i=1; i<scores.Length; i++)
-                {
-                    var score = scores[i].Split(':');
-                    toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
-                }
-                // Assert.IsFalse(player.leaderboards.ContainsKey(idx), "level index already cached");
-                player.leaderboards[idx] = toCache;
-            }
-        }
-        public long GetLeaderboardMedian(int level_idx)
+        //         var toCache = new LeaderboardCache();
+        //         int idx = int.Parse(header[0]);
+        //         toCache.median = long.Parse(header[1]);
+        //         for (int i=1; i<scores.Length; i++)
+        //         {
+        //             var score = scores[i].Split(':');
+        //             toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
+        //         }
+        //         // Assert.IsFalse(player.leaderboards.ContainsKey(idx), "level index already cached");
+        //         player.leaderboards[idx] = toCache;
+        //     }
+        // }
+        public long GetCachedMedian(int level_idx)
         {
-            Assert.IsFalse(player.leaderboards==null || !player.leaderboards.ContainsKey(level_idx));
-            return player.leaderboards[level_idx].median;
+            // Assert.IsFalse(player.leaderboards==null || !player.leaderboards.ContainsKey(level_idx));
+            // return player.leaderboards[level_idx].median;
+            return -1;
         }
-        // TODO: include just above and just below player
-        public IReadOnlyList<Tuple<string, long>> GetLeaderboardScores(int level_idx)
-        {
-            if (!player.leaderboards.ContainsKey(level_idx)) {
-                return null;
-            }
-            return player.leaderboards[level_idx].scores;
-        }
+        // public IReadOnlyList<Tuple<string, long>> GetLeaderboardScores(int level_idx)
+        // {
+        //     if (!player.leaderboards.ContainsKey(level_idx)) {
+        //         return null;
+        //     }
+        //     return player.leaderboards[level_idx].scores;
+        // }
 
         private void SavePost(Dictionary<string, string> data)
         {
@@ -375,10 +370,6 @@ namespace EcoBuilder
             Assert.IsFalse(player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion, "should not have option to create account");
             // note that this function purposefully does not delete the player in order to keep their highscore info
             player.team = PlayerDetails.Team.Unassigned;
-        }
-        public void OpenPrivacyPolicyInBrowser()
-        {
-            Application.OpenURL(serverURL+"GDPR_Privacy_Notice.html");
         }
     }
 }

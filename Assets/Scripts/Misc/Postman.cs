@@ -18,7 +18,7 @@ namespace EcoBuilder
         {
             message.text = "Loading...";
 #if UNITY_EDITOR
-            yield return new WaitForSeconds(1);
+            // yield return new WaitForSeconds(1);
 #endif
             using (var p = UnityWebRequest.Post(address, form))
             {
@@ -52,7 +52,7 @@ namespace EcoBuilder
                     message.text = "Success!";
                     Hide();
                 }
-                print(p.error);
+                print($"text: {p.downloadHandler.text}\nerror: {p.error}");
             }
         }
         IEnumerator postRoutine = null;

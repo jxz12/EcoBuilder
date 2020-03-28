@@ -128,10 +128,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: -6975997327095434221, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_Enabled
@@ -655,16 +651,16 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 110326029}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &110326032 stripped
+--- !u!114 &110326033
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6969023389141018058, guid: 54b975144da92cb4aa8a5fd09dbcc869,
-    type: 3}
-  m_PrefabInstance: {fileID: 110326029}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 110326031}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 4572ff0e0fb4dd14682c054846ba2077, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &137520093 stripped
@@ -1143,10 +1139,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: -6975997327095434221, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_Enabled
@@ -6130,6 +6122,7 @@ GameObject:
   - component: {fileID: 1055270109}
   - component: {fileID: 1055270108}
   - component: {fileID: 1055270107}
+  - component: {fileID: 1055270110}
   m_Layer: 5
   m_Name: Privacy
   m_TagString: Untagged
@@ -6199,18 +6192,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1055270108}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1876726435}
-        m_MethodName: OpenPrivacyPolicy
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1055270108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6247,6 +6229,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1055270105}
   m_CullTransparentMesh: 0
+--- !u!114 &1055270110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1055270105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4572ff0e0fb4dd14682c054846ba2077, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1058478828
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7973,10 +7967,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: -6975997327095434221, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_Enabled
@@ -9019,10 +9009,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 0
@@ -11229,10 +11215,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: -6975997327095434221, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_Enabled
@@ -12017,7 +11999,6 @@ MonoBehaviour:
   cancelButton: {fileID: 944631668}
   regGoto: {fileID: 137520093}
   loginGoto: {fileID: 2113780863}
-  privacyOpen: {fileID: 110326032}
   forgotGoto: {fileID: 1501978512}
   loginSubmit: {fileID: 1063812524}
   resetSubmit: {fileID: 1910920065}
@@ -12634,10 +12615,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: -6975997327095434221, guid: c3a6d35841da70e45913176cb9eadd7b,
         type: 3}
       propertyPath: m_Enabled
@@ -14148,10 +14125,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1277010172}
     m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7439519437894096, guid: bd5ea1577b9e21145a54d3b6b19f7aa5, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 0

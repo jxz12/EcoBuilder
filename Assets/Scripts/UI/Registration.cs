@@ -17,7 +17,7 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TMP_InputField username, password, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle termsConsent, emailConsent, askAgain;
-        [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, privacyOpen, forgotGoto;
+        [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, forgotGoto;
         [SerializeField] Button loginSubmit, resetSubmit, gdprSubmit, demoSubmit;
 
         [SerializeField] Sprite greyButtonSprite, redButtonSprite;
@@ -43,7 +43,6 @@ namespace EcoBuilder.UI
             recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
-            privacyOpen.onClick.AddListener(()=> GameManager.Instance.OpenPrivacyPolicyInBrowser());
         }
         public void Begin()
         {

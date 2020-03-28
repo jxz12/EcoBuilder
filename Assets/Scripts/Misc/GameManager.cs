@@ -67,7 +67,7 @@ namespace EcoBuilder
             }
             loadingBar.SetProgress(.333f);
 #if UNITY_EDITOR
-            yield return new WaitForSeconds(1);
+            // yield return new WaitForSeconds(1);
 #endif
             if (toLoad != null)
             {
@@ -228,7 +228,7 @@ namespace EcoBuilder
 
             if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None)
             {
-                long worldAvg = GetLeaderboardMedian(idx);
+                long worldAvg = GetCachedMedian(idx);
                 report.SetResults(nStars, score, prevScore, worldAvg);
             }
             else
