@@ -4,13 +4,13 @@ claim moneys
 CV
 
 LEVELS:
-some final bosses
-research TUTORIAL!!!
-
-(make health bars colour in based on rise or fall)
+make health bars appear and disappear, and also colour in based on rise or fall
 
 fix superfocus small nodes
 do procrustes for SGD layouts
+
+some final bosses
+research TUTORIAL!!!
 
 send data collected while not connected
 only grab leaderboards that we need (but always median)

@@ -226,16 +226,6 @@ namespace EcoBuilder
             long prevScore = GetHighScoreLocal(idx);
             SaveHighScoreLocal(idx, score);
 
-            if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None)
-            {
-                long worldAvg = GetCachedMedian(idx);
-                report.SetResults(nStars, score, prevScore, worldAvg);
-            }
-            else
-            {
-                report.SetResults(3, 0, 0, 0);
-            }
-
             if (LoggedIn) {
                 SavePlaythroughRemote(idx, score, matrix, actions);
             }
@@ -244,6 +234,12 @@ namespace EcoBuilder
                 report.GiveNavigation(playedLevel, Instantiate(playedLevel.NextLevelPrefab));
             } else {
                 report.GiveNavigation(playedLevel, null);
+            }
+
+            if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None) {
+                report.SetResults(nStars, score, prevScore, GetCachedMedian(idx));
+            } else {
+                report.UnsetResults();
             }
         }
         // called by level

@@ -12,7 +12,7 @@ namespace EcoBuilder.UI
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Button quitBtn;
 
-        [SerializeField] GameObject scoreObject, avgObject;
+        [SerializeField] GameObject starsParent, currentParent, averageParent;
         [SerializeField] RectTransform prevLevelAnchor, nextLevelAnchor;
 
         RectTransform rt;
@@ -58,67 +58,62 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;
-        int numStars = -1;
+        int numStars = 3;
+        public void UnsetResults()
+        {
+            starsParent.SetActive(false);
+            currentParent.SetActive(false);
+            averageParent.SetActive(false);
+        }
         public void SetResults(int numStars, long score, long prevScore, long worldAvg)
         {
-            if (currLvl.Details.Metric != LevelDetails.ScoreMetric.None)
-            {
-                scoreObject.SetActive(true);
-                current.text = score.ToString();
-                if (score > prevScore)
-                {
-                    currentMsg.text = "You got a new high score!";
-                    points.sprite = trophySprite;
-                    StartCoroutine(WiggleSprite(points));
-                }
-                else
-                {
-                    currentMsg.text = "Well done!";
-                    points.sprite = pointSprite;
-                }
+            StopAllCoroutines();
 
-                if (worldAvg >= 0) // in case average was not cached
+            starsParent.SetActive(true);
+            currentParent.SetActive(true);
+            current.text = score.ToString();
+            if (score > prevScore)
+            {
+                currentMsg.text = "You got a new high score!";
+                points.sprite = trophySprite;
+                StartCoroutine(WiggleSprite(points));
+            }
+            else
+            {
+                currentMsg.text = "Well done!";
+                points.sprite = pointSprite;
+            }
+
+            if (worldAvg >= 0) // in case average was not cached
+            {
+                averageParent.SetActive(true);
+                average.text = worldAvg.ToString();
+                if (score > worldAvg)
                 {
-                    avgObject.SetActive(true);
-                    average.text = worldAvg.ToString();
-                    if (score > worldAvg)
-                    {
-                        averageMsg.text = "You beat the world average!";
-                        StartCoroutine(WiggleSprite(globe));
-                    }
-                    else
-                    {
-                        averageMsg.text = "World average";
-                    }
+                    averageMsg.text = "You beat the world average!";
+                    StartCoroutine(WiggleSprite(globe));
                 }
                 else
                 {
-                    avgObject.SetActive(false);
+                    averageMsg.text = "World average";
                 }
             }
             else
             {
-                scoreObject.SetActive(false);
-                avgObject.SetActive(false);
+                averageParent.SetActive(false);
             }
-
             this.numStars = numStars;
-            star1.SetTrigger("Reset");
-            star1.SetBool("Filled", false);
-            star2.SetTrigger("Reset");
-            star2.SetBool("Filled", false);
-            star3.SetTrigger("Reset");
-            star3.SetBool("Filled", false);
         }
         public void ShowResults()
         {
-            StopAllCoroutines();
 
             Assert.IsTrue(numStars != -1);
             quitBtn.interactable = true;
 
             StartCoroutine(ShowRoutine(1f, -1000,0, 0,.5f));
-            StartCoroutine(StarRoutine(1, .5f, .5f, numStars));
+            if (starsParent.activeSelf) {
+                StartCoroutine(StarRoutine(1, .5f, .5f, numStars));
+            }
         }
         public void HideIfShowing()
         {
@@ -150,6 +145,13 @@ namespace EcoBuilder.UI
         }
         IEnumerator StarRoutine(float delay1, float delay2, float delay3, int numStars)
         {
+            star1.SetTrigger("Reset");
+            star1.SetBool("Filled", false);
+            star2.SetTrigger("Reset");
+            star2.SetBool("Filled", false);
+            star3.SetTrigger("Reset");
+            star3.SetBool("Filled", false);
+
             yield return new WaitForSeconds(delay1);
             star1.SetBool("Filled", true);
             yield return new WaitForSeconds(delay2);

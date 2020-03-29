@@ -547,6 +547,7 @@ namespace EcoBuilder.UI
         {
             sizeTrait.gameObject.SetActive(!hidden);
             StatusBar.HideSize(hidden);
+            print("TODO: don't make this ugly and static");
         }
         public void HideGreedSlider(bool hidden=true)
         {

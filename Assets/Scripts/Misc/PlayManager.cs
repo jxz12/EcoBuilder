@@ -100,14 +100,12 @@ namespace EcoBuilder
             //////////////////////
             var details = GameManager.Instance.PlayedLevelDetails;
 
-            if (details.SizeSliderHidden)
-            {
-                inspector.HideSizeSlider();
+            inspector.HideSizeSlider(details.SizeSliderHidden);
+            inspector.HideGreedSlider(details.GreedSliderHidden);
+            if (details.SizeSliderHidden) {
                 inspector.FixSizeInitialValue();
             }
-            if (details.GreedSliderHidden)
-            {
-                inspector.HideGreedSlider();
+            if (details.GreedSliderHidden) {
                 inspector.FixGreedInitialValue();
             }
             inspector.AllowConflicts(details.ConflictsAllowed);
