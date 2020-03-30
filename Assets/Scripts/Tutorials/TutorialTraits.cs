@@ -17,6 +17,7 @@ namespace EcoBuilder.Tutorials
             recorder.Hide();
             constraints.Hide();
             score.DisableStarCalculation(true);
+
             targetSize = new Vector2(100,100);
             // targetZRot = 45;  
 
@@ -33,6 +34,7 @@ namespace EcoBuilder.Tutorials
         void ExplainIntro(bool showText)
         {
             StopAllCoroutines();
+            inspector.HideStatusBars();
 
             // in case the user goes back
             if (showText)
@@ -55,7 +57,8 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            help.Message = "You can change the weight of your species by moving this slider. Here, your animal is going extinct because it is not getting enough food. See if you can save it!";
+            inspector.HideStatusBars(false);
+            help.Message = "The bars next to your species indicate their health, and the number indicates its weight, which can change by dragging this slider. Here, the animal is going extinct because it is not getting enough food. See if you can save it!";
             help.Showing = true;
             help.SetSide(true);
             help.SetAnchorHeight(.95f);

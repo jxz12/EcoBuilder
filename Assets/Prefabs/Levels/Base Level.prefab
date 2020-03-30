@@ -552,7 +552,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 4551156237783506342}
-        m_MethodName: FinishLevel
+        m_MethodName: HideFinishFlag
         m_Mode: 4
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -27,7 +27,7 @@ namespace EcoBuilder
         [SerializeField] int minLoop;
 
         // score
-        public enum ScoreMetric { None, Standard, Richness, Chain, Loop }
+        public enum ScoreMetric { None, Standard, Producers, Consumers, Chain, Loop }
         [SerializeField] ScoreMetric metric;
         [SerializeField] double mainMultiplier;
         [SerializeField] double altMultiplier;
@@ -203,6 +203,13 @@ namespace EcoBuilder
             Instantiate(fireworksPrefab, transform);
             thumbnailedParent = transform.parent.GetComponent<RectTransform>();
             TweenToFlag(period);
+        }
+
+        public void HideFinishFlag(float duration=.5f) // called on finish flag pressed
+        {
+            Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
+            TweenFromFlag(duration);
+            OnFinished?.Invoke();
         }
 
         /////////////////
@@ -414,14 +421,6 @@ namespace EcoBuilder
             playButton.gameObject.SetActive(false);
             quitButton.gameObject.SetActive(true);
             replayButton.gameObject.SetActive(true);
-        }
-
-        public void FinishLevel(float duration=.5f) // called on finish flag pressed
-        {
-            Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
-            TweenFromFlag(duration);
-
-            OnFinished?.Invoke();
         }
 
         public void Replay() // for button

@@ -40,7 +40,6 @@ namespace EcoBuilder
             inspector.OnUnincubated +=   ()=> nodelink.MoveHorizontal(0);
 
             nodelink.OnEmptyTapped += ()=> inspector.CancelIncubation();
-            nodelink.OnEmptyTapped += ()=> print("TODO: maybe make this come back on focus");
 
             ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things
@@ -162,7 +161,12 @@ namespace EcoBuilder
             case LevelDetails.ScoreMetric.Standard:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 break;
-            case LevelDetails.ScoreMetric.Richness:
+            case LevelDetails.ScoreMetric.Producers:
+                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
+                score.AttachScoreSource(()=> constraints.LeafValue * details.AltMultiplier);
+                constraints.HighlightPaw();
+                break;
+            case LevelDetails.ScoreMetric.Consumers:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
                 score.AttachScoreSource(()=> constraints.PawValue * details.AltMultiplier);
                 constraints.HighlightPaw();

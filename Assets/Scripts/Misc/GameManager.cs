@@ -155,7 +155,7 @@ namespace EcoBuilder
         [SerializeField] UI.Confirmation confirmation;
         public void ReturnToMenu()
         {
-            confirmation.GiveChoice(BackToMenu, "return to the main menu");
+            confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
         }
         private void BackToMenu()
         {
@@ -171,7 +171,7 @@ namespace EcoBuilder
 
         public void Quit()
         {
-            confirmation.GiveChoice(CloseGameFully, "quit");
+            confirmation.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
         }
         public void CloseGameFully()
         {

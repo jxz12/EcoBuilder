@@ -65,8 +65,8 @@ namespace EcoBuilder.Archie
             // var lab = new LABColor(70-50*bodySize, 10+40*greediness, -50);
 
             float L = 70-50*bodySize;
-            var lab1 = new LABColor(L, 30, 20);
-            var lab2 = new LABColor(L, 50, -80);
+            var lab1 = new LABColor(L, 50, -80);
+            var lab2 = new LABColor(L, 30, 20);
             var lab = LABColor.Lerp(lab1, lab2, greediness);
             Color rgb = lab.ToColor();
 
@@ -92,8 +92,8 @@ namespace EcoBuilder.Archie
             plant.transform.localScale = Vector3.one * (1+bodySize*.2f);
             // var lab = new LABColor(80-50*bodySize, -50+40*greediness, 50);
             float L = 80-50*bodySize;
-            var lab1 = new LABColor(L, -5, 65);
-            var lab2 = new LABColor(L, -50, 10);
+            var lab1 = new LABColor(L, -50, 10);
+            var lab2 = new LABColor(L, -5, 65);
             var lab = LABColor.Lerp(lab1, lab2, greediness);
             Color rgb = lab.ToColor();
 

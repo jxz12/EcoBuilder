@@ -256,8 +256,11 @@ namespace EcoBuilder
         public long GetHighScoreLocal(int levelIdx)
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
+#if UNITY_EDITOR
+                return 0;
+#else
                 return -1;
-                // return 0;
+#endif
             }
             return player.highScores[levelIdx];
         }

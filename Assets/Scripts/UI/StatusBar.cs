@@ -36,27 +36,31 @@ namespace EcoBuilder.UI
             greedShowing = !hidden;
         }
         bool healthShowing=false;
-        public void ShowHealth(bool visible=true)
+        public void ShowHealth(bool showing=true)
         {
-            health.enabled = healthBorder.enabled = healthShowing = visible;
+            health.enabled = healthBorder.enabled = healthShowing = showing;
         }
+        float currentHealth=0;
         public void SetHealth(float normalisedHealth)
         {
             Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1, $"given health of {normalisedHealth}");
-            print("TODO: make this flash and shit");
 
-            if (normalisedHealth >= 0)
+            if (normalisedHealth > currentHealth) {
+                health.color = new Color(0,1f,.2f);
+            } else if (normalisedHealth < currentHealth) {
+                health.color = new Color(.2f,.2f,.2f);
+            }
+            currentHealth = normalisedHealth;
+            if (currentHealth > 0)
             {
-                health.color = new Color(.2f, 1f, .2f, 1);
                 health.fillAmount = normalisedHealth;
             }
             else
             {
-                health.color = new Color(.4f, .2f, .2f, .2f);
                 health.fillAmount = -normalisedHealth;
             }
         }
-        StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#ffb284>0");
+        StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#84b2ff>0");
         public void SetSize(int size)
         {
             Assert.IsFalse(size.ToString().Length != 1);
@@ -88,6 +92,12 @@ namespace EcoBuilder.UI
                 Vector3 worldPos = target.transform.TransformPoint(new Vector3(.4f,-.4f,0));
                 Vector2 trackedPos = eye.WorldToScreenPoint(worldPos);
                 rt.position = trackedPos;
+
+                if (currentHealth > 0) {
+                    health.color = Color.Lerp(health.color, new Color(0,.6f,0,1), 2*Time.deltaTime);
+                } else {
+                    health.color = Color.Lerp(health.color, new Color(.4f,.2f,.2f,.5f), 2*Time.deltaTime);
+                }
             }
             else if (traitsText.enabled)
             {

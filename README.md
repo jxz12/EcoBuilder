@@ -1,10 +1,8 @@
 DO THIS NOW:
-graphviz
 claim moneys
-CV
+(CV) finish chess thing and ecobuilder lol
 
 LEVELS:
-make health bars appear and disappear, and also colour in based on rise or fall
 
 fix superfocus small nodes
 do procrustes for SGD layouts
