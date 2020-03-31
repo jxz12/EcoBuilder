@@ -1,28 +1,35 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace EcoBuilder.UI
 {
     public class Leaderboard : MonoBehaviour
     {
-        [SerializeField] RectTransform levelParent;
-        [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;
-        [SerializeField] GameObject lockShade;
-
-        public Level LevelToPlay { get { return levelParent.GetComponentInChildren<Level>(); } }
-        public Level GiveLevelPrefab(Level levelPrefab)
+        [SerializeField] TMPro.TextMeshProUGUI topScores, botScores;
+        public void SwitchLevel(int levelIdx)
         {
-            name = levelPrefab.Details.Idx.ToString();
-            titleText.text = levelPrefab.Details.Title;
-            if (GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx) >= 0)
-            {
-                lockShade.SetActive(false);
-            }
-            long playerScore = GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx);
-            nameText.text = "loading high scores...\n\n\nyour score";
-            scoreText.text = "\n\n\n" + playerScore;
-            return Instantiate(levelPrefab, levelParent);
+            print("TODO:");
         }
+
+        // [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;
+        // [SerializeField] GameObject lockShade;
+
+        // public Level LevelToPlay { get { return levelParent.GetComponentInChildren<Level>(); } }
+        // public Level GiveLevelPrefab(Level levelPrefab)
+        // {
+        //     name = levelPrefab.Details.Idx.ToString();
+        //     titleText.text = levelPrefab.Details.Title;
+        //     if (GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx) >= 0)
+        //     {
+        //         lockShade.SetActive(false);
+        //     }
+        //     long playerScore = GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx);
+        //     nameText.text = "loading high scores...\n\n\nyour score";
+        //     scoreText.text = "\n\n\n" + playerScore;
+        //     return Instantiate(levelPrefab, levelParent);
+        // }
         // public void SetFromGameManagerCache()
         // {
         //     var scores = GameManager.Instance.GetLeaderboardScores(LevelToPlay.Details.Idx);

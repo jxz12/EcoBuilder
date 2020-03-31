@@ -12,7 +12,7 @@ namespace EcoBuilder.UI
         // NOTE: most of the functionality of this class is in scene UnityEvents!
         //       don't ask me why I do the opposite in Registration...
         [SerializeField] GridLayoutGroup learningGrid;
-        [SerializeField] VerticalLayoutGroup researchList;
+        [SerializeField] HorizontalLayoutGroup researchList;
         [SerializeField] Registration form;
         [SerializeField] Toggle reverseDrag;
 
@@ -46,7 +46,7 @@ namespace EcoBuilder.UI
             ShowMainMenu();
         }
 
-        [SerializeField] UI.Leaderboard leaderboardPrefab;
+        [SerializeField] Leaderboard leaderboard;
         [SerializeField] Level firstLearningLevel;
         [SerializeField] Level firstResearchLevel;
         void ShowMainMenu()
@@ -60,9 +60,9 @@ namespace EcoBuilder.UI
             int collectedStars = 0;
             int totalStars = 0;
 
-            // lol
-            Action<Level> CheckUnlocked = (lvl)=> {
-                Assert.IsFalse(instantiated.ContainsKey(lvl.Details.Idx), "two level prefabs with same idx");
+            void CheckUnlocked(Level lvl)
+            {
+                Assert.IsFalse(instantiated.ContainsKey(lvl.Details.Idx), $"two level prefabs with same idx {lvl.Details.Idx}");
                 long score = GameManager.Instance.GetHighScoreLocal(lvl.Details.Idx);
                 if (score >= 0)
                 {
@@ -79,12 +79,14 @@ namespace EcoBuilder.UI
                     totalStars += 3;
                 }
             };
+
             Assert.IsFalse(learningGrid.transform.childCount > 0, "learning levels already spawned");
             Assert.IsFalse(researchList.transform.childCount > 0, "research levels already spawned");
+
             Level prefab = firstLearningLevel;
             while (prefab != null)
             {
-                CheckUnlocked.Invoke(prefab);
+                CheckUnlocked(prefab);
 
                 var parent = new GameObject().AddComponent<RectTransform>();
                 parent.SetParent(learningGrid.transform);
@@ -95,17 +97,25 @@ namespace EcoBuilder.UI
 
                 prefab = prefab.NextLevelPrefab;
             }
+            /*
             // this is to make sure the tutorial does not have a leaderboard
             var firstResearchParent = new GameObject().AddComponent<RectTransform>();
             firstResearchParent.SetParent(researchList.transform, false);
             firstResearchParent.name = firstResearchLevel.Details.Idx.ToString();
             instantiated[firstResearchLevel.Details.Idx] = Instantiate(firstResearchLevel, firstResearchParent);
-            prefab = firstResearchLevel.NextLevelPrefab;
+            */
+            prefab = firstResearchLevel;
             while (prefab != null)
             {
-                CheckUnlocked.Invoke(prefab);
-                var leaderboard = Instantiate(leaderboardPrefab, researchList.transform);
-                instantiated[prefab.Details.Idx] = leaderboard.GiveLevelPrefab(prefab);
+                CheckUnlocked(prefab);
+
+                var parent = new GameObject().AddComponent<RectTransform>();
+                parent.SetParent(researchList.transform);
+                parent.localScale = Vector3.one;
+                parent.name = prefab.Details.Idx.ToString();
+
+                instantiated[prefab.Details.Idx] = Instantiate(prefab, parent);
+
                 prefab = prefab.NextLevelPrefab;
             }
 
@@ -118,9 +128,6 @@ namespace EcoBuilder.UI
             foreach (var idx in unlockedIdxs) {
                 instantiated[idx].Unlock();
             }
-            // // get level high scores and medians from server
-            // print("TODO: more than just top 3 scores on scroll");
-            // GameManager.Instance.CacheLeaderboardsRemote(3, SetResearchLeaderboards);
 
             // set up settings menu
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
@@ -140,7 +147,7 @@ namespace EcoBuilder.UI
             }
 
             WaitThenShowLogo(.7f);
-            WaitThenDisableLevelCanvases();
+            EnableThenDisableLevelCanvases();
             Reveal();
         }
         bool IsLearningFinished()
@@ -221,6 +228,32 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.HelpText.Showing = false;
         }
+        public void ScrollLearning(bool down)
+        {
+            float yDelta = 100 + learningGrid.spacing.y;
+            if (down) {
+                yDelta = -yDelta;
+            }
+            var rt = learningGrid.GetComponent<RectTransform>();
+            float yStart = rt.anchoredPosition.y;
+            float yEnd = yStart + yDelta;
+            float duration = .5f;
+            IEnumerator Scroll()
+            {
+                float tStart = Time.time;
+                while (Time.time < tStart+duration)
+                {
+                    float y = Mathf.Lerp(yStart, yEnd, Tweens.QuadraticInOut((Time.time-tStart)/duration));
+                    rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, y);
+                    yield return null;
+                }
+            }
+            StartCoroutine(Scroll());
+        }
+        public void ScrollResearch(bool leftOrRight)
+        {
+            leaderboard.SwitchLevel(0);
+        }
 
         ///////////////
         // animation
@@ -235,14 +268,18 @@ namespace EcoBuilder.UI
             }
             StartCoroutine(WaitThenShow());
         }
-        public void WaitThenDisableLevelCanvases(float delay=0)
+        public void EnableThenDisableLevelCanvases(float delay=0)
         {
+            learningCanvas.enabled = researchCanvas.enabled = true;
+            learningGrid.enabled = researchList.enabled = true;
             IEnumerator WaitThenDisable()
             {
-                // this delay is so that textmeshpro components don't get messed up
+                // this first delay is so that textmeshpro components don't get messed up
                 yield return null;
+                // second is to wait for levels to go off screen
                 yield return new WaitForSeconds(delay);
                 learningCanvas.enabled = researchCanvas.enabled = false;
+                learningGrid.enabled = researchList.enabled = false;
             }
             StartCoroutine(WaitThenDisable());
         }
