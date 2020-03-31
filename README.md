@@ -7,7 +7,7 @@ fix superfocus small nodes
 fix the 2 visualisations (finalize trophic and do procrustes for SGD layouts)
 
 some final bosses
-research TUTORIAL!!!
+research TUTORIAL!!! (give option to skip tutorial by performing some action)
 
 send data collected while not connected
 

@@ -113,11 +113,9 @@ namespace EcoBuilder.Tutorials
             nodelink.SetIfNodeCanBeFocused(plant.Idx, true);
 
             nodelink.ForceUnfocus();
-            help.SetSide(false,false);
-            help.SetAnchorHeight(.85f);
 
             print("TODO: fix the report card");
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }));
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); help.SetSide(false,false); help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); })); 
         }
     }
 }

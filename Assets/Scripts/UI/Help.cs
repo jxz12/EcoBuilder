@@ -167,6 +167,7 @@ namespace EcoBuilder.UI
         [SerializeField] float smoothTime = .15f;
         void Update()
         {
+            // these magnitudes are used as threshold to stop the layout being dirtied if arbitrarily close
             float pivotMag = (rt.pivot - targetPivot).sqrMagnitude;
             if (pivotMag > .00001f) {
                 rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);

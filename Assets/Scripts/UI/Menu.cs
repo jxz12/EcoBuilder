@@ -9,8 +9,9 @@ namespace EcoBuilder.UI
 {
     public class Menu : MonoBehaviour
     {
-        // NOTE: most of the functionality of this class is in scene UnityEvents!
-        //       don't ask me why I do the opposite in Registration...
+        // NOTE: most of the references to this class are in scene UnityEvents!
+        //       I actually prefer the way I did it in Registration
+        //       because I can use the compiler to track what is calling what
         [SerializeField] GridLayoutGroup learningGrid;
         [SerializeField] HorizontalLayoutGroup researchList;
         [SerializeField] Registration form;
@@ -21,10 +22,10 @@ namespace EcoBuilder.UI
 
         [SerializeField] Button quit, logout, createAccount, deleteAccount;
         [SerializeField] TMPro.TextMeshProUGUI accountStatus;
+        [SerializeField] Animator logoAnim;
 
         void Start()
         {
-            ResetHelpToSplash();
             if (GameManager.Instance.AskForRegistration) {
                 StartRegistration();
             } else {
@@ -60,22 +61,29 @@ namespace EcoBuilder.UI
             int collectedStars = 0;
             int totalStars = 0;
 
-            void CheckUnlocked(Level lvl)
+            void SpawnLevel(Level prefab, Transform layout)
             {
-                Assert.IsFalse(instantiated.ContainsKey(lvl.Details.Idx), $"two level prefabs with same idx {lvl.Details.Idx}");
-                long score = GameManager.Instance.GetHighScoreLocal(lvl.Details.Idx);
+                var parent = new GameObject().AddComponent<RectTransform>();
+                parent.SetParent(layout);
+                parent.localScale = Vector3.one;
+                parent.name = prefab.Details.Idx.ToString();
+
+                Assert.IsFalse(instantiated.ContainsKey(prefab.Details.Idx), $"tried to spawn 2 levels with same idx {prefab.Details.Idx}");
+                instantiated[prefab.Details.Idx] = Instantiate(prefab, parent);
+
+                long score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
                 if (score >= 0)
                 {
-                    unlockedIdxs.Add(lvl.Details.Idx);
-                    if (lvl.NextLevelPrefab!=null) {
-                        unlockedIdxs.Add(lvl.NextLevelPrefab.Details.Idx);
+                    unlockedIdxs.Add(prefab.Details.Idx);
+                    if (prefab.NextLevelPrefab!=null) {
+                        unlockedIdxs.Add(prefab.NextLevelPrefab.Details.Idx);
                     }
                 }
-                if (lvl.Details.Metric != LevelDetails.ScoreMetric.None)
+                if (prefab.Details.Metric != LevelDetails.ScoreMetric.None)
                 {
                     if (score >= 0) collectedStars += 1;
-                    if (score > lvl.Details.TwoStarScore) collectedStars += 1;
-                    if (score > lvl.Details.ThreeStarScore) collectedStars += 1;
+                    if (score > prefab.Details.TwoStarScore) collectedStars += 1;
+                    if (score > prefab.Details.ThreeStarScore) collectedStars += 1;
                     totalStars += 3;
                 }
             };
@@ -83,48 +91,58 @@ namespace EcoBuilder.UI
             Assert.IsFalse(learningGrid.transform.childCount > 0, "learning levels already spawned");
             Assert.IsFalse(researchList.transform.childCount > 0, "research levels already spawned");
 
-            Level prefab = firstLearningLevel;
-            while (prefab != null)
+            Level toSpawn = firstLearningLevel;
+            while (toSpawn != null)
             {
-                CheckUnlocked(prefab);
-
-                var parent = new GameObject().AddComponent<RectTransform>();
-                parent.SetParent(learningGrid.transform);
-                parent.localScale = Vector3.one;
-                parent.name = prefab.Details.Idx.ToString();
-
-                instantiated[prefab.Details.Idx] = Instantiate(prefab, parent);
-
-                prefab = prefab.NextLevelPrefab;
+                SpawnLevel(toSpawn, learningGrid.transform);
+                toSpawn = toSpawn.NextLevelPrefab;
             }
-            /*
-            // this is to make sure the tutorial does not have a leaderboard
-            var firstResearchParent = new GameObject().AddComponent<RectTransform>();
-            firstResearchParent.SetParent(researchList.transform, false);
-            firstResearchParent.name = firstResearchLevel.Details.Idx.ToString();
-            instantiated[firstResearchLevel.Details.Idx] = Instantiate(firstResearchLevel, firstResearchParent);
-            */
-            prefab = firstResearchLevel;
-            while (prefab != null)
+            toSpawn = firstResearchLevel;
+            while (toSpawn != null)
             {
-                CheckUnlocked(prefab);
-
-                var parent = new GameObject().AddComponent<RectTransform>();
-                parent.SetParent(researchList.transform);
-                parent.localScale = Vector3.one;
-                parent.name = prefab.Details.Idx.ToString();
-
-                instantiated[prefab.Details.Idx] = Instantiate(prefab, parent);
-
-                prefab = prefab.NextLevelPrefab;
+                SpawnLevel(toSpawn, researchList.transform);
+                toSpawn = toSpawn.NextLevelPrefab;
             }
 
+            bool IsLearningFinished()
+            {
+// #if UNITY_EDITOR
+//                 return true;
+// #endif
+                var prefab = firstLearningLevel;
+                while (prefab != null) {
+                    if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) < 0) {
+                        return false;
+                    }
+                    prefab = prefab.NextLevelPrefab;
+                }
+                return true;
+            }
             if (IsLearningFinished())
             {
+                // set splash button status
                 researchWorld.interactable = true;
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white; // remove transparency
                 researchLock.enabled = false;
+
+                splashHelp = GameManager.Instance.HelpText.Message = splashResearchText;
+                if (GameManager.Instance.GetHighScoreLocal(firstResearchLevel.Details.Idx) < 0)
+                {
+                    // show help on first time researching
+                    GameManager.Instance.HelpText.DelayThenShow(2f, splashHelp);
+                }
             }
+            else 
+            {
+                splashHelp = GameManager.Instance.HelpText.Message = splashLearningText;
+                if (GameManager.Instance.GetHighScoreLocal(firstLearningLevel.Details.Idx) < 0)
+                {
+                    // show help on first time playing
+                    GameManager.Instance.HelpText.DelayThenShow(2f, splashHelp);
+                }
+            }
+            GameManager.Instance.HelpText.ResetPosition();
+
             foreach (var idx in unlockedIdxs) {
                 instantiated[idx].Unlock();
             }
@@ -146,23 +164,10 @@ namespace EcoBuilder.UI
                 deleteAccount.gameObject.SetActive(false);
             }
 
-            WaitThenShowLogo(.7f);
-            EnableThenDisableLevelCanvases();
+            logoAnim.SetTrigger("Show");
+            WaitThenDisableLevelCanvases();
+            EnableThenDisableLevelLayouts();
             Reveal();
-        }
-        bool IsLearningFinished()
-        {
-#if UNITY_EDITOR
-            return true;
-#endif
-            var prefab = firstLearningLevel;
-            while (prefab != null) {
-                if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) < 0) {
-                    return false;
-                }
-                prefab = prefab.NextLevelPrefab;
-            }
-            return true;
         }
 
         ////////////////////////
@@ -191,7 +196,8 @@ namespace EcoBuilder.UI
                 GameManager.Instance.SetDragDirectionRemote();
             }
         }
-        [SerializeField] string splashHelp;
+        [SerializeField] string splashLearningText, splashResearchText;
+        string splashHelp;
         [SerializeField] string lockHelp;
         public void ResetHelpToSplash()
         {
@@ -228,49 +234,86 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.HelpText.Showing = false;
         }
-        public void ScrollLearning(bool down)
+
+        [SerializeField] Button learningPanDown, learningPanUp;
+        IEnumerator learningPanRoutine;
+        int learningPannedAmount = 0;
+        public void PanLearning(bool up)
         {
-            float yDelta = 100 + learningGrid.spacing.y;
-            if (down) {
-                yDelta = -yDelta;
-            }
-            var rt = learningGrid.GetComponent<RectTransform>();
-            float yStart = rt.anchoredPosition.y;
-            float yEnd = yStart + yDelta;
-            float duration = .5f;
-            IEnumerator Scroll()
+            int numLevels = learningGrid.transform.childCount;
+            int numPositions = (numLevels+2) / 3; // assume 3 col per row
+            numPositions = Math.Max(1, numPositions-3); // assume 3 row in gallery
+
+            learningPannedAmount += up? 1:-1;
+            learningPanDown.interactable = learningPannedAmount > 0;
+            learningPanUp.interactable = learningPannedAmount < numPositions-1;
+
+            IEnumerator Pan()
             {
+                float yDelta = 100 + learningGrid.spacing.y;
+
+                var rt = learningGrid.GetComponent<RectTransform>();
+                float y0 = rt.anchoredPosition.y;
+                float y1 = learningPannedAmount * yDelta;
+                float duration = .2f;
+
                 float tStart = Time.time;
                 while (Time.time < tStart+duration)
                 {
-                    float y = Mathf.Lerp(yStart, yEnd, Tweens.QuadraticInOut((Time.time-tStart)/duration));
+                    float y = Mathf.Lerp(y0, y1, Tweens.QuadraticInOut((Time.time-tStart)/duration));
                     rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, y);
                     yield return null;
                 }
+                rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, y1);
+                learningPanRoutine = null;
             }
-            StartCoroutine(Scroll());
+            if (learningPanRoutine != null) {
+                StopCoroutine(learningPanRoutine);
+            }
+            StartCoroutine(learningPanRoutine = Pan());
         }
-        public void ScrollResearch(bool leftOrRight)
+        [SerializeField] Button researchPanRight, researchPanLeft;
+        IEnumerator researchPanRoutine;
+        int researchPannedAmount = 0;
+        public void PanResearch(bool left)
         {
-            leaderboard.SwitchLevel(0);
+            int numLevels = researchList.transform.childCount;
+
+            researchPannedAmount += left? 1:-1;
+            researchPanRight.interactable = researchPannedAmount > 0;
+            researchPanLeft.interactable = researchPannedAmount < numLevels-1;
+            IEnumerator Pan()
+            {
+                float xDelta = 100 + researchList.spacing;
+
+                var rt = researchList.GetComponent<RectTransform>();
+                float x0 = rt.anchoredPosition.x;
+                float x1 = -researchPannedAmount * xDelta;
+                float duration = .2f;
+
+                float tStart = Time.time;
+                while (Time.time < tStart+duration)
+                {
+                    float x = Mathf.Lerp(x0, x1, Tweens.QuadraticInOut((Time.time-tStart)/duration));
+                    rt.anchoredPosition = new Vector2(x, rt.anchoredPosition.y);
+                    yield return null;
+                }
+                rt.anchoredPosition = new Vector2(x1, rt.anchoredPosition.y);
+                researchPanRoutine = null;
+            }
+            if (researchPanRoutine != null) {
+                StopCoroutine(researchPanRoutine);
+            }
+            StartCoroutine(researchPanRoutine = Pan());
+            leaderboard.SwitchLevel(researchList.transform.GetChild(researchPannedAmount).GetChild(0).GetComponent<Level>().Details.Idx);
         }
 
         ///////////////
         // animation
 
-        [SerializeField] Animator logoAnim;
-        public void WaitThenShowLogo(float delay)
+        public void WaitThenDisableLevelCanvases(float delay=0)
         {
-            IEnumerator WaitThenShow()
-            {
-                yield return new WaitForSeconds(delay);
-                logoAnim.enabled = true;
-            }
-            StartCoroutine(WaitThenShow());
-        }
-        public void EnableThenDisableLevelCanvases(float delay=0)
-        {
-            learningCanvas.enabled = researchCanvas.enabled = true;
+            // learningCanvas.enabled = researchCanvas.enabled = true;
             learningGrid.enabled = researchList.enabled = true;
             IEnumerator WaitThenDisable()
             {
@@ -279,6 +322,15 @@ namespace EcoBuilder.UI
                 // second is to wait for levels to go off screen
                 yield return new WaitForSeconds(delay);
                 learningCanvas.enabled = researchCanvas.enabled = false;
+            }
+            StartCoroutine(WaitThenDisable());
+        }
+        public void EnableThenDisableLevelLayouts()
+        {
+            learningGrid.enabled = researchList.enabled = true;
+            IEnumerator WaitThenDisable()
+            {
+                yield return null;
                 learningGrid.enabled = researchList.enabled = false;
             }
             StartCoroutine(WaitThenDisable());
@@ -294,13 +346,12 @@ namespace EcoBuilder.UI
 
             Assert.IsTrue(state == State.Hidden);
             state = State.Splash;
-            GameManager.Instance.HelpText.Message = splashHelp;
         }
         void Reset()
         {
             Assert.IsTrue(state == State.Settings, "should only be able to reset from settings");
             TweenY(settingsRT, 0, -1000);
-            TweenY(returnRT, 60, -60);
+            TweenY(returnRT, -60, 60);
             state = State.Hidden;
             foreach (Transform child in learningGrid.transform) {
                 Destroy(child.gameObject);
@@ -314,7 +365,7 @@ namespace EcoBuilder.UI
         {
             ClearTweens();
             TweenY(splashRT, -1000, 0);
-            TweenY(returnRT, 60, -60);
+            TweenY(returnRT, -60, 60);
 
             Assert.IsTrue(state==State.Levels || state==State.Settings);
             if (state == State.Levels) {
@@ -323,12 +374,15 @@ namespace EcoBuilder.UI
                 TweenY(settingsRT, 0, -1000);
             }
         }
-        public void ShowLevels()
+        public void ShowLevels(bool learning)
         {
             ClearTweens();
             TweenY(splashRT, 0, -1000);
             TweenY(levelsRT, -1000, 0);
-            TweenY(returnRT, -60, 60);
+            TweenY(returnRT, 60, -60);
+
+            learningCanvas.enabled = learning;
+            researchCanvas.enabled = !learning;
 
             state = State.Levels;
         }
@@ -337,7 +391,7 @@ namespace EcoBuilder.UI
             ClearTweens();
             TweenY(splashRT, 0, -1000);
             TweenY(settingsRT, -1000, 0);
-            TweenY(returnRT, -60, 60);
+            TweenY(returnRT, 60, -60);
 
             state = State.Settings;
         }

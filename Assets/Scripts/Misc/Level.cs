@@ -252,6 +252,8 @@ namespace EcoBuilder
         }
         private void RenderBelow()
         {
+            extraCanvas.overrideSorting = false; // RectMask2D breaks otherwise
+            // extraCanvas.sortingOrder = 0;
             Destroy(extraRaycaster);
             Destroy(extraCanvas);
         }

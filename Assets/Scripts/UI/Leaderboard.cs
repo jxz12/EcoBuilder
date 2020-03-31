@@ -10,7 +10,7 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI topScores, botScores;
         public void SwitchLevel(int levelIdx)
         {
-            print("TODO:");
+            print($"TODO: {levelIdx}");
         }
 
         // [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;

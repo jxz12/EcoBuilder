@@ -256,11 +256,11 @@ namespace EcoBuilder
         public long GetHighScoreLocal(int levelIdx)
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
-#if UNITY_EDITOR
-                return 0;
-#else
+// #if UNITY_EDITOR
+//                 return 0;
+// #else
                 return -1;
-#endif
+// #endif
             }
             return player.highScores[levelIdx];
         }
@@ -295,53 +295,52 @@ namespace EcoBuilder
         ///////////////////////////////////////////////////////////////////
         // used to cache results from startup in case player goes into tube
 
-        // private class LeaderboardCache
-        // {
-        //     public long median = 0;
-        //     public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
-        // }
-        // // only leaderboard does not require a login
-        // public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
-        // {
-        //     var data = new Dictionary<string, string>() {
-        //         { "n_scores", n_scores.ToString() }, { "__address__", ServerURL+"leaderboards.php" },
-        //     };
-        //     pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
-        // }
-        // private void ParseLeaderboards(string returned)
-        // {
-        //     player.leaderboards.Clear();
-        //     var levels = returned.Split(';');
-        //     foreach (var level in levels)
-        //     {
-        //         var scores = level.Split(',');
-        //         var header = scores[0].Split(':');
+        /*
+        private class LeaderboardCache
+        {
+            public long median = 0;
+            public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
+        }
+        // only leaderboard does not require a login
+        public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
+        {
+            var data = new Dictionary<string, string>() {
+                { "n_scores", n_scores.ToString() }, { "__address__", ServerURL+"leaderboards.php" },
+            };
+            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
+        }
+        private void ParseLeaderboards(string returned)
+        {
+            player.leaderboards.Clear();
+            var levels = returned.Split(';');
+            foreach (var level in levels)
+            {
+                var scores = level.Split(',');
+                var header = scores[0].Split(':');
 
-        //         var toCache = new LeaderboardCache();
-        //         int idx = int.Parse(header[0]);
-        //         toCache.median = long.Parse(header[1]);
-        //         for (int i=1; i<scores.Length; i++)
-        //         {
-        //             var score = scores[i].Split(':');
-        //             toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
-        //         }
-        //         // Assert.IsFalse(player.leaderboards.ContainsKey(idx), "level index already cached");
-        //         player.leaderboards[idx] = toCache;
-        //     }
-        // }
+                var toCache = new LeaderboardCache();
+                int idx = int.Parse(header[0]);
+                toCache.median = long.Parse(header[1]);
+                for (int i=1; i<scores.Length; i++)
+                {
+                    var score = scores[i].Split(':');
+                    toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
+                }
+                // Assert.IsFalse(player.leaderboards.ContainsKey(idx), "level index already cached");
+                player.leaderboards[idx] = toCache;
+            }
+        }
+        */
+        public void CacheMedians()
+        {
+
+        }
         public long GetCachedMedian(int level_idx)
         {
             // Assert.IsFalse(player.leaderboards==null || !player.leaderboards.ContainsKey(level_idx));
             // return player.leaderboards[level_idx].median;
             return -1;
         }
-        // public IReadOnlyList<Tuple<string, long>> GetLeaderboardScores(int level_idx)
-        // {
-        //     if (!player.leaderboards.ContainsKey(level_idx)) {
-        //         return null;
-        //     }
-        //     return player.leaderboards[level_idx].scores;
-        // }
 
         private void SavePost(Dictionary<string, string> data)
         {
@@ -367,6 +366,7 @@ namespace EcoBuilder
         public void DontAskAgainForLogin()
         {
             player.team = PlayerDetails.Team.NeverAsk;
+            SavePlayerDetailsLocal();
         }
         public void AskAgainForLogin()
         {

@@ -71,7 +71,22 @@ namespace EcoBuilder
             }
             StartCoroutine(postRoutine = SendPost(letter["__address__"], form, ResponseCallback));
             Show();
+#if UNITY_EDITOR
+            prevForm = form;
+            prevAddress = letter["__address__"];
+#endif
         }
+#if UNITY_EDITOR
+        WWWForm prevForm;
+        string prevAddress;
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                StartCoroutine(SendPost(prevAddress, prevForm, (b,s)=>print($"resent: {s}")));
+            }
+        }
+#endif
         
         public void Show()
         {

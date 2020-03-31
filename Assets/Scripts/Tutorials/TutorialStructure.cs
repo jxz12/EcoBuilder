@@ -157,6 +157,7 @@ namespace EcoBuilder.Tutorials
             targetAnchor = new Vector2(.5f, 0);
             targetPos = new Vector2(160, 50);
             targetZRot = 450;
+            targetSize = new Vector3(100,100);
 
             help.Showing = true;
             help.SetPivotHeight(0);

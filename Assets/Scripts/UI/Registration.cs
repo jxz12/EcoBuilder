@@ -118,9 +118,6 @@ namespace EcoBuilder.UI
                 break;
             case State.End:
                 OnFinished.Invoke();
-                if (_state == State.Demographics) { // on register
-                    GameManager.Instance.HelpText.DelayThenShow(2f, null);
-                }
                 StartCoroutine(TweenY(1,0,-1000,false));
                 break;
             }

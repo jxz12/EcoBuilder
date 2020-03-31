@@ -45,9 +45,10 @@ namespace EcoBuilder.UI
         {
             Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1, $"given health of {normalisedHealth}");
 
-            if (normalisedHealth > currentHealth) {
+            if (normalisedHealth > currentHealth && normalisedHealth > 0) {
                 health.color = new Color(0,1f,.2f);
-            } else if (normalisedHealth < currentHealth) {
+            }
+            if (normalisedHealth < currentHealth) {
                 health.color = new Color(.2f,.2f,.2f);
             }
             currentHealth = normalisedHealth;
