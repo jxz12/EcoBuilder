@@ -68,10 +68,6 @@ namespace EcoBuilder.UI
                     errorText.gameObject.SetActive(true);
                     errorText.text = "Account deleted!";
                 }
-                // if (GameManager.Instance.HasAnyHighScore) {
-                //     introText.text = defaultIntro + " Any high scores you have gotten without logging in will be saved to the new account.";
-                // TODO: above, and for logging out
-                // }
                 break;
             case State.Register:
                 ShowObjectsOnly(idObj);

@@ -30,7 +30,9 @@ namespace EcoBuilder
             if (SceneManager.sceneCount == 1) { // on startup
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
+
             InitPlayer();
+            print("TODO: send data periodically");
         }
 
         void Start()
@@ -153,20 +155,15 @@ namespace EcoBuilder
         public Canvas TutCanvas { get { return tutorialCanvas; } }
 
         [SerializeField] UI.Confirmation confirmation;
-        public void ReturnToMenu()
+        public void ReturnToMenu(Action OnReturn)
         {
+            void BackToMenu()
+            {
+                HelpText.Showing = false;
+                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                // wait until next frame to avoid the frame spike caused by Awake and Start()
+            }
             confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
-        }
-        private void BackToMenu()
-        {
-            HelpText.Showing = false;
-
-            // make level uninteractable
-            var group = playedLevel.gameObject.AddComponent<CanvasGroup>();
-            group.interactable = false;
-
-            StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ playedLevel.LeaveThenDestroyFromNextFrame(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
-            // wait until next frame to avoid the frame spike caused by Awake and Start()
         }
 
         public void Quit()

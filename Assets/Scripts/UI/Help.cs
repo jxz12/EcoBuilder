@@ -88,14 +88,13 @@ namespace EcoBuilder.UI
                 message.transform.localScale = new Vector3(1,1,1);
                 hideButton.transform.localScale = new Vector3(1,1,1);
             }
-            rt.pivot = new Vector2(1-rt.pivot.x, rt.pivot.y);
             if (!damp)
             {
                 rt.anchorMin = rt.anchorMax = targetAnchor;
             }
             else
             {
-                // TODO: make it not spaz out
+                rt.pivot = new Vector2(1-rt.pivot.x, rt.pivot.y);
             }
         }
         public bool Showing {

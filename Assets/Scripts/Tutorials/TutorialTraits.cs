@@ -92,7 +92,7 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines();
             help.Showing = false;
 
-            help.Message = "The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. You should also notice that heavier species have darker colours, so that you can tell how heavy a species is just by a glance. Try changing the animal here in order to make it go extinct again.";
+            help.Message = "The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. Here, heavier species have darker colours. Try changing the animal here in order to make it go extinct again.";
             help.Showing = true;
 
             StartCoroutine(ShuffleOnSlider(3, 40));
@@ -104,18 +104,15 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
             StopAllCoroutines();
-            help.Showing = false;
             targetSize = new Vector2(0,0);
             smoothTime = .2f;
 
             recorder.gameObject.SetActive(true); 
-
             nodelink.SetIfNodeCanBeFocused(plant.Idx, true);
-
             nodelink.ForceUnfocus();
 
-            print("TODO: fix the report card");
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; help.Showing = true; score.Hide(false); help.SetSide(false,false); help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); })); 
+            help.Showing = false;
+            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,false); help.Showing = true; help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); })); 
         }
     }
 }

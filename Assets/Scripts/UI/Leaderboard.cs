@@ -10,7 +10,7 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI topScores, botScores;
         public void SwitchLevel(int levelIdx)
         {
-            print($"TODO: {levelIdx}");
+            GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, (b,s)=>{ if(b) topScores.text=s; });
         }
 
         // [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;

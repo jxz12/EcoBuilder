@@ -49,12 +49,15 @@ namespace EcoBuilder.UI
         }
         void Quit()
         {
-            quitBtn.interactable = false;
-            Destroy(currLvl);
-            if (nextLvl != null) {
-                Destroy(nextLvl);
+            void DestroyLevels()
+            {
+                quitBtn.interactable = false;
+                Destroy(currLvl);
+                if (nextLvl != null) {
+                    Destroy(nextLvl);
+                }
             }
-            GameManager.Instance.ReturnToMenu();
+            GameManager.Instance.ReturnToMenu(DestroyLevels);
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;
@@ -65,7 +68,7 @@ namespace EcoBuilder.UI
             currentParent.SetActive(false);
             averageParent.SetActive(false);
         }
-        public void SetResults(int numStars, long score, long prevScore, long worldAvg)
+        public void SetResults(int numStars, long score, long prevScore, long? worldAvg)
         {
             StopAllCoroutines();
 
@@ -84,7 +87,7 @@ namespace EcoBuilder.UI
                 points.sprite = pointSprite;
             }
 
-            if (worldAvg >= 0) // in case average was not cached
+            if (worldAvg != null) // in case average was not cached
             {
                 averageParent.SetActive(true);
                 average.text = worldAvg.ToString();

@@ -168,6 +168,9 @@ namespace EcoBuilder.UI
             WaitThenDisableLevelCanvases();
             EnableThenDisableLevelLayouts();
             Reveal();
+
+            // update medians every time menu is entered
+            GameManager.Instance.CacheMediansRemote();
         }
 
         ////////////////////////

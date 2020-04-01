@@ -138,10 +138,6 @@ namespace EcoBuilder
 
             indexText.text = ((details.Idx) % 100).ToString(); // a little smelly
 
-            SetScoreTexts();
-        }
-        public void SetScoreTexts()
-        {
             target1.text = details.TwoStarScore.ToString();
             target2.text = details.ThreeStarScore.ToString();
 
@@ -434,31 +430,29 @@ namespace EcoBuilder
         }
         private void Quit()
         {
-            GameManager.Instance.ReturnToMenu();
-        }
-        public void LeaveThenDestroyFromNextFrame() // for GameManager to trigger after menu is loaded
-        {
-            StopAllCoroutines();
-            StartCoroutine(LeaveThenDestroyFromNextFrame(-1000, 1));
-        }
-        IEnumerator LeaveThenDestroyFromNextFrame(float targetY, float duration)
-        {
-            yield return null;
-            shade.enabled = false;
-            if (teacher != null) {
-                Destroy(teacher.gameObject);
-            }
-            float startY = back.transform.localPosition.y;
-            float startTime = Time.time;
-            while (Time.time < startTime+duration)
+            IEnumerator LeaveThenDestroyFromNextFrame(float targetY, float duration)
             {
-                float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
-
-                float y = Mathf.Lerp(startY, targetY, t);
-                back.transform.localPosition = new Vector2(transform.localPosition.x, y);
+                StopAllCoroutines();
+                gameObject.AddComponent<CanvasGroup>().interactable = false; // make sure not interactable
                 yield return null;
+                
+                shade.enabled = false;
+                if (teacher != null) {
+                    Destroy(teacher.gameObject);
+                }
+                float startY = back.transform.localPosition.y;
+                float startTime = Time.time;
+                while (Time.time < startTime+duration)
+                {
+                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+
+                    float y = Mathf.Lerp(startY, targetY, t);
+                    back.transform.localPosition = new Vector2(transform.localPosition.x, y);
+                    yield return null;
+                }
+                Destroy(gameObject);
             }
-            Destroy(gameObject);
+            GameManager.Instance.ReturnToMenu(()=> StartCoroutine(LeaveThenDestroyFromNextFrame(-1000, 1)));
         }
         void OnDestroy()
         {

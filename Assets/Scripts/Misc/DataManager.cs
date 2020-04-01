@@ -32,7 +32,7 @@ namespace EcoBuilder
             public bool reverseDrag = true;
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
-            // public Dictionary<int, LeaderboardCache> leaderboards = new Dictionary<int, LeaderboardCache>();
+            public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -43,7 +43,7 @@ namespace EcoBuilder
         public string Username { get { return player.username; } }
 
         static string playerPath;
-        public void InitPlayer()
+        public void InitPlayer() // called by Awake()
         {
             // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
@@ -54,7 +54,6 @@ namespace EcoBuilder
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
-            print("TODO: send data periodically");
         }
         private bool SavePlayerDetailsLocal()
         {
@@ -295,51 +294,41 @@ namespace EcoBuilder
         ///////////////////////////////////////////////////////////////////
         // used to cache results from startup in case player goes into tube
 
-        /*
-        private class LeaderboardCache
-        {
-            public long median = 0;
-            public List<Tuple<string, long>> scores = new List<Tuple<string, long>>();
-        }
-        // only leaderboard does not require a login
-        public void CacheLeaderboardsRemote(int n_scores, Action OnCompletion)
+        public void CacheMediansRemote()
         {
             var data = new Dictionary<string, string>() {
-                { "n_scores", n_scores.ToString() }, { "__address__", ServerURL+"leaderboards.php" },
+                { "__address__", ServerURL+"medians.php" },
             };
-            pat.Post(data, (b,s)=>{ if (b) ParseLeaderboards(s); OnCompletion?.Invoke(); });
-        }
-        private void ParseLeaderboards(string returned)
-        {
-            player.leaderboards.Clear();
-            var levels = returned.Split(';');
-            foreach (var level in levels)
+            void CacheMedians(string medians)
             {
-                var scores = level.Split(',');
-                var header = scores[0].Split(':');
-
-                var toCache = new LeaderboardCache();
-                int idx = int.Parse(header[0]);
-                toCache.median = long.Parse(header[1]);
-                for (int i=1; i<scores.Length; i++)
+                var levels = medians.Split(',');
+                foreach (var level in levels)
                 {
-                    var score = scores[i].Split(':');
-                    toCache.scores.Add(Tuple.Create(score[0], long.Parse(score[1])));
+                    var score = level.Split(':');
+                    player.cachedMedians[int.Parse(score[0])] = long.Parse(score[1]);
                 }
-                // Assert.IsFalse(player.leaderboards.ContainsKey(idx), "level index already cached");
-                player.leaderboards[idx] = toCache;
+            }
+            pat.Post(data, (b,s)=>{ if (b) CacheMedians(s); });
+        }
+        public long? GetCachedMedian(int level_idx)
+        {
+            long median;
+            if (player.cachedMedians.TryGetValue(level_idx, out median)) {
+                return median;
+            } else {
+                return null;
             }
         }
-        */
-        public void CacheMedians()
-        {
 
-        }
-        public long GetCachedMedian(int level_idx)
+        public void GetRankedScoresRemote(int levelIdx, int firstRank, int numRows, Action<bool, string> OnCompletion)
         {
-            // Assert.IsFalse(player.leaderboards==null || !player.leaderboards.ContainsKey(level_idx));
-            // return player.leaderboards[level_idx].median;
-            return -1;
+            var data = new Dictionary<string, string>() {
+                { "level_index", levelIdx.ToString() },
+                { "first_rank", firstRank.ToString() },
+                { "num_scores", numRows.ToString() },
+                { "__address__", ServerURL+"leaderboard.php" },
+            };
+            pat.Post(data, OnCompletion);
         }
 
         private void SavePost(Dictionary<string, string> data)

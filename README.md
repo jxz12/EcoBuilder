@@ -5,6 +5,7 @@ claim moneys
 LEVELS:
 fix superfocus small nodes
 fix the 2 visualisations (finalize trophic and do procrustes for SGD layouts)
+do high scores for heavy 3
 
 some final bosses
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
