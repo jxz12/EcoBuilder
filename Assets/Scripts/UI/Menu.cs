@@ -238,6 +238,9 @@ namespace EcoBuilder.UI
             GameManager.Instance.HelpText.Showing = false;
         }
 
+        ///////////////////////////////////
+        // panning levels
+
         [SerializeField] Button learningPanDown, learningPanUp;
         IEnumerator learningPanRoutine;
         int learningPannedAmount = 0;
@@ -308,7 +311,13 @@ namespace EcoBuilder.UI
                 StopCoroutine(researchPanRoutine);
             }
             StartCoroutine(researchPanRoutine = Pan());
-            leaderboard.SwitchLevel(researchList.transform.GetChild(researchPannedAmount).GetChild(0).GetComponent<Level>().Details.Idx);
+            SetCurrentResearchLeaderboard();
+        }
+        void SetCurrentResearchLeaderboard()
+        {
+            // lol
+            Level selected = researchList.transform.GetChild(researchPannedAmount).GetChild(0).GetComponent<Level>();
+            leaderboard.SwitchLevel(selected.Details.Idx, selected.Details.Title);
         }
 
         ///////////////
@@ -386,6 +395,10 @@ namespace EcoBuilder.UI
 
             learningCanvas.enabled = learning;
             researchCanvas.enabled = !learning;
+
+            if (!learning) {
+                SetCurrentResearchLeaderboard();
+            }
 
             state = State.Levels;
         }

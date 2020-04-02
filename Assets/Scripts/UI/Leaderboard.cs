@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,10 +8,59 @@ namespace EcoBuilder.UI
 {
     public class Leaderboard : MonoBehaviour
     {
-        [SerializeField] TMPro.TextMeshProUGUI topScores, botScores;
-        public void SwitchLevel(int levelIdx)
+        [SerializeField] TMPro.TextMeshProUGUI title, topScores, botScores;
+        [SerializeField] Button moreButton;
+        void Awake()
         {
-            GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, (b,s)=>{ if(b) topScores.text=s; });
+            moreButton.onClick.AddListener(GetMoreScores);
+            topPanelLayout.enabled = true;
+            topPanelFitter.enabled = true;
+        }
+        int? currentIdx = null;
+        string topScoresText = "";
+        [SerializeField] int topScoresShowing = 0;
+        public void SwitchLevel(int levelIdx, string levelTitle)
+        {
+            currentIdx = levelIdx;
+            title.text = levelTitle;
+
+            topScoresShowing = 0;
+            topScoresText = "";
+            topScores.text = "loading...";
+            moreButton.interactable = true;
+            GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, (b,s)=>{ if (b) UpdateScores(s); });
+        }
+        [SerializeField] VerticalLayoutGroup topPanelLayout;
+        [SerializeField] ContentSizeFitter topPanelFitter;
+        void UpdateScores(string newScoresText)
+        {
+            if (newScoresText == "")
+            {
+                moreButton.interactable = false;
+                topScores.text = topScoresText + "No more scores!";
+                return;
+            }
+            topScoresText += newScoresText;
+            topScores.text = topScoresText;
+
+            // assume each row is a new score
+            foreach (char c in newScoresText)  {
+                if (c == '\n') {
+                    topScoresShowing += 1;
+                }
+            }
+            
+            Canvas.ForceUpdateCanvases();
+            topPanelLayout.CalculateLayoutInputVertical();
+            topPanelLayout.SetLayoutVertical();
+            topPanelFitter.SetLayoutVertical();
+        }
+        public void GetMoreScores()
+        {
+            Assert.IsFalse(currentIdx==null, "no level selected");
+
+            topScores.text += "loading...";
+            GameManager.Instance.GetRankedScoresRemote((int)currentIdx, topScoresShowing, 10, (b,s)=>{ UpdateScores(s); });
         }
 
         // [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;

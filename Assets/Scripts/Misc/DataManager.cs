@@ -33,6 +33,7 @@ namespace EcoBuilder
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
+            public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -49,7 +50,7 @@ namespace EcoBuilder
             playerPath = Application.persistentDataPath+"/player.data";
 
 #if UNITY_EDITOR
-            // DeletePlayerDetailsLocal();
+            DeletePlayerDetailsLocal();
 #endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
@@ -255,11 +256,11 @@ namespace EcoBuilder
         public long GetHighScoreLocal(int levelIdx)
         {
             if (!player.highScores.ContainsKey(levelIdx)) {
-// #if UNITY_EDITOR
-//                 return 0;
-// #else
+#if UNITY_EDITOR
+                return 0;
+#else
                 return -1;
-// #endif
+#endif
             }
             return player.highScores[levelIdx];
         }
@@ -336,21 +337,8 @@ namespace EcoBuilder
 #if UNITY_WEBGL
             return;
 #endif
-            try
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                string path = Application.persistentDataPath+"/"+DateTime.Now.Ticks.ToString();
-                while (File.Exists(path + ".post")) {
-                    path += "_"; // in case there is somehow more than one file made with the same timestamp
-                }
-                FileStream file = File.Create(path+".post");
-                bf.Serialize(file, data);
-                file.Close();
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("could not save post: " + e.Message);
-            }
+            player.unsentPost.Enqueue(data);
+            SavePlayerDetailsLocal();
         }
         public void DontAskAgainForLogin()
         {
@@ -363,5 +351,24 @@ namespace EcoBuilder
             // note that this function purposefully does not delete the player in order to keep their highscore info
             player.team = PlayerDetails.Team.Unassigned;
         }
+
+#if UNITY_EDITOR
+        // for testing
+        void PopulateDatabaseWithScores()
+        {
+            for (int i=0; i<26; i++)
+            {
+                string name = "bob_" + (char)('A'+i);
+                RegisterLocal(name, "", name+"@bob.co.uk");
+                RegisterRemote((b,s)=>print(b+" "+s));
+                SetGDPRRemote(true, (b,s)=>print(b+" "+s));
+                SetDemographicsRemote(0,1,2);
+                for (int j=101; j<=104; j++)
+                {
+                    SavePlaythroughRemote(j, UnityEngine.Random.Range(100, 100000000), "", "");
+                }
+            }
+        }
+#endif
     }
 }

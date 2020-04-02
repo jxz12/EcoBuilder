@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Assertions;
 using UnityEngine.Networking;
 using System.Security.Cryptography;
@@ -11,21 +12,21 @@ namespace EcoBuilder
 {
     public class Postman : MonoBehaviour
     {
-        [SerializeField] CanvasGroup group;
-        [SerializeField] TMPro.TextMeshProUGUI message;
-
+        Queue<WWWForm> sendQueue = new Queue<WWWForm>();
         IEnumerator SendPost(string address, WWWForm form, Action<bool, string> ResponseCallback)
         {
-            message.text = "Loading...";
-#if UNITY_EDITOR
-            // yield return new WaitForSeconds(1);
-#endif
+            // message.text = "Loading...";
+            sendQueue.Enqueue(form);
+            while (sendQueue.Peek() != form) {
+                yield return null;
+            }
+
             using (var p = UnityWebRequest.Post(address, form))
             {
                 yield return p.SendWebRequest();
                 if (p.isNetworkError)
                 {
-                    message.text = $"Network Error: {p.error}";
+                    // message.text = $"Network Error: {p.error}";
                     ResponseCallback?.Invoke(false, p.error);
                     Hide();
                 }
@@ -42,20 +43,24 @@ namespace EcoBuilder
                     case 503: response = "Could not connect to database (503)"; break;
                     default: response = "Could not connect to server ("+p.responseCode+")"; break;
                     }
-                    message.text = $"HTTP Error: {p.error}";
+                    // message.text = $"HTTP Error: {p.error}";
                     ResponseCallback?.Invoke(false, response);
                     Hide();
                 }
                 else
                 {
                     ResponseCallback?.Invoke(true, p.downloadHandler.text);
-                    message.text = "Success!";
+                    // message.text = "Success!";
                     Hide();
                 }
                 print($"text: {p.downloadHandler.text}\nerror: {p.error}");
             }
+
+            Assert.IsTrue(sendQueue.Peek() == form, "sendQueue was tampered with while sending");
+            sendQueue.Dequeue();
         }
-        IEnumerator postRoutine = null;
+
+        
         public void Post(Dictionary<string, string> letter, Action<bool, string> ResponseCallback)
         {
             Assert.IsTrue(letter.ContainsKey("__address__"), "no __address__ given to send to");
@@ -69,7 +74,7 @@ namespace EcoBuilder
                     form.AddField(line.Key, line.Value);
                 }
             }
-            StartCoroutine(postRoutine = SendPost(letter["__address__"], form, ResponseCallback));
+            StartCoroutine(SendPost(letter["__address__"], form, ResponseCallback));
             Show();
 #if UNITY_EDITOR
             prevForm = form;
@@ -83,40 +88,58 @@ namespace EcoBuilder
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                StartCoroutine(SendPost(prevAddress, prevForm, (b,s)=>print($"resent: {s}")));
+                StartCoroutine(SendPost(prevAddress, prevForm, (b,s)=>print($"again: {s}")));
             }
         }
 #endif
         
+        [SerializeField] Image icon;
+
+        [SerializeField] float spinPeriod;
+        IEnumerator spinRoutine;
         public void Show()
         {
-			if (hideRoutine != null) {
-				StopCoroutine(hideRoutine);
-			}
-            group.blocksRaycasts = true;
-            group.interactable = true;
-            group.alpha = 1;
-            GetComponent<Animator>().enabled = true;
+            IEnumerator Spin()
+            {
+                float tStart = Time.time;
+                while (true)
+                {
+                    float t = ((Time.time-tStart)/spinPeriod) % 1;
+                    icon.transform.rotation = Quaternion.Euler(0,0,360 * t);
+                    yield return null;
+                }
+            }
+            if (hideRoutine != null) {
+                StopCoroutine(hideRoutine);
+            }
+            if (spinRoutine == null) {
+                StartCoroutine(spinRoutine = Spin());
+            }
+            icon.color = new Color(0,0,0,.8f);
         }
+
         [SerializeField] float fadeDuration;
-		IEnumerator hideRoutine;
+        IEnumerator hideRoutine;
         public void Hide()
         {
-            group.interactable = false;
-            StartCoroutine(hideRoutine = FadeAway(fadeDuration));
-        }
-        IEnumerator FadeAway(float duration)
-        {
-            group.interactable = false;
-            float startTime = Time.time;
-            while (Time.time < startTime + duration)
+            IEnumerator FadeAway()
             {
-                group.alpha = 1 - ((Time.time-startTime) / duration);
-                yield return null;
+                float startTime = Time.time;
+                while (Time.time < startTime + fadeDuration)
+                {
+                    float tween = 1 - ((Time.time-startTime)/fadeDuration);
+                    icon.color = new Color(0,0,0, tween*.8f);
+                    yield return null;
+                }
+                icon.color = Color.clear;
+
+                hideRoutine = null;
+                if (spinRoutine != null) {
+                    StopCoroutine(spinRoutine);
+                    spinRoutine = null;
+                }
             }
-            group.blocksRaycasts = false;
-            group.alpha = 0;
-            GetComponent<Animator>().enabled = false;
+            StartCoroutine(hideRoutine = FadeAway());
         }
 
         //////////////////////
