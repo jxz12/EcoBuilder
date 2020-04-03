@@ -106,9 +106,6 @@ namespace EcoBuilder.UI
 
             bool IsLearningFinished()
             {
-// #if UNITY_EDITOR
-//                 return true;
-// #endif
                 var prefab = firstLearningLevel;
                 while (prefab != null) {
                     if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) < 0) {

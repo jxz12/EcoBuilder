@@ -28,7 +28,6 @@ namespace EcoBuilder
                 {
                     // message.text = $"Network Error: {p.error}";
                     ResponseCallback?.Invoke(false, p.error);
-                    Hide();
                 }
                 else if (p.isHttpError) // got to server but error occurred there
                 {
@@ -45,13 +44,11 @@ namespace EcoBuilder
                     }
                     // message.text = $"HTTP Error: {p.error}";
                     ResponseCallback?.Invoke(false, response);
-                    Hide();
                 }
                 else
                 {
                     ResponseCallback?.Invoke(true, p.downloadHandler.text);
                     // message.text = "Success!";
-                    Hide();
                 }
                 print($"text: {p.downloadHandler.text}\nerror: {p.error}");
             }
@@ -75,71 +72,38 @@ namespace EcoBuilder
                 }
             }
             StartCoroutine(SendPost(letter["__address__"], form, ResponseCallback));
-            Show();
-#if UNITY_EDITOR
             prevForm = form;
             prevAddress = letter["__address__"];
-#endif
         }
-#if UNITY_EDITOR
+
+        [SerializeField] Image icon;
+        [SerializeField] float spinPeriod;
+        [SerializeField] float fadeDuration;
         WWWForm prevForm;
         string prevAddress;
+
         void Update()
         {
+#if UNITY_EDITOR
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 StartCoroutine(SendPost(prevAddress, prevForm, (b,s)=>print($"again: {s}")));
             }
-        }
 #endif
-        
-        [SerializeField] Image icon;
-
-        [SerializeField] float spinPeriod;
-        IEnumerator spinRoutine;
-        public void Show()
-        {
-            IEnumerator Spin()
+            if (sendQueue.Count > 0)
             {
-                float tStart = Time.time;
-                while (true)
-                {
-                    float t = ((Time.time-tStart)/spinPeriod) % 1;
-                    icon.transform.rotation = Quaternion.Euler(0,0,360 * t);
-                    yield return null;
-                }
+                float t = ((Time.time)/spinPeriod) % 1;
+                icon.transform.rotation = Quaternion.Euler(0,0,360 * t);
+                icon.color = new Color(0,0,0,.8f);
             }
-            if (hideRoutine != null) {
-                StopCoroutine(hideRoutine);
-            }
-            if (spinRoutine == null) {
-                StartCoroutine(spinRoutine = Spin());
-            }
-            icon.color = new Color(0,0,0,.8f);
-        }
-
-        [SerializeField] float fadeDuration;
-        IEnumerator hideRoutine;
-        public void Hide()
-        {
-            IEnumerator FadeAway()
+            else
             {
-                float startTime = Time.time;
-                while (Time.time < startTime + fadeDuration)
-                {
-                    float tween = 1 - ((Time.time-startTime)/fadeDuration);
-                    icon.color = new Color(0,0,0, tween*.8f);
-                    yield return null;
-                }
-                icon.color = Color.clear;
-
-                hideRoutine = null;
-                if (spinRoutine != null) {
-                    StopCoroutine(spinRoutine);
-                    spinRoutine = null;
+                if (icon.color.a > .01f) {
+                    icon.color = new Color(0,0,0, Mathf.Lerp(icon.color.a, 0, 5*Time.deltaTime));
+                } else if (icon.color.a > 0) {
+                    icon.color = new Color(0,0,0,0);
                 }
             }
-            StartCoroutine(hideRoutine = FadeAway());
         }
 
         //////////////////////

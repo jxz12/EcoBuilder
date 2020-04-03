@@ -13,7 +13,7 @@ namespace EcoBuilder.Tests
     public class UITests
     {
         [Test]
-        public void CheckImageMaterialsNotNull()
+        public void ImageMaterialsNotNull()
         {
             foreach (var im in MonoBehaviour.FindObjectsOfType<Image>())
             {
@@ -23,22 +23,21 @@ namespace EcoBuilder.Tests
         }
 
         [Test]
-        public void CheckTextMeshProCharactersExist()
+        public void NoTMProSubMeshes()
         {
             foreach (var text in MonoBehaviour.FindObjectsOfType<TMPro.TMP_SubMeshUI>())
             {
                 Assert.True(false, $"{text.name} is a fallback textmeshpro");
             }
         }
-
-        // // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-        // // `yield return null;` to skip a frame.
-        // [UnityTest]
-        // public IEnumerator UITestsWithEnumeratorPasses()
-        // {
-        //     // Use the Assert class to test conditions.
-        //     // Use yield to skip a frame.
-        //     yield return null;
-        // }
+        [Test]
+        public void NavigationDisabled()
+        {
+            foreach (var selectable in MonoBehaviour.FindObjectsOfType<Selectable>())
+            {
+                Assert.IsTrue(selectable.navigation.mode == Navigation.Mode
+                .None, $"{selectable.name} has navigation enabled");
+            }
+        }
     }
 }

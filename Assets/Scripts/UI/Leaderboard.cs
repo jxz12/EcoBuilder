@@ -8,17 +8,17 @@ namespace EcoBuilder.UI
 {
     public class Leaderboard : MonoBehaviour
     {
-        [SerializeField] TMPro.TextMeshProUGUI title, topScores, botScores;
+        [SerializeField] TMPro.TextMeshProUGUI title, topScores, nearbyScores;
         [SerializeField] Button moreButton;
         void Awake()
         {
-            moreButton.onClick.AddListener(GetMoreScores);
+            moreButton.onClick.AddListener(GetMoreTopScores);
             topPanelLayout.enabled = true;
             topPanelFitter.enabled = true;
         }
         int? currentIdx = null;
         string topScoresText = "";
-        [SerializeField] int topScoresShowing = 0;
+        int topScoresShowing = 0;
         public void SwitchLevel(int levelIdx, string levelTitle)
         {
             currentIdx = levelIdx;
@@ -27,13 +27,22 @@ namespace EcoBuilder.UI
             topScoresShowing = 0;
             topScoresText = "";
             topScores.text = "loading...";
+            topPanelLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            ForceUpdateLayout();
+            
             moreButton.interactable = true;
-            GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, (b,s)=>{ if (b) UpdateScores(s); });
+            GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, UpdateTopScores);
+
+            nearbyScores.text = "loading...";
+            GameManager.Instance.GetNearbyRanksRemote(levelIdx, 1, 1, UpdateNearbyScores);
         }
         [SerializeField] VerticalLayoutGroup topPanelLayout;
         [SerializeField] ContentSizeFitter topPanelFitter;
-        void UpdateScores(string newScoresText)
+        void UpdateTopScores(bool successful, string newScoresText)
         {
+            if (!successful) {
+                topScores.text = topScoresText + "Please try again later.";
+            }
             if (newScoresText == "")
             {
                 moreButton.interactable = false;
@@ -49,18 +58,32 @@ namespace EcoBuilder.UI
                     topScoresShowing += 1;
                 }
             }
-            
+            ForceUpdateLayout();
+        }
+        void UpdateNearbyScores(bool successful, string newScoresText)
+        {
+            if (!successful) {
+                nearbyScores.text = "Please try again later.";
+            }
+            Assert.IsFalse(currentIdx == null);
+            nearbyScores.text = $"{newScoresText}Average: {GameManager.Instance.GetCachedMedian((int)currentIdx)}";
+            {
+                
+            }
+        }
+        void ForceUpdateLayout()
+        {
             Canvas.ForceUpdateCanvases();
             topPanelLayout.CalculateLayoutInputVertical();
             topPanelLayout.SetLayoutVertical();
             topPanelFitter.SetLayoutVertical();
         }
-        public void GetMoreScores()
+        public void GetMoreTopScores()
         {
             Assert.IsFalse(currentIdx==null, "no level selected");
 
             topScores.text += "loading...";
-            GameManager.Instance.GetRankedScoresRemote((int)currentIdx, topScoresShowing, 10, (b,s)=>{ UpdateScores(s); });
+            GameManager.Instance.GetRankedScoresRemote((int)currentIdx, topScoresShowing, 10, UpdateTopScores);
         }
 
         // [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;

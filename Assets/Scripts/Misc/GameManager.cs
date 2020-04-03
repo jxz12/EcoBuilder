@@ -83,6 +83,7 @@ namespace EcoBuilder
             loadingBar.Show(false);
             // OnSceneLoaded?.Invoke(toLoad);
             OnLoaded?.Invoke();
+            SendUnsentPost();
         }
 
 

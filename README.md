@@ -10,8 +10,6 @@ do high scores for heavy 3
 some final bosses
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 
-send data collected while not connected
-
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
 also make sure undoing and redoing keeps this correct (check adjacency before and after)
@@ -19,12 +17,10 @@ to test layout, add nodes and links and make sure stress is lower than a certain
 double check the score for certiain combinations too
 automated random graphs to test for no NaN
 
-check all UI.Image components to make sure they have materials
-check all serializefields to make sure they are not null
-check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
-check for any TMPro.TMP_SubMeshUI scripts
-check that all UI navigation is disabled
 use reflection to smell the smellylisteners
+check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
+
+check that all UI navigation is disabled
 
 # Research world
 verify high scores by checking matrices

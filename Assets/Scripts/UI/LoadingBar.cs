@@ -12,12 +12,12 @@ namespace EcoBuilder.UI
             "Preparing your ecosystem...",
             "Watering the plants...",
             "Feeding the lions...",
-            "Holding a General Election to elect the King of the Jungle...",//, but with Single Transferable Vote instead of First Past the Post because Democracy is important, even in the wild...",
+            "Holding a General Election to elect the King of the Jungle...", //, but with Single Transferable Vote instead of First Past the Post because Democracy is important, even in the wild...",
             "Cloning Velociraptors from Jurassic fossils...",
             "Noah's most difficult job was probably not building the ark, but keeping his ecosystem alive...",
             "Forging food chains...",
             "Who let the carnivores out?",
-            "Spinning your food web...",
+            "Spinning the silk for your food web...",
             "Using Fungi to decompose the Ecosystem of the previous player...",
             "Waiting for evolution to occur... eventually..."
         };
@@ -35,7 +35,7 @@ namespace EcoBuilder.UI
             if (showing) {
                 funnyMessage.text = possibleMessages[Random.Range(0, possibleMessages.Length)];
                 StopAllCoroutines();
-                StartCoroutine(MoveUp());
+                StartCoroutine(MoveUp(0));
             }
         }
         IEnumerator MoveUp(float duration=.5f)

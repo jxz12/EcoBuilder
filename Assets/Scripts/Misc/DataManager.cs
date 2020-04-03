@@ -10,12 +10,9 @@ using System.Text;
 
 namespace EcoBuilder
 {
+    // data collection and storage bits of GameManager
     public partial class GameManager : MonoBehaviour
     {
-        /////////////////////
-        // data collection //
-        /////////////////////
-
         [Serializable]
         private class PlayerDetails
         {
@@ -34,6 +31,7 @@ namespace EcoBuilder
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
             public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
+            public int unsentCount=0;
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -50,16 +48,16 @@ namespace EcoBuilder
             playerPath = Application.persistentDataPath+"/player.data";
 
 #if UNITY_EDITOR
-            DeletePlayerDetailsLocal();
+            // DeletePlayerDetailsLocal();
 #endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
         }
-        private bool SavePlayerDetailsLocal()
+        private void SavePlayerDetailsLocal()
         {
 #if UNITY_WEBGL
-            return false;
+            return;
 #endif
             try
             {
@@ -67,12 +65,10 @@ namespace EcoBuilder
                 FileStream file = File.Create(playerPath);
                 bf.Serialize(file, player);
                 file.Close();
-                return true;
             }
             catch (Exception e)
             {
                 Debug.LogError("could not save player: " + e.Message);
-                return false;
             }
         }
         private bool LoadPlayerDetailsLocal()
@@ -96,7 +92,7 @@ namespace EcoBuilder
         }
         private void DeletePlayerDetailsLocal()
         {
-            // this loses the leaderboard cache, but it shouldn't be a problem because this function is only called if player can connect remotely
+            // note: this loses the median cache and unsent post
             player = new PlayerDetails();
 #if UNITY_WEBGL
             return;
@@ -216,6 +212,18 @@ namespace EcoBuilder
             };
             pat.Post(data, (b,s)=>{ OnCompletion(b,s); } );
         }
+        public void DontAskAgainForLogin()
+        {
+            player.team = PlayerDetails.Team.NeverAsk;
+            SavePlayerDetailsLocal();
+        }
+        public void AskAgainForLogin()
+        {
+            Assert.IsFalse(player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion, "should not have option to create account");
+            // note that this function purposefully does not delete the player in order to keep their highscore info
+            player.team = PlayerDetails.Team.Unassigned;
+        }
+
 
         //////////////////////////////////////////////
         // things that can be saved and posted later
@@ -255,14 +263,15 @@ namespace EcoBuilder
         // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
         public long GetHighScoreLocal(int levelIdx)
         {
-            if (!player.highScores.ContainsKey(levelIdx)) {
+            long score;
+            if (!player.highScores.TryGetValue(levelIdx, out score)) {
 #if UNITY_EDITOR
                 return 0;
 #else
                 return -1;
 #endif
             }
-            return player.highScores[levelIdx];
+            return score;
         }
         // returns whether new high score is achieved
         private bool SaveHighScoreLocal(int levelIdx, long score)
@@ -331,34 +340,64 @@ namespace EcoBuilder
             };
             pat.Post(data, OnCompletion);
         }
+        public void GetNearbyRanksRemote(int levelIdx, int rowsAbove, int rowsBelow, Action<bool, string> OnCompletion)
+        {
+            var data = new Dictionary<string, string>() {
+                { "username", player.username },
+                { "password", player.password },
+                { "level_index", levelIdx.ToString() },
+            };
+            pat.Post(data, OnCompletion);
+        }
 
         private void SavePost(Dictionary<string, string> data)
         {
-#if UNITY_WEBGL
-            return;
-#endif
             player.unsentPost.Enqueue(data);
+            player.unsentCount = player.unsentPost.Count;
             SavePlayerDetailsLocal();
-        }
-        public void DontAskAgainForLogin()
-        {
-            player.team = PlayerDetails.Team.NeverAsk;
-            SavePlayerDetailsLocal();
-        }
-        public void AskAgainForLogin()
-        {
-            Assert.IsFalse(player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion, "should not have option to create account");
-            // note that this function purposefully does not delete the player in order to keep their highscore info
-            player.team = PlayerDetails.Team.Unassigned;
         }
 
+        bool sendingUnsent;
+        private void SendUnsentPost()
+        {
+            if (sendingUnsent) {
+                return;
+            }
+            sendingUnsent = true;
+
+            void SendNextIfPossible(bool prevSuccess)
+            {
+                if (prevSuccess)
+                {
+                    player.unsentPost.Dequeue();
+                    player.unsentCount = player.unsentPost.Count;
+                    SavePlayerDetailsLocal();
+                    if (player.unsentPost.Count > 0) {
+                        pat.Post(player.unsentPost.Peek(), (b,s)=>SendNextIfPossible(b));
+                    } else {
+                        sendingUnsent = false;
+                    }
+                }
+                else
+                {
+                    sendingUnsent = false;
+                }
+            }
+            if (player.unsentPost.Count > 0)
+            {
+                pat.Post(player.unsentPost.Peek(), (b,s)=>SendNextIfPossible(b));
+            }
+        }
+
+
+        ////////////////////////////////////
+        // purely for testing leaderboards
 #if UNITY_EDITOR
-        // for testing
         void PopulateDatabaseWithScores()
         {
             for (int i=0; i<26; i++)
             {
-                string name = "bob_" + (char)('A'+i);
+                string name = "bob" + (char)('A'+i);
                 RegisterLocal(name, "", name+"@bob.co.uk");
                 RegisterRemote((b,s)=>print(b+" "+s));
                 SetGDPRRemote(true, (b,s)=>print(b+" "+s));
