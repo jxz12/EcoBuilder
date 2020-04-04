@@ -127,12 +127,12 @@ namespace EcoBuilder.UI
             }
             if (displayedStars < 2)
             {
-                scoreTargetText.text = target1.ToString();
+                scoreTargetText.text = target1.ToString("N0");
                 scoreTargetImage.sprite = targetSprite1;
             }
             else
             {
-                scoreTargetText.text = target2.ToString();
+                scoreTargetText.text = target2.ToString("N0");
                 scoreTargetImage.sprite = targetSprite2;
             }
             star1.SetBool("Filled", displayedStars>=1);

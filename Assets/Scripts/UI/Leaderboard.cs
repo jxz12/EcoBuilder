@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Assertions;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -8,7 +9,7 @@ namespace EcoBuilder.UI
 {
     public class Leaderboard : MonoBehaviour
     {
-        [SerializeField] TMPro.TextMeshProUGUI title, topScores, nearbyScores;
+        [SerializeField] TMPro.TextMeshProUGUI title, topScores, lowerScores;
         [SerializeField] Button moreButton;
         void Awake()
         {
@@ -33,8 +34,16 @@ namespace EcoBuilder.UI
             moreButton.interactable = true;
             GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, UpdateTopScores);
 
-            nearbyScores.text = "loading...";
-            GameManager.Instance.GetNearbyRanksRemote(levelIdx, 1, 1, UpdateNearbyScores);
+            var lowerScoresText = new StringBuilder();
+            long? playerScore = GameManager.Instance.GetHighScoreLocal(levelIdx);
+            if (playerScore != null) {
+                lowerScoresText.Append($"You: {(playerScore??0).ToString("N0")}\n");
+            }
+            long? median = GameManager.Instance.GetCachedMedian(levelIdx);
+            if (median != null) {
+                lowerScoresText.Append($"Average: {(median??0).ToString("N0")}");
+            }
+            lowerScores.text = lowerScoresText.ToString();
         }
         [SerializeField] VerticalLayoutGroup topPanelLayout;
         [SerializeField] ContentSizeFitter topPanelFitter;
@@ -60,17 +69,6 @@ namespace EcoBuilder.UI
             }
             ForceUpdateLayout();
         }
-        void UpdateNearbyScores(bool successful, string newScoresText)
-        {
-            if (!successful) {
-                nearbyScores.text = "Please try again later.";
-            }
-            Assert.IsFalse(currentIdx == null);
-            nearbyScores.text = $"{newScoresText}Average: {GameManager.Instance.GetCachedMedian((int)currentIdx)}";
-            {
-                
-            }
-        }
         void ForceUpdateLayout()
         {
             Canvas.ForceUpdateCanvases();
@@ -85,43 +83,5 @@ namespace EcoBuilder.UI
             topScores.text += "loading...";
             GameManager.Instance.GetRankedScoresRemote((int)currentIdx, topScoresShowing, 10, UpdateTopScores);
         }
-
-        // [SerializeField] TMPro.TextMeshProUGUI titleText, nameText, scoreText;
-        // [SerializeField] GameObject lockShade;
-
-        // public Level LevelToPlay { get { return levelParent.GetComponentInChildren<Level>(); } }
-        // public Level GiveLevelPrefab(Level levelPrefab)
-        // {
-        //     name = levelPrefab.Details.Idx.ToString();
-        //     titleText.text = levelPrefab.Details.Title;
-        //     if (GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx) >= 0)
-        //     {
-        //         lockShade.SetActive(false);
-        //     }
-        //     long playerScore = GameManager.Instance.GetHighScoreLocal(levelPrefab.Details.Idx);
-        //     nameText.text = "loading high scores...\n\n\nyour score";
-        //     scoreText.text = "\n\n\n" + playerScore;
-        //     return Instantiate(levelPrefab, levelParent);
-        // }
-        // public void SetFromGameManagerCache()
-        // {
-        //     var scores = GameManager.Instance.GetLeaderboardScores(LevelToPlay.Details.Idx);
-        //     if (scores == null) {
-        //         // in case it has never been cached
-        //         return;
-        //     }
-        //     nameText.text = "";
-        //     scoreText.text = "";
-        //     for (int i=0; i<3; i++)
-        //     {
-        //         nameText.text += (i+1) + " " + (scores.Count>i? scores[i].Item1 : "n/a") + "\n";
-        //         scoreText.text += (scores.Count>i? scores[i].Item2.ToString() : "") + "\n";
-        //     }
-        //     nameText.text += "you\nworld average";
-        //     long playerScore = GameManager.Instance.GetHighScoreLocal(LevelToPlay.Details.Idx);
-
-        //     long? median = GameManager.Instance.GetLeaderboardMedian(LevelToPlay.Details.Idx);
-        //     scoreText.text += playerScore + "\n" + median;
-        // }
     }
 }

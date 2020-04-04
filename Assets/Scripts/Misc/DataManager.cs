@@ -261,14 +261,14 @@ namespace EcoBuilder
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
-        public long GetHighScoreLocal(int levelIdx)
+        public long? GetHighScoreLocal(int levelIdx)
         {
             long score;
             if (!player.highScores.TryGetValue(levelIdx, out score)) {
 #if UNITY_EDITOR
                 return 0;
 #else
-                return -1;
+                return null;
 #endif
             }
             return score;

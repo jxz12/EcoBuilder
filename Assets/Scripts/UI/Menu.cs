@@ -71,8 +71,8 @@ namespace EcoBuilder.UI
                 Assert.IsFalse(instantiated.ContainsKey(prefab.Details.Idx), $"tried to spawn 2 levels with same idx {prefab.Details.Idx}");
                 instantiated[prefab.Details.Idx] = Instantiate(prefab, parent);
 
-                long score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
-                if (score >= 0)
+                long? score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
+                if (score != null)
                 {
                     unlockedIdxs.Add(prefab.Details.Idx);
                     if (prefab.NextLevelPrefab!=null) {

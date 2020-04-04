@@ -221,7 +221,7 @@ namespace EcoBuilder
         {
             int idx = playedLevel.Details.Idx;
 
-            long prevScore = GetHighScoreLocal(idx);
+            long? prevScore = GetHighScoreLocal(idx);
             SaveHighScoreLocal(idx, score);
 
             if (LoggedIn) {
@@ -235,7 +235,7 @@ namespace EcoBuilder
             }
 
             if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None) {
-                report.SetResults(nStars, score, prevScore, GetCachedMedian(idx));
+                report.SetResults(nStars, score, prevScore??0, GetCachedMedian(idx));
             } else {
                 report.UnsetResults();
             }
