@@ -5,10 +5,10 @@ claim moneys
 LEVELS:
 fix superfocus small nodes
 fix the 2 visualisations (finalize trophic and do procrustes for SGD layouts)
-do high scores for heavy 3
 
-some final bosses
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
+do high scores for heavy 3
+some final bosses
 
 # TESTS
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
@@ -16,6 +16,7 @@ also make sure undoing and redoing keeps this correct (check adjacency before an
 to test layout, add nodes and links and make sure stress is lower than a certain amount
 double check the score for certiain combinations too
 automated random graphs to test for no NaN
+make sure web_gl is same as not web_gl
 
 use reflection to smell the smellylisteners
 check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
@@ -27,7 +28,6 @@ verify high scores by checking matrices
 
 # Other
 make health go blue if above a super threshold (will need another fill sprite)
-make shade a global thing (with a stack) because it's stupid to have it everywhere
 release game with australian fires as angle?
 make nodelink tooltip do something more flashy when links are added and removed
 

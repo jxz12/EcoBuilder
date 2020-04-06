@@ -39,5 +39,14 @@ namespace EcoBuilder.Tests
                 .None, $"{selectable.name} has navigation enabled");
             }
         }
+        [Test]
+        public void ButtonsAssignedInScript()
+        {
+            foreach (var button in MonoBehaviour.FindObjectsOfType<Button>())
+            {
+                int count = button.onClick.GetPersistentEventCount();
+                Assert.IsTrue(count == 0, $"Button {button.name} has {count} listeners");
+            }
+        }
     }
 }

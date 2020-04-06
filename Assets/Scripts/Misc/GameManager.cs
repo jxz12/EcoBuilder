@@ -32,7 +32,6 @@ namespace EcoBuilder
             }
 
             InitPlayer();
-            print("TODO: send data periodically");
         }
 
         void Start()
@@ -46,6 +45,7 @@ namespace EcoBuilder
         void OnDestroy()
         {
             print("TODO: send data if possible? and also on every level finish?");
+            SendUnsentPost();
         }
             
 
@@ -69,7 +69,7 @@ namespace EcoBuilder
             }
             loadingBar.SetProgress(.333f);
 #if UNITY_EDITOR
-            // yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(1);
 #endif
             if (toLoad != null)
             {
@@ -81,7 +81,6 @@ namespace EcoBuilder
                 }
             }
             loadingBar.Show(false);
-            // OnSceneLoaded?.Invoke(toLoad);
             OnLoaded?.Invoke();
             SendUnsentPost();
         }

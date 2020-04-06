@@ -129,21 +129,16 @@ namespace EcoBuilder.NodeLink
             if (ConstrainTrophic)
             {
                 Trophic.IterateTrophic((i,y)=> nodes[i].StressPos.y = y);
-                LayoutMajorizationHorizontal(idx);
+                // LocalMajorizationHorizontal(idx);
             }
             else
             {
-                LayoutMajorization(idx);
+                // LocalMajorization(idx);
             }
 
             todoBFS.Enqueue(idx);
         }
-        // public void SolveTrophicLevels()
-        // {
-        //     Trophic.InitTrophic(nodes.Indices, links.GetColumnIndicesInRow);
-        //     Trophic.SolveTrophic((i,y)=> nodes[i].StressPos.y=y);
-        // }
-        private void LayoutMajorization(int i)
+        private void LocalMajorization(int i)
         {
             Vector2 X_i = nodes[i].StressPos;
             float topSumX = 0, topSumY = 0, botSum=0;
@@ -164,7 +159,7 @@ namespace EcoBuilder.NodeLink
                 nodes[i].StressPos = new Vector2(topSumX/botSum, topSumY/botSum);
             }
         }
-        private void LayoutMajorizationHorizontal(int i)
+        private void LocalMajorizationHorizontal(int i)
         {
             float topSumX = 0, /*topSumY = 0,*/ botSum=0;
             Vector2 X_i = nodes[i].StressPos;

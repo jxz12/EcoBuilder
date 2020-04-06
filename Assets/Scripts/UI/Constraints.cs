@@ -149,8 +149,8 @@ namespace EcoBuilder.UI
                 {
                     float t = (Time.time-startTime) / period;
                     im.color = new Color(1,1,1, .175f+.075f*Mathf.Sin(2*Mathf.PI*t));
+                    rt.anchoredPosition = new Vector2(highlighted.anchoredPosition.x-padding/2, highlighted.anchoredPosition.y+padding/2);
                     rt.sizeDelta = new Vector2(highlighted.sizeDelta.x+padding, highlighted.sizeDelta.y+padding);
-                    rt.anchoredPosition = new Vector2(highlighted.anchoredPosition.x-padding/2, highlighted.anchoredPosition.y-padding/2);
                     yield return null;
                 }
             }

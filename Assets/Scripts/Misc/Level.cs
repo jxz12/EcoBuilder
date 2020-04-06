@@ -186,8 +186,9 @@ namespace EcoBuilder
             TweenToCard(.5f);
             OnCarded?.Invoke();
         }
+
         Transform thumbnailedParent;
-        public void HideCard(float duration=.5f)
+        private void HideCard(float duration=.5f)
         {
             TweenToZeroPos(duration, thumbnailedParent);
             TweenFromCard(.5f);
@@ -248,6 +249,12 @@ namespace EcoBuilder
         }
         private void RenderBelow()
         {
+#if UNITY_EDITOR
+            if (extraCanvas == null) {
+                return;
+            }
+#endif
+
             extraCanvas.overrideSorting = false; // RectMask2D breaks otherwise
             // extraCanvas.sortingOrder = 0;
             Destroy(extraRaycaster);
@@ -331,6 +338,7 @@ namespace EcoBuilder
                 cardGroup.alpha = 0;
                 cardCanvas.enabled = false;
                 tweeningCard = false;
+
                 RenderBelow();
             }
             StartCoroutine(Tween());
@@ -395,32 +403,31 @@ namespace EcoBuilder
         GameObject teacher;
         public void BeginPlay()
         {
-            Assert.IsTrue(GameManager.Instance.PlayedLevelDetails == details, "wrong level beginning");
+            Assert.IsTrue(GameManager.Instance.PlayedLevelDetails == details, "wrong level being started");
 
+            IEnumerator WaitOneFrameThenBeginPlay()
+            {
+                yield return null;
+                thumbnailedParent = GameManager.Instance.PlayAnchor; // detach from possibly the menu
+
+                HideCard(1.5f);
+
+                if (tutorialPrefab != null) {
+                    teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutCanvas.transform);
+                }
+                GameManager.Instance.HelpText.ResetPosition();
+                GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
+
+                // necessary because we do not have a separate animator state for playing
+                playButton.interactable = false;
+                yield return new WaitForSeconds(1f);
+
+                playButton.gameObject.SetActive(false);
+                quitButton.gameObject.SetActive(true);
+                replayButton.gameObject.SetActive(true);
+            }
             StartCoroutine(WaitOneFrameThenBeginPlay());
         }
-        private IEnumerator WaitOneFrameThenBeginPlay()
-        {
-            yield return null;
-            thumbnailedParent = GameManager.Instance.PlayAnchor; // detach from possibly the menu
-
-            HideCard(1.5f);
-
-            if (tutorialPrefab != null) {
-                teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutCanvas.transform);
-            }
-            GameManager.Instance.HelpText.ResetPosition();
-            GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
-
-            // necessary because we do not have a separate animator state for playing
-            playButton.interactable = false;
-            yield return new WaitForSeconds(1f);
-
-            playButton.gameObject.SetActive(false);
-            quitButton.gameObject.SetActive(true);
-            replayButton.gameObject.SetActive(true);
-        }
-
         public void Replay() // for button
         {
             if (teacher != null) {

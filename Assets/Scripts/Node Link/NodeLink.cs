@@ -87,12 +87,20 @@ namespace EcoBuilder.NodeLink
 #if !UNITY_WEBGL
             await Task.Run(()=> Johnson.SolveLoop());
             await Task.Run(()=> Trophic.SolveTrophic(epsGS));
-            await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel));
+            if (ConstrainTrophic) {
+                await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel));
+            } else {
+                await Task.Run(()=> SGD.SolveStress(t_max, epsSGD));
+            }
             SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
 #else
             Johnson.SolveLoop();
             Trophic.SolveTrophic(epsGS);
-            SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel);
+            if (ConstrainTrophic) {
+                SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel);
+            } else {
+                SGD.SolveStress(t_max, epsSGD);
+            }
             SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
 

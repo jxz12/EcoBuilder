@@ -22,13 +22,18 @@ namespace EcoBuilder.NodeLink
         private static List<int> sgdComponents = new List<int>();
 
         static List<Vector3> sgdPos = new List<Vector3>();
+        // static List<Vector3> sgdPosOld = new List<Vector3>();
         static System.Random sgdRand;
         public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
             sgdSquished.Clear();
             sgdUnsquished.Clear();
-            sgdPos.Clear(); // node positions
             sgdComponents.Clear();
+
+            // var temp = sgdPosOld;
+            // sgdPosOld = sgdPos;
+            // sgdPos = temp;
+            sgdPos.Clear(); // node positions
 
             sgdRand = new System.Random(seed);
             foreach (int i in undirected.Keys)
@@ -50,6 +55,12 @@ namespace EcoBuilder.NodeLink
                 }
             }
             sgdSources.Add(sgdTargets.Count); // for iteration to next
+
+            // clean up excess in case nodes are remoed
+            sgdPos.TrimExcess();
+            sgdUnsquished.TrimExcess();
+            sgdSources.TrimExcess();
+            sgdTargets.TrimExcess();
         }
 
         struct StressTerm {
@@ -57,17 +68,28 @@ namespace EcoBuilder.NodeLink
             public float d, w;
         }
         static List<StressTerm> sgdTerms = new List<StressTerm>();
-        public static void SolveStress(int t_max=10, float eps=.1f, Func<int, float> YConstraint=null)
+        public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint=null)
+        {
+            FindStressTerms();
+            FindConnectedComponents();
+
+            var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
+            PerformSGD(etas);
+        }
+        static int d_max;
+        static void FindStressTerms()
         {
             // calculate terms with BFS
             sgdTerms.Clear();
-            int d_max = 0;
+            d_max = 0;
             var q = new Queue<int>();
+            var d = new Dictionary<int, int>();
             for (int source=0; source<sgdSources.Count-1; source++)
             {
                 // BFS for each node
-                var d = new Dictionary<int, int>();
+                d.Clear();
                 d[source] = 0;
+                q.Enqueue(source);
                 while (q.Count > 0)
                 {
                     int prev = q.Dequeue();
@@ -93,6 +115,13 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
+
+            // in case nodes are deleted
+            sgdTerms.TrimExcess();
+        }
+        public static int NumComponents { get; private set; } = 0;
+        static void FindConnectedComponents()
+        {
             // calculate connected components
             int ncc = 0;
             for (int source=0; source<sgdSources.Count-1; source++)
@@ -101,8 +130,8 @@ namespace EcoBuilder.NodeLink
                     continue;
                 }
                 sgdComponents[source] = ncc;
-                q.Clear();
-                
+
+                var q = new Queue<int>();
                 q.Enqueue(source);
                 while (q.Count > 0)
                 {
@@ -121,14 +150,44 @@ namespace EcoBuilder.NodeLink
                 ncc += 1;
             }
             NumComponents = ncc;
+        }
+        private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)
+        {
+            float lambda = Mathf.Log(eta_max/eps) / (t_max-1);
+            for (int t=0; t<t_max; t++)
+            {
+                yield return eta_max * Mathf.Exp(-lambda * t);
+            }
+        }
+        static readonly float muMax=1f;
+        static void PerformSGD(List<float> etas)
+        {
+            int t_max = etas.Count;
+            for (int t=0; t<t_max; t++)
+            {
+                float eta = etas[t];
 
-            // keep memory tidy
-            sgdTerms.TrimExcess();
-            sgdPos.TrimExcess();
-            sgdUnsquished.TrimExcess();
-            sgdSources.TrimExcess();
-            sgdTargets.TrimExcess();
+                FYShuffle(sgdTerms, sgdRand);
+                foreach (var term in sgdTerms)
+                {
+                    Vector3 X_ij = sgdPos[term.i] - sgdPos[term.j];
+                    float mag = X_ij.magnitude;
 
+                    float mu = Math.Min(term.w * eta, muMax);
+                    Vector3 r = ((mag-term.d)/2f) * (X_ij/mag);
+
+                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
+                   
+                    sgdPos[term.i] -= mu * r;
+                    sgdPos[term.j] += mu * r;
+                }
+            }
+        }
+
+        static readonly float zMagMin=.01f;
+        static void PerformSGDConstrained(List<float> etas, Func<int, float> YConstraint)
+        {
+            int t_max = etas.Count;
             // init y-position if constrained
             float yMultiplier = 1;
             if (YConstraint != null) {
@@ -137,7 +196,6 @@ namespace EcoBuilder.NodeLink
                 }
                 yMultiplier = 0;
             }
-            var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
             var zMags = new List<float>(ExpoSchedule(1, t_max, zMagMin));
             for (int t=0; t<t_max; t++)
             {
@@ -167,26 +225,17 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        static readonly float zMagMin=.01f;
-        static readonly float muMax=1f;
-
-
-        private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)
-        {
-            float lambda = Mathf.Log(eta_max/eps) / (t_max-1);
-            for (int t=0; t<t_max; t++)
-            {
-                yield return eta_max * Mathf.Exp(-lambda * t);
-            }
-        }
         public static void RewriteSGD(Action<int, Vector2> SetPos)
         {
-            SeparateConnectedComponents();
+            // SeparateConnectedComponents();
             for (int i=0; i<sgdPos.Count; i++)
             {
                 SetPos(sgdUnsquished[i], sgdPos[i]);
             }
-            UnityEngine.Debug.Log("TODO: do a procrustes analysis forgetting about the old connected components and using only sgdPos");
+        }
+        private static void Procrustes()
+        {
+
         }
         // // reassigns positions, but flips components if it will preserve distances better
         // static List<float> oldCentroids = new List<float>();
@@ -257,7 +306,6 @@ namespace EcoBuilder.NodeLink
         //////////////////////////////////////////////////////////////
         // to separate components in layout and calculate disjointness
 
-        public static int NumComponents { get; private set; } = 0;
         private static void SeparateConnectedComponents()
         {
             int ncc = NumComponents;

@@ -182,7 +182,6 @@ namespace EcoBuilder
                 constraints.HighlightLoop();
                 break;
             }
-            constraints.HighlightChain();
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
 
