@@ -30,7 +30,6 @@ namespace EcoBuilder
             if (SceneManager.sceneCount == 1) { // on startup
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
-
             InitPlayer();
         }
 
@@ -44,7 +43,6 @@ namespace EcoBuilder
         }
         void OnDestroy()
         {
-            print("TODO: send data if possible? and also on every level finish?");
             SendUnsentPost();
         }
             

@@ -1,5 +1,5 @@
 {
-    "name": "EcoBuilder.Tests",
+    "name": "EcoBuilder.EditTests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

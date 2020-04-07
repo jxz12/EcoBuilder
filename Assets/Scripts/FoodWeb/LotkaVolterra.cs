@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace EcoBuilder.Model
+namespace EcoBuilder.FoodWeb
 {
     // a class to implement a simple lotka-volterra Type I functional response model
     // can find equilibrium abundances, flux at equilibrium, local asymptotic stability

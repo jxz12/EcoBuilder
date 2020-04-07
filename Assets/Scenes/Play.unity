@@ -3140,7 +3140,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   model: {fileID: 829302511}
-  nodelink: {fileID: 1082250983}
+  graph: {fileID: 1082250983}
   inspector: {fileID: 1168393887}
   constraints: {fileID: 2059067487}
   recorder: {fileID: 87083486}
@@ -3177,7 +3177,7 @@ GameObject:
   - component: {fileID: 1082250983}
   - component: {fileID: 1082250981}
   m_Layer: 0
-  m_Name: Node Link
+  m_Name: Graph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

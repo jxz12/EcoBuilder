@@ -21,8 +21,8 @@ namespace EcoBuilder.NodeLink
         // for components and procrustes
         private static List<int> sgdComponents = new List<int>();
 
-        static List<Vector3> sgdPos = new List<Vector3>();
-        // static List<Vector3> sgdPosOld = new List<Vector3>();
+        static List<Vector2> sgdPos = new List<Vector2>();
+        static List<Vector2> sgdPosOld = new List<Vector2>();
         static System.Random sgdRand;
         public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
@@ -30,10 +30,11 @@ namespace EcoBuilder.NodeLink
             sgdUnsquished.Clear();
             sgdComponents.Clear();
 
-            // var temp = sgdPosOld;
-            // sgdPosOld = sgdPos;
-            // sgdPos = temp;
-            sgdPos.Clear(); // node positions
+            // reset node positions
+            sgdPosOld.Clear();
+            var temp = sgdPosOld;
+            sgdPosOld = sgdPos;
+            sgdPos = temp;
 
             sgdRand = new System.Random(seed);
             foreach (int i in undirected.Keys)
@@ -75,6 +76,8 @@ namespace EcoBuilder.NodeLink
 
             var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
             PerformSGD(etas);
+            SeparateConnectedComponents();
+            Procrustes();
         }
         static int d_max;
         static void FindStressTerms()
@@ -170,11 +173,11 @@ namespace EcoBuilder.NodeLink
                 FYShuffle(sgdTerms, sgdRand);
                 foreach (var term in sgdTerms)
                 {
-                    Vector3 X_ij = sgdPos[term.i] - sgdPos[term.j];
+                    Vector2 X_ij = sgdPos[term.i] - sgdPos[term.j];
                     float mag = X_ij.magnitude;
 
                     float mu = Math.Min(term.w * eta, muMax);
-                    Vector3 r = ((mag-term.d)/2f) * (X_ij/mag);
+                    Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
 
                     Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
                    
@@ -187,6 +190,7 @@ namespace EcoBuilder.NodeLink
         static readonly float zMagMin=.01f;
         static void PerformSGDConstrained(List<float> etas, Func<int, float> YConstraint)
         {
+            /*
             int t_max = etas.Count;
             // init y-position if constrained
             float yMultiplier = 1;
@@ -224,10 +228,10 @@ namespace EcoBuilder.NodeLink
                     sgdPos[term.j] += mu * r;
                 }
             }
+            */
         }
         public static void RewriteSGD(Action<int, Vector2> SetPos)
         {
-            // SeparateConnectedComponents();
             for (int i=0; i<sgdPos.Count; i++)
             {
                 SetPos(sgdUnsquished[i], sgdPos[i]);
@@ -341,7 +345,7 @@ namespace EcoBuilder.NodeLink
             for (int i=0; i<sgdComponents.Count; i++)
             {
                 int cc = sgdComponents[i];
-                sgdPos[i] += new Vector3(offsets[cc], 0);
+                sgdPos[i] += new Vector2(offsets[cc], 0);
             }
         }
 

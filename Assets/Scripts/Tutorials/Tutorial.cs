@@ -17,8 +17,8 @@ namespace EcoBuilder.Tutorials
         protected UI.Score score;
         protected UI.Recorder recorder;
         protected UI.Constraints constraints;
-        protected NodeLink.NodeLink nodelink;
-        protected Model.Model model;
+        protected NodeLink.Graph graph;
+        protected FoodWeb.Model model;
 
         protected Camera mainCam;
         protected Image pointerIm;
@@ -59,15 +59,15 @@ namespace EcoBuilder.Tutorials
             score = FindObjectOfType<UI.Score>();
             constraints = FindObjectOfType<UI.Constraints>();
             recorder = FindObjectOfType<UI.Recorder>();
-            nodelink = FindObjectOfType<NodeLink.NodeLink>();
-            model = FindObjectOfType<Model.Model>();
+            graph = FindObjectOfType<NodeLink.Graph>();
+            model = FindObjectOfType<FoodWeb.Model>();
 
             Assert.IsNotNull(help);
             Assert.IsNotNull(inspector);
             Assert.IsNotNull(score);
             Assert.IsNotNull(constraints);
             Assert.IsNotNull(recorder);
-            Assert.IsNotNull(nodelink);
+            Assert.IsNotNull(graph);
             Assert.IsNotNull(model);
         }
 

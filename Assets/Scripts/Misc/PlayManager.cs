@@ -7,8 +7,8 @@ namespace EcoBuilder
     // this class handles communication between all the top level components
     public class PlayManager : MonoBehaviour
     {
-        [SerializeField] Model.Model model;
-        [SerializeField] NodeLink.NodeLink nodelink;
+        [SerializeField] FoodWeb.Model model;
+        [SerializeField] NodeLink.Graph graph;
 
         [SerializeField] UI.Inspector inspector;
         [SerializeField] UI.Constraints constraints;
@@ -22,77 +22,77 @@ namespace EcoBuilder
             ////////////////////////////////////
             // hook up events between objects //
             ////////////////////////////////////
-            inspector.OnSpawned +=  (i,b,g)=> { nodelink.AddNode(i,g); nodelink.SetIfNodeCanBeTarget(i,!b); };
+            inspector.OnSpawned +=  (i,b,g)=> { graph.AddNode(i,g); graph.SetIfNodeCanBeTarget(i,!b); };
             inspector.OnSpawned +=  (i,b,g)=> model.AddSpecies(i,b);
             inspector.OnSpawned +=  (i,b,g)=> { if (b) constraints.AddLeafIdx(i); else constraints.AddPawIdx(i); };
 
-            inspector.OnDespawned +=    (i)=> nodelink.RemoveNode(i);
+            inspector.OnDespawned +=    (i)=> graph.RemoveNode(i);
             inspector.OnDespawned +=    (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=    (i)=> constraints.RemoveIdx(i);
             inspector.OnSizeSet +=    (i,x)=> model.SetSpeciesBodySize(i,x);
             inspector.OnGreedSet +=   (i,x)=> model.SetSpeciesInterference(i,x);
-            inspector.OnConflicted += (i,m)=> nodelink.OutlineNode(i, cakeslice.Outline.Colour.Red);
-            inspector.OnConflicted += (i,m)=> nodelink.TooltipNode(i, m);
-            inspector.OnUnconflicted += (i)=> nodelink.UnoutlineNode(i);
-            inspector.OnUnconflicted += (i)=> nodelink.UntooltipNode(i);
-            inspector.OnIncubated +=     ()=> nodelink.ForceUnfocus();
-            inspector.OnIncubated +=     ()=> nodelink.MoveHorizontal(-.5f);
-            inspector.OnUnincubated +=   ()=> nodelink.MoveHorizontal(0);
+            inspector.OnConflicted += (i,m)=> graph.OutlineNode(i, cakeslice.Outline.Colour.Red);
+            inspector.OnConflicted += (i,m)=> graph.TooltipNode(i, m);
+            inspector.OnUnconflicted += (i)=> graph.UnoutlineNode(i);
+            inspector.OnUnconflicted += (i)=> graph.UntooltipNode(i);
+            inspector.OnIncubated +=     ()=> graph.ForceUnfocus();
+            inspector.OnIncubated +=     ()=> graph.MoveHorizontal(-.5f);
+            inspector.OnUnincubated +=   ()=> graph.MoveHorizontal(0);
 
-            nodelink.OnEmptyTapped += ()=> inspector.CancelIncubation();
+            graph.OnEmptyTapped += ()=> inspector.CancelIncubation();
 
             ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things
             // smelly because the second callback does something that should already be done
-            inspector.OnUserSpawned += (i)=> nodelink.ForceFocus(i);
-            nodelink.OnFocused +=      (i)=> inspector.InspectSpecies(i);
+            inspector.OnUserSpawned += (i)=> graph.ForceFocus(i);
+            graph.OnFocused +=      (i)=> inspector.InspectSpecies(i);
 
-            inspector.OnUserDespawned += (i)=> nodelink.ForceUnfocus();
-            nodelink.OnUnfocused +=      (i)=> inspector.Uninspect();
+            inspector.OnUserDespawned += (i)=> graph.ForceUnfocus();
+            graph.OnUnfocused +=      (i)=> inspector.Uninspect();
             ////////////////////////////
 
             // constraints
-            nodelink.OnLayedOut += ()=> constraints.UpdateDisjoint(nodelink.NumComponents > 1);
-            nodelink.OnLayedOut += ()=> constraints.DisplayEdge(nodelink.NumEdges);
-            nodelink.OnLayedOut += ()=> constraints.DisplayChain(nodelink.MaxChain);
-            nodelink.OnLayedOut += ()=> constraints.DisplayLoop(nodelink.MaxLoop);
+            graph.OnLayedOut += ()=> constraints.UpdateDisjoint(graph.NumComponents > 1);
+            graph.OnLayedOut += ()=> constraints.DisplayEdge(graph.NumEdges);
+            graph.OnLayedOut += ()=> constraints.DisplayChain(graph.MaxChain);
+            graph.OnLayedOut += ()=> constraints.DisplayLoop(graph.MaxLoop);
 
             model.OnEquilibrium += ()=> inspector.DrawHealthBars(i=> (float)model.GetNormalisedAbundance(i));
-            model.OnEquilibrium += ()=> nodelink.ReflowLinks((i,j)=> (float)model.GetNormalisedFlux(i,j));
+            model.OnEquilibrium += ()=> graph.ReflowLinks((i,j)=> (float)model.GetNormalisedFlux(i,j));
             model.OnEquilibrium += ()=> constraints.UpdateFeasibility(model.Feasible);
             model.OnEquilibrium += ()=> constraints.UpdateStability(model.Stable);
             model.OnEndangered += (i)=> inspector.MakeSpeciesObjectExtinct(i);
             model.OnRescued +=    (i)=> inspector.MakeSpeciesObjectRescued(i);
-            model.OnEndangered += (i)=> nodelink.SpawnEffectOnNode(i, skullPrefab.gameObject);
-            model.OnRescued +=    (i)=> nodelink.SpawnEffectOnNode(i, heartPrefab.gameObject);
-            model.OnEndangered += (i)=> nodelink.FlashNode(i);
-            model.OnRescued +=    (i)=> nodelink.UnflashNode(i);
+            model.OnEndangered += (i)=> graph.SpawnEffectOnNode(i, skullPrefab.gameObject);
+            model.OnRescued +=    (i)=> graph.SpawnEffectOnNode(i, heartPrefab.gameObject);
+            model.OnEndangered += (i)=> graph.FlashNode(i);
+            model.OnRescued +=    (i)=> graph.UnflashNode(i);
 
             constraints.OnLeafFilled +=    (b)=> inspector.SetProducerAvailability(b);
             constraints.OnPawFilled +=     (b)=> inspector.SetConsumerAvailability(b);
-            constraints.OnChainHovered +=   ()=> nodelink.OutlineChain(cakeslice.Outline.Colour.Red);
-            constraints.OnLoopHovered +=    ()=> nodelink.OutlineLoop(cakeslice.Outline.Colour.Red);
-            constraints.OnChainUnhovered += ()=> nodelink.UnoutlineChainOrLoop();
-            constraints.OnLoopUnhovered +=  ()=> nodelink.UnoutlineChainOrLoop();
+            constraints.OnChainHovered +=   ()=> graph.OutlineChain(cakeslice.Outline.Colour.Red);
+            constraints.OnLoopHovered +=    ()=> graph.OutlineLoop(cakeslice.Outline.Colour.Red);
+            constraints.OnChainUnhovered += ()=> graph.UnoutlineChainOrLoop();
+            constraints.OnLoopUnhovered +=  ()=> graph.UnoutlineChainOrLoop();
 
             inspector.OnUserSpawned +=      (i)=> recorder.SpeciesSpawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserSizeSet +=  (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet += (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
-            nodelink.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            nodelink.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, nodelink.AddLink, nodelink.RemoveLink);
-            nodelink.OnUserUnlinked +=    (i,j)=> nodelink.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
+            graph.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, graph.AddLink, graph.RemoveLink);
+            graph.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, graph.AddLink, graph.RemoveLink);
+            graph.OnUserUnlinked +=    (i,j)=> graph.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
 
-            recorder.OnSpeciesTraitsChanged += (i)=> nodelink.ForceFocus(i);
-            recorder.OnSpeciesMemoryLeak +=    (i)=> nodelink.RemoveNodeCompletely(i);
+            recorder.OnSpeciesTraitsChanged += (i)=> graph.ForceFocus(i);
+            recorder.OnSpeciesMemoryLeak +=    (i)=> graph.RemoveNodeCompletely(i);
             recorder.OnSpeciesMemoryLeak +=    (i)=> inspector.DespawnCompletely(i);
 
             inspector.OnUserSpawned +=   (i)=> model.TriggerSolve();
             inspector.OnUserDespawned += (i)=> model.TriggerSolve();
             inspector.OnSizeSet +=     (i,x)=> model.TriggerSolve();
             inspector.OnGreedSet +=    (i,x)=> model.TriggerSolve();
-            nodelink.OnUserLinked +=   (i,j)=> model.TriggerSolve();
-            nodelink.OnUserUnlinked += (i,j)=> model.TriggerSolve();
+            graph.OnUserLinked +=   (i,j)=> model.TriggerSolve();
+            graph.OnUserUnlinked += (i,j)=> model.TriggerSolve();
 
             //////////////////////
             // initialise level //
@@ -108,9 +108,9 @@ namespace EcoBuilder
                 inspector.FixGreedInitialValue();
             }
             inspector.AllowConflicts(details.ConflictsAllowed);
-            nodelink.AllowSuperfocus = details.SuperfocusAllowed;
-            nodelink.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
-            nodelink.DragFromTarget = GameManager.Instance.ReverseDragDirection;
+            graph.AllowSuperfocus = details.SuperfocusAllowed;
+            graph.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
+            graph.DragFromTarget = GameManager.Instance.ReverseDragDirection;
 
             constraints.LimitLeaf(details.NumProducers);
             constraints.LimitPaw(details.NumConsumers);
@@ -133,12 +133,12 @@ namespace EcoBuilder
 
                 // standard producer or consumer should be covered already
                 if (details.Types[i]==LevelDetails.SpeciesType.Apex) {
-                    nodelink.SetIfNodeCanBeSource(i, false);
+                    graph.SetIfNodeCanBeSource(i, false);
                 }
                 if (details.Types[i]==LevelDetails.SpeciesType.Specialist) {
-                    nodelink.SetIfNodeCanBeTarget(i, false);
+                    graph.SetIfNodeCanBeTarget(i, false);
                 }
-                nodelink.OutlineNode(i, details.Edits[i]==LevelDetails.SpeciesEdit.None? cakeslice.Outline.Colour.Blue : cakeslice.Outline.Colour.Clear);
+                graph.OutlineNode(i, details.Edits[i]==LevelDetails.SpeciesEdit.None? cakeslice.Outline.Colour.Blue : cakeslice.Outline.Colour.Clear);
             }
             // add interactions
             for (int ij=0; ij<details.NumInitInteractions; ij++)
@@ -146,12 +146,12 @@ namespace EcoBuilder
                 int i = details.Sources[ij];
                 int j = details.Targets[ij];
 
-                nodelink.AddLink(i, j);
-                nodelink.SetIfLinkRemovable(i, j, false);
-                nodelink.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
+                graph.AddLink(i, j);
+                graph.SetIfLinkRemovable(i, j, false);
+                graph.OutlineLink(i, j, cakeslice.Outline.Colour.Blue);
             }
             // to give the model info on what interactions are made
-            model.AttachAdjacency(nodelink.GetActiveTargets);
+            model.AttachAdjacency(graph.GetActiveTargets);
 
             // set up scoring
             switch (GameManager.Instance.PlayedLevelDetails.Metric)
@@ -173,27 +173,27 @@ namespace EcoBuilder
                 break;
             case LevelDetails.ScoreMetric.Chain:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                score.AttachScoreSource(()=> nodelink.MaxChain * details.AltMultiplier);
+                score.AttachScoreSource(()=> graph.MaxChain * details.AltMultiplier);
                 constraints.HighlightChain();
                 break;
             case LevelDetails.ScoreMetric.Loop:
                 score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                score.AttachScoreSource(()=> nodelink.MaxLoop * details.AltMultiplier);
+                score.AttachScoreSource(()=> graph.MaxLoop * details.AltMultiplier);
                 constraints.HighlightLoop();
                 break;
             }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
-            score.AttachScoreValidity(()=> nodelink.GraphLayedOut && model.EquilibriumSolved);
+            score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);
 
             score.SetStarThresholds(details.Metric, details.TwoStarScore, details.ThreeStarScore);
             score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
-            score.OnOneStarAchieved +=    ()=> nodelink.ForceUnfocus();
+            score.OnOneStarAchieved +=    ()=> graph.ForceUnfocus();
             score.OnOneStarAchieved +=    ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
-            score.OnThreeStarsAchieved += ()=> nodelink.ForceUnfocus();
+            score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
             score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
 
             GameManager.Instance.OnPlayedLevelFinished += FinishPlaythrough;
-            nodelink.AddDropShadow(GameManager.Instance.TakePlanet(), -1.5f);
+            graph.AddDropShadow(GameManager.Instance.TakePlanet(), -1.5f);
 
             GameManager.Instance.BeginPlayedLevel();
         }
@@ -206,7 +206,7 @@ namespace EcoBuilder
         void FinishPlaythrough()
         {
             inspector.Finish();
-            nodelink.Finish();
+            graph.Finish();
             recorder.Finish();
             score.Finish();
             constraints.Finish();
@@ -250,7 +250,7 @@ namespace EcoBuilder
                 foreach (var info in inspector.GetSpawnedSpeciesInfo())
                 {
                     int i = info.Item1;
-                    foreach (int j in nodelink.GetActiveTargets(i))
+                    foreach (int j in graph.GetActiveTargets(i))
                     {
                         sources.Add(squishedIdxs[i]);
                         targets.Add(squishedIdxs[j]);

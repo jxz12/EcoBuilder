@@ -54,7 +54,7 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.35f);
 
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ExplainSpawn);
-            AttachSmellyListener(nodelink, "OnEmptyTapped", ()=>ExplainIntro(true));
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>ExplainIntro(true));
         }
         GameObject firstSpecies;
         int firstIdx;
@@ -107,7 +107,7 @@ namespace EcoBuilder.Tutorials
             StartCoroutine(DragAndDrop(firstSpecies.transform, secondSpecies.transform, 2f));
             help.Showing = true;
 
-            AttachSmellyListener<int,int>(nodelink, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
+            AttachSmellyListener<int,int>(graph, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
         }
         void ExplainFirstEcosystem(float delay)
         {
@@ -116,7 +116,7 @@ namespace EcoBuilder.Tutorials
 
             targetSize = new Vector2(0,0);
             help.Showing = false;
-            nodelink.ForceUnfocus();
+            graph.ForceUnfocus();
 
             if (GameManager.Instance.ReverseDragDirection)
             {
@@ -127,7 +127,7 @@ namespace EcoBuilder.Tutorials
                 StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the plant to the animal."; }));
             }
 
-            AttachSmellyListener<int,int>(nodelink, "OnUserUnlinked", (i,j)=>ExplainRemove1(1));
+            AttachSmellyListener<int,int>(graph, "OnUserUnlinked", (i,j)=>ExplainRemove1(1));
         }
         void ExplainRemove1(float delay)
         {
@@ -139,15 +139,15 @@ namespace EcoBuilder.Tutorials
             targetAnchor = new Vector2(0,0);
             smoothTime = .3f;
 
-            nodelink.ForceUnfocus();
-            nodelink.SetIfNodeCanBeFocused(firstIdx, false);
+            graph.ForceUnfocus();
+            graph.SetIfNodeCanBeFocused(firstIdx, false);
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; targetSize = new Vector3(100,100); targetZRot = 360; }));
 
             Point();
             StartCoroutine(Track(secondSpecies.transform));
 
-            AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainRemove2());
+            AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainRemove2());
         }
         void ExplainRemove2()
         {
@@ -164,7 +164,7 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.1f);
             help.Message = "And tap this skull button to remove the species.";
 
-            AttachSmellyListener<int>(nodelink, "OnUnfocused", i=>ExplainRemove1(0));
+            AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainRemove1(0));
             AttachSmellyListener<int>(inspector, "OnUserDespawned", i=>ExplainUndo(1.5f));
         }
         void ExplainUndo(float delay)
@@ -197,7 +197,7 @@ namespace EcoBuilder.Tutorials
             score.DisableStarCalculation(false); 
             help.SetAnchorHeight(.9f);
             help.Showing = false;
-            nodelink.SetIfNodeCanBeFocused(firstIdx, true);
+            graph.SetIfNodeCanBeFocused(firstIdx, true);
 
             StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; }));
 

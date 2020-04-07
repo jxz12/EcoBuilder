@@ -62,13 +62,22 @@ namespace EcoBuilder.UI
             undoButton.interactable = true;
             redoButton.interactable = false;
         }
+        float prevActionTime=0;
+        float ActionDeltaTime {
+            get {
+                float currentTime = Time.time;
+                float delta = currentTime-prevActionTime;
+                prevActionTime = currentTime;
+                return delta;
+            }
+        }
         void RecordAction(string action)
         {
-            record.Add(((int)(Time.time*10)).ToString() + action);
+            record.Add(((int)(ActionDeltaTime*10)).ToString() + action);
         }
         void UpdateAction(string action)
         {
-            record[record.Count-1] = ((int)(Time.time*10)).ToString() + action;
+            record[record.Count-1] = ((int)(ActionDeltaTime*10)).ToString() + action;
         }
 
         public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)

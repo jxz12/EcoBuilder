@@ -21,13 +21,13 @@ namespace EcoBuilder.Tutorials
             targetSize = new Vector2(100,100);
             // targetZRot = 45;  
 
-            var nodes = nodelink.gameObject.GetComponentsInChildren<NodeLink.Node>();
+            var nodes = graph.gameObject.GetComponentsInChildren<NodeLink.Node>();
             Assert.IsTrue(nodes.Length == 2);
 
             plant = nodes[0];
             animal = nodes[1];
 
-            nodelink.SetIfNodeCanBeFocused(animal.Idx, false);
+            graph.SetIfNodeCanBeFocused(animal.Idx, false);
 
             ExplainIntro(false);
         }
@@ -49,7 +49,7 @@ namespace EcoBuilder.Tutorials
             StartCoroutine(Track(plant.transform));
 
             DetachSmellyListeners();
-            AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainSize());
+            AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainSize());
         }
 
         void ExplainSize()
@@ -66,17 +66,17 @@ namespace EcoBuilder.Tutorials
             StartCoroutine(ShuffleOnSlider(3, 40));
 
             AttachSmellyListener<int>(model, "OnRescued", i=>ExplainMetabolism(2));
-            AttachSmellyListener<int>(nodelink, "OnUnfocused", i=>ExplainIntro(true));
+            AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainIntro(true));
         }
         void ExplainMetabolism(float delay)
         {
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            nodelink.ForceUnfocus();
+            graph.ForceUnfocus();
 
-            nodelink.SetIfNodeCanBeFocused(animal.Idx, true);
-            nodelink.SetIfNodeCanBeFocused(plant.Idx, false);
+            graph.SetIfNodeCanBeFocused(animal.Idx, true);
+            graph.SetIfNodeCanBeFocused(plant.Idx, false);
 
             targetSize = Vector2.zero;
             smoothTime = .3f;
@@ -84,7 +84,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Point(); StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100); }));
 
-            AttachSmellyListener<int>(nodelink, "OnFocused", i=>ExplainInterference());
+            AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainInterference());
         }
         void ExplainInterference()
         {
@@ -97,7 +97,7 @@ namespace EcoBuilder.Tutorials
 
             StartCoroutine(ShuffleOnSlider(3, 40));
 
-            AttachSmellyListener<int>(nodelink, "OnUnfocused", i=>ExplainMetabolism(0));
+            AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainMetabolism(0));
             AttachSmellyListener<int>(model, "OnEndangered", i=>ExplainScore());
         }
         void ExplainScore()
@@ -108,8 +108,8 @@ namespace EcoBuilder.Tutorials
             smoothTime = .2f;
 
             recorder.gameObject.SetActive(true); 
-            nodelink.SetIfNodeCanBeFocused(plant.Idx, true);
-            nodelink.ForceUnfocus();
+            graph.SetIfNodeCanBeFocused(plant.Idx, true);
+            graph.ForceUnfocus();
 
             help.Showing = false;
             StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,false); help.Showing = true; help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); })); 

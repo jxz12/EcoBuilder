@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -65,5 +66,55 @@ namespace EcoBuilder.Tests
         //     // Use yield to skip a frame.
         //     yield return null;
         // }
+
+        [Test]
+        public void VectorX()
+        {
+            Stopwatch sw = new Stopwatch();
+            
+            sw.Start();
+            float total2 = 0;
+            for (int i=0; i<1000000; i++)
+            {
+                Vector2 foo = UnityEngine.Random.insideUnitCircle;
+                total2 += foo.magnitude;
+            }
+            sw.Stop();
+            UnityEngine.Debug.Log($"total2={total2}, elapsed={sw.Elapsed}");
+            
+            sw.Restart();
+            float total3 = 0;
+            for (int i=0; i<1000000; i++)
+            {
+                Vector3 foo = UnityEngine.Random.insideUnitSphere;
+                total3 += foo.magnitude;
+            }
+            sw.Stop();
+            UnityEngine.Debug.Log($"total3={total3}, elapsed={sw.Elapsed}");
+
+            sw.Restart();
+            float total4 = 0;
+            for (int i=0; i<1000000; i++)
+            {
+                // Vector3 foo = UnityEngine.Random.insideUnitSphere;
+                Vector2 foo = UnityEngine.Random.insideUnitCircle;
+                total4 += Mathf.Sqrt(foo.x*foo.x + foo.y*foo.y);
+            }
+            sw.Stop();
+            UnityEngine.Debug.Log($"total4={total4}, elapsed={sw.Elapsed}");
+
+            sw.Restart();
+            float total5 = 0;
+            for (int i=0; i<1000000; i++)
+            {
+                Vector3 foo = UnityEngine.Random.insideUnitSphere;
+                foo.z = 0;
+                total5 += foo.magnitude;
+                // Vector2 foo = UnityEngine.Random.insideUnitCircle;
+                // total5 += Mathf.Sqrt(foo.x*foo.x + foo.y*foo.y);
+            }
+            sw.Stop();
+            UnityEngine.Debug.Log($"total5={total5}, elapsed={sw.Elapsed}");
+        }
     }
 }

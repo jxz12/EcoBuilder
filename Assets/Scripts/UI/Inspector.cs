@@ -93,8 +93,8 @@ namespace EcoBuilder.UI
             // x here is value to check, and the function returns the idx of the conflict
             sizeTrait.AddExternalConflict(x=> CheckSizeConflict(x)); 
             greedTrait.AddExternalConflict(x=> CheckGreedConflict(x));
-            sizeTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical Size");
-            greedTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical Interference");
+            sizeTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical");
+            greedTrait.OnConflicted += i=> OnConflicted?.Invoke(i, "Identical");
             sizeTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
             greedTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
 

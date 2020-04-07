@@ -31,7 +31,7 @@ namespace EcoBuilder.NodeLink
         {
             Idx = idx;
             name = idx.ToString();
-            StressPos = UnityEngine.Random.insideUnitCircle; // prevent divide-by-zero
+            StressPos = UnityEngine.Random.insideUnitCircle; // prevent divide-by-zero in local majorization
         }
 
         public void SetShape(GameObject shapeObject)

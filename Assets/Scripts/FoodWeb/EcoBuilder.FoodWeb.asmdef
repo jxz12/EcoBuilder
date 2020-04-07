@@ -1,5 +1,5 @@
 {
-    "name": "EcoBuilder.Model",
+    "name": "EcoBuilder.FoodWeb",
     "references": [
         "GUID:ff69c4531bc719a4296d7ebe356becae"
     ],
