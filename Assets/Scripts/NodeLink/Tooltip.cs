@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Assertions;
 
 namespace EcoBuilder.NodeLink
 {
@@ -31,11 +32,11 @@ namespace EcoBuilder.NodeLink
                     canvas.enabled = false;
                 }
             }
-            transform.localScale = new Vector3(size, size, 1);
+            tip.transform.localScale = new Vector3(size, size, 1);
         }
         public void SetPos(Vector2 screenPos)
         {
-            transform.position = screenPos;
+            tip.transform.position = screenPos;
         }
         bool visible = false;
         public void Enable()

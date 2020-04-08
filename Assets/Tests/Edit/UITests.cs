@@ -13,6 +13,12 @@ namespace EcoBuilder.Tests
     public class UITests
     {
         [Test]
+        public void Foo()
+        {
+            var obj = new GameObject("bar");
+            GameObject.Destroy(obj);
+        }
+        [Test]
         public void ImageMaterialsNotNull()
         {
             foreach (var im in MonoBehaviour.FindObjectsOfType<Image>())

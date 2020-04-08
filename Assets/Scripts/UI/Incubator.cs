@@ -31,14 +31,17 @@ namespace EcoBuilder.UI
             rootCanvas = GetComponent<Canvas>();
             Assert.IsNotNull(rootCanvas, "no canvas attached to incubator");
             Assert.IsTrue(rootCanvas.isRootCanvas, "incubator must be a root canvas");
+        }
 
-            mainCam = Camera.main;
+        public void SetCamera(Camera cam)
+        {
+            mainCam = cam;
             rootCanvas.worldCamera = mainCam; // smellly but necessary because maincam is in different scene
             rootCanvas.planeDistance = planeDistance;
         }
-
         void Start()
         {
+
             producerButton.onClick.AddListener(()=> StartIncubation(true));
             consumerButton.onClick.AddListener(()=> StartIncubation(false));
             ShowButtons(true, 1f);

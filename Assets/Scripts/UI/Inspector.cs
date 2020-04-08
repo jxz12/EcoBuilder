@@ -80,10 +80,6 @@ namespace EcoBuilder.UI
         Dictionary<int, Species> graveyard = new Dictionary<int, Species>();
         Species incubated = null, inspected = null;
 
-        void Awake()
-        {
-            StatusBar.SetCamera(Camera.main);
-        }
         void Start()
         {
             nameField.OnUserNameChanged += s=> SetNameFromInputField(s);
@@ -100,6 +96,10 @@ namespace EcoBuilder.UI
 
             incubator.OnIncubationWanted += (b)=> IncubateNew(b);
             incubator.OnDropped += ()=> SpawnIncubated();
+
+            Camera mainCam = Camera.main;
+            incubator.SetCamera(mainCam);
+            StatusBar.SetCamera(mainCam);
         }
 
         int nextIdx=0;
