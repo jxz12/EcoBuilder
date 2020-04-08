@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace EcoBuilder
 {
     // this class handles communication between all the top level components
-    public class PlayManager : MonoBehaviour
+    public class LevelManager : MonoBehaviour
     {
         [SerializeField] FoodWeb.Model model;
         [SerializeField] NodeLink.Graph graph;
@@ -199,10 +199,15 @@ namespace EcoBuilder
         }
         void OnDestroy()
         {
-            // TODO: GameManager is null on quit?
-            GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
-            GameManager.Instance.ReturnPlanet();
+            if (!applicationQuitting) // for if GameManager is destroyed in its scene first
+            {
+                GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
+                GameManager.Instance.ReturnPlanet();
+            }
         }
+        bool applicationQuitting = false;
+        void OnApplicationQuit() { applicationQuitting = true; }
+
         void FinishPlaythrough()
         {
             inspector.Finish();

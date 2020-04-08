@@ -41,8 +41,7 @@ namespace EcoBuilder.UI
             redoButton.onClick.AddListener(Redo);
 
             record = new List<string>();
-            RecordAction("");
-            print("TODO: limit the size of the record to something like a million or something");
+            RecordAction(""); // empty action to mark first Time.time and initialise deltatime
         }
         void Start()
         {

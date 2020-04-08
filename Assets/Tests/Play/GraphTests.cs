@@ -20,19 +20,21 @@ namespace EcoBuilder.Tests
         // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
         // `yield return null;` to skip a frame.
 
+        Graph graph;
         [UnitySetUp]
         public IEnumerator Setup()
         {
-            SceneManager.LoadScene("Persistent", LoadSceneMode.Single);
-            SceneManager.LoadScene("Play", LoadSceneMode.Additive);
-            yield return null;
+            var loader = SceneManager.LoadSceneAsync("Persistent", LoadSceneMode.Single);
+            while (!loader.isDone) { yield return null; }
+            loader = SceneManager.LoadSceneAsync("Level", LoadSceneMode.Additive);
+            while (!loader.isDone) { yield return null; }
         }
-        [UnityTearDown]
-        public IEnumerator TearDown()
-        {
-            // GameObject.Destroy(nodelink.gameObject);
-            yield return null;
-        }
+        // [UnityTearDown]
+        // public IEnumerator TearDown()
+        // {
+        //     // GameObject.Destroy(nodelink.gameObject);
+        //     yield return null;
+        // }
 
         readonly int n = 10;
         readonly int m = 100;
@@ -47,6 +49,7 @@ namespace EcoBuilder.Tests
             sw.Start();
             for (int i=0; i<n; i++)
             {
+                UnityEngine.Debug.Log(i);
                 var shape = new GameObject();
                 shape.AddComponent<MeshRenderer>();
                 graph.AddNode(i, shape);

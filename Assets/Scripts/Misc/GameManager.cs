@@ -27,16 +27,16 @@ namespace EcoBuilder
             if (_gameManager == null) {
                 _gameManager = this;
             }
-            if (SceneManager.sceneCount == 1) { // on startup
-                StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
-            }
             InitPlayer();
         }
 
         void Start()
         {
-            print("TODO: set this to the dependent on screen size for webgl");
+#if !UNITY_EDITOR
+            StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
+#endif
 #if UNITY_WEBGL
+            print("TODO: set this to the dependent on screen size for webgl");
             // Screen.SetResolution(576, 1024, false);
             // Screen.fullScreen = true;
 #endif
