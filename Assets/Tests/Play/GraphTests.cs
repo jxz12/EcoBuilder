@@ -20,21 +20,33 @@ namespace EcoBuilder.Tests
         // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
         // `yield return null;` to skip a frame.
 
+        Camera mainCam;
         Graph graph;
-        [UnitySetUp]
-        public IEnumerator Setup()
+        [SetUp]
+        public void SetUp()
         {
-            var loader = SceneManager.LoadSceneAsync("Persistent", LoadSceneMode.Single);
-            while (!loader.isDone) { yield return null; }
-            loader = SceneManager.LoadSceneAsync("Level", LoadSceneMode.Additive);
-            while (!loader.isDone) { yield return null; }
+            mainCam = new GameObject().AddComponent<Camera>(); // smelly singleton
+            mainCam.tag = "MainCamera";
+            Graph prefab = (Graph)AssetDatabase.LoadAssetAtPath("Assets/Prefabs/NodeLink/Graph.prefab", typeof(Graph));
+            graph = GameObject.Instantiate(prefab);
         }
-        // [UnityTearDown]
-        // public IEnumerator TearDown()
-        // {
-        //     // GameObject.Destroy(nodelink.gameObject);
-        //     yield return null;
-        // }
+        /*
+        [UnitySetUp]
+        public IEnumerator SetUp()
+        {
+            var loader = SceneManager.LoadSceneAsync("Assets/Tests/Graph.unity");
+            while (!loader.isDone) {
+                yield return null;
+            }
+            graph = MonoBehaviour.FindObjectOfType<Graph>();
+        }
+        */
+        [TearDown]
+        public void TearDown()
+        {
+            GameObject.Destroy(graph.gameObject);
+            GameObject.Destroy(mainCam.gameObject);
+        }
 
         readonly int n = 10;
         readonly int m = 100;
@@ -43,36 +55,46 @@ namespace EcoBuilder.Tests
         {
             yield return null;
             Stopwatch sw = new Stopwatch();
-            var graphs = MonoBehaviour.FindObjectsOfType<Graph>();
-            Assert.IsFalse(graphs.Length != 1);
-            var graph = graphs[0];
             sw.Start();
             for (int i=0; i<n; i++)
             {
-                UnityEngine.Debug.Log(i);
                 var shape = new GameObject();
-                shape.AddComponent<MeshRenderer>();
+                shape.AddComponent<MeshRenderer>(); // dummy renderer
                 graph.AddNode(i, shape);
-                yield return null;
             }
-            yield return null;
 
-            // bool[,] graph = new bool[n,n];
-            // for (int i=0; i<m; i++)
-            // {
-            //     int src = UnityEngine.Random.Range(0,n);
-            //     int tgt = UnityEngine.Random.Range(0,n);
+            var adj = new bool[n,n];
+            for (int i=0; i<m; i++)
+            {
+                int src = UnityEngine.Random.Range(0,n);
+                int tgt = UnityEngine.Random.Range(0,n);
 
-            //     if (src != tgt && !graph[tgt,src]) // no self or bidirectional links
-            //     {
-            //         if (graph[src,tgt]) {
-            //             nodelink.RemoveLink(src, tgt);
-            //         } else {
-            //             nodelink.AddLink(src, tgt);
-            //         }
-            //         graph[src,tgt] = !graph[src,tgt];
-            //     }
-            // }
+                if (src != tgt && !adj[tgt,src]) // no self or bidirectional links
+                {
+                    if (!adj[src,tgt]) {
+                        graph.AddLink(src, tgt);
+                    } else {
+                        graph.RemoveLink(src, tgt);
+                    }
+                    adj[src,tgt] = !adj[src,tgt];
+                }
+                // TODO: randomly remove/add nodes as well as un/redoing
+            }
+            for (int i=0; i<n; i++)
+            {
+                foreach (int j in graph.GetActiveTargets(i))
+                {
+                    Assert.IsTrue(adj[i,j]);
+                    adj[i,j] = false;
+                }
+            }
+            for (int i=0; i<n; i++)
+            {
+                for (int j=0; j<n; j++)
+                {
+                    Assert.IsFalse(adj[i,j]);
+                }
+            }
             sw.Stop();
             UnityEngine.Debug.Log($"elapsed={sw.Elapsed}");
         }

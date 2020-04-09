@@ -14,14 +14,12 @@ some final bosses
 add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
 also make sure undoing and redoing keeps this correct (check adjacency before and after)
 to test layout, add nodes and links and make sure stress is lower than a certain amount
-double check the score for certiain combinations too
+double check the constraints for certain combinations too
 automated random graphs to test for no NaN
-make sure web_gl is same as not web_gl
+make sure web_gl is same as not web_gl (conditional compiles)
 
 use reflection to smell the smellylisteners
 check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
-
-check that all UI navigation is disabled
 
 # Research world
 verify high scores by checking matrices
@@ -29,7 +27,6 @@ verify high scores by checking matrices
 # Other
 make health go blue if above a super threshold (will need another fill sprite)
 release game with australian fires as angle?
-make nodelink tooltip do something more flashy when links are added and removed
 
 experiments to see how the score changes over time
 

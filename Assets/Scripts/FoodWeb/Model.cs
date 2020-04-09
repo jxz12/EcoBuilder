@@ -23,7 +23,7 @@ namespace EcoBuilder.FoodWeb
         //  Pawar et al. (2012)
         ///////////////////////////////////////////////////////////
 
-        [ReadOnly] [SerializeField]
+        [SerializeField] /*[ReadOnly]*/
         double r0 =   1.71e-6,     // production 
                z0 =   4.15e-8,     // loss constant
                a0 =   8.31e-4,     // search rate 
@@ -38,13 +38,11 @@ namespace EcoBuilder.FoodWeb
                kg_max = 1e3       // max body size
                ;
 
-        [ReadOnly] [SerializeField]
+        [SerializeField] /*[ReadOnly]*/
         double a_min = 1e-5,
                a_max = 1;
-        // double a_min = 1e-4,
-        //        a_max = 1e-1;
 
-        [ReadOnly] [SerializeField]
+        [SerializeField] /*[ReadOnly]*/
         double minRealAbund = 2e-10f,
                maxRealAbund = 1.95f,
                minRealFlux = 1e-16f,
@@ -318,39 +316,39 @@ namespace EcoBuilder.FoodWeb
         }
     }
 
-    #if UNITY_EDITOR
-    public class ReadOnlyAttribute : PropertyAttribute {}
-    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-    public class ShowOnlyDrawer : PropertyDrawer
-    {
-        public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
-        {
-            string valueStr;
+    // #if UNITY_EDITOR
+    // public class ReadOnlyAttribute : PropertyAttribute {}
+    // [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+    // public class ShowOnlyDrawer : PropertyDrawer
+    // {
+    //     public override void OnGUI(Rect position, SerializedProperty prop, GUIContent label)
+    //     {
+    //         string valueStr;
     
-            switch (prop.propertyType)
-            {
-                case SerializedPropertyType.Integer:
-                    valueStr = prop.intValue.ToString();
-                    break;
-                case SerializedPropertyType.Boolean:
-                    valueStr = prop.boolValue.ToString();
-                    break;
-                case SerializedPropertyType.Float:
-                    valueStr = prop.floatValue.ToString("e2");
-                    break;
-                case SerializedPropertyType.String:
-                    valueStr = prop.stringValue;
-                    break;
-                default:
-                    valueStr = "(not supported)";
-                    break;
-            }
+    //         switch (prop.propertyType)
+    //         {
+    //             case SerializedPropertyType.Integer:
+    //                 valueStr = prop.intValue.ToString();
+    //                 break;
+    //             case SerializedPropertyType.Boolean:
+    //                 valueStr = prop.boolValue.ToString();
+    //                 break;
+    //             case SerializedPropertyType.Float:
+    //                 valueStr = prop.floatValue.ToString("e2");
+    //                 break;
+    //             case SerializedPropertyType.String:
+    //                 valueStr = prop.stringValue;
+    //                 break;
+    //             default:
+    //                 valueStr = "(not supported)";
+    //                 break;
+    //         }
     
-            EditorGUI.LabelField(position,label.text, valueStr);
-        }
-    }
-    #else
-    // empty attribute
-    public class ReadOnlyAttribute : PropertyAttribute {}
-    #endif
+    //         EditorGUI.LabelField(position,label.text, valueStr);
+    //     }
+    // }
+    // #else
+    // // empty attribute
+    // public class ReadOnlyAttribute : PropertyAttribute {}
+    // #endif
 }

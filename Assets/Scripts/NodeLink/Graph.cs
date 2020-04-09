@@ -39,6 +39,7 @@ namespace EcoBuilder.NodeLink
         void Start()
         {
             mainCam = Camera.main;
+            Assert.IsNotNull(mainCam);
             xRotation = xDefaultRotation = xAxle.localRotation.eulerAngles.x;
         }
         void Update()
@@ -121,6 +122,7 @@ namespace EcoBuilder.NodeLink
         public void AddNode(int idx, GameObject shape)
         {
             Assert.IsNull(nodes[idx], $"node {idx} already added");
+            Assert.IsNotNull(shape.GetComponentInChildren<Renderer>(), "shape has no renderer");
 
             if (nodeGrave[idx] == null) // entirely new
             {
@@ -273,6 +275,10 @@ namespace EcoBuilder.NodeLink
         {
             return links.GetColumnIndicesInRow(source);
         }
+        // public IEnumerable<int> GetInactiveTargets(int source)
+        // {
+        //     return linkGrave.GetColumnIndicesInRow(source);
+        // }
         // for tutorial
         public int GetNodeChainLength(int idx)
         {
