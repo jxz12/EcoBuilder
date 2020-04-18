@@ -1,21 +1,21 @@
 DO THIS NOW:
 claim moneys
-(CV) graphviz, finish chess thing, ecobuilder lol
+(CV) ecobuilder lol
 
 LEVELS:
 fix superfocus small nodes
 fix the 2 visualisations (finalize trophic and do procrustes for SGD layouts)
+make SGD a coroutine for webgl
 
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 do high scores for heavy 3
 some final bosses
 
 # TESTS
-add nodes and links and make sure adjacency is correct (check for nulls and not nulls in nodes and links, and in graveyard) (also check constraint calculations)
-also make sure undoing and redoing keeps this correct (check adjacency before and after)
-to test layout, add nodes and links and make sure stress is lower than a certain amount
+to test layout, add specific nodes and links and make sure stress is lower than a certain amount
+but also automated random graphs to test for no NaN
 double check the constraints for certain combinations too
-automated random graphs to test for no NaN
+
 make sure web_gl is same as not web_gl (conditional compiles)
 
 use reflection to smell the smellylisteners

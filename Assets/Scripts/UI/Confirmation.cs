@@ -37,7 +37,7 @@ namespace EcoBuilder.UI
 
         public void GiveChoice(Action OnYes, string description=null)
         {
-            YesCallback = ()=>{ OnYes.Invoke(); canvas.enabled = false; };
+            YesCallback = ()=>{ OnYes?.Invoke(); canvas.enabled = false; };
             NoCallback = ()=> canvas.enabled = false;
             canvas.enabled = true;
             SetQuestion(description);
@@ -59,7 +59,7 @@ namespace EcoBuilder.UI
         // callback that attaches a callback
         public void GiveChoiceAndWait(Action OnYes, string description=null, string waitMessage=null)
         {
-            YesCallback = ()=>{ OnYes.Invoke(); Wait(waitMessage); };
+            YesCallback = ()=>{ OnYes?.Invoke(); Wait(waitMessage); };
             NoCallback = ()=> canvas.enabled = false;
             canvas.enabled = true;
             SetQuestion(description);
@@ -76,7 +76,7 @@ namespace EcoBuilder.UI
         }
         public void FinishWaiting(Action OnOkay, bool successful, string msg)
         {
-            OkayCallback = ()=>{ OnOkay.Invoke(); canvas.enabled = false; };
+            OkayCallback = ()=>{ OnOkay?.Invoke(); canvas.enabled = false; };
             if (successful) {
                 SetText("Success!");
             } else {

@@ -113,7 +113,7 @@ namespace EcoBuilder.UI
                 }
                 break;
             case State.End:
-                OnFinished.Invoke();
+                OnFinished?.Invoke();
                 StartCoroutine(TweenY(1,0,-1000,false));
                 break;
             }

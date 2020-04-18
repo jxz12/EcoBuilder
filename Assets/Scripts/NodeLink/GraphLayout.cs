@@ -15,39 +15,41 @@ namespace EcoBuilder.NodeLink
         {
             if (focusState != FocusState.SuperFocus)
             {
-                // get bounds of layout and center to middle
-                Vector2 minPos = new Vector2(float.MaxValue, float.MaxValue);
-                Vector2 maxPos = new Vector2(float.MinValue, float.MinValue);
-                foreach (Node no in nodes)
-                {
-                    minPos.x = Mathf.Min(no.StressPos.x, minPos.x);
-                    minPos.y = Mathf.Min(no.StressPos.y, minPos.y);
-                    maxPos.x = Mathf.Max(no.StressPos.x, maxPos.x);
-                    maxPos.y = Mathf.Max(no.StressPos.y, maxPos.y);
-                }
-                Vector2 centroid = (minPos + maxPos) / 2;
+                // // get bounds of layout and center to middle
+                // Vector2 minPos = new Vector2(float.MaxValue, float.MaxValue);
+                // Vector2 maxPos = new Vector2(float.MinValue, float.MinValue);
+                // foreach (Node no in nodes)
+                // {
+                //     minPos.x = Mathf.Min(no.StressPos.x, minPos.x);
+                //     minPos.y = Mathf.Min(no.StressPos.y, minPos.y);
+                //     maxPos.x = Mathf.Max(no.StressPos.x, maxPos.x);
+                //     maxPos.y = Mathf.Max(no.StressPos.y, maxPos.y);
+                // }
+                // Vector2 centroid = (minPos + maxPos) / 2;
+
+                // if (ConstrainTrophic)
+                // {
+                //     centroid.y = 0;
+                //     foreach (Node no in nodes) {
+                //         no.StressPos -= centroid;
+                //     }
+                // }
+                // else
+                // {
+                //     float minY = float.MaxValue;
+                //     foreach (Node no in nodes) {
+                //         minY = Mathf.Min(no.StressPos.y, minY);
+                //     }
+                //     centroid.y = minY;
+                //     foreach (Node no in nodes) {
+                //         no.StressPos -= centroid;
+                //     }
+                // }
+
+                // TODO: only fix y position
 
                 yAxle.localPosition = Vector3.SmoothDamp(yAxle.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
                 xAxle.localPosition = Vector3.SmoothDamp(xAxle.localPosition, xAxleUnfocused, ref graphVelocity, layoutSmoothTime);
-
-                if (ConstrainTrophic)
-                {
-                    centroid.y = 0;
-                    foreach (Node no in nodes) {
-                        no.StressPos -= centroid;
-                    }
-                }
-                else
-                {
-                    float minY = float.MaxValue;
-                    foreach (Node no in nodes) {
-                        minY = Mathf.Min(no.StressPos.y, minY);
-                    }
-                    centroid.y = minY;
-                    foreach (Node no in nodes) {
-                        no.StressPos -= centroid;
-                    }
-                }
             }
             else // superfocused
             {
@@ -81,7 +83,7 @@ namespace EcoBuilder.NodeLink
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .375f);
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .3f);
                 }
-                graphScaleTarget -= maxError*.1f;
+                graphScaleTarget -= maxError*.02f;
                 graphScaleTarget = Mathf.Min(graphScaleTarget, 1); // don't scale too much
                 graphScale = Mathf.SmoothDamp(graphScale, graphScaleTarget, ref graphScaleVelocity, zoomSmoothTime);
 

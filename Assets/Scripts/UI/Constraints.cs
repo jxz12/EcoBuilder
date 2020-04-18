@@ -217,7 +217,7 @@ namespace EcoBuilder.UI
 
             Display(Type.Leaf, leaves.Count);
             if (GetThreshold(Type.Leaf) > 0 && IsSatisfied(Type.Leaf)) {
-                OnLeafFilled.Invoke(false);
+                OnLeafFilled?.Invoke(false);
             }
         }
         public void AddPawIdx(int idx)
@@ -227,7 +227,7 @@ namespace EcoBuilder.UI
 
             Display(Type.Paw, paws.Count);
             if (GetThreshold(Type.Paw) > 0 && IsSatisfied(Type.Paw)) {
-                OnPawFilled.Invoke(false);
+                OnPawFilled?.Invoke(false);
             }
         }
         public void RemoveIdx(int idx)
@@ -237,7 +237,7 @@ namespace EcoBuilder.UI
                 leaves.Remove(idx);
 
                 if (GetThreshold(Type.Leaf) > 0 && IsSatisfied(Type.Leaf)) {
-                    OnLeafFilled.Invoke(true);
+                    OnLeafFilled?.Invoke(true);
                 }
                 Display(Type.Leaf, leaves.Count);
             }
@@ -246,7 +246,7 @@ namespace EcoBuilder.UI
                 paws.Remove(idx);
 
                 if (GetThreshold(Type.Paw) > 0 && IsSatisfied(Type.Paw)) {
-                    OnPawFilled.Invoke(true);
+                    OnPawFilled?.Invoke(true);
                 }
                 Display(Type.Paw, paws.Count);
             }

@@ -22,8 +22,7 @@ namespace EcoBuilder.NodeLink
         public bool CanBeTarget = true;
         public bool CanBeFocused = true;
 
-        GameObject shape;
-        public GameObject Shape { get { return shape; } }
+        // GameObject shape;
         Renderer shapeRenderer;
         cakeslice.Outline outline;
 
@@ -36,7 +35,7 @@ namespace EcoBuilder.NodeLink
 
         public void SetShape(GameObject shapeObject)
         {
-            shape = shapeObject;
+            GameObject shape = shapeObject;
             shapeRenderer = shape.GetComponentInChildren<Renderer>();
             outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
 
@@ -49,7 +48,9 @@ namespace EcoBuilder.NodeLink
         }
         public void Hide(bool hidden)
         {
-            shape.SetActive(!hidden);
+            if (shapeRenderer != null) {
+                shapeRenderer.enabled = false;
+            }
             GetComponent<Collider>().enabled = !hidden;
         }
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();
@@ -91,6 +92,9 @@ namespace EcoBuilder.NodeLink
         IEnumerator flashRoutine;
         public void Flash(bool isFlashing)
         {
+            if (shapeRenderer == null) {
+                return;
+            }
             if (flashRoutine != null)
             {
                 StopCoroutine(flashRoutine);

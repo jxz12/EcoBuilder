@@ -56,9 +56,6 @@ namespace EcoBuilder
         }
         private void SavePlayerDetailsLocal()
         {
-#if UNITY_WEBGL
-            return;
-#endif
             try
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -73,9 +70,6 @@ namespace EcoBuilder
         }
         private bool LoadPlayerDetailsLocal()
         {
-#if UNITY_WEBGL
-                return false;
-#endif
             try
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -94,9 +88,6 @@ namespace EcoBuilder
         {
             // note: this loses the median cache and unsent post
             player = new PlayerDetails();
-#if UNITY_WEBGL
-            return;
-#endif
             try {
                 File.Delete(playerPath);
             } catch (Exception e) {

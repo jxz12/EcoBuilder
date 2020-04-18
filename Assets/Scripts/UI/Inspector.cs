@@ -13,6 +13,7 @@ namespace EcoBuilder.UI
         public event Action OnUnincubated;
         public event Action<int, bool, GameObject> OnSpawned;
         public event Action<int> OnDespawned;
+        public event Action<int> OnRespawned;
         public event Action<int, string> OnConflicted;
         public event Action<int> OnUnconflicted;
 
@@ -140,7 +141,7 @@ namespace EcoBuilder.UI
             nameField.ExpandIntoRefrove(false); // ugh
 
             GetComponent<Animator>().SetTrigger("Incubate");
-            OnIncubated.Invoke();
+            OnIncubated?.Invoke();
         }
         private void SpawnIncubated()
         {
@@ -194,8 +195,6 @@ namespace EcoBuilder.UI
             }
             spawnedSpecies[toSpawn.Idx] = toSpawn;
             toSpawn.Status.ShowHealth();
-            // toSpawn.Status.ShowTraits(true);
-            // toSpawn.Status.ShowHealth(true);
 
             // must be invoked first so that nodelink focuses after adding
             OnSpawned?.Invoke(toSpawn.Idx, toSpawn.IsProducer, toSpawn.GObject);

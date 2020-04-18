@@ -104,7 +104,7 @@ namespace EcoBuilder.NodeLink
 #endif
 
             isCalculatingAsync = false;
-            OnLayedOut.Invoke();
+            OnLayedOut?.Invoke();
         }
 
         ///////////////////////////////////
@@ -119,10 +119,9 @@ namespace EcoBuilder.NodeLink
 
         Dictionary<int, HashSet<int>> undirected = new Dictionary<int, HashSet<int>>();
 
-        public void AddNode(int idx, GameObject shape)
+        public void AddNode(int idx)
         {
             Assert.IsNull(nodes[idx], $"node {idx} already added");
-            Assert.IsNotNull(shape.GetComponentInChildren<Renderer>(), "shape has no renderer");
 
             if (nodeGrave[idx] == null) // entirely new
             {
@@ -131,7 +130,6 @@ namespace EcoBuilder.NodeLink
                 nodes[idx] = newNode;
                 undirected[idx] = new HashSet<int>();
 
-                nodes[idx].SetShape(shape);
             }
             else // bring back previously removed
             {
@@ -139,8 +137,7 @@ namespace EcoBuilder.NodeLink
                 nodeGrave.RemoveAt(idx);
 
                 nodes[idx].Hide(false);
-                nodes[idx].SetShape(shape); // technically not necessary
-                nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle; // to prevent possible infinities
+                nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle; // to prevent divide-by-zero in majorization
 
                 undirected[idx] = new HashSet<int>();
                 foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
@@ -174,8 +171,13 @@ namespace EcoBuilder.NodeLink
             todoBFS.Enqueue(idx);
             layoutTriggered = true;
         }
-
-        public void RemoveNode(int idx)
+        public void ShapeNode(int idx, GameObject shape)
+        {
+            Assert.IsNotNull(shape.GetComponentInChildren<Renderer>(), "shape has no renderer");
+            nodes[idx].SetShape(shape);
+        }
+        // this function is needed for undo and redo functionality
+        public void ArchiveNode(int idx)
         {
             Assert.IsNotNull(nodes[idx], $"node {idx} not added yet");
             if (focusedNode != null && focusedNode.Idx == idx) {
@@ -205,7 +207,6 @@ namespace EcoBuilder.NodeLink
                 links.RemoveAt(row, idx);
             }
 
-
             // prevent memory leak in SGD data structures
             undirected.Remove(idx);
             todoBFS.Clear();
@@ -216,20 +217,23 @@ namespace EcoBuilder.NodeLink
             }
             layoutTriggered = true;
         }        
-        public void RemoveNodeCompletely(int idx)
+        public void RemoveNode(int idx)
         {
-            Assert.IsNotNull(nodeGrave[idx], $"node {idx} not in graveyard");
+            Assert.IsNotNull(nodeGrave[idx], $"node {idx} must be archived first");
 
             Destroy(nodeGrave[idx].gameObject);
             nodeGrave.RemoveAt(idx);
             linkGrave.RemoveIndex(idx);
         }
 
+
         public void AddLink(int i, int j)
         {
             Assert.IsFalse(i==j, $"self links {i}:{j} not supported");
             Assert.IsNull(links[i,j], $"link {i}:{j} already added");
             Assert.IsNull(links[j,i], "bidirectional links not allowed");
+            Assert.IsNotNull(nodes[i], $"node {i} not added");
+            Assert.IsNotNull(nodes[j], $"node {j} not added");
 
             Link newLink = Instantiate(linkPrefab, transform);
             newLink.Init(nodes[i], nodes[j]);
@@ -275,10 +279,6 @@ namespace EcoBuilder.NodeLink
         {
             return links.GetColumnIndicesInRow(source);
         }
-        // public IEnumerable<int> GetInactiveTargets(int source)
-        // {
-        //     return linkGrave.GetColumnIndicesInRow(source);
-        // }
         // for tutorial
         public int GetNodeChainLength(int idx)
         {
@@ -401,7 +401,7 @@ namespace EcoBuilder.NodeLink
         public void UnoutlineChainOrLoop()
         {
             foreach (Action Undo in toUnoutline) {
-                Undo.Invoke();
+                Undo?.Invoke();
             }
             toUnoutline.Clear();
         }

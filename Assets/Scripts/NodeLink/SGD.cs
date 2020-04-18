@@ -10,19 +10,18 @@ namespace EcoBuilder.NodeLink
         ////////////////////////////
         // layout with SGD
 
-        // indices
+        // store indices and their components
         static Dictionary<int, int> sgdSquished = new Dictionary<int, int>();
         static List<int> sgdUnsquished = new List<int>();
 
-        // for BFS
+        // positions will be rewritten into this dictionary
+        static Dictionary<int, Vector2> sgdResult = new Dictionary<int, Vector2>();
+
+        // for BFS, SGD, NCC
         static List<int> sgdSources = new List<int>();
         static List<int> sgdTargets = new List<int>();
-
-        // for components and procrustes
-        private static List<int> sgdComponents = new List<int>();
-
         static List<Vector2> sgdPos = new List<Vector2>();
-        static List<Vector2> sgdPosOld = new List<Vector2>();
+        static List<int> sgdComponents = new List<int>();
         static System.Random sgdRand;
         public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
@@ -31,18 +30,15 @@ namespace EcoBuilder.NodeLink
             sgdComponents.Clear();
 
             // reset node positions
-            sgdPosOld.Clear();
-            var temp = sgdPosOld;
-            sgdPosOld = sgdPos;
-            sgdPos = temp;
-
+            sgdPos.Clear();
             sgdRand = new System.Random(seed);
             foreach (int i in undirected.Keys)
             {
                 sgdSquished[i] = sgdUnsquished.Count;
                 sgdUnsquished.Add(i);
 
-                sgdPos.Add(new Vector3((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble(), (float)sgdRand.NextDouble()));
+                // sgdPos.Add(new Vector3((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble(), (float)sgdRand.NextDouble()));
+                sgdPos.Add(new Vector2((float)sgdRand.NextDouble(), (float)sgdRand.NextDouble()));
                 sgdComponents.Add(-1);
             }
             sgdSources.Clear();
@@ -57,18 +53,12 @@ namespace EcoBuilder.NodeLink
             }
             sgdSources.Add(sgdTargets.Count); // for iteration to next
 
-            // clean up excess in case nodes are remoed
+            // clean up excess in case nodes are removed
             sgdPos.TrimExcess();
             sgdUnsquished.TrimExcess();
             sgdSources.TrimExcess();
             sgdTargets.TrimExcess();
         }
-
-        struct StressTerm {
-            public int i, j;
-            public float d, w;
-        }
-        static List<StressTerm> sgdTerms = new List<StressTerm>();
         public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint=null)
         {
             FindStressTerms();
@@ -76,9 +66,24 @@ namespace EcoBuilder.NodeLink
 
             var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
             PerformSGD(etas);
+
+            // move these functions into one, where the connected components are rotated based on a procrustes rotation between the intersection set of nodes between the previous layout
+            MatchComponentsProcrustes();
             SeparateConnectedComponents();
-            Procrustes();
         }
+        public static void RewriteSGD(Action<int, Vector2> SetPos)
+        {
+            foreach (var kvp in sgdResult)
+            {
+                SetPos(kvp.Key, kvp.Value);
+            }
+        }
+
+        struct StressTerm {
+            public int i, j;
+            public float d, w;
+        }
+        static List<StressTerm> sgdTerms = new List<StressTerm>();
         static int d_max;
         static void FindStressTerms()
         {
@@ -163,13 +168,10 @@ namespace EcoBuilder.NodeLink
             }
         }
         static readonly float muMax=1f;
-        static void PerformSGD(List<float> etas)
+        static void PerformSGD(IEnumerable<float> etas)
         {
-            int t_max = etas.Count;
-            for (int t=0; t<t_max; t++)
+            foreach (float eta in etas)
             {
-                float eta = etas[t];
-
                 FYShuffle(sgdTerms, sgdRand);
                 foreach (var term in sgdTerms)
                 {
@@ -230,70 +232,6 @@ namespace EcoBuilder.NodeLink
             }
             */
         }
-        public static void RewriteSGD(Action<int, Vector2> SetPos)
-        {
-            for (int i=0; i<sgdPos.Count; i++)
-            {
-                SetPos(sgdUnsquished[i], sgdPos[i]);
-            }
-        }
-        private static void Procrustes()
-        {
-
-        }
-        // // reassigns positions, but flips components if it will preserve distances better
-        // static List<float> oldCentroids = new List<float>();
-        // static List<float> newCentroids = new List<float>();
-        // static List<int> counts = new List<int>();
-        // private void SGDProcrustesFlipComponents()
-        // {
-        //     oldCentroids.Clear();
-        //     newCentroids.Clear();
-        //     counts.Clear();
-        //     for (int i=0; i<NumComponents; i++)
-        //     {
-        //         oldCentroids.Add(0);
-        //         newCentroids.Add(0);
-        //         counts.Add(0);
-        //     }
-        //     oldCentroids.TrimExcess();
-        //     newCentroids.TrimExcess();
-        //     counts.TrimExcess();
-
-        //     foreach (int idx in componentMap.Keys)
-        //     {
-        //         int cc = componentMap[idx];
-        //         oldCentroids[cc] += nodes[idx].StressPos.x;
-        //         newCentroids[cc] += sgdPos[sgdSquished[idx]].x;
-        //         counts[cc] += 1;
-        //     }
-        //     for (int i=0; i<NumComponents; i++)
-        //     {
-        //         oldCentroids[i] /= counts[i];
-        //         newCentroids[i] /= counts[i];
-        //     }
-
-        //     // second dimension holds sum of errors for flipped, not flipped
-        //     var errors = new float[NumComponents, 2];
-        //     foreach (int idx in componentMap.Keys)
-        //     {
-        //         int cc = componentMap[idx];
-        //         float error = (nodes[idx].StressPos.x - oldCentroids[cc])  - (sgdPos[sgdSquished[idx]].x - newCentroids[cc]);
-        //         errors[cc,0] += error * error;
-
-        //         float flippedError = (nodes[idx].StressPos.x - oldCentroids[cc])  + (sgdPos[sgdSquished[idx]].x - newCentroids[cc]);
-        //         errors[cc,1] += flippedError * flippedError;
-        //     }
-        //     foreach (int idx in componentMap.Keys)
-        //     {
-        //         int cc = componentMap[idx];
-        //         var pos = sgdPos[sgdSquished[idx]];
-        //         if (errors[cc,0] > errors[cc,1]) {
-        //             pos.x = -pos.x; // reflect
-        //         }
-        //         nodes[idx].StressPos = pos;
-        //     }
-        // }
         public static void FYShuffle<T>(List<T> deck, System.Random rand)
         {
             int n = deck.Count;
@@ -310,6 +248,78 @@ namespace EcoBuilder.NodeLink
         //////////////////////////////////////////////////////////////
         // to separate components in layout and calculate disjointness
 
+        // reassigns positions, but flips components if it will preserve distances better
+        static void MatchComponentsProcrustes()
+        {
+            // center the new positions first
+            var newCentroids = new List<Vector2>();
+            var newCounts = new List<int>();
+            var oldCentroids = new List<Vector2>();
+            var oldCounts = new List<int>();
+
+            for (int cc=0; cc<NumComponents; cc++)
+            {
+                newCentroids.Add(Vector2.zero);
+                newCounts.Add(0);
+                oldCentroids.Add(Vector2.zero);
+                oldCounts.Add(0);
+            }
+            for (int i=0; i<sgdPos.Count; i++)
+            {
+                int cc = sgdComponents[i];
+                newCentroids[cc] += sgdPos[i];
+                newCounts[cc] += 1;
+
+                Vector2 prevPos;
+                if (sgdResult.TryGetValue(sgdUnsquished[i], out prevPos))
+                {
+                    oldCentroids[cc] += prevPos;
+                    oldCounts[cc] += 1;
+                }
+            }
+            for (int cc=0; cc<NumComponents; cc++)
+            {
+                newCentroids[cc] /= newCounts[cc];
+                if (oldCounts[cc] > 0) {
+                    oldCentroids[cc] /= oldCounts[cc];
+                }
+            }
+            for (int i=0; i<sgdPos.Count; i++)
+            {
+                int cc = sgdComponents[i];
+                sgdPos[i] -= newCentroids[cc];
+
+                int idx = sgdUnsquished[i];
+                Vector2 oldPos;
+                if (sgdResult.TryGetValue(idx, out oldPos)) {
+                    sgdResult[idx] = oldPos - oldCentroids[cc];
+                }
+            }
+
+            // then find optimal rotation (procrustes)
+            float topSum = 0, botSum = 0;
+            for (int i=0; i<sgdPos.Count; i++)
+            {
+                int idx = sgdUnsquished[i];
+                Vector2 oldPos;
+                if (sgdResult.TryGetValue(idx, out oldPos))
+                {
+                    Vector2 newPos = sgdPos[i];
+                    topSum += oldPos.x*newPos.y - oldPos.y*newPos.x;
+                    botSum += oldPos.x*newPos.x + oldPos.y*newPos.y;
+                }
+            }
+            float angle = Mathf.Atan2(topSum, botSum);
+
+            float sinA = Mathf.Sin(angle);
+            float cosA = Mathf.Cos(angle);
+            for (int i=0; i<sgdPos.Count; i++)
+            {
+                Vector2 newPos = sgdPos[i];
+                sgdPos[i] = new Vector2(newPos.x*cosA - newPos.y*sinA, newPos.x*sinA + newPos.y*cosA);
+            }
+        }
+
         private static void SeparateConnectedComponents()
         {
             int ncc = NumComponents;
@@ -324,13 +334,14 @@ namespace EcoBuilder.NodeLink
                 ranges[i,0] = float.MaxValue;
                 ranges[i,1] = float.MinValue;
             }
-            // foreach (int idx in componentMap.Keys)
+            float yMin = float.MaxValue;
             for (int i=0; i<sgdComponents.Count; i++)
             {
                 int cc = sgdComponents[i];
                 var pos = sgdPos[i];
                 ranges[cc,0] = Mathf.Min(ranges[cc,0], pos.x);
                 ranges[cc,1] = Mathf.Max(ranges[cc,1], pos.x);
+                yMin = Mathf.Min(yMin, pos.y);
             }
             var offsets = new float[ncc];
             offsets[0] = -ranges[0,0]; // move first CC to start at x=0
@@ -344,93 +355,10 @@ namespace EcoBuilder.NodeLink
             // place in order on x axis
             for (int i=0; i<sgdComponents.Count; i++)
             {
+                int idx = sgdUnsquished[i];
                 int cc = sgdComponents[i];
-                sgdPos[i] += new Vector2(offsets[cc], 0);
+                sgdResult[idx] = new Vector2(sgdPos[i].x + offsets[cc] - cumul/2, sgdPos[i].y - yMin);
             }
         }
-
-        /////////////////////////////////
-        // cholesky factorization
-        /*
-        private void InitCholesky(int seed)
-        {
-            sgdPos.Clear();
-            sgdSquished.Clear();
-            sgdUnsquished.Clear();
-
-            var rand = new System.Random(seed);
-            foreach (int i in nodes.Indices)
-            {
-                sgdSquished[i] = sgdUnsquished.Count;
-                sgdUnsquished.Add(i);
-                // if (!ConstrainTrophic) {
-                    sgdPos.Add(new Vector2(sgdSquished[i], (float)rand.NextDouble()));
-                // } else {
-                //     sgdPos.Add(new Vector2(sgdSquished[i], nodes[i].StressPos.y + .1f*(float)rand.NextDouble()));
-                //     // still add a little jitter to prevent NaN
-                // }
-                // sgdPos.Add(nodes[i].StressPos);
-            }
-            sgdSources.Clear();
-            sgdTargets.Clear();
-            foreach (int i in nodes.Indices)
-            {
-                sgdSources.Add(sgdTargets.Count);
-                foreach (int j in undirected[i])
-                {
-                    sgdTargets.Add(sgdSquished[j]);
-                }
-            }
-            sgdSources.Add(sgdTargets.Count); // for iteration to next
-
-
-            int n = sgdPos.Count;
-            var Lw = Matrix<float>.Build.Dense(n-1, n-1);
-            var Lz = Matrix<float>
-
-            // calculate terms with BFS
-            sgdTerms.Clear();
-            int d_max = 0;
-            var q = new Queue<int>();
-            for (int source=0; source<sgdSources.Count-1; source++)
-            {
-                // BFS for each node
-                q.Enqueue(source);
-                var d = new Dictionary<int, int>();
-                d[source] = 0;
-                while (q.Count > 0)
-                {
-                    int prev = q.Dequeue();
-                    for (int i=sgdSources[prev]; i<sgdSources[prev+1]; i++)
-                    {
-                        int next = sgdTargets[i];
-                        if (!d.ContainsKey(next))
-                        {
-                            d[next] = d[prev] + 1;
-                            q.Enqueue(next);
-
-                            // if (source < next) // only add every other term
-                            // {
-                            //     sgdTerms.Add(new StressTerm () {
-                            //         i=source,
-                            //         j=next,
-                            //         d=d[next],
-                            //         w=1f/(d[next]*d[next])
-                            //     });
-                            //     d_max = Math.Max(d[next], d_max);
-                            // }
-                        }
-                    }
-                }
-            }
-
-            // keep memory tidy
-            sgdTerms.TrimExcess();
-            sgdPos.TrimExcess();
-            sgdUnsquished.TrimExcess();
-            sgdSources.TrimExcess();
-            sgdTargets.TrimExcess();
-        }
-        */
     }
 }

@@ -54,7 +54,7 @@ namespace EcoBuilder.UI
             {
                 // spawned species can never be recovered if previously undone
                 if (redo.type == Move.Type.Spawn) {
-                    OnSpeciesMemoryLeak.Invoke(redo.idx);
+                    OnSpeciesMemoryLeak?.Invoke(redo.idx);
                 }
             }
             redos.Clear();

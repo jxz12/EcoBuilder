@@ -22,11 +22,11 @@ namespace EcoBuilder
             ////////////////////////////////////
             // hook up events between objects //
             ////////////////////////////////////
-            inspector.OnSpawned +=  (i,b,g)=> { graph.AddNode(i,g); graph.SetIfNodeCanBeTarget(i,!b); };
+            inspector.OnSpawned +=  (i,b,g)=> { graph.AddNode(i); graph.ShapeNode(i,g); graph.SetIfNodeCanBeTarget(i,!b); };
             inspector.OnSpawned +=  (i,b,g)=> model.AddSpecies(i,b);
             inspector.OnSpawned +=  (i,b,g)=> { if (b) constraints.AddLeafIdx(i); else constraints.AddPawIdx(i); };
 
-            inspector.OnDespawned +=    (i)=> graph.RemoveNode(i);
+            inspector.OnDespawned +=    (i)=> graph.ArchiveNode(i);
             inspector.OnDespawned +=    (i)=> model.RemoveSpecies(i);
             inspector.OnDespawned +=    (i)=> constraints.RemoveIdx(i);
             inspector.OnSizeSet +=    (i,x)=> model.SetSpeciesBodySize(i,x);
@@ -45,10 +45,10 @@ namespace EcoBuilder
             // the above will always (but not exclusively) cause the below in the next three things
             // smelly because the second callback does something that should already be done
             inspector.OnUserSpawned += (i)=> graph.ForceFocus(i);
-            graph.OnFocused +=      (i)=> inspector.InspectSpecies(i);
+            graph.OnFocused +=         (i)=> inspector.InspectSpecies(i);
 
             inspector.OnUserDespawned += (i)=> graph.ForceUnfocus();
-            graph.OnUnfocused +=      (i)=> inspector.Uninspect();
+            graph.OnUnfocused +=         (i)=> inspector.Uninspect();
             ////////////////////////////
 
             // constraints
@@ -79,20 +79,20 @@ namespace EcoBuilder
             inspector.OnUserDespawned +=    (i)=> recorder.SpeciesDespawn(i, inspector.Respawn, inspector.Despawn);
             inspector.OnUserSizeSet +=  (i,x,y)=> recorder.SizeSet(i, x, y, inspector.SetSize);
             inspector.OnUserGreedSet += (i,x,y)=> recorder.GreedSet(i, x, y, inspector.SetGreed);
-            graph.OnUserLinked +=      (i,j)=> recorder.InteractionAdded(i, j, graph.AddLink, graph.RemoveLink);
-            graph.OnUserUnlinked +=    (i,j)=> recorder.InteractionRemoved(i, j, graph.AddLink, graph.RemoveLink);
-            graph.OnUserUnlinked +=    (i,j)=> graph.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
+            graph.OnUserLinked +=         (i,j)=> recorder.InteractionAdded(i, j, graph.AddLink, graph.RemoveLink);
+            graph.OnUserUnlinked +=       (i,j)=> recorder.InteractionRemoved(i, j, graph.AddLink, graph.RemoveLink);
+            graph.OnUserUnlinked +=       (i,j)=> graph.SpawnEffectOnLink(i, j, poofPrefab.gameObject);
 
             recorder.OnSpeciesTraitsChanged += (i)=> graph.ForceFocus(i);
-            recorder.OnSpeciesMemoryLeak +=    (i)=> graph.RemoveNodeCompletely(i);
+            recorder.OnSpeciesMemoryLeak +=    (i)=> graph.RemoveNode(i);
             recorder.OnSpeciesMemoryLeak +=    (i)=> inspector.DespawnCompletely(i);
 
             inspector.OnUserSpawned +=   (i)=> model.TriggerSolve();
             inspector.OnUserDespawned += (i)=> model.TriggerSolve();
             inspector.OnSizeSet +=     (i,x)=> model.TriggerSolve();
             inspector.OnGreedSet +=    (i,x)=> model.TriggerSolve();
-            graph.OnUserLinked +=   (i,j)=> model.TriggerSolve();
-            graph.OnUserUnlinked += (i,j)=> model.TriggerSolve();
+            graph.OnUserLinked +=      (i,j)=> model.TriggerSolve();
+            graph.OnUserUnlinked +=    (i,j)=> model.TriggerSolve();
 
             //////////////////////
             // initialise level //

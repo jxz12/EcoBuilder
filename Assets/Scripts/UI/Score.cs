@@ -46,6 +46,7 @@ namespace EcoBuilder.UI
         List<Func<double>> AttachedSources = new List<Func<double>>();
         public void AttachScoreSource(Func<double> Source)
         {
+            Assert.IsNotNull(Source);
             AttachedSources.Add(Source);
         }
         // to check whether constraints have been met
@@ -91,12 +92,12 @@ namespace EcoBuilder.UI
 
             //////////////////////////////////
             // only continue if allowed
-            if (starsDisabled || !AttachedValidity.Invoke()) {
+            if (starsDisabled || (!AttachedValidity?.Invoke() ?? false)) {
                 return;
             }
             latestValidScore = score;
             displayedStars = 0;
-            if (AttachedSatisfied.Invoke())
+            if (AttachedSatisfied?.Invoke() ?? false)
             {
                 displayedStars += 1;
                 if (displayedScore >= target1) {

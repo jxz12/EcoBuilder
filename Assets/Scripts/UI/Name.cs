@@ -25,7 +25,7 @@ namespace EcoBuilder.UI
         }
         private void OnValueChanged(string s)
         {
-            OnUserNameChanged.Invoke(s);
+            OnUserNameChanged?.Invoke(s);
             input.textComponent.color = Color.blue;
         }
         public void SetNameWithoutCallback(string newName)

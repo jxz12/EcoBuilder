@@ -41,12 +41,12 @@ namespace EcoBuilder.Tests
             if (!type.Namespace.Contains("EcoBuilder")) {
                 return;
             }
-            // var sb = new StringBuilder($"{type.Name} {obj.name}: ");
+            // var sb = new StringBuilder($"{type.Name} {monoB.name}: ");
             foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                                         .Where(f=> Attribute.IsDefined(f, typeof(SerializeField))))
             {
-                // sb.Append($"{field.Name} {field.GetValue(obj)}");
-                Assert.IsFalse(field.GetValue(monoB)==null, $"SerializeField {field.Name} in {monoB.name} is null");
+                // sb.Append($"{field.Name} {field.GetValue(monoB)}");
+                Assert.IsNotNull(field.GetValue(monoB), $"SerializeField {field.Name} in {monoB.name} is null");
             }
             // Debug.Log(sb.ToString());
         }
@@ -54,7 +54,7 @@ namespace EcoBuilder.Tests
         [Test]
         public void SmellTutorialSmellyListeners()
         {
-
+            // TODO:
         }
 
         // // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
