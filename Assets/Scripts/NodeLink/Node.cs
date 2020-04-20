@@ -22,7 +22,7 @@ namespace EcoBuilder.NodeLink
         public bool CanBeTarget = true;
         public bool CanBeFocused = true;
 
-        // GameObject shape;
+        GameObject shape;
         Renderer shapeRenderer;
         cakeslice.Outline outline;
 
@@ -35,7 +35,10 @@ namespace EcoBuilder.NodeLink
 
         public void SetShape(GameObject shapeObject)
         {
-            GameObject shape = shapeObject;
+            if (shapeObject == shape) {
+                return; // this is a little smelly, we really shouldn't assign twice
+            }
+            shape = shapeObject;
             shapeRenderer = shape.GetComponentInChildren<Renderer>();
             outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
 
@@ -46,11 +49,9 @@ namespace EcoBuilder.NodeLink
             shape.transform.localPosition = Vector3.zero;
             shape.transform.localRotation = Quaternion.identity;
         }
-        public void Hide(bool hidden)
+        public void HideShape(bool hidden)
         {
-            if (shapeRenderer != null) {
-                shapeRenderer.enabled = false;
-            }
+            shape.SetActive(!hidden);
             GetComponent<Collider>().enabled = !hidden;
         }
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();

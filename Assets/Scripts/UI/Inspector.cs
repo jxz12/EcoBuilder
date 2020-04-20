@@ -190,7 +190,7 @@ namespace EcoBuilder.UI
         {
             if (graveyard.ContainsKey(toSpawn.Idx))
             {
-                toSpawn.GObject.SetActive(true);
+                // toSpawn.GObject.SetActive(true);
                 graveyard.Remove(toSpawn.Idx);
             }
             spawnedSpecies[toSpawn.Idx] = toSpawn;

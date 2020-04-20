@@ -30,9 +30,9 @@ namespace EcoBuilder.NodeLink
         Transform xAxle, yAxle;
         void Awake()
         {
-            xAxle = new GameObject("X").transform;
+            xAxle = new GameObject("X Axle").transform;
             xAxle.SetParent(transform);
-            yAxle = new GameObject("Y").transform;
+            yAxle = new GameObject("Y Axle").transform;
             yAxle.SetParent(xAxle);
         }
         Camera mainCam;
@@ -51,12 +51,12 @@ namespace EcoBuilder.NodeLink
             }
 
             FineTuneLayout();
-            if (tweenNodes) {
+            if (tweenNodes)
+            {
                 TweenNodesToStress();
                 TweenZoomToFit();
                 MomentumRotate();
             }
-
         }
 
         private bool layoutTriggered = false;
@@ -129,14 +129,13 @@ namespace EcoBuilder.NodeLink
                 newNode.Init(idx);
                 nodes[idx] = newNode;
                 undirected[idx] = new HashSet<int>();
-
             }
             else // bring back previously removed
             {
                 nodes[idx] = nodeGrave[idx];
                 nodeGrave.RemoveAt(idx);
 
-                nodes[idx].Hide(false);
+                nodes[idx].HideShape(false);
                 nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle; // to prevent divide-by-zero in majorization
 
                 undirected[idx] = new HashSet<int>();
@@ -185,7 +184,7 @@ namespace EcoBuilder.NodeLink
             }
 
             // move to graveyard to save for later
-            nodes[idx].Hide(true);
+            nodes[idx].HideShape(true);
             nodeGrave[idx] = nodes[idx];
             nodes.RemoveAt(idx);
 
@@ -429,8 +428,6 @@ namespace EcoBuilder.NodeLink
             tooltip.ShowText(msg);
             tooltip.Enable();
             tweenNodes = dragging = false;
-
-            print("TODO: doesn't work if graph is spinning");
         }
         public void UntooltipNode(int idx)
         {
