@@ -11,7 +11,8 @@ namespace EcoBuilder.Tutorials
         {
             targetSize = new Vector2(100,100);
 
-            ExplainIntro();
+            // ExplainIntro();
+            targetSize = Vector2.zero;
         }
         void ExplainIntro()
         {

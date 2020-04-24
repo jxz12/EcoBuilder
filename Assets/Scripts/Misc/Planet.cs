@@ -8,11 +8,21 @@ namespace EcoBuilder
     public class Planet : MonoBehaviour, IDragHandler
     {
         Animator anim;
+        Transform defaultParent;
         void Awake()
         {
             anim = GetComponent<Animator>();
+            defaultParent = new GameObject().transform;
+            defaultParent.position = new Vector3(0,-2.5f,0);
+            defaultParent.localScale = new Vector3(2,2,2);
+            transform.SetParent(defaultParent);
+            transform.localPosition = Vector2.zero;
             transform.localScale = Vector3.zero;
             TweenToRestPositionFromNextFrame(2f);
+        }
+        public void ResetParent()
+        {
+            transform.SetParent(defaultParent, true);
         }
 
         // for animation events

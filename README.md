@@ -1,20 +1,24 @@
 DO THIS NOW:
-claim moneys
 (CV) ecobuilder lol
 
-LEVELS:
+ECOBUILDER:
 fix superfocus small nodes
-fix the 2 visualisations (finalize trophic and do procrustes for SGD layouts)
 make SGD a coroutine for webgl
+add imperial logo with permission
 
+# LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 do high scores for heavy 3
 some final bosses
 
+show global high score at all times in research world (only up to top 1000, which should be sustainable)
+(stars will have to be removed from the level as well as the report card)
+
+check that score encryption is okay
+
 # TESTS
 to test layout, add specific nodes and links and make sure stress is lower than a certain amount
 but also automated random graphs to test for no NaN
-double check the constraints for certain combinations too
 
 make sure web_gl is same as not web_gl (conditional compiles)
 
@@ -27,7 +31,6 @@ verify high scores by checking matrices
 # Other
 make health go blue if above a super threshold (will need another fill sprite)
 release game with australian fires as angle?
-
 experiments to see how the score changes over time
 
 # REPORT CARD

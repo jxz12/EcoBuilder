@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -22,7 +23,7 @@ namespace EcoBuilder.NodeLink
         public bool CanBeTarget = true;
         public bool CanBeFocused = true;
 
-        GameObject shape;
+        GameObject shapeObject;
         Renderer shapeRenderer;
         cakeslice.Outline outline;
 
@@ -33,25 +34,27 @@ namespace EcoBuilder.NodeLink
             StressPos = UnityEngine.Random.insideUnitCircle; // prevent divide-by-zero in local majorization
         }
 
-        public void SetShape(GameObject shapeObject)
+        public void SetShape(GameObject shape)
         {
-            if (shapeObject == shape) {
-                return; // this is a little smelly, we really shouldn't assign twice
-            }
-            shape = shapeObject;
+            Assert.IsNotNull(shape, "shape is null");
+            Assert.IsNotNull(shape.GetComponentInChildren<Renderer>(), "shape has no renderer");
+            shapeObject = shape;
             shapeRenderer = shape.GetComponentInChildren<Renderer>();
-            outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
-
+            if (shapeRenderer.GetComponent<cakeslice.Outline>() == null) {
+                outline = shapeRenderer.gameObject.AddComponent<cakeslice.Outline>();
+            }
             // drop it in at the point at shapeObject's position
             transform.position = shapeObject.transform.position;
 
-            shape.transform.SetParent(transform, false);
-            shape.transform.localPosition = Vector3.zero;
-            shape.transform.localRotation = Quaternion.identity;
+            shapeObject.transform.SetParent(transform, false);
+            shapeObject.transform.localPosition = Vector3.zero;
+            shapeObject.transform.localRotation = Quaternion.identity;
         }
         public void HideShape(bool hidden)
         {
-            shape.SetActive(!hidden);
+            if (shapeObject != null) {
+                shapeObject.SetActive(!hidden);
+            }
             GetComponent<Collider>().enabled = !hidden;
         }
         Stack<cakeslice.Outline.Colour> outlines = new Stack<cakeslice.Outline.Colour>();

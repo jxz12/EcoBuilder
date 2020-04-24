@@ -79,7 +79,7 @@ namespace EcoBuilder.UI
                         unlockedIdxs.Add(prefab.NextLevelPrefab.Details.Idx);
                     }
                 }
-                if (prefab.Details.Metric != LevelDetails.ScoreMetric.None)
+                if (prefab.Details.Metric == LevelDetails.ScoreMetric.Standard) // only have stars for standard scores
                 {
                     if (score >= 0) collectedStars += 1;
                     if (score > prefab.Details.TwoStarScore) collectedStars += 1;

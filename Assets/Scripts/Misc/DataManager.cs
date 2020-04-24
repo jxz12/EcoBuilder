@@ -17,8 +17,8 @@ namespace EcoBuilder
         private class PlayerDetails
         {
             public string username = "";
-            public string password = "";
-            public string email = "";
+            public string passwordEncrypted = "";
+            public string emailEncrypted = "";
 
             public int age = -1;
             public int gender = -1;
@@ -48,7 +48,7 @@ namespace EcoBuilder
             playerPath = Application.persistentDataPath+"/player.data";
 
 #if UNITY_EDITOR
-            // DeletePlayerDetailsLocal();
+            DeletePlayerDetailsLocal();
 #endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
@@ -108,16 +108,16 @@ namespace EcoBuilder
         public void RegisterLocal(string username, string password, string email)
         {
             player.username = username;
-            player.password = Postman.Encrypt(password);
-            player.email = Postman.Encrypt(email);
+            player.passwordEncrypted = Postman.Encrypt(password);
+            player.emailEncrypted = Postman.Encrypt(email);
             SavePlayerDetailsLocal();
         }
         public void RegisterRemote(Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
-                { "password", player.password },
-                { "email", player.email },
+                { "password", player.passwordEncrypted },
+                { "email", player.emailEncrypted },
 
                 // these two are potentially set from someone who did not create an account at first
                 { "reversed", player.reverseDrag? "1":"0" },
@@ -150,7 +150,7 @@ namespace EcoBuilder
 
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
-                { "password", player.password },
+                { "password", player.passwordEncrypted },
                 { "team", ((int)player.team).ToString() },
                 { "newsletter", emailConsent? "1":"0" },
                 { "__address__", ServerURL+"gdpr.php" },
@@ -160,31 +160,32 @@ namespace EcoBuilder
 
         public void LoginRemote(string username, string password, Action<bool, string> OnCompletion)
         {
-            password = Postman.Encrypt(password);
+            string passwordEncrypted = Postman.Encrypt(password);
             var data = new Dictionary<string, string>() {
                 { "username", username },
-                { "password", password },
+                { "password", passwordEncrypted },
                 { "__address__", ServerURL+"login.php" },
             };
-            pat.Post(data, (b,s)=>{ if (b) ParseLogin(username, password, s); OnCompletion(b,s); });
-        }
-        private void ParseLogin(string username, string password, string returned)
-        {
-            player.username = username;
-            player.password = password;
-            var details = returned.Split(';');
-            player.team = (PlayerDetails.Team)int.Parse(details[0]);
-            player.reverseDrag = int.Parse(details[1])==1? true:false;
+            pat.Post(data, (b,s)=>{ if (b) ParseLogin(s); OnCompletion(b,s); });
 
-            player.highScores.Clear();
-            for (int i=2; i<details.Length; i++)
+            void ParseLogin(string toParse)
             {
-                string[] level = details[i].Split(':');
-                int idx = int.Parse(level[0]);
-                long score = long.Parse(level[1]);
-                SaveHighScoreLocal(idx, score);
+                player.username = username;
+                player.passwordEncrypted = passwordEncrypted;
+                var details = toParse.Split(';');
+                player.team = (PlayerDetails.Team)int.Parse(details[0]);
+                player.reverseDrag = int.Parse(details[1])==1? true:false;
+
+                player.highScores.Clear();
+                for (int i=2; i<details.Length; i++)
+                {
+                    string[] level = details[i].Split(':');
+                    int idx = int.Parse(level[0]);
+                    long score = long.Parse(level[1]);
+                    SaveHighScoreLocal(idx, score);
+                }
+                SavePlayerDetailsLocal();
             }
-            SavePlayerDetailsLocal();
         }
         public void SendPasswordResetEmail(string recipient, Action<bool, string> OnCompletion)
         {
@@ -198,7 +199,7 @@ namespace EcoBuilder
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
-                { "password", player.password },
+                { "password", player.passwordEncrypted },
                 { "__address__", ServerURL+"delete.php" },
             };
             pat.Post(data, (b,s)=>{ OnCompletion(b,s); } );
@@ -223,7 +224,7 @@ namespace EcoBuilder
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
-                { "password", player.password },
+                { "password", player.passwordEncrypted },
                 { "age", age.ToString() },
                 { "gender", gender.ToString() },
                 { "education", education.ToString() },
@@ -242,7 +243,7 @@ namespace EcoBuilder
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
-                { "password", player.password },
+                { "password", player.passwordEncrypted },
                 { "reversed", player.reverseDrag? "1":"0" },
                 { "__address__", ServerURL+"drag.php" },
             };
@@ -265,7 +266,7 @@ namespace EcoBuilder
             return score;
         }
         // returns whether new high score is achieved
-        private bool SaveHighScoreLocal(int levelIdx, long score)
+        public bool SaveHighScoreLocal(int levelIdx, long score)
         {
             if (GetHighScoreLocal(levelIdx) < score)
             {
@@ -275,14 +276,15 @@ namespace EcoBuilder
             }
             return false;
         }
-        private void SavePlaythroughRemote(int levelIdx, long score, string matrix, string actions)
+        public void SavePlaythroughRemote(int levelIdx, long score, string matrix, string actions)
         {
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
-                { "password", player.password },
+                { "password", player.passwordEncrypted },
                 { "level_index", levelIdx.ToString() },
                 { "datetime_ticks", DateTime.Now.Ticks.ToString() },
                 { "score", score.ToString() },
+                { "erocs", Postman.Encrypt(score.ToString()) }, // a little protection
                 { "matrix", matrix },
                 { "actions", actions },
                 { "__address__", ServerURL+"playthrough.php" },
@@ -331,12 +333,12 @@ namespace EcoBuilder
             };
             pat.Post(data, OnCompletion);
         }
-        public void GetNearbyRanksRemote(int levelIdx, int rowsAbove, int rowsBelow, Action<bool, string> OnCompletion)
+        public void GetSingleRankRemote(int levelIdx, long score, Action<bool, string> OnCompletion)
         {
             var data = new Dictionary<string, string>() {
-                { "username", player.username },
-                { "password", player.password },
                 { "level_index", levelIdx.ToString() },
+                { "score" , score.ToString() },
+                { "__address__", ServerURL+"rank.php" },
             };
             pat.Post(data, OnCompletion);
         }
@@ -381,24 +383,5 @@ namespace EcoBuilder
         }
 
 
-        ////////////////////////////////////
-        // purely for testing leaderboards
-#if UNITY_EDITOR
-        void PopulateDatabaseWithScores()
-        {
-            for (int i=0; i<26; i++)
-            {
-                string name = "bob" + (char)('A'+i);
-                RegisterLocal(name, "", name+"@bob.co.uk");
-                RegisterRemote((b,s)=>print(b+" "+s));
-                SetGDPRRemote(true, (b,s)=>print(b+" "+s));
-                SetDemographicsRemote(0,1,2);
-                for (int j=101; j<=104; j++)
-                {
-                    SavePlaythroughRemote(j, UnityEngine.Random.Range(100, 100000000), "", "");
-                }
-            }
-        }
-#endif
     }
 }

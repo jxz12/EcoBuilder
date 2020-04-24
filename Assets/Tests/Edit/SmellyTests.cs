@@ -96,8 +96,8 @@ namespace EcoBuilder.Tests
             float total4 = 0;
             for (int i=0; i<1000000; i++)
             {
-                // Vector3 foo = UnityEngine.Random.insideUnitSphere;
-                Vector2 foo = UnityEngine.Random.insideUnitCircle;
+                Vector3 foo = UnityEngine.Random.insideUnitSphere;
+                // Vector2 foo = UnityEngine.Random.insideUnitCircle;
                 total4 += Mathf.Sqrt(foo.x*foo.x + foo.y*foo.y);
             }
             sw.Stop();
@@ -108,10 +108,10 @@ namespace EcoBuilder.Tests
             for (int i=0; i<1000000; i++)
             {
                 Vector3 foo = UnityEngine.Random.insideUnitSphere;
-                foo.z = 0;
-                total5 += foo.magnitude;
+                // foo.z = 0;
+                // total5 += foo.magnitude;
                 // Vector2 foo = UnityEngine.Random.insideUnitCircle;
-                // total5 += Mathf.Sqrt(foo.x*foo.x + foo.y*foo.y);
+                total5 += Mathf.Sqrt(foo.x*foo.x + foo.y*foo.y + foo.z*foo.z);
             }
             sw.Stop();
             UnityEngine.Debug.Log($"total5={total5}, elapsed={sw.Elapsed}");

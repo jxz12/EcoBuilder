@@ -62,7 +62,7 @@ namespace EcoBuilder.NodeLink
         private bool layoutTriggered = false;
         private bool isCalculatingAsync = false;
         public bool GraphLayedOut { get { return !layoutTriggered && !isCalculatingAsync; } }
-        public bool ConstrainTrophic { private get; set; }
+        public bool ConstrainTrophic { private get; set; } = false;
 
         [SerializeField] int t_max=30;
         [SerializeField] float epsSGD=.01f, epsGS=.1f;
@@ -105,6 +105,7 @@ namespace EcoBuilder.NodeLink
 
             isCalculatingAsync = false;
             OnLayedOut?.Invoke();
+            print(SGD.CalculateStress());
         }
 
         ///////////////////////////////////
@@ -114,8 +115,8 @@ namespace EcoBuilder.NodeLink
         SparseVector<Node> nodes = new SparseVector<Node>();
         SparseMatrix<Link> links = new SparseMatrix<Link>();
 
-        SparseVector<Node> nodeGrave = new SparseVector<Node>();
-        SparseMatrix<Link> linkGrave = new SparseMatrix<Link>();
+        SparseVector<Node> nodeArchive = new SparseVector<Node>();
+        SparseMatrix<Link> linkArchive = new SparseMatrix<Link>();
 
         Dictionary<int, HashSet<int>> undirected = new Dictionary<int, HashSet<int>>();
 
@@ -123,7 +124,7 @@ namespace EcoBuilder.NodeLink
         {
             Assert.IsNull(nodes[idx], $"node {idx} already added");
 
-            if (nodeGrave[idx] == null) // entirely new
+            if (nodeArchive[idx] == null) // entirely new
             {
                 Node newNode = Instantiate(nodePrefab, yAxle);
                 newNode.Init(idx);
@@ -132,39 +133,39 @@ namespace EcoBuilder.NodeLink
             }
             else // bring back previously removed
             {
-                nodes[idx] = nodeGrave[idx];
-                nodeGrave.RemoveAt(idx);
+                nodes[idx] = nodeArchive[idx];
+                nodeArchive.RemoveAt(idx);
 
                 nodes[idx].HideShape(false);
                 nodes[idx].StressPos = UnityEngine.Random.insideUnitCircle; // to prevent divide-by-zero in majorization
 
                 undirected[idx] = new HashSet<int>();
-                foreach (int col in linkGrave.GetColumnIndicesInRow(idx))
+                foreach (int col in linkArchive.GetColumnIndicesInRow(idx))
                 {
                     if (nodes[col] != null)
                     {
-                        links[idx, col] = linkGrave[idx, col];
+                        links[idx, col] = linkArchive[idx, col];
                         links[idx, col].gameObject.SetActive(true);
                         undirected[idx].Add(col);
                         undirected[col].Add(idx);
                     }
                 }
-                foreach (int row in linkGrave.GetRowIndicesInColumn(idx))
+                foreach (int row in linkArchive.GetRowIndicesInColumn(idx))
                 {
                     if (nodes[row] != null)
                     {
-                        links[row, idx] = linkGrave[row, idx];
+                        links[row, idx] = linkArchive[row, idx];
                         links[row, idx].gameObject.SetActive(true);
                         undirected[idx].Add(row);
                         undirected[row].Add(idx);
                     }
                 }
-                // clear linkGrave
+                // clear linkArchive
                 foreach (int col in links.GetColumnIndicesInRow(idx)) {
-                    linkGrave.RemoveAt(idx, col);
+                    linkArchive.RemoveAt(idx, col);
                 }
                 foreach (int row in links.GetRowIndicesInColumn(idx)) {
-                    linkGrave.RemoveAt(row, idx);
+                    linkArchive.RemoveAt(row, idx);
                 }
             }
             todoBFS.Enqueue(idx);
@@ -172,7 +173,6 @@ namespace EcoBuilder.NodeLink
         }
         public void ShapeNode(int idx, GameObject shape)
         {
-            Assert.IsNotNull(shape.GetComponentInChildren<Renderer>(), "shape has no renderer");
             nodes[idx].SetShape(shape);
         }
         // this function is needed for undo and redo functionality
@@ -185,24 +185,24 @@ namespace EcoBuilder.NodeLink
 
             // move to graveyard to save for later
             nodes[idx].HideShape(true);
-            nodeGrave[idx] = nodes[idx];
+            nodeArchive[idx] = nodes[idx];
             nodes.RemoveAt(idx);
 
             foreach (int col in links.GetColumnIndicesInRow(idx))
             {
                 links[idx, col].gameObject.SetActive(false);
-                linkGrave[idx, col] = links[idx, col];
+                linkArchive[idx, col] = links[idx, col];
             }
             foreach (int row in links.GetRowIndicesInColumn(idx))
             {
                 links[row, idx].gameObject.SetActive(false);
-                linkGrave[row, idx] = links[row, idx];
+                linkArchive[row, idx] = links[row, idx];
             }
             // clear links
-            foreach (int col in linkGrave.GetColumnIndicesInRow(idx)) {
+            foreach (int col in linkArchive.GetColumnIndicesInRow(idx)) {
                 links.RemoveAt(idx, col);
             }
-            foreach (int row in linkGrave.GetRowIndicesInColumn(idx)) {
+            foreach (int row in linkArchive.GetRowIndicesInColumn(idx)) {
                 links.RemoveAt(row, idx);
             }
 
@@ -218,11 +218,11 @@ namespace EcoBuilder.NodeLink
         }        
         public void RemoveNode(int idx)
         {
-            Assert.IsNotNull(nodeGrave[idx], $"node {idx} must be archived first");
+            Assert.IsNotNull(nodeArchive[idx], $"node {idx} must be archived first");
 
-            Destroy(nodeGrave[idx].gameObject);
-            nodeGrave.RemoveAt(idx);
-            linkGrave.RemoveIndex(idx);
+            Destroy(nodeArchive[idx].gameObject);
+            nodeArchive.RemoveAt(idx);
+            linkArchive.RemoveIndex(idx);
         }
 
 

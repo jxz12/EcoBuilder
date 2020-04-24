@@ -57,7 +57,6 @@ namespace EcoBuilder
             sendQueue.Dequeue();
         }
 
-        
         public void Post(Dictionary<string, string> letter, Action<bool, string> ResponseCallback)
         {
             Assert.IsTrue(letter.ContainsKey("__address__"), "no __address__ given to send to");
@@ -82,14 +81,16 @@ namespace EcoBuilder
         WWWForm prevForm;
         string prevAddress;
 
+        public bool Busy { get { return sendQueue.Count > 0; } }
+
         void Update()
         {
-#if UNITY_EDITOR
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                StartCoroutine(SendPost(prevAddress, prevForm, (b,s)=>print($"again: {s}")));
-            }
-#endif
+// #if UNITY_EDITOR
+//             if (Input.GetKeyDown(KeyCode.Space))
+//             {
+//                 StartCoroutine(SendPost(prevAddress, prevForm, (b,s)=>print($"again: {s}")));
+//             }
+// #endif
             if (sendQueue.Count > 0)
             {
                 float t = ((Time.time)/spinPeriod) % 1;

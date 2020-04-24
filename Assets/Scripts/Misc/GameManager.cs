@@ -28,6 +28,7 @@ namespace EcoBuilder
                 _gameManager = this;
             }
             InitPlayer();
+            Instantiate(earthPrefab);
         }
 
         void Start()
@@ -158,7 +159,7 @@ namespace EcoBuilder
             void BackToMenu()
             {
                 HelpText.Showing = false;
-                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.ResetParent(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
             confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
@@ -187,22 +188,14 @@ namespace EcoBuilder
             confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(Reset, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
 
-        [SerializeField] Planet earth;
-        Transform earthParent;
+        [SerializeField] Planet earthPrefab;
+        Planet earth;
         public GameObject TakePlanet()
         {
             Assert.IsNotNull(earth, "earth was destroyed :(");
-            earthParent = earth.transform.parent;
             earth.TweenToRestPositionFromNextFrame(2);
             return earth.gameObject;
         }
-        public void ReturnPlanet()
-        {
-            Assert.IsNotNull(earth, "earth was destroyed :(");
-            earth.transform.SetParent(earthParent, true);
-            // TweenToRestPosition called in ReturnToMenu() above
-        }
-
 
         ///////////////////////////
         // showing help messages //

@@ -11,14 +11,15 @@ namespace EcoBuilder.UI
     {
         public event Action OnOneStarAchieved;
         public event Action OnThreeStarsAchieved;
+        public event Action OnHighestScoreBroken;
 
         [SerializeField] Animator star1, star2, star3;
 
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
         [SerializeField] Sprite targetSprite1, targetSprite2;
-        [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText;
+        [SerializeField] Sprite researchWorldBackground;
+        [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText, statsText;
 
-        long target1, target2;
         Color defaultScoreCol, displayedScoreCol;
         RectTransform scoreRT;
         [SerializeField] Color unsatisfiedScoreCol, reminderScoreCol, higherScoreCol, lowerScoreCol;
@@ -33,10 +34,26 @@ namespace EcoBuilder.UI
         {
             Hide(false);
         }
-        public void SetStarThresholds(LevelDetails.ScoreMetric metric, long target1, long target2)
+        long target1=0, target2=0;
+        public void SetStarThresholds(long target1, long target2)
         {
             this.target1 = target1;
             this.target2 = target2;
+        }
+        [SerializeField] GameObject starsObject, statsObject;
+        public void EnableResearchMode(long? prevHighScore)
+        {
+            GetComponent<Image>().sprite = researchWorldBackground;
+            starsObject.SetActive(false);
+            statsObject.SetActive(true);
+            this.target1 = 0;
+            this.target2 = prevHighScore ?? 0; // TODO: change behaviour with stars and stuff and test this whole thing
+            HighestScore = prevHighScore ?? 0;
+        }
+        public void SetStatsText(string rank, long? median) // called from levelmanager
+        {
+            Assert.IsTrue(statsObject.activeSelf);
+            statsText.text = $"Rank: {rank}\nAverage: {median??0}";
         }
 
         //////////////////////
@@ -65,14 +82,13 @@ namespace EcoBuilder.UI
             AttachedValidity = IsValid;
         }
 
-
         public long HighestScore { get; private set; } = 0;
         long displayedScore = 0;
         public int HighestStars { get; private set; } = 0;
         int displayedStars = 0;
         double latestValidScore = 0;
 
-        public void Update() //, string explanation, string explanationSupplement)
+        public void Update()
         {
             double score = 0;
             foreach (var Source in AttachedSources) {
@@ -119,7 +135,9 @@ namespace EcoBuilder.UI
                 if (prevHighestStars <= 2 && HighestStars == 3) {
                     OnThreeStarsAchieved?.Invoke();
                 }
-
+                if (HighestScore > prevHighestScore) {
+                    OnHighestScoreBroken?.Invoke();
+                }
                 displayedScoreCol = Color.Lerp(displayedScoreCol, defaultScoreCol, .5f*Time.deltaTime);
             }
             else

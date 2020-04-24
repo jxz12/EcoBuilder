@@ -109,8 +109,12 @@ namespace EcoBuilder
             }
             inspector.AllowConflicts(details.ConflictsAllowed);
             graph.AllowSuperfocus = details.SuperfocusAllowed;
-            graph.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
             graph.DragFromTarget = GameManager.Instance.ReverseDragDirection;
+#if UNITY_EDITOR
+            graph.ConstrainTrophic = true;
+#else
+            graph.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
+#endif
 
             constraints.LimitLeaf(details.NumProducers);
             constraints.LimitPaw(details.NumConsumers);
@@ -182,15 +186,23 @@ namespace EcoBuilder
                 constraints.HighlightLoop();
                 break;
             }
+            if (details.Metric==LevelDetails.ScoreMetric.None || details.Metric==LevelDetails.ScoreMetric.Standard)
+            {
+                score.SetStarThresholds(details.TwoStarScore, details.ThreeStarScore);
+                score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
+                score.OnOneStarAchieved +=    ()=> graph.ForceUnfocus();
+                score.OnOneStarAchieved +=    ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
+                score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
+                score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
+            }
+            else // research world
+            {
+                score.EnableResearchMode(GameManager.Instance.GetHighScoreLocal(details.Idx));
+                score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:"offline", GameManager.Instance.GetCachedMedian(details.Idx)));
+                GameManager.Instance.MakePlayedLevelFinishable(); // research is always finishable from start
+            }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);
-
-            score.SetStarThresholds(details.Metric, details.TwoStarScore, details.ThreeStarScore);
-            score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
-            score.OnOneStarAchieved +=    ()=> graph.ForceUnfocus();
-            score.OnOneStarAchieved +=    ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
-            score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
-            score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
 
             GameManager.Instance.OnPlayedLevelFinished += FinishPlaythrough;
             graph.AddDropShadow(GameManager.Instance.TakePlanet(), -1.5f);
@@ -199,10 +211,8 @@ namespace EcoBuilder
         }
         void OnDestroy()
         {
-            if (!applicationQuitting) // for if GameManager is destroyed in its scene first
-            {
+            if (!applicationQuitting) { // for if GameManager is destroyed in its scene first, yes it's ugly
                 GameManager.Instance.OnPlayedLevelFinished -= FinishPlaythrough;
-                GameManager.Instance.ReturnPlanet();
             }
         }
         bool applicationQuitting = false;

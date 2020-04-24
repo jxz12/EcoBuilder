@@ -6502,7 +6502,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1050504084}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_RenderMode: 2
   m_Camera: {fileID: 0}
@@ -14049,7 +14049,7 @@ MonoBehaviour:
   leaderboard: {fileID: 1615050445}
   firstLearningLevel: {fileID: 1744894759364357133, guid: c2e2e7070b5713f478704ab422e6101e,
     type: 3}
-  firstResearchLevel: {fileID: 5135758467454725724, guid: fc254115a2bd0ed4cb574674a707db18,
+  firstResearchLevel: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
     type: 3}
   splashLearningText: Welcome to Ecobuilder! This text will appear through out your
     journey to help you along your way. You can make it reappear at any time by pressing
