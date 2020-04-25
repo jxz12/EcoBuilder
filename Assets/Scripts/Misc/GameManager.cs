@@ -28,7 +28,7 @@ namespace EcoBuilder
                 _gameManager = this;
             }
             InitPlayer();
-            Instantiate(earthPrefab);
+            earth = Instantiate(earthPrefab);
         }
 
         void Start()
@@ -68,7 +68,7 @@ namespace EcoBuilder
             }
             loadingBar.SetProgress(.333f);
 #if UNITY_EDITOR
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(.5f);
 #endif
             if (toLoad != null)
             {
@@ -132,14 +132,14 @@ namespace EcoBuilder
                 } else {
                     // replay level so no need to destroy
                 }
-                StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
+                StartCoroutine(UnloadSceneThenLoad("Level", "Level"));
             }
             else
             {
                 // play from menu
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
-                StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Level"));
             }
             report.HideIfShowing();
         }
@@ -159,7 +159,7 @@ namespace EcoBuilder
             void BackToMenu()
             {
                 HelpText.Showing = false;
-                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.ResetParent(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                StartCoroutine(UnloadSceneThenLoad("Level", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.ResetParent(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
             confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");

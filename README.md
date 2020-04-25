@@ -33,6 +33,10 @@ make health go blue if above a super threshold (will need another fill sprite)
 release game with australian fires as angle?
 experiments to see how the score changes over time
 
+I have read
+I understand the purposes
+I consent to data
+
 # REPORT CARD
 Your final score was XXX
 Use the 'i' icon thingy to show the explanation This was made up of X nodes, and X edges

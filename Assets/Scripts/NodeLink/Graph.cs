@@ -105,7 +105,6 @@ namespace EcoBuilder.NodeLink
 
             isCalculatingAsync = false;
             OnLayedOut?.Invoke();
-            print(SGD.CalculateStress());
         }
 
         ///////////////////////////////////

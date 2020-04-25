@@ -13,7 +13,7 @@ namespace EcoBuilder.UI
         [SerializeField] Button moreButton;
         void Awake()
         {
-            moreButton.onClick.AddListener(GetMoreTopScores);
+            moreButton.onClick.AddListener(UpdateTopScores);
             topPanelLayout.enabled = true;
             topPanelFitter.enabled = true;
         }
@@ -27,47 +27,80 @@ namespace EcoBuilder.UI
 
             topScoresShowing = 0;
             topScoresText = "";
-            topScores.text = "loading...";
             topPanelLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
             ForceUpdateLayout();
-            
-            moreButton.interactable = true;
-            GameManager.Instance.GetRankedScoresRemote(levelIdx, 0, 10, UpdateTopScores);
 
-            var lowerScoresText = new StringBuilder();
-            long? playerScore = GameManager.Instance.GetHighScoreLocal(levelIdx);
-            if (playerScore != null) {
-                lowerScoresText.Append($"You: {(playerScore??0).ToString("N0")}\n");
-            }
-            long? median = GameManager.Instance.GetCachedMedian(levelIdx);
-            if (median != null) {
-                lowerScoresText.Append($"Average: {(median??0).ToString("N0")}");
-            }
-            lowerScores.text = lowerScoresText.ToString();
+            UpdateTopScores();
+            UpdateLowerScores();
         }
         [SerializeField] VerticalLayoutGroup topPanelLayout;
         [SerializeField] ContentSizeFitter topPanelFitter;
-        void UpdateTopScores(bool successful, string newScoresText)
+        void UpdateTopScores()
         {
-            if (!successful) {
-                topScores.text = topScoresText + "Please try again later.";
-            }
-            if (newScoresText == "")
-            {
-                moreButton.interactable = false;
-                topScores.text = topScoresText + "No more scores!";
-                return;
-            }
-            topScoresText += newScoresText;
-            topScores.text = topScoresText;
+            Assert.IsFalse(currentIdx==null);
 
-            // assume each row is a new score
-            foreach (char c in newScoresText)  {
-                if (c == '\n') {
-                    topScoresShowing += 1;
+            int updatingIdx = (int)currentIdx;
+            topScores.text = topScoresText + (topScoresText==""? "loading...":$"\nloading...");
+            moreButton.interactable = false;
+            GameManager.Instance.GetRankedScoresRemote(updatingIdx, topScoresShowing, 10, Update);
+            void Update(bool successful, string newScoresText)
+            {
+                if (currentIdx != updatingIdx) {
+                    return;
                 }
+                if (!successful) {
+                    topScores.text = topScoresText + "Please try again later.";
+                    moreButton.interactable = true;
+                    return;
+                }
+                topScoresText += topScoresText==""? newScoresText : $"\n{newScoresText}";
+                topScores.text = topScoresText;
+                int newLines = CountLines(newScoresText);
+                topScoresShowing += newLines;
+                if (newLines < 10)
+                {
+                    moreButton.interactable = false;
+                    topScores.text = topScoresText==""? "No more scores!" : topScoresText+"\nNo more scores!";
+                }
+                else
+                {
+                    moreButton.interactable = true;
+                }
+                ForceUpdateLayout();
             }
-            ForceUpdateLayout();
+        }
+        void UpdateLowerScores()
+        {
+            Assert.IsFalse(currentIdx==null);
+
+            int updatingIdx = (int)currentIdx;
+            long? playerScore = GameManager.Instance.GetHighScoreLocal(updatingIdx);
+            // long? playerScore = 100000;
+            long? median = GameManager.Instance.GetCachedMedian(updatingIdx);
+            SetText(null);
+            if (playerScore != null) {
+                GameManager.Instance.GetSingleRankRemote(updatingIdx, (long)playerScore, Update);
+            }
+            void SetText(string rank)
+            {
+                var lowerScoresText = new StringBuilder();
+                if (rank == null) {
+                    lowerScoresText.Append($"You: {(playerScore??0).ToString("N0")}");
+                } else {
+                    lowerScoresText.Append($"{rank}: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
+                }
+                if (median != null) {
+                    lowerScoresText.Append($"\nAverage: {(median??0).ToString("N0")}");
+                }
+                lowerScores.text = lowerScoresText.ToString();
+            }
+            void Update(bool successful, string rank)
+            {
+                if (!successful || currentIdx != updatingIdx) {
+                    return;
+                }
+                SetText(rank);
+            }
         }
         void ForceUpdateLayout()
         {
@@ -76,12 +109,18 @@ namespace EcoBuilder.UI
             topPanelLayout.SetLayoutVertical();
             topPanelFitter.SetLayoutVertical();
         }
-        public void GetMoreTopScores()
+        private static int CountLines(string str)
         {
-            Assert.IsFalse(currentIdx==null, "no level selected");
-
-            topScores.text += "loading...";
-            GameManager.Instance.GetRankedScoresRemote((int)currentIdx, topScoresShowing, 10, UpdateTopScores);
+            Assert.IsNotNull(str);
+            if (str == string.Empty) {
+                return 0;
+            }
+            int index = -1;
+            int count = 0;
+            while (-1 != (index = str.IndexOf('\n', index + 1))) {
+                count++;
+            }
+            return count + 1;
         }
     }
 }

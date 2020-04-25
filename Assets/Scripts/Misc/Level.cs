@@ -136,13 +136,13 @@ namespace EcoBuilder
             titleText.text = details.Title;
             descriptionText.text = details.Description;
 
-            indexText.text = ((details.Idx) % 100).ToString(); // a little smelly
+            indexText.text = ((details.Idx) % 100).ToString(); // a little smelly and probably unecessary
 
-            target1.text = details.TwoStarScore.ToString();
-            target2.text = details.ThreeStarScore.ToString();
+            target1.text = details.TwoStarScore.ToString("N0");
+            target2.text = details.ThreeStarScore.ToString("N0");
 
             long? score = GameManager.Instance.GetHighScoreLocal(details.Idx);
-            highScore.text = (score??0).ToString();
+            highScore.text = (score??0).ToString("N0");
             int numStars = 0;
             if (score > 0) {
                 numStars += 1;

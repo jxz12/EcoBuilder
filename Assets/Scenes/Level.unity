@@ -1198,7 +1198,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: af7485232731a42408b55532ff50e547, type: 2}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.33333334}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -1240,7 +1240,8 @@ MonoBehaviour:
   scoreTargetImage: {fileID: 1560405401}
   targetSprite1: {fileID: 21300000, guid: 5ce583f5eeb793649bba951c6052c148, type: 3}
   targetSprite2: {fileID: 21300000, guid: 78acd9c5b0fbabc4ab30b80f083a4587, type: 3}
-  researchWorldBackground: {fileID: 0}
+  researchWorldBackground: {fileID: 21300000, guid: c6b15ab9348309d41b0e65b3b4915cac,
+    type: 3}
   scoreText: {fileID: 1496890718}
   scoreTargetText: {fileID: 1967859480}
   statsText: {fileID: 2004400569}

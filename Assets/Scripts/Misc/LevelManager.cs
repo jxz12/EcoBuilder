@@ -111,7 +111,7 @@ namespace EcoBuilder
             graph.AllowSuperfocus = details.SuperfocusAllowed;
             graph.DragFromTarget = GameManager.Instance.ReverseDragDirection;
 #if UNITY_EDITOR
-            graph.ConstrainTrophic = true;
+            graph.ConstrainTrophic = false;
 #else
             graph.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
 #endif
@@ -199,7 +199,8 @@ namespace EcoBuilder
             {
                 score.EnableResearchMode(GameManager.Instance.GetHighScoreLocal(details.Idx));
                 score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:"offline", GameManager.Instance.GetCachedMedian(details.Idx)));
-                GameManager.Instance.MakePlayedLevelFinishable(); // research is always finishable from start
+                score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus
+                // GameManager.Instance.MakePlayedLevelFinishable(); // research is always finishable from start
             }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);

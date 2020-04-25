@@ -205,7 +205,7 @@ namespace EcoBuilder.NodeLink
         static readonly float zMagMin=.01f;
         static void PerformSGDConstrained(IList<float> etas, Func<int, float> YConstraint)
         {
-            Assert.IsFalse(true);
+            // TODO:
             int t_max = etas.Count;
             // surrogate 3d positions to constrain y
             for (int i=0; i<posSquished.Count; i++)

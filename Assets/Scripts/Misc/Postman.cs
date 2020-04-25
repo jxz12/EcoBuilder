@@ -23,6 +23,9 @@ namespace EcoBuilder
 
             using (var p = UnityWebRequest.Post(address, form))
             {
+#if UNITY_EDITOR
+                yield return new WaitForSeconds(.5f);
+#endif
                 yield return p.SendWebRequest();
                 if (p.isNetworkError)
                 {
@@ -50,7 +53,9 @@ namespace EcoBuilder
                     ResponseCallback?.Invoke(true, p.downloadHandler.text);
                     // message.text = "Success!";
                 }
+#if UNITY_EDITOR
                 print($"text: {p.downloadHandler.text}\nerror: {p.error}");
+#endif
             }
 
             Assert.IsTrue(sendQueue.Peek() == form, "sendQueue was tampered with while sending");
@@ -100,7 +105,7 @@ namespace EcoBuilder
             else
             {
                 if (icon.color.a > .01f) {
-                    icon.color = new Color(0,0,0, Mathf.Lerp(icon.color.a, 0, 5*Time.deltaTime));
+                    icon.color = new Color(0,0,0, Mathf.Lerp(icon.color.a, 0, 10*Time.deltaTime));
                 } else if (icon.color.a > 0) {
                     icon.color = new Color(0,0,0,0);
                 }

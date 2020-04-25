@@ -49,9 +49,9 @@ namespace EcoBuilder.Tests
             {
                 string name = "alice" + (char)('A'+i);
                 GameManager.Instance.RegisterLocal(name, "", name+"@alice.co.uk");
-                // GameManager.Instance.RegisterRemote((b,s)=>MonoBehaviour.print(b+" "+s));
-                // GameManager.Instance.SetGDPRRemote(true, (b,s)=>MonoBehaviour.print(b+" "+s));
-                // GameManager.Instance.SetDemographicsRemote(0,1,2);
+                GameManager.Instance.RegisterRemote((b,s)=>{ Assert.IsTrue(b); MonoBehaviour.print(b+" "+s); }); // assertion probably not necessary
+                GameManager.Instance.SetGDPRRemote(true, (b,s)=>{ Assert.IsTrue(b); MonoBehaviour.print(b+" "+s); });
+                GameManager.Instance.SetDemographicsRemote(0,1,2);
                 for (int j=101; j<=104; j++)
                 {
                     GameManager.Instance.SavePlaythroughRemote(j, UnityEngine.Random.Range(10, 10000), "", "");
