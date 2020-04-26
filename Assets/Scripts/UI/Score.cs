@@ -41,7 +41,7 @@ namespace EcoBuilder.UI
             this.target2 = target2;
         }
         [SerializeField] GameObject starsObject, statsObject;
-        public void EnableResearchMode(long? prevHighScore)
+        public void EnableStatsText(long? prevHighScore)
         {
             GetComponent<Image>().sprite = researchWorldBackground;
             starsObject.SetActive(false);
@@ -49,10 +49,13 @@ namespace EcoBuilder.UI
             this.target1 = 0;
             this.target2 = prevHighScore ?? 0; // TODO: change behaviour with stars and stuff and test this whole thing
             HighestScore = prevHighScore ?? 0;
+            LastStatsRank = null;
         }
+        public string LastStatsRank { get; private set; }
         public void SetStatsText(string rank, long? median) // called from levelmanager
         {
             Assert.IsTrue(statsObject.activeSelf);
+            LastStatsRank = rank;;
             statsText.text = $"Rank: {rank}\nAverage: {median??0}";
         }
 

@@ -207,7 +207,7 @@ namespace EcoBuilder
         [SerializeField] UI.ReportCard report;
 
         // called by playmanager
-        public void SetResultsScreen(int nStars, long score, string matrix, string actions)
+        public void SetResultsScreen(int nStars, long score, string rank, string matrix, string actions)
         {
             int idx = playedLevel.Details.Idx;
 
@@ -224,10 +224,12 @@ namespace EcoBuilder
                 report.GiveNavigation(playedLevel, null);
             }
 
-            if (playedLevel.Details.Metric != LevelDetails.ScoreMetric.None) {
-                report.SetResults(nStars, score, prevScore??0, GetCachedMedian(idx));
+            if (playedLevel.Details.Metric == LevelDetails.ScoreMetric.None) {
+                report.SetResults(null, null, null, null, null);
+            } else if (playedLevel.Details.Metric == LevelDetails.ScoreMetric.Standard) {
+                report.SetResults(nStars, score, prevScore, null, GetCachedMedian(idx));
             } else {
-                report.UnsetResults();
+                report.SetResults(null, score, prevScore, rank, GetCachedMedian(idx));
             }
         }
         // called by level

@@ -197,10 +197,10 @@ namespace EcoBuilder
             }
             else // research world
             {
-                score.EnableResearchMode(GameManager.Instance.GetHighScoreLocal(details.Idx));
+                score.EnableStatsText(GameManager.Instance.GetHighScoreLocal(details.Idx));
+                score.SetStatsText("test", GameManager.Instance.GetCachedMedian(details.Idx));
                 score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:"offline", GameManager.Instance.GetCachedMedian(details.Idx)));
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus
-                // GameManager.Instance.MakePlayedLevelFinishable(); // research is always finishable from start
             }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);
@@ -227,7 +227,7 @@ namespace EcoBuilder
             score.Finish();
             constraints.Finish();
 
-            GameManager.Instance.SetResultsScreen(score.HighestStars, score.HighestScore, model.GetMatrix(), recorder.GetActions());
+            GameManager.Instance.SetResultsScreen(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions());
             Destroy(gameObject);
         }
 

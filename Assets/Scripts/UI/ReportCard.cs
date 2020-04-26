@@ -7,13 +7,13 @@ namespace EcoBuilder.UI
 {
     public class ReportCard : MonoBehaviour
     {
-        [SerializeField] TMPro.TextMeshProUGUI title, current, currentMsg, average, averageMsg;
+        [SerializeField] TMPro.TextMeshProUGUI title, rank, current, currentMsg, average, averageMsg;
         [SerializeField] Image points, globe, shade;
         [SerializeField] Animator star1, star2, star3;
         [SerializeField] Button quitBtn;
 
-        [SerializeField] GameObject starsParent, currentParent, averageParent;
-        [SerializeField] RectTransform prevLevelAnchor, nextLevelAnchor;
+        [SerializeField] GameObject starsParent, rankParent, currentParent, averageParent;
+        [SerializeField] RectTransform rankTextAnchor, prevLevelAnchor, nextLevelAnchor;
 
         RectTransform rt;
         Canvas canvas;
@@ -61,36 +61,56 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;
-        int numStars = 3;
-        public void UnsetResults()
-        {
-            starsParent.SetActive(false);
-            currentParent.SetActive(false);
-            averageParent.SetActive(false);
-        }
-        public void SetResults(int numStars, long score, long prevScore, long? worldAvg)
+        int numStars;
+        public void SetResults(int? numStars, long? score, long? prevScore, string rank, long? worldAvg)
         {
             StopAllCoroutines();
 
-            starsParent.SetActive(true);
-            currentParent.SetActive(true);
-            current.text = score.ToString();
-            if (score > prevScore)
+            if (numStars != null) // in case no stars
             {
-                currentMsg.text = "You got a new high score!";
-                points.sprite = trophySprite;
-                StartCoroutine(WiggleSprite(points));
+                starsParent.SetActive(true);
+                this.numStars = (int)numStars;
             }
             else
             {
-                currentMsg.text = "Well done!";
-                points.sprite = pointSprite;
+                starsParent.SetActive(false);
+            }
+
+            if (rank != null)
+            {
+                rankParent.SetActive(true);
+                this.rank.text = rank;
+            }
+            else
+            {
+                rankParent.SetActive(false);
+            }
+
+            if (score != null) // in case no score
+            {
+                currentParent.SetActive(true);
+                current.text = ((long)score).ToString("N0");
+                if ((long)score > (prevScore??0))
+                {
+                    currentMsg.text = "You got a new high score!";
+                    points.sprite = trophySprite;
+                    StartCoroutine(WiggleSprite(points));
+                }
+                else
+                {
+                    currentMsg.text = "Well done!";
+                    points.sprite = pointSprite;
+                }
+            }
+            else
+            {
+                currentParent.SetActive(false);
             }
 
             if (worldAvg != null) // in case average was not cached
             {
                 averageParent.SetActive(true);
-                average.text = worldAvg.ToString();
+                average.text = ((long)worldAvg).ToString("N0");
                 if (score > worldAvg)
                 {
                     averageMsg.text = "You beat the world average!";
@@ -105,17 +125,17 @@ namespace EcoBuilder.UI
             {
                 averageParent.SetActive(false);
             }
-            this.numStars = numStars;
         }
         public void ShowResults()
         {
-
-            Assert.IsTrue(numStars != -1);
             quitBtn.interactable = true;
 
             StartCoroutine(ShowRoutine(1f, -1000,0, 0,.5f));
             if (starsParent.activeSelf) {
                 StartCoroutine(StarRoutine(1, .5f, .5f, numStars));
+            }
+            if (rankParent.activeSelf) {
+                StartCoroutine(RankRoutine(2,4));
             }
         }
         public void HideIfShowing()
@@ -161,6 +181,20 @@ namespace EcoBuilder.UI
             star2.SetBool("Filled", numStars >= 2);
             yield return new WaitForSeconds(delay3);
             star3.SetBool("Filled", numStars >= 3);
+        }
+        IEnumerator RankRoutine(float duration, int rotations)
+        {
+            rankTextAnchor.localScale = Vector3.zero;
+            float tStart = Time.time;
+            while (Time.time < tStart+duration)
+            {
+                float t = Tweens.CubicInOut((Time.time-tStart)/duration);
+                rt.localScale = t * Vector3.one;
+                rt.localRotation = Quaternion.Euler(0,0,t*rotations*360);
+                yield return null;
+            }
+            rankTextAnchor.localScale = Vector3.one;
+            rankTextAnchor.localRotation = Quaternion.identity;
         }
         IEnumerator WiggleSprite(Image image)
         {

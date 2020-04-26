@@ -30,6 +30,7 @@ namespace EcoBuilder
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
+            // public Dictionary<int, int> cachedRanks = new Dictionary<int, int>();
             public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
             public int unsentCount=0;
         }

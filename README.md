@@ -11,16 +11,14 @@ research TUTORIAL!!! (give option to skip tutorial by performing some action)
 do high scores for heavy 3
 some final bosses
 
-show global high score at all times in research world (only up to top 1000, which should be sustainable)
 (stars will have to be removed from the level as well as the report card)
-
-check that score encryption is okay
 
 # TESTS
 to test layout, add specific nodes and links and make sure stress is lower than a certain amount
 but also automated random graphs to test for no NaN
 
 make sure web_gl is same as not web_gl (conditional compiles)
+test server going down and up and down
 
 use reflection to smell the smellylisteners
 check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
