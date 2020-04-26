@@ -3997,12 +3997,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: af7485232731a42408b55532ff50e547, type: 2}
-  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_Color: {r: 0.04705883, g: 0.30980393, b: 0.2627451, a: 0}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a4e2a5632dcc0e24cbb3869dc51a13c2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 56dd0ecb7dea6cf4983341c0b4b31dae, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4519,7 +4519,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   title: {fileID: 3403238049227083174}
-  rank: {fileID: 0}
+  rank: {fileID: 6296852809880135963}
   current: {fileID: 3403238050234479151}
   currentMsg: {fileID: 3403238049477315142}
   average: {fileID: 3403238050663494778}

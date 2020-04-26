@@ -189,8 +189,8 @@ namespace EcoBuilder.UI
             while (Time.time < tStart+duration)
             {
                 float t = Tweens.CubicInOut((Time.time-tStart)/duration);
-                rt.localScale = t * Vector3.one;
-                rt.localRotation = Quaternion.Euler(0,0,t*rotations*360);
+                rankTextAnchor.localScale = t * Vector3.one;
+                rankTextAnchor.localRotation = Quaternion.Euler(0,0,t*rotations*360);
                 yield return null;
             }
             rankTextAnchor.localScale = Vector3.one;

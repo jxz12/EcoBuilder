@@ -24,7 +24,7 @@ namespace EcoBuilder
             using (var p = UnityWebRequest.Post(address, form))
             {
 #if UNITY_EDITOR
-                yield return new WaitForSeconds(.5f);
+                // yield return new WaitForSeconds(.5f);
 #endif
                 yield return p.SendWebRequest();
                 if (p.isNetworkError)
@@ -100,15 +100,19 @@ namespace EcoBuilder
             {
                 float t = ((Time.time)/spinPeriod) % 1;
                 icon.transform.rotation = Quaternion.Euler(0,0,360 * t);
-                icon.color = new Color(0,0,0,.8f);
+                Color c = icon.color;
+                c.a = .5f;
+                icon.color = c;
             }
             else
             {
-                if (icon.color.a > .01f) {
-                    icon.color = new Color(0,0,0, Mathf.Lerp(icon.color.a, 0, 10*Time.deltaTime));
+                Color c = icon.color;
+                if (c.a > .01f) {
+                    c.a = Mathf.Lerp(icon.color.a, 0, 10*Time.deltaTime);
                 } else if (icon.color.a > 0) {
-                    icon.color = new Color(0,0,0,0);
+                    c.a = 0;
                 }
+                icon.color = c;
             }
         }
 
