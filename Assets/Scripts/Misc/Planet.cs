@@ -12,7 +12,7 @@ namespace EcoBuilder
         void Awake()
         {
             anim = GetComponent<Animator>();
-            defaultParent = new GameObject().transform;
+            defaultParent = new GameObject("Planet Parent").transform;
             defaultParent.position = new Vector3(0,-2.5f,0);
             defaultParent.localScale = new Vector3(2,2,2);
             transform.SetParent(defaultParent);

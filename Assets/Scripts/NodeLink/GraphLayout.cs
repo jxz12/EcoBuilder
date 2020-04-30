@@ -131,13 +131,12 @@ namespace EcoBuilder.NodeLink
             if (ConstrainTrophic)
             {
                 Trophic.IterateTrophic((i,y)=> nodes[i].StressPos.y = y);
-                // LocalMajorizationHorizontal(idx);
+                LocalMajorizationHorizontal(idx);
             }
             else
             {
-                // LocalMajorization(idx);
+                LocalMajorization(idx);
             }
-
             todoBFS.Enqueue(idx);
         }
         private void LocalMajorization(int i)

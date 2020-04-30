@@ -81,8 +81,8 @@ MonoBehaviour:
   linkPrefab: {fileID: 114706499656277630, guid: f379656aba023c74f82548dad4dbb0eb,
     type: 3}
   unfocusParent: {fileID: 6459436502445561244}
-  t_max: 30
-  epsSGD: 0.01
+  t_max: 15
+  epsSGD: 0.1
   epsGS: 0.1
   minLinkFlow: 0.1
   maxLinkFlow: 2

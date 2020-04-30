@@ -20,7 +20,7 @@ namespace EcoBuilder.NodeLink
         // for BFS, SGD, NCC
         static List<int> sources = new List<int>();
         static List<int> targets = new List<int>();
-        static List<Vector2> posSquished = new List<Vector2>();
+        static Vector2[] posSquished = new Vector2[0];
         static List<int> componentMap = new List<int>();
         static System.Random rand;
         public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
@@ -29,7 +29,9 @@ namespace EcoBuilder.NodeLink
             idxUnsquished.Clear();
 
             // reset node positions
-            posSquished.Clear();
+            if (undirected.Count != posSquished.Length) {
+                posSquished = new Vector2[undirected.Count];
+            }
             rand = new System.Random(seed);
             foreach (int idx in undirected.Keys)
             {
@@ -37,13 +39,8 @@ namespace EcoBuilder.NodeLink
                 idxSquished[idx] = squished;
                 idxUnsquished.Add(idx);
 
-                Vector2 prevPos;
-                Vector2 randPos = new Vector2((float)rand.NextDouble(), (float)rand.NextDouble());
-                if (posUnsquished.TryGetValue(idx, out prevPos)) {
-                    posSquished.Add(prevPos + .1f*randPos);
-                } else {
-                    posSquished.Add(randPos);
-                }
+                var initPos = new Vector2((float)rand.NextDouble(), (float)rand.NextDouble());
+                posSquished[squished] = initPos;
             }
             sources.Clear();
             targets.Clear();
@@ -58,31 +55,28 @@ namespace EcoBuilder.NodeLink
             sources.Add(targets.Count); // for iteration to next
 
             // clean up excess in case nodes are removed
-            posSquished.TrimExcess();
             idxUnsquished.TrimExcess();
             sources.TrimExcess();
             targets.TrimExcess();
         }
-        public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint=null)
+        public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint)
         {
             FindStressTerms();
 
             var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
-            if (YConstraint==null) {
+            if (YConstraint == null) {
                 PerformSGD(etas);
             } else {
-                PerformSGDConstrained(etas, YConstraint);
+                InitYConstraint(YConstraint);
+                PerformSGDConstrained(etas);
             }
-
-            // move these functions into one, where the connected components are rotated based on a procrustes rotation between the intersection set of nodes between the previous layout
             FindConnectedComponents();
-            MatchComponentsProcrustes(YConstraint==null);
+            MatchComponentsProcrustes(YConstraint == null);
             SeparateAndUnsquishComponents();
         }
         public static void RewriteSGD(Action<int, Vector2> SetPos)
         {
-            foreach (var kvp in posUnsquished)
-            {
+            foreach (var kvp in posUnsquished) {
                 SetPos(kvp.Key, kvp.Value);
             }
         }
@@ -140,7 +134,7 @@ namespace EcoBuilder.NodeLink
         {
             // calculate connected components
             componentMap.Clear();
-            for (int i=0; i<posSquished.Count; i++) {
+            for (int i=0; i<posSquished.Length; i++) {
                 componentMap.Add(-1);
             }
             componentMap.TrimExcess();
@@ -180,63 +174,68 @@ namespace EcoBuilder.NodeLink
                 yield return eta_max * Mathf.Exp(-lambda * t);
             }
         }
-        static readonly float muMax=1f;
+        const float muMax=1f;
         static void PerformSGD(IList<float> etas)
         {
-            foreach (float eta in etas)
+            int t_max = etas.Count;
+            // foreach (float eta in etas)
+            for (int t=-t_init; t<t_max; t++)
             {
+                float eta = etas[Math.Max(0,t)];
                 FYShuffle(terms, rand);
                 foreach (var term in terms)
                 {
                     Vector2 X_ij = posSquished[term.i] - posSquished[term.j];
                     float mag = X_ij.magnitude;
 
-                    float mu = Math.Min(term.w * eta, muMax);
                     Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
 
                     Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
                    
-                    posSquished[term.i] -= mu * r;
-                    posSquished[term.j] += mu * r;
+                    float mu = Math.Min(term.w * eta, muMax);
+                    r *= mu;
+                    posSquished[term.i] -= r;
+                    posSquished[term.j] += r;
                 }
             }
         }
 
-        static readonly float zMagMin=.01f;
-        static void PerformSGDConstrained(IList<float> etas, Func<int, float> YConstraint)
+        static void InitYConstraint(Func<int, float> YConstraint)
         {
-            // TODO:
-            int t_max = etas.Count;
-            // surrogate 3d positions to constrain y
-            for (int i=0; i<posSquished.Count; i++)
+            for (int i=0; i<idxUnsquished.Count; i++)
             {
-                posSquished[i] = new Vector2(posSquished[i].x, YConstraint(idxUnsquished[i]));//, posSquished[i].y);
+                posSquished[i] = new Vector2(posSquished[i].x, YConstraint(idxUnsquished[i]));
             }
-            // var zMags = new List<float>(ExpoSchedule(1, t_max, zMagMin));
-            for (int t=0; t<t_max; t++)
+        }
+        const int t_init = 5;
+        static void PerformSGDConstrained(IList<float> etas)
+        {
+            int t_max = etas.Count;
+
+            for (int t=-t_init; t<t_max; t++)
             {
-                float eta = etas[t];
-                // float zMag = zMags[t];
+                float eta = etas[Math.Max(0,t)];
 
                 FYShuffle(terms, rand);
                 foreach (var term in terms)
                 {
                     Vector2 X_ij = posSquished[term.i] - posSquished[term.j];
-
                     float mag = X_ij.magnitude;
-                    // float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y + zMag*X_ij.z*X_ij.z);
-                    // float mag = Mathf.Sqrt(X_ij.x*X_ij.x + X_ij.y*X_ij.y);
 
-                    float mu = Math.Min(term.w * eta, muMax);
-                    Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
+                    // Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
+                    // r.y = 0;
+                    // Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
 
-                    // for constraining y
-                    r.y = 0;
-
-                    Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
+                    float rx = ((mag-term.d)/2f) * (X_ij.x/mag);
+                    Assert.IsFalse(float.IsNaN(rx), $"rx=NaN for SGD term {term.i}:{term.j}");
                    
-                    posSquished[term.i] -= mu * r;
-                    posSquished[term.j] += mu * r;
+                    float mu = Math.Min(term.w * eta, muMax);
+                    rx *= mu;
+                    posSquished[term.i].x -= rx;
+                    posSquished[term.j].x += rx;
+                    // r *= mu;
+                    // posSquished[term.i] -= r;
+                    // posSquished[term.j] += r;
                 }
             }
         }
@@ -271,7 +270,7 @@ namespace EcoBuilder.NodeLink
             var counts = new int[NumComponents];
 
             // calculate centroids
-            for (int i=0; i<posSquished.Count; i++)
+            for (int i=0; i<componentMap.Count; i++)
             {
                 // only centroid idxs in both prev and new layout
                 Vector2 prevPos;
@@ -292,7 +291,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
             // center individual components
-            for (int i=0; i<posSquished.Count; i++)
+            for (int i=0; i<componentMap.Count; i++)
             {
                 // center all idxs regardless of if they were included in centroid calculation
                 int cc = componentMap[i];
@@ -311,7 +310,7 @@ namespace EcoBuilder.NodeLink
                 // this array initially contains top and botton sums, and then eventually contains sin/cos of rotations
                 var procrustes = new float[NumComponents, 2];
                 var setsurcorp = new float[NumComponents, 2]; // reflected angle
-                for (int i=0; i<posSquished.Count; i++)
+                for (int i=0; i<componentMap.Count; i++)
                 {
                     int idx = idxUnsquished[i];
                     Vector2 oldPos; // oldPos is used as procrustes 'reference'
@@ -352,7 +351,7 @@ namespace EcoBuilder.NodeLink
                 }
                 // compare reflected and non-reflected errors
                 var proDistances = new float[NumComponents, 2]; // [i,0] is unreflected, [i,1] is reflected
-                for (int i=0; i<posSquished.Count; i++)
+                for (int i=0; i<componentMap.Count; i++)
                 {
                     int idx = idxUnsquished[i];
                     Vector2 oldPos; // oldPos is used as procrustes 'reference'
@@ -374,7 +373,7 @@ namespace EcoBuilder.NodeLink
                     }
                 }
                 // choose either reflected or non-reflected rotation matrices
-                for (int i=0; i<posSquished.Count; i++)
+                for (int i=0; i<componentMap.Count; i++)
                 {
                     int cc = componentMap[i];
                     float cosA, sinA;
@@ -393,18 +392,11 @@ namespace EcoBuilder.NodeLink
                     }
                     posSquished[i] = new Vector2(unrotated.x*cosA - unrotated.y*sinA, unrotated.x*sinA + unrotated.y*cosA);
                 }
-                // var sb = new System.Text.StringBuilder();
-                // for (int cc=0; cc<NumComponents; cc++)
-                // {
-                //     sb.Append($"{cc} {proDistances[cc,0]} {proDistances[cc,1]}\n");
-                // }
-                // sb.Length -= 1;
-                // Debug.Log(sb.ToString());
             }
             else
             {
                 var proDistances = new float[NumComponents, 2]; // [i,0] is unreflected, [i,1] is reflected (around y-axis)
-                for (int i=0; i<posSquished.Count; i++)
+                for (int i=0; i<componentMap.Count; i++)
                 {
                     int idx = idxUnsquished[i];
                     Vector2 oldPos; // oldPos is used as procrustes 'reference'
@@ -419,7 +411,7 @@ namespace EcoBuilder.NodeLink
                     }
                 }
                 // choose either reflected or non-reflected rotation matrices
-                for (int i=0; i<posSquished.Count; i++)
+                for (int i=0; i<componentMap.Count; i++)
                 {
                     int cc = componentMap[i];
                     if (proDistances[cc,1] < proDistances[cc,0])

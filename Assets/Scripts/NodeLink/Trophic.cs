@@ -102,7 +102,11 @@ namespace EcoBuilder.NodeLink
                 converged = TrophicGaussSeidel(eps);
                 iter++;
             }
-
+#if UNITY_EDITOR
+            if (iter >= 10) {
+                Debug.Log($"gsIter: {iter}");
+            }
+#endif
             if (MaxTrophicLevel-1 > MaxChain) {
                 trophicScaling = MaxChain / (MaxTrophicLevel-1);
             } else {
@@ -140,7 +144,7 @@ namespace EcoBuilder.NodeLink
             }
             return converged;
         }
-        public static float GetTrophicLevel(int idx)
+        public static float GetScaledTrophicLevel(int idx)
         {
             return trophicScaling * (trophicLevels[idx]-1);
         }

@@ -22,7 +22,7 @@ namespace EcoBuilder.Tutorials
             targetAnchor = new Vector2(0,1);
             targetZRot = 30;
 
-            help.Message = "Well done for finishing Learning World! This is where the true challenge begins, as you will now attempt to take on players from around the world in problems that even researchers do not know the solution to! But first, there are some extra rules that you will need to know. Start by pressing the plant in your ecosystem.";
+            help.Message = "Well done for finishing Learning World! This is where the true challenge begins, as you will now attempt to take on players from around the world in problems that even researchers do not know the solution to! But first, there are some extra rules that you will need to know. Start by pressing the plant in your ecosystem, or skip this tutorial at any time by TODO:";
 
             // attach next to focus
         }

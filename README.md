@@ -1,17 +1,15 @@
 DO THIS NOW:
 (CV) ecobuilder lol
+ask for apple developer
 
 ECOBUILDER:
-fix superfocus small nodes
+fix trophic constraints
 make SGD a coroutine for webgl
 add imperial logo with permission
 
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
-do high scores for heavy 3
 some final bosses
-
-(stars will have to be removed from the level as well as the report card)
 
 # TESTS
 to test layout, add specific nodes and links and make sure stress is lower than a certain amount
@@ -27,6 +25,7 @@ check all levels to see if their parent variant is base, and if their flavour te
 verify high scores by checking matrices
 
 # Other
+fix superfocus small nodes?
 make health go blue if above a super threshold (will need another fill sprite)
 release game with australian fires as angle?
 experiments to see how the score changes over time
@@ -59,7 +58,7 @@ exclusion
 heavy
 1 1100 1900
 2 2000 2800
-3 ? ?
+3 1650 1700
 link
 1 3000 4000
 loop

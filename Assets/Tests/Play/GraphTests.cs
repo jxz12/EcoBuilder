@@ -16,6 +16,7 @@ namespace EcoBuilder.Tests
 {
     public class GraphTests // for things in nodelink
     {
+        const string graphPath = "Assets/Prefabs/NodeLink/Graph.prefab";
         Camera mainCam;
         Graph graph;
         [SetUp]
@@ -23,7 +24,7 @@ namespace EcoBuilder.Tests
         {
             mainCam = new GameObject().AddComponent<Camera>(); // smelly singleton required for tooltip and zooming
             mainCam.tag = "MainCamera";
-            Graph prefab = (Graph)AssetDatabase.LoadAssetAtPath("Assets/Prefabs/NodeLink/Graph.prefab", typeof(Graph));
+            Graph prefab = (Graph)AssetDatabase.LoadAssetAtPath(graphPath, typeof(Graph));
             graph = GameObject.Instantiate(prefab);
         }
         [TearDown]
@@ -33,8 +34,8 @@ namespace EcoBuilder.Tests
             GameObject.Destroy(mainCam.gameObject);
         }
 
-        readonly int n = 100;
-        readonly int m = 10000;
+        const int n = 100;
+        const int m = 10000;
         [Test]
         public void RandomGraphAdjacency()
         {
@@ -156,51 +157,115 @@ namespace EcoBuilder.Tests
 
             // TODO: try multiple max loops
         }
+
+        [UnityTest]
+        public IEnumerator StressXShape()
+        {
+            int n=5;
+            // test simple 1 level ecosystems
+            for (int i=0; i<n; i++) {
+                graph.AddNode(i);
+            }
+            graph.AddLink(0,2);
+            graph.AddLink(1,2);
+            graph.AddLink(2,3);
+            graph.AddLink(2,4);
+            yield return TryCrossX();
+
+            IEnumerator TryCrossX()
+            {
+                graph.AddLink(0,3);
+                while (!graph.GraphLayedOut) { yield return null; }
+                Assert.IsTrue(SGD.CalculateStress() < 1);
+
+                graph.RemoveLink(0,3);
+                graph.AddLink(1,3);
+                while (!graph.GraphLayedOut) { yield return null; }
+                Assert.IsTrue(SGD.CalculateStress() < 1);
+
+                graph.RemoveLink(1,3);
+                graph.AddLink(0,4);
+                while (!graph.GraphLayedOut) { yield return null; }
+                Assert.IsTrue(SGD.CalculateStress() < 1);
+
+                graph.RemoveLink(0,4);
+                graph.AddLink(1,4);
+                while (!graph.GraphLayedOut) { yield return null; }
+                Assert.IsTrue(SGD.CalculateStress() < 1);
+            }
+        }
         [UnityTest]
         public IEnumerator StressBipartite()
         {
             int n=5;
             // test simple 1 level ecosystems
-            for (int i=0; i<n; i++)
-            {
+            for (int i=0; i<n; i++) {
                 graph.AddNode(i);
             }
             var edges = new bool[5,5];
-
-            // graph.ConstrainTrophic = true;
-            // yield return TryEdges(1.2f);
-            graph.ConstrainTrophic = false;
-            yield return TryEdges(.8f);
-
-            IEnumerator TryEdges(float stressThreshold)
-            {
-                for (int i=0; i<100; i++)
-                {
-                    int src = UnityEngine.Random.Range(0,3);
-                    int tgt = UnityEngine.Random.Range(3,5);
-                    if (!edges[src,tgt]) {
-                        graph.AddLink(src,tgt);
-                    } else {
-                        graph.RemoveLink(src,tgt);
-                    }
-                    edges[src,tgt] = !edges[src,tgt];
-                    while(!graph.GraphLayedOut) { yield return null; }
-
-                    Assert.IsTrue(SGD.CalculateStress() < stressThreshold, DebugEdges());
-                    string DebugEdges()
-                    {
-                        var sb = new StringBuilder();
-                        for (int s=0; s<5; s++)
-                        {
-                            for (int t=0; t<5; t++)
-                            {
-                                sb.Append(edges[s,t]? "1":"0");
-                            }
-                            sb.Append("\n");
-                        }
-                        return sb.ToString();
-                    }
+            int nEdges = 0;
+            var possibleEdges = new List<Tuple<int,int>>();
+            for (int i=0; i<2; i++) {
+                for (int j=2; j<5; j++) {
+                    possibleEdges.Add(Tuple.Create(i,j));
                 }
+            }
+            int nTests = 0, testsPassed = 0;
+
+            // graph.ConstrainTrophic = false;
+            // Func<bool> ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? .8f:.5f);
+            // yield return TryEdges(0);
+            // Assert.IsTrue(testsPassed==nTests, $"{testsPassed}/{nTests} passed");
+
+            graph.ConstrainTrophic = true;
+            Func<bool> ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? 2f:1.3f);
+            yield return TryEdges(0);
+            Assert.IsTrue(testsPassed==nTests, $"{testsPassed}/{nTests} passed");
+
+            // recursively try all possible edges
+            IEnumerator TryEdges(int edgeIdx)
+            {
+                if (edgeIdx == 0) {
+                    nTests = 0;
+                    testsPassed = 0;
+                }
+                if (edgeIdx == possibleEdges.Count)
+                {
+                    while (!graph.GraphLayedOut) { yield return null; }
+                    nTests += 1;
+                    if (ThresholdPassed()) {
+                        testsPassed += 1;
+                    } else {
+                        MonoBehaviour.print(DebugEdges());
+                    }
+                    yield break;
+                }
+                // try without adding edge first
+                yield return TryEdges(edgeIdx+1);
+
+                // then try adding the edge
+                int src = possibleEdges[edgeIdx].Item1;
+                int tgt = possibleEdges[edgeIdx].Item2;
+                graph.AddLink(src, tgt);
+                edges[src,tgt] = true;
+                nEdges += 1;
+                yield return TryEdges(edgeIdx+1);
+                graph.RemoveLink(src,tgt);
+                edges[src,tgt] = false;
+                nEdges -= 1;
+            }
+            string DebugEdges()
+            {
+                var sb = new StringBuilder();
+                for (int s=0; s<5; s++)
+                {
+                    for (int t=0; t<5; t++)
+                    {
+                        sb.Append(edges[s,t]? "1":"0");
+                    }
+                    sb.Append("\n");
+                }
+                return sb.ToString();
             }
         }
     }

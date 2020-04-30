@@ -82,27 +82,27 @@ namespace EcoBuilder.NodeLink
             Johnson.Init(nodes.Indices, links.GetColumnIndicesInRow);
             Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow);
             SGD.Init(undirected);
+            Func<int, float> YConstraint;
+            if (ConstrainTrophic) {
+                YConstraint = Trophic.GetScaledTrophicLevel;
+            } else {
+                YConstraint = null;
+            }
 
 #if !UNITY_WEBGL
             await Task.Run(()=> Johnson.SolveLoop());
             await Task.Run(()=> Trophic.SolveTrophic(epsGS));
-            if (ConstrainTrophic) {
-                await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel));
-            } else {
-                await Task.Run(()=> SGD.SolveStress(t_max, epsSGD));
-            }
+            await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, YConstraint));
             SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
 #else
             Johnson.SolveLoop();
             Trophic.SolveTrophic(epsGS);
-            if (ConstrainTrophic) {
-                SGD.SolveStress(t_max, epsSGD, Trophic.GetTrophicLevel);
-            } else {
-                SGD.SolveStress(t_max, epsSGD);
-            }
+            SGD.SolveStress(t_max, epsSGD, YConstraint);
             SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
-
+#if UNITY_EDITOR
+            print($"stress: {SGD.CalculateStress()}");
+#endif
             isCalculatingAsync = false;
             OnLayedOut?.Invoke();
         }
