@@ -423,14 +423,15 @@ namespace EcoBuilder.NodeLink
 
         public void TooltipNode(int idx, string msg)
         {
-            tooltip.transform.position = mainCam.WorldToScreenPoint(nodes[idx].transform.position);
+            tooltip.FollowWorldTransform(nodes[idx].transform, mainCam);
             tooltip.ShowText(msg);
-            tooltip.Enable();
+            tooltip.Show();
             tweenNodes = dragging = false;
         }
         public void UntooltipNode(int idx)
         {
-            tooltip.Disable();
+            tooltip.Unfollow();
+            tooltip.Show(false);
             tweenNodes = dragging = true;
         }
         public void Finish()

@@ -110,11 +110,7 @@ namespace EcoBuilder
             inspector.AllowConflicts(details.ConflictsAllowed);
             graph.AllowSuperfocus = details.SuperfocusAllowed;
             graph.DragFromTarget = GameManager.Instance.ReverseDragDirection;
-#if UNITY_EDITOR
-            graph.ConstrainTrophic = false;
-#else
             graph.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
-#endif
 
             constraints.LimitLeaf(details.NumProducers);
             constraints.LimitPaw(details.NumConsumers);

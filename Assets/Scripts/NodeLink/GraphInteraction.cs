@@ -276,7 +276,7 @@ namespace EcoBuilder.NodeLink
                 pressedNode = ClosestSnappedNode(ped);
                 if (pressedNode != null)
                 {
-                    tooltip.Enable();
+                    tooltip.Show();
                     tooltip.SetPos(mainCam.WorldToScreenPoint(pressedNode.transform.position));
                     pressedNode.PushOutline(cakeslice.Outline.Colour.Orange);
                     if (pressedNode.CanBeFocused) {
@@ -310,7 +310,7 @@ namespace EcoBuilder.NodeLink
                     }
                 }
                 tweenNodes = true;
-                tooltip.Disable();
+                tooltip.Show(false);
             }
         }
 
@@ -354,7 +354,7 @@ namespace EcoBuilder.NodeLink
                 else
                 {
                     tweenNodes = true;
-                    tooltip.Disable();
+                    tooltip.Show(false);
                 }
             }
         }

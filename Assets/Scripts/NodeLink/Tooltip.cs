@@ -22,30 +22,46 @@ namespace EcoBuilder.NodeLink
         }
         void Update()
         {
-            if (visible) {
+            if (visible)
+            {
                 size = Mathf.SmoothDamp(size, 1, ref sizocity, sizeSmoothTime);
                 canvas.enabled = true;
-            } else {
+                if (followingInWorld != null) {
+                    tip.transform.position = cameraToFollow.WorldToScreenPoint(followingInWorld.transform.position);
+                }
+            }
+            else
+            {
                 size = Mathf.SmoothDamp(size, 0, ref sizocity, sizeSmoothTime);
-                if (size < 1e-10f) {
+                if (size < 1e-10f)
+                {
                     size = 0; // prevents invalid AABB error
                     canvas.enabled = false;
                 }
             }
             tip.transform.localScale = new Vector3(size, size, 1);
         }
+        Transform followingInWorld;
+        Camera cameraToFollow;
+        public void FollowWorldTransform(Transform toFollow, Camera viewSource)
+        {
+            followingInWorld = toFollow;
+            cameraToFollow = viewSource;
+        }
+        public void Unfollow()
+        {
+            followingInWorld = null;
+            cameraToFollow = null;
+        }
         public void SetPos(Vector2 screenPos)
         {
+            Assert.IsNull(followingInWorld, "cannot set position while following a transform");
             tip.transform.position = screenPos;
         }
         bool visible = false;
-        public void Enable()
+        public void Show(bool showing=true)
         {
-            visible = true;
-        }
-        public void Disable()
-        {
-            visible = false;
+            visible = showing;
         }
         Sprite Sprite {
             set { tip.enabled = true; tip.sprite = value; text.text = ""; }

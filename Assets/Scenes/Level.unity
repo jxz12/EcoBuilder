@@ -912,6 +912,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Model
       objectReference: {fileID: 0}
+    - target: {fileID: 8623782329361609999, guid: 9cd287cffbe2bd143bcf540dc56856ad,
+        type: 3}
+      propertyPath: a_min
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 8623782329361609999, guid: 9cd287cffbe2bd143bcf540dc56856ad,
+        type: 3}
+      propertyPath: a_max
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 8623782329361610000, guid: 9cd287cffbe2bd143bcf540dc56856ad,
         type: 3}
       propertyPath: m_LocalPosition.x
