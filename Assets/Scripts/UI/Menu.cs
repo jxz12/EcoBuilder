@@ -79,11 +79,11 @@ namespace EcoBuilder.UI
                         unlockedIdxs.Add(prefab.NextLevelPrefab.Details.Idx);
                     }
                 }
-                if (prefab.Details.Metric == LevelDetails.ScoreMetric.Standard) // only have stars for standard scores
+                if (prefab.Details.Metric != LevelDetails.ScoreMetric.None && !prefab.Details.ResearchMode) // only have stars for not tutorial or research
                 {
-                    if (score >= 0) collectedStars += 1;
-                    if (score > prefab.Details.TwoStarScore) collectedStars += 1;
-                    if (score > prefab.Details.ThreeStarScore) collectedStars += 1;
+                    if (score >= 0) { collectedStars += 1; }
+                    if (score > prefab.Details.TwoStarScore) { collectedStars += 1; }
+                    if (score > prefab.Details.ThreeStarScore) { collectedStars += 1; }
                     totalStars += 3;
                 }
             };

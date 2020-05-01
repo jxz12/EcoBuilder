@@ -285,7 +285,7 @@ GameObject:
   - component: {fileID: 1080646977}
   - component: {fileID: 1080646976}
   m_Layer: 0
-  m_Name: Level Manager
+  m_Name: Play Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -300,7 +300,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1080646975}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 572b241862ca837468dbc913e9720a2e, type: 3}
+  m_Script: {fileID: 11500000, guid: 31097b8d554d7ca489ed1cc3e9b546a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   model: {fileID: 829302511}
@@ -911,16 +911,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Model
-      objectReference: {fileID: 0}
-    - target: {fileID: 8623782329361609999, guid: 9cd287cffbe2bd143bcf540dc56856ad,
-        type: 3}
-      propertyPath: a_min
-      value: 0.0001
-      objectReference: {fileID: 0}
-    - target: {fileID: 8623782329361609999, guid: 9cd287cffbe2bd143bcf540dc56856ad,
-        type: 3}
-      propertyPath: a_max
-      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 8623782329361610000, guid: 9cd287cffbe2bd143bcf540dc56856ad,
         type: 3}

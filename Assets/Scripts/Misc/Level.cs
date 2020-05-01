@@ -29,6 +29,7 @@ namespace EcoBuilder
         // score
         public enum ScoreMetric { None, Standard, Producers, Consumers, Chain, Loop }
         [SerializeField] ScoreMetric metric;
+        [SerializeField] bool researchMode;
         [SerializeField] double mainMultiplier;
         [SerializeField] double altMultiplier;
         [SerializeField] long twoStarScore;
@@ -67,6 +68,7 @@ namespace EcoBuilder
         public int MinLoop { get { return minLoop; } }
 
         public ScoreMetric Metric { get { return metric; } }
+        public bool ResearchMode { get { return researchMode; } }
         public double MainMultiplier { get { return mainMultiplier; } }
         public double AltMultiplier { get { return altMultiplier; } }
         public long TwoStarScore { get { return twoStarScore; } }
@@ -172,7 +174,7 @@ namespace EcoBuilder
             padlock.enabled = false;
             indexText.enabled = true;
             thumbnailGroup.interactable = true;
-            if (Details.Metric != LevelDetails.ScoreMetric.None) {
+            if (Details.Metric != LevelDetails.ScoreMetric.None && !Details.ResearchMode) {
                 starsImage.enabled = true;
             }
         }

@@ -34,11 +34,11 @@ namespace EcoBuilder.Tests
             GameObject.Destroy(mainCam.gameObject);
         }
 
-        const int n = 100;
-        const int m = 10000;
         [Test]
         public void RandomGraphAdjacency()
         {
+            const int n = 100;
+            const int m = 10000;
             var nodes = new bool[n];
             var archive = new bool[n];
             for (int i=0; i<n; i++)
@@ -267,6 +267,42 @@ namespace EcoBuilder.Tests
                 }
                 return sb.ToString();
             }
+        }
+        [UnityTest]
+        public IEnumerator StressSpeedAndRobustTest()
+        {
+            // test for NaN as well as speed
+            const int n = 100;
+            const int m = 1000;
+            var nodes = new bool[n];
+            for (int i=0; i<n; i++)
+            {
+                graph.AddNode(i);
+                nodes[i] = true;
+            }
+
+            graph.ConstrainTrophic = false;
+            var sw = new Stopwatch();
+            sw.Start();
+            var edges = new bool[n,n];
+            for (int i=0; i<m; i++)
+            {
+                int src = UnityEngine.Random.Range(0,n);
+                int tgt = UnityEngine.Random.Range(0,n);
+                                                              // no self or bidirectional links
+                if (nodes[src] && nodes[tgt] && src != tgt && !edges[tgt,src])
+                {
+                    if (!edges[src,tgt]) {
+                        graph.AddLink(src, tgt);
+                    } else {
+                        graph.RemoveLink(src, tgt);
+                    }
+                    edges[src,tgt] = !edges[src,tgt];
+                }
+                while (!graph.GraphLayedOut) { yield return null; }
+            }
+            sw.Stop();
+            Console.WriteLine($"time: {sw.Elapsed}");
         }
     }
 }

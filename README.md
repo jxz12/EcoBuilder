@@ -10,6 +10,7 @@ add imperial logo with permission
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 some final bosses
+unlock all research levels after tutorial passed
 
 # TESTS
 to test layout, add specific nodes and links and make sure stress is lower than a certain amount

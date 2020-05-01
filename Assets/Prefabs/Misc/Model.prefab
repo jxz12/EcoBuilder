@@ -53,8 +53,8 @@ MonoBehaviour:
   e_c: 0.5
   kg_min: 0.001
   kg_max: 1000
-  a_min: 0.00001
-  a_max: 1
+  a_min: 0.0001
+  a_max: 0.1
   minRealAbund: 0.0000000002
   maxRealAbund: 1.95
   minRealFlux: 0.0000000000000001

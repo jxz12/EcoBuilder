@@ -132,14 +132,14 @@ namespace EcoBuilder
                 } else {
                     // replay level so no need to destroy
                 }
-                StartCoroutine(UnloadSceneThenLoad("Level", "Level"));
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
             }
             else
             {
                 // play from menu
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
-                StartCoroutine(UnloadSceneThenLoad("Menu", "Level"));
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
             }
             report.HideIfShowing();
         }
@@ -159,7 +159,7 @@ namespace EcoBuilder
             void BackToMenu()
             {
                 HelpText.Showing = false;
-                StartCoroutine(UnloadSceneThenLoad("Level", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.ResetParent(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.ResetParent(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
             confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
@@ -226,10 +226,10 @@ namespace EcoBuilder
 
             if (playedLevel.Details.Metric == LevelDetails.ScoreMetric.None) {
                 report.SetResults(null, null, null, null, null);
-            } else if (playedLevel.Details.Metric == LevelDetails.ScoreMetric.Standard) {
-                report.SetResults(nStars, score, prevScore, null, GetCachedMedian(idx));
-            } else {
+            } else if (playedLevel.Details.ResearchMode) {
                 report.SetResults(null, score, prevScore, rank, GetCachedMedian(idx));
+            } else {
+                report.SetResults(nStars, score, prevScore, null, GetCachedMedian(idx));
             }
         }
         // called by level

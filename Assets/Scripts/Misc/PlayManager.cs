@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace EcoBuilder
 {
     // this class handles communication between all the top level components
-    public class LevelManager : MonoBehaviour
+    public class PlayManager : MonoBehaviour
     {
         [SerializeField] FoodWeb.Model model;
         [SerializeField] NodeLink.Graph graph;
@@ -182,7 +182,7 @@ namespace EcoBuilder
                 constraints.HighlightLoop();
                 break;
             }
-            if (details.Metric==LevelDetails.ScoreMetric.None || details.Metric==LevelDetails.ScoreMetric.Standard)
+            if (!details.ResearchMode)
             {
                 score.SetStarThresholds(details.TwoStarScore, details.ThreeStarScore);
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
@@ -191,10 +191,10 @@ namespace EcoBuilder
                 score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
                 score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
             }
-            else // research world
+            else
             {
                 score.EnableStatsText(GameManager.Instance.GetHighScoreLocal(details.Idx));
-                score.SetStatsText("test", GameManager.Instance.GetCachedMedian(details.Idx));
+                score.SetStatsText("You", GameManager.Instance.GetCachedMedian(details.Idx));
                 score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:"offline", GameManager.Instance.GetCachedMedian(details.Idx)));
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus
             }

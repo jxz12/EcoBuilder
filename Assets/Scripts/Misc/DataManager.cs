@@ -37,14 +37,14 @@ namespace EcoBuilder
         [SerializeField] PlayerDetails player = null;
 
         public bool LoggedIn { get { return player.team==PlayerDetails.Team.Wolf || player.team==PlayerDetails.Team.Lion; }}
-#if UNITY_EDITOR
-        public bool ConstrainTrophic { get { return true; } }
-#else
-        public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
-#endif
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
+#if UNITY_EDITOR
+        public bool ConstrainTrophic { get { return false; } }
+#else
+        public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
+#endif
 
         static string playerPath;
         public void InitPlayer() // called by Awake()

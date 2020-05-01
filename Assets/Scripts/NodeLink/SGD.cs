@@ -178,7 +178,6 @@ namespace EcoBuilder.NodeLink
         static void PerformSGD(IList<float> etas)
         {
             int t_max = etas.Count;
-            // foreach (float eta in etas)
             for (int t=-t_init; t<t_max; t++)
             {
                 float eta = etas[Math.Max(0,t)];
