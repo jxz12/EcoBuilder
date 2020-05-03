@@ -155,7 +155,7 @@ namespace EcoBuilder.UI
             SetSide(false, damp);
             SetPivotHeight(1, damp);
             SetAnchorHeight(.85f, damp);
-            SetPixelWidth(400, damp);
+            SetPixelWidth(380, damp);
         }
 
         void UserShow(bool showing) // to attach to button

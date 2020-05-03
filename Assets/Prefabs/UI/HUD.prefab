@@ -3909,7 +3909,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7958780057486644758}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 317.1787, y: 1887.839, z: -360.57877}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7958780056316189649}
@@ -3934,6 +3934,12 @@ MonoBehaviour:
   inspector: {fileID: 7958780057019698108}
   recorder: {fileID: 7958780055953065213}
   initiator: {fileID: 2712649660785955006}
+  maxAspect: 0.5625
+  minAspect: 0.46153846
+  minInspectorScale: 0.82
+  minScoreScale: 0.8
+  minConstraintsY: -125
+  maxConstraintsY: -100
 --- !u!1 &7958780057486799718
 GameObject:
   m_ObjectHideFlags: 0
