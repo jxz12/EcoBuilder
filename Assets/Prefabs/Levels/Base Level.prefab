@@ -1439,8 +1439,9 @@ MonoBehaviour:
     numConsumers: 0
     minEdges: 0
     minChain: 0
-    minLoop: 0
+    minLoop: -1
     metric: 1
+    researchMode: 0
     mainMultiplier: 1000
     altMultiplier: 1000000
     twoStarScore: 0

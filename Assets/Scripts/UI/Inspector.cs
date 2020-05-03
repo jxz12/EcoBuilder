@@ -33,6 +33,7 @@ namespace EcoBuilder.UI
         [SerializeField] Trait greedTrait;
         
         [SerializeField] Incubator incubator;
+        [SerializeField] Initiator initiator;
         [SerializeField] ProceduralMeshGenerator factory;
 
         [SerializeField] StatusBar statusPrefab;
@@ -95,7 +96,8 @@ namespace EcoBuilder.UI
             sizeTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
             greedTrait.OnUnconflicted += i=> OnUnconflicted?.Invoke(i);
 
-            incubator.OnIncubationWanted += (b)=> IncubateNew(b);
+            initiator.OnProducerWanted += ()=> IncubateNew(true);
+            initiator.OnConsumerWanted += ()=> IncubateNew(false);
             incubator.OnDropped += ()=> SpawnIncubated();
 
             Camera mainCam = Camera.main;
@@ -119,15 +121,18 @@ namespace EcoBuilder.UI
 
             // grab gameobject from factory
             incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, sizeTrait.NormaliseValue(incubated.BodySize), greedTrait.NormaliseValue(incubated.Greediness), incubated.RandomSeed);
-
-            incubator.SetIncubatedObject(incubated.GObject);
-            nameField.SetNameWithoutCallback(incubated.GObject.name);
-            nameField.SetDefaultColour();
-
             incubated.Status = Instantiate(statusPrefab, statusCanvas.transform);
             incubated.Status.FollowSpecies(incubated.GObject);
             incubated.Status.SetSize(sizeTrait.PositivifyValue(incubated.BodySize));
             incubated.Status.SetGreed(greedTrait.PositivifyValue(incubated.Greediness));
+
+            incubator.StartIncubation();
+            incubator.SetIncubatedObject(incubated.GObject);
+
+            initiator.ShowButtons(false);
+
+            nameField.SetNameWithoutCallback(incubated.GObject.name);
+            nameField.SetDefaultColour();
 
             nameField.Interactable = true;
             sizeTrait.Interactable = true;
@@ -152,6 +157,7 @@ namespace EcoBuilder.UI
             SpawnWithNonUserEvents(incubated);
             int spawnedIdx = incubated.Idx;
             incubated = null;
+            initiator.ShowButtons(true);
 
             OnUserSpawned?.Invoke(spawnedIdx);
 
@@ -404,6 +410,8 @@ namespace EcoBuilder.UI
                 incubator.Unincubate();
                 incubated = null;
 
+                initiator.ShowButtons(true);
+
                 OnUnincubated?.Invoke();
                 GetComponent<Animator>().SetTrigger("Unincubate");
             }
@@ -416,14 +424,13 @@ namespace EcoBuilder.UI
         {
             factory.RescueSpecies(spawnedSpecies[idx].GObject);
         }
-
         public void SetProducerAvailability(bool available)
         {
-            incubator.EnableProducerButton(available);
+            initiator.EnableProducerButton(available);
         }
         public void SetConsumerAvailability(bool available)
         {
-            incubator.EnableConsumerButton(available);
+            initiator.EnableConsumerButton(available);
         }
 
 
@@ -588,7 +595,7 @@ namespace EcoBuilder.UI
         }
         public void HideIncubatorButtons(bool hidden=true)
         {
-            incubator.HideTypeButtons(hidden);
+            initiator.HideTypeButtons(hidden);
         }
 
         // for saving levels

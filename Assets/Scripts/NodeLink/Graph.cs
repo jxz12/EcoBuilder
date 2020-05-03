@@ -62,7 +62,8 @@ namespace EcoBuilder.NodeLink
         private bool layoutTriggered = false;
         private bool isCalculatingAsync = false;
         public bool GraphLayedOut { get { return !layoutTriggered && !isCalculatingAsync; } }
-        public bool ConstrainTrophic { private get; set; } = false;
+        public bool ConstrainTrophic { get; set; } = false;
+        public bool FindLoops { get; set; } = false;
 
         [SerializeField] int t_max=30;
         [SerializeField] float epsSGD=.01f, epsGS=.1f;
@@ -78,25 +79,27 @@ namespace EcoBuilder.NodeLink
 
             NumEdges = links.Count();
 
-            // these are not async to ensure synchronized adjacency
-            Johnson.Init(nodes.Indices, links.GetColumnIndicesInRow);
-            Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow);
+            // Init functions are not async to ensure synchronized adjacency
             SGD.Init(undirected);
+            if (FindLoops) {
+                Johnson.Init(nodes.Indices, links.GetColumnIndicesInRow);
+            }
             Func<int, float> YConstraint;
             if (ConstrainTrophic) {
+                Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow);
                 YConstraint = Trophic.GetScaledTrophicLevel;
             } else {
                 YConstraint = null;
             }
 
 #if !UNITY_WEBGL
-            await Task.Run(()=> Johnson.SolveLoop());
-            await Task.Run(()=> Trophic.SolveTrophic(epsGS));
+            if (FindLoops) { await Task.Run(()=> Johnson.SolveLoop()); }
+            if (ConstrainTrophic) { await Task.Run(()=> Trophic.SolveTrophic(epsGS)); }
             await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, YConstraint));
             SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
 #else
-            Johnson.SolveLoop();
-            Trophic.SolveTrophic(epsGS);
+            if (FindLoops) { Johnson.SolveLoop(); }
+            if (ConstrainTrophic) { Trophic.SolveTrophic(epsGS); }
             SGD.SolveStress(t_max, epsSGD, YConstraint);
             SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
@@ -295,7 +298,7 @@ namespace EcoBuilder.NodeLink
         {
             var instantiated = Instantiate(effect, transform);
             instantiated.transform.position = (nodes[src].transform.position + nodes[tgt].transform.position) / 2;
-            // TODO: better this
+            // TODO: better animation on tooltip
         }
 
         [SerializeField] float minLinkFlow=.1f, maxLinkFlow=2;

@@ -11,10 +11,9 @@ namespace EcoBuilder.Tutorials
         {
             targetSize = new Vector2(100,100);
 
-            // ExplainIntro();
-            targetSize = Vector2.zero;
+            ExplainIntro(false);
         }
-        void ExplainIntro()
+        void ExplainIntro(bool reshowText)
         {
             DetachSmellyListeners();
             targetSize = new Vector2(100,100);
@@ -22,20 +21,20 @@ namespace EcoBuilder.Tutorials
             targetAnchor = new Vector2(0,1);
             targetZRot = 30;
 
-            help.Message = "Well done for finishing Learning World! This is where the true challenge begins, as you will now attempt to take on players from around the world in problems that even researchers do not know the solution to! But first, there are some extra rules that you will need to know. Start by pressing the plant in your ecosystem, or skip this tutorial at any time by TODO:";
+            help.Message = "Well done for finishing Learning World! This is where the true challenge begins, as you will now attempt to take on players from around the world in problems that even researchers do not know the solution to! But first, there are some extra rules that you will need to know. Start by adding a plant to your ecosystem, or skip this tutorial at any time by TODO: spawn a skip button and put it somewhere on the screen";
 
-            // attach next to focus
+            AttachSmellyListener(inspector, "OnIncubated", ExplainInterference);
         }
         void ExplainInterference()
         {
-            help.Message = "Look, there is a new slider available! This trait is called 'interference', and measures the amount that individuals in a species compete with each other. Try moving the new slider up to its minimum value.";
-            // attach prev to unfocus
-            // attach next to max
+            help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures the amount that individuals in a species compete with each other. Try adding the plant to your ecosystem to start tweaking it.";
+
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawn", (i,b,g)=>ExplainInterference());
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>ExplainIntro(true));
         }
         void ExplainRegulation()
         {
-
-            help.Message = "Hopefully you noticed that the health of the plant went up! This is because the plant is not competing against itself as much for resources, such as sunlight or nutrients. Now try adding an animal to your ecosystem and making it eat the plant";
+            help.Message = "Try";
 
             // attach next to spawn
             // attach hide message to incubation

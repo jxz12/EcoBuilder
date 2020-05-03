@@ -39,8 +39,9 @@ namespace EcoBuilder.NodeLink
                 idxSquished[idx] = squished;
                 idxUnsquished.Add(idx);
 
-                var initPos = new Vector2((float)rand.NextDouble(), (float)rand.NextDouble());
-                posSquished[squished] = initPos;
+                var randPos = new Vector2((float)rand.NextDouble(), (float)rand.NextDouble());
+                posUnsquished.TryGetValue(idx, out var initPos);
+                posSquished[squished] = initPos + randPos;
             }
             sources.Clear();
             targets.Clear();
@@ -221,10 +222,6 @@ namespace EcoBuilder.NodeLink
                     Vector2 X_ij = posSquished[term.i] - posSquished[term.j];
                     float mag = X_ij.magnitude;
 
-                    // Vector2 r = ((mag-term.d)/2f) * (X_ij/mag);
-                    // r.y = 0;
-                    // Assert.IsFalse(float.IsNaN(r.x) || float.IsNaN(r.y), $"r=NaN for SGD term {term.i}:{term.j}");
-
                     float rx = ((mag-term.d)/2f) * (X_ij.x/mag);
                     Assert.IsFalse(float.IsNaN(rx), $"rx=NaN for SGD term {term.i}:{term.j}");
                    
@@ -232,9 +229,6 @@ namespace EcoBuilder.NodeLink
                     rx *= mu;
                     posSquished[term.i].x -= rx;
                     posSquished[term.j].x += rx;
-                    // r *= mu;
-                    // posSquished[term.i] -= r;
-                    // posSquished[term.j] += r;
                 }
             }
         }

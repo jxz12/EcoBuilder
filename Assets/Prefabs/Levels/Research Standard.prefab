@@ -258,7 +258,7 @@ PrefabInstance:
         type: 3}
       propertyPath: nextLevelPrefab
       value: 
-      objectReference: {fileID: 8973040549518741022, guid: 9782f6e8575b6c14da8c259057aabf98,
+      objectReference: {fileID: 6718820033012922220, guid: c309c0b070f336a48b7ee54126cb3da4,
         type: 3}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

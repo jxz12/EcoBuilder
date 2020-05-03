@@ -36,6 +36,7 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 7cd59d7fb38a77f4ca92099e8d101b73, type: 3}
     - {fileID: 21300000, guid: 0b216ed8876b73945ad75ea6feaba010, type: 3}
     - {fileID: 21300000, guid: 7ff78b329f164464ea5df9a3227b3f0d, type: 3}
+    - {fileID: 21300000, guid: 4b1885f5416f3c741ac0815952921840, type: 3}
     - {fileID: 21300000, guid: cd5efc45d507a414c81bd895a5528a0b, type: 3}
     - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
     - {fileID: 21300000, guid: 4dc79b73247092e4ab1b277f39e3f809, type: 3}
@@ -61,6 +62,7 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 5f800e8c23f52d9439d7929cf06cd922, type: 3}
     - {fileID: 21300000, guid: 9e2d10e868bfcc2459840cd98bcfde42, type: 3}
     - {fileID: 21300000, guid: d3d77b4d37359f04cb754ba29b2a3f09, type: 3}
+    - {fileID: 21300000, guid: 3c188aca631be544faf93bdb0415fa27, type: 3}
     - {fileID: 21300000, guid: 031411cfd15824643a4ccdedb8d36bc2, type: 3}
     - {fileID: 21300000, guid: 4acc179c0277ddf4fa72e6d397096d84, type: 3}
     - {fileID: 21300000, guid: e73dd9c018a08e74e9e3b6b52eba48b4, type: 3}
@@ -74,8 +76,7 @@ SpriteAtlas:
     - {fileID: 4116784748305926770, guid: b35635cda87be2b4fabede720678e0c5, type: 3}
     - {fileID: -5072820133543761511, guid: b35635cda87be2b4fabede720678e0c5, type: 3}
     - {fileID: 2971986971330815575, guid: b35635cda87be2b4fabede720678e0c5, type: 3}
-    - {fileID: 21300000, guid: 3c188aca631be544faf93bdb0415fa27, type: 3}
-    totalSpriteSurfaceArea: 241258
+    totalSpriteSurfaceArea: 242316
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -95,6 +96,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 78acd9c5b0fbabc4ab30b80f083a4587, type: 3}
   - {fileID: 21300000, guid: ed7900f571304804fa07d13860b4cae4, type: 3}
   - {fileID: 21300000, guid: 5ce583f5eeb793649bba951c6052c148, type: 3}
+  - {fileID: 21300000, guid: 4b1885f5416f3c741ac0815952921840, type: 3}
   - {fileID: 21300000, guid: 9c0068a62e7a92d40824e0b03460035a, type: 3}
   - {fileID: 21300000, guid: 7017830725262a140b5d8a3d39a0b11a, type: 3}
   - {fileID: 21300000, guid: 4dc97b674b42af8449588878f6a1a706, type: 3}
@@ -141,6 +143,7 @@ SpriteAtlas:
   - target2
   - refresh
   - target1
+  - box_b_02
   - btn_c_beige
   - btn_c_emerald
   - exit

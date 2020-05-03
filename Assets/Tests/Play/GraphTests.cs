@@ -22,7 +22,7 @@ namespace EcoBuilder.Tests
         [SetUp]
         public void SetUp()
         {
-            mainCam = new GameObject().AddComponent<Camera>(); // smelly singleton required for tooltip and zooming
+            mainCam = new GameObject("Camera").AddComponent<Camera>(); // smelly singleton required for tooltip and zooming
             mainCam.tag = "MainCamera";
             Graph prefab = (Graph)AssetDatabase.LoadAssetAtPath(graphPath, typeof(Graph));
             graph = GameObject.Instantiate(prefab);
@@ -212,15 +212,19 @@ namespace EcoBuilder.Tests
             }
             int nTests = 0, testsPassed = 0;
 
-            // graph.ConstrainTrophic = false;
-            // Func<bool> ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? .8f:.5f);
-            // yield return TryEdges(0);
-            // Assert.IsTrue(testsPassed==nTests, $"{testsPassed}/{nTests} passed");
+            graph.ConstrainTrophic = false;
+            Func<bool> ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? .8f:.5f);
+            yield return TryEdges(0);
+            string debug1 = $"{testsPassed}/{nTests} passed";
+            Assert.IsTrue(testsPassed==nTests, debug1);
 
             graph.ConstrainTrophic = true;
-            Func<bool> ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? 2f:1.3f);
+            ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? 2f:1.3f);
             yield return TryEdges(0);
-            Assert.IsTrue(testsPassed==nTests, $"{testsPassed}/{nTests} passed");
+            string debug2 = $"{testsPassed}/{nTests} passed";
+            Assert.IsTrue(testsPassed==nTests, debug2);
+
+            MonoBehaviour.print($"{debug1}\n{debug2}");
 
             // recursively try all possible edges
             IEnumerator TryEdges(int edgeIdx)
@@ -269,19 +273,49 @@ namespace EcoBuilder.Tests
             }
         }
         [UnityTest]
+        public IEnumerator LoopsAreSlowButJustHowSlow()
+        {
+            const int n = 100;
+            const int m = 1000;
+            graph.FindLoops = true;
+            var edges = new bool[n,n];
+            graph.AddNode(0);
+            var sw = new Stopwatch();
+            for (int i=1; i<n; i++)
+            {
+                sw.Restart();
+                graph.AddNode(i);
+                for (int j=0; j<m; j++)
+                {
+                    int src = UnityEngine.Random.Range(0,i);
+                    int tgt = UnityEngine.Random.Range(0,i);
+
+                    if (src != tgt && !edges[tgt,src])
+                    {
+                        if (!edges[src,tgt]) {
+                            graph.AddLink(src, tgt);
+                        } else {
+                            graph.RemoveLink(src, tgt);
+                        }
+                        edges[src,tgt] = !edges[src,tgt];
+                    }
+                }
+                while (!graph.GraphLayedOut) { yield return null; }
+                MonoBehaviour.print($"{i} {sw.Elapsed}");
+            }
+        }
+        [UnityTest]
         public IEnumerator StressSpeedAndRobustTest()
         {
             // test for NaN as well as speed
             const int n = 100;
-            const int m = 1000;
-            var nodes = new bool[n];
+            const int m = 10000;
             for (int i=0; i<n; i++)
             {
                 graph.AddNode(i);
-                nodes[i] = true;
             }
 
-            graph.ConstrainTrophic = false;
+            graph.ConstrainTrophic = true;
             var sw = new Stopwatch();
             sw.Start();
             var edges = new bool[n,n];
@@ -289,8 +323,7 @@ namespace EcoBuilder.Tests
             {
                 int src = UnityEngine.Random.Range(0,n);
                 int tgt = UnityEngine.Random.Range(0,n);
-                                                              // no self or bidirectional links
-                if (nodes[src] && nodes[tgt] && src != tgt && !edges[tgt,src])
+                if (src != tgt && !edges[tgt,src]) // no self or bidirectional links
                 {
                     if (!edges[src,tgt]) {
                         graph.AddLink(src, tgt);
@@ -299,10 +332,15 @@ namespace EcoBuilder.Tests
                     }
                     edges[src,tgt] = !edges[src,tgt];
                 }
-                while (!graph.GraphLayedOut) { yield return null; }
+                if (i%100 == 0)
+                {
+                    while (!graph.GraphLayedOut) { yield return null; }
+                    MonoBehaviour.print($"{i} time: {sw.Elapsed}");
+                }
             }
             sw.Stop();
-            Console.WriteLine($"time: {sw.Elapsed}");
+            while (!graph.GraphLayedOut) { yield return null; }
+            MonoBehaviour.print($"time: {sw.Elapsed}");
         }
     }
 }

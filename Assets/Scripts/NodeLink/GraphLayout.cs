@@ -46,8 +46,6 @@ namespace EcoBuilder.NodeLink
                 //     }
                 // }
 
-                // TODO: only fix y position
-
                 yAxle.localPosition = Vector3.SmoothDamp(yAxle.localPosition, Vector3.zero, ref nodesVelocity, layoutSmoothTime);
                 xAxle.localPosition = Vector3.SmoothDamp(xAxle.localPosition, xAxleUnfocused, ref graphVelocity, layoutSmoothTime);
             }

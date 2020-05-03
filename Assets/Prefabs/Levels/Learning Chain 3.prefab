@@ -313,8 +313,7 @@ PrefabInstance:
         type: 3}
       propertyPath: nextLevelPrefab
       value: 
-      objectReference: {fileID: 4757400319804186248, guid: b33185e6d510747a1bd22fa74a562b6f,
-        type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.sizes.Array.data[0]
@@ -344,8 +343,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.threeStarsMessage
-      value: Amazing work! You are more than ready to tackle the last ecosystem feature
-        known as loops.
+      value: Amazing work! You are more than ready to tackle the final few levels!
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

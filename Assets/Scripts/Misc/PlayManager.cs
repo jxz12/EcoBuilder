@@ -111,6 +111,7 @@ namespace EcoBuilder
             graph.AllowSuperfocus = details.SuperfocusAllowed;
             graph.DragFromTarget = GameManager.Instance.ReverseDragDirection;
             graph.ConstrainTrophic = GameManager.Instance.ConstrainTrophic;
+            graph.FindLoops = details.MinLoop >= 0;
 
             constraints.LimitLeaf(details.NumProducers);
             constraints.LimitPaw(details.NumConsumers);

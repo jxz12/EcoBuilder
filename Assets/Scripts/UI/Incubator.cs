@@ -12,17 +12,11 @@ namespace EcoBuilder.UI
     {
         // this is a little confusing because Incubator handles wanting incubation,
         // but nodelink handles wanting unincubation
-        public event Action<bool> OnIncubationWanted;
         public event Action OnDropped;
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
         [SerializeField] float planeDistance;
-
-        // [SerializeField] Animator buttonsAnim;
-        [SerializeField] RectTransform buttons;
-        [SerializeField] Button producerButton;
-        [SerializeField] Button consumerButton;
 
         Canvas rootCanvas;
         Camera mainCam;
@@ -41,24 +35,17 @@ namespace EcoBuilder.UI
         }
         void Start()
         {
-
-            producerButton.onClick.AddListener(()=> StartIncubation(true));
-            consumerButton.onClick.AddListener(()=> StartIncubation(false));
-            ShowButtons(true, 1f);
         }
-        private void StartIncubation(bool isProducer)
+        public void StartIncubation()
         {
-            OnIncubationWanted?.Invoke(isProducer);
             GetComponent<Animator>().SetBool("Droppable", false);
             GetComponent<Animator>().SetTrigger("Incubate");
-            ShowButtons(false);
         }
         public void Unincubate()
         {
             GetComponent<Animator>().SetTrigger("Unincubate");
             Destroy(incubatedObj);
             incubatedObj = null;
-            ShowButtons(true);
         }
 
         GameObject incubatedObj;
@@ -77,23 +64,7 @@ namespace EcoBuilder.UI
                 Destroy(incubatedObj);
                 GetComponent<Animator>().SetTrigger("Unincubate");
             }
-            ShowButtons(false);
         }
-
-        // for tutorials
-        public void HideTypeButtons(bool hidden=true)
-        {
-            buttons.gameObject.SetActive(!hidden);
-        }
-        public void EnableProducerButton(bool enabled)
-        {
-            producerButton.interactable = enabled;
-        }
-        public void EnableConsumerButton(bool enabled)
-        {
-            consumerButton.interactable = enabled;
-        }
-
 
         bool dragging;
         Vector3 originalPos;
@@ -137,20 +108,7 @@ namespace EcoBuilder.UI
             {
                 OnDropped?.Invoke();
                 GetComponent<Animator>().SetTrigger("Spawn");
-
-                ShowButtons(true);
             }
-        }
-        IEnumerator buttonsRoutine;
-        private void ShowButtons(bool showing, float duration=.5f)
-        {
-            buttons.GetComponent<CanvasGroup>().interactable = showing;
-            if (buttonsRoutine != null) {
-                StopCoroutine(buttonsRoutine);
-            }
-            var start = showing? new Vector2(0,0) : new Vector2(1,0);
-            var end = showing? new Vector2(1,0) : new Vector2(0,0);
-            StartCoroutine(buttonsRoutine = Tweens.Pivot(buttons, start, end, duration));
         }
     }
 }

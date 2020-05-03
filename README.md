@@ -1,32 +1,25 @@
-DO THIS NOW:
-(CV) ecobuilder lol
-ask for apple developer
-
 ECOBUILDER:
-fix trophic constraints
-make SGD a coroutine for webgl
+write a cover letter
 add imperial logo with permission
 
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 some final bosses
-unlock all research levels after tutorial passed
+fix superfocus small nodes
+unlock all research levels after its tutorial is passed
+fix batching of level sprites in menu
 
 # TESTS
-to test layout, add specific nodes and links and make sure stress is lower than a certain amount
-but also automated random graphs to test for no NaN
-
 make sure web_gl is same as not web_gl (conditional compiles)
 test server going down and up and down
 
 use reflection to smell the smellylisteners
-check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO'
+check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO' and star scores are not 0
 
 # Research world
 verify high scores by checking matrices
 
 # Other
-fix superfocus small nodes?
 make health go blue if above a super threshold (will need another fill sprite)
 release game with australian fires as angle?
 experiments to see how the score changes over time
