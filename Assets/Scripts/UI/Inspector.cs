@@ -362,6 +362,7 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubator.Unincubate();
+                initiator.ShowButtons(true);
                 
                 incubated = null;
                 OnUnincubated?.Invoke();
@@ -408,9 +409,8 @@ namespace EcoBuilder.UI
             if (incubated != null)
             {
                 incubator.Unincubate();
-                incubated = null;
-
                 initiator.ShowButtons(true);
+                incubated = null;
 
                 OnUnincubated?.Invoke();
                 GetComponent<Animator>().SetTrigger("Unincubate");
@@ -583,6 +583,7 @@ namespace EcoBuilder.UI
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
             incubator.Finish();
+            initiator.Finish();
             HideStatusBars();
         }
 

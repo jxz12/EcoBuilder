@@ -60,7 +60,8 @@ namespace EcoBuilder.UI
         }
         public void Finish()
         {
-            if (incubatedObj != null) {
+            if (incubatedObj != null)
+            {
                 Destroy(incubatedObj);
                 GetComponent<Animator>().SetTrigger("Unincubate");
             }

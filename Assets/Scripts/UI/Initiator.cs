@@ -32,7 +32,7 @@ namespace EcoBuilder.UI
         }
         void InitiateConsumer()
         {
-            OnProducerWanted?.Invoke();
+            OnConsumerWanted?.Invoke();
         }
         IEnumerator buttonsRoutine;
         public void ShowButtons(bool showing, float duration=.5f)
@@ -44,6 +44,10 @@ namespace EcoBuilder.UI
             var start = showing? new Vector2(0,0) : new Vector2(1,0);
             var end = showing? new Vector2(1,0) : new Vector2(0,0);
             StartCoroutine(buttonsRoutine = Tweens.Pivot(rt, start, end, duration));
+        }
+        public void Finish()
+        {
+            ShowButtons(false);
         }
         // for tutorials
         public void HideTypeButtons(bool hidden=true)
