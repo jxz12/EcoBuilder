@@ -6,6 +6,8 @@ add imperial logo with permission
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 some final bosses
 fix superfocus small nodes
+fix max and min health ranges for statusbars
+change press/tap to hold/click based on platform?
 unlock all research levels after its tutorial is passed
 fix batching of level sprites in menu
 
