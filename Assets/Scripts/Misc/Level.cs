@@ -258,10 +258,16 @@ namespace EcoBuilder
 #endif
 
             extraCanvas.overrideSorting = false; // RectMask2D breaks otherwise
-            // extraCanvas.sortingOrder = 0;
             Destroy(extraRaycaster);
             Destroy(extraCanvas);
         }
+    
+
+
+
+        //////////////////////////
+        // animation
+
         [SerializeField] Canvas cardCanvas;
         [SerializeField] CanvasGroup thumbnailGroup, cardGroup;
         [SerializeField] Image shade, back;
@@ -286,6 +292,7 @@ namespace EcoBuilder
                 cardGroup.blocksRaycasts = true;
                 thumbnailGroup.interactable = false;
                 thumbnailGroup.blocksRaycasts = false;
+                shade.enabled = true;
                 shade.raycastTarget = true;
                 float startTime = Time.time;
                 while (Time.time < startTime+duration)
@@ -335,6 +342,7 @@ namespace EcoBuilder
                     yield return null;
                 }
                 rt.sizeDelta = endSize;
+                shade.enabled = false;
                 shade.color = new Color(0,0,0,0);
                 thumbnailGroup.alpha = 1;
                 cardGroup.alpha = 0;

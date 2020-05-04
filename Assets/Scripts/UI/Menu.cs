@@ -362,28 +362,32 @@ namespace EcoBuilder.UI
         private State state;
         void Reveal()
         {
-            TweenY(splashCanvas.GetComponent<RectTransform>(), -1000, 0);
-
             Assert.IsTrue(state == State.Hidden);
+
+            TweenY(splashCanvas.GetComponent<RectTransform>(), -1000, 0);
+            splashCanvas.enabled = true;
+
             state = State.Splash;
         }
         void Reset()
         {
             Assert.IsTrue(state == State.Settings, "should only be able to reset from settings");
+
             TweenY(SettingsRT, 0, -1000, ()=>settingsCanvas.enabled=false);
             TweenY(ReturnRT, -60, 60);
-            state = State.Hidden;
             foreach (Transform child in learningGrid.transform) {
                 Destroy(child.gameObject);
             }
             foreach (Transform child in researchList.transform) {
                 Destroy(child.gameObject);
             }
+            state = State.Hidden;
             Start();
         }
         public void ShowSplash()
         {
             Assert.IsTrue(state==State.Learning || state==State.Research || state==State.Settings);
+
             ClearTweens();
             TweenY(SplashRT, -1000, 0);
             TweenY(ReturnRT, -60, 60);
@@ -400,9 +404,10 @@ namespace EcoBuilder.UI
 
             state = State.Splash;
         }
-        public void ShowLearningWorld(bool learning)
+        public void ShowLearningWorld()
         {
             Assert.IsTrue(state == State.Splash);
+            
             ClearTweens();
             TweenY(SplashRT, 0, -1000, ()=>splashCanvas.enabled=false);
             TweenY(LearningRT, -1000, 0);
@@ -413,9 +418,10 @@ namespace EcoBuilder.UI
 
             state = State.Learning;
         }
-        public void ShowResearchWorld(bool learning)
+        public void ShowResearchWorld()
         {
             Assert.IsTrue(state == State.Splash);
+
             ClearTweens();
             TweenY(SplashRT, 0, -1000, ()=>splashCanvas.enabled=false);
             TweenY(ResearchRT, -1000, 0);
@@ -431,6 +437,7 @@ namespace EcoBuilder.UI
         public void ShowSettings()
         {
             Assert.IsTrue(state == State.Splash);
+
             ClearTweens();
             TweenY(SplashRT, 0, -1000, ()=>settingsCanvas.enabled=false);
             TweenY(SettingsRT, -1000, 0);

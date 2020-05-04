@@ -154,7 +154,7 @@ namespace EcoBuilder.UI
         {
             SetSide(false, damp);
             SetPivotHeight(1, damp);
-            SetAnchorHeight(.85f, damp);
+            SetAnchorHeight(.8f, damp);
             SetPixelWidth(380, damp);
         }
 
