@@ -122,20 +122,20 @@ namespace EcoBuilder.UI
                 researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white; // remove transparency
                 researchLock.enabled = false;
 
-                splashHelp = GameManager.Instance.HelpText.Message = splashResearchText;
+                GameManager.Instance.HelpText.Message = splashResearchText;
                 if (GameManager.Instance.GetHighScoreLocal(firstResearchLevel.Details.Idx) < 0)
                 {
                     // show help on first time researching
-                    GameManager.Instance.HelpText.DelayThenShow(2f, splashHelp);
+                    GameManager.Instance.HelpText.DelayThenShow(2f, splashResearchText);
                 }
             }
             else 
             {
-                splashHelp = GameManager.Instance.HelpText.Message = splashLearningText;
+                GameManager.Instance.HelpText.Message = splashLearningText;
                 if (GameManager.Instance.GetHighScoreLocal(firstLearningLevel.Details.Idx) < 0)
                 {
                     // show help on first time playing
-                    GameManager.Instance.HelpText.DelayThenShow(2f, splashHelp);
+                    GameManager.Instance.HelpText.DelayThenShow(2f, splashLearningText);
                 }
             }
             GameManager.Instance.HelpText.ResetPosition();
@@ -197,11 +197,12 @@ namespace EcoBuilder.UI
             }
         }
         [SerializeField] string splashLearningText, splashResearchText;
-        string splashHelp;
+        [SerializeField] string settingsText;
+        [SerializeField] string levelsLearningText, levelsResearchText;
         [SerializeField] string lockHelp;
         public void ResetHelpToSplash()
         {
-            GameManager.Instance.HelpText.Message = splashHelp;
+            GameManager.Instance.HelpText.Message = researchWorld.interactable? splashResearchText : splashLearningText;
             GameManager.Instance.HelpText.ResetPosition();
         }
         public void SetHelpHeight(float height)
@@ -217,7 +218,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                GameManager.Instance.HelpText.DelayThenSet(.5f, splashHelp);
+                GameManager.Instance.HelpText.DelayThenSet(.5f, researchWorld.interactable? splashResearchText : splashLearningText);
                 GameManager.Instance.HelpText.Showing = false;
             }
         }
@@ -382,6 +383,10 @@ namespace EcoBuilder.UI
             } else if (state == State.Settings) {
                 TweenY(settingsRT, 0, -1000);
             }
+
+            SetHelp(researchWorld.interactable? levelsResearchText : levelsLearningText);
+
+            state = State.Splash;
         }
         public void ShowLevels(bool learning)
         {
@@ -392,6 +397,8 @@ namespace EcoBuilder.UI
 
             learningCanvas.enabled = learning;
             researchCanvas.enabled = !learning;
+
+            SetHelp(learning? levelsLearningText : levelsResearchText);
 
             if (!learning) {
                 SetCurrentResearchLeaderboard();
@@ -405,6 +412,8 @@ namespace EcoBuilder.UI
             TweenY(splashRT, 0, -1000);
             TweenY(settingsRT, -1000, 0);
             TweenY(returnRT, 60, -60);
+
+            SetHelp(settingsText);
 
             state = State.Settings;
         }

@@ -5379,6 +5379,13 @@ MonoBehaviour:
   splashResearchText: You have unlocked Research World, well done! You may now compete
     with players around the world in challenges to help researchers understand ecosystems
     better.
+  settingsText: Here you can manage your account, and change the direction you drag
+    to add species interactions.
+  levelsLearningText: These levels are designed to teach you the basics of building
+    your own ecosystems. You will solve puzzles and learn about how real ecosystems
+    work along the way!
+  levelsResearchText: These levels are designed to be more challenging! You can also
+    see how you stack up against the rest of the world on the leaderboards.
   lockHelp: The Research World contains more difficult levels designed to be a real
     challenge! It is accessible once you complete all of the levels in Learning World.
   learningPanDown: {fileID: 6515831361563748513}

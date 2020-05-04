@@ -698,6 +698,13 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0.000030517578
       objectReference: {fileID: 0}
+    - target: {fileID: 6515831361133778258, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: settingsText
+      value: Here you can manage your account, and change the direction you drag
+        to add species interactions. You can also manage your account details, or
+        quit the game.
+      objectReference: {fileID: 0}
     - target: {fileID: 6515831361133778270, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_Name
