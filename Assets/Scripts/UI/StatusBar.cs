@@ -97,7 +97,7 @@ namespace EcoBuilder.UI
                 if (currentHealth > 0) {
                     health.color = Color.Lerp(health.color, new Color(0,.75f,0,1), 2*Time.deltaTime);
                 } else {
-                    health.color = Color.Lerp(health.color, new Color(.4f,.2f,.2f,.5f), 2*Time.deltaTime);
+                    health.color = Color.Lerp(health.color, new Color(.4f,.2f,.2f,.2f), 2*Time.deltaTime);
                 }
             }
             else if (traitsText.enabled)

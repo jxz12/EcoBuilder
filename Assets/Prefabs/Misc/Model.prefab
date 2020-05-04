@@ -55,8 +55,8 @@ MonoBehaviour:
   kg_max: 1000
   a_min: 0.0001
   a_max: 0.1
-  minRealAbund: 0.0000000002
-  maxRealAbund: 1.95
+  minRealAbund: 0.000000001
+  maxRealAbund: 0.0961
   minRealFlux: 0.0000000000000001
   maxRealFlux: 0.000001
   minRealPlex: 0.000021

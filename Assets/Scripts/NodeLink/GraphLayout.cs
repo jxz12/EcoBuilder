@@ -77,7 +77,8 @@ namespace EcoBuilder.NodeLink
                 foreach (Node no in nodes)
                 {
                     // make sure that all nodes fit on screen
-                    var viewportPos = mainCam.WorldToViewportPoint(no.transform.localPosition * graphScaleTarget) - new Vector3(.5f,.5f);
+                    // var viewportPos = mainCam.WorldToViewportPoint(no.transform.localPosition * graphScaleTarget) - new Vector3(.5f,.5f);
+                    var viewportPos = mainCam.WorldToViewportPoint(no.StressPos * graphScaleTarget) - new Vector3(.5f,.5f);
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.x) - .375f);
                     maxError = Mathf.Max(maxError, Mathf.Abs(viewportPos.y) - .3f);
                 }

@@ -133,6 +133,14 @@ namespace EcoBuilder.NodeLink
         public static int NumComponents { get; private set; } = 0;
         static void FindConnectedComponents()
         {
+            // componentMap.Clear();
+            // for (int i=0; i<posSquished.Length; i++) {
+            //     componentMap.Add(i);
+            // }
+            // componentMap.TrimExcess();
+            // // sort by x position to make sure components don't jump all over the place
+            // componentMap.Sort((i,j)=> posSquished[i].x.CompareTo(posSquished[j].x));
+
             // calculate connected components
             componentMap.Clear();
             for (int i=0; i<posSquished.Length; i++) {

@@ -258,6 +258,7 @@ namespace EcoBuilder.FoodWeb
             }
             s.Endangered = realAbund <= 0;
 
+
             if (realAbund > 0)
             {
                 if (realAbund < minRealAbund) {

@@ -5,9 +5,6 @@ add imperial logo with permission
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 some final bosses
-fix superfocus small nodes
-fix max and min health ranges for statusbars
-change press/tap to hold/click based on platform?
 unlock all research levels after its tutorial is passed
 fix batching of level sprites in menu
 
@@ -23,6 +20,7 @@ verify high scores by checking matrices
 
 # Other
 make health go blue if above a super threshold (will need another fill sprite)
+change press/tap to hold/click based on platform
 release game with australian fires as angle?
 experiments to see how the score changes over time
 

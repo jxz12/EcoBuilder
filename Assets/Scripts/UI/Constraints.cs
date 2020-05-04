@@ -338,7 +338,7 @@ namespace EcoBuilder.UI
                 float targetScale = showing? 1:0;
                 while (Time.time < tStart+duration)
                 {
-                    float t = UI.Tweens.CubicOut((Time.time-tStart) / duration);
+                    float t = Tweens.CubicOut((Time.time-tStart) / duration);
                     float scale = Mathf.Lerp(scaleStart, targetScale, t);
                     error.transform.localScale = new Vector3(scale, scale, 1);
                     yield return null;

@@ -126,7 +126,7 @@ namespace EcoBuilder
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
 
-        [SerializeField] UI.Effect fireworksPrefab, confettiPrefab;
+        [SerializeField] Effect fireworksPrefab, confettiPrefab;
 
         void Awake()
         {
@@ -229,7 +229,7 @@ namespace EcoBuilder
                 float startTime = Time.time;
                 while (Time.time < startTime+duration)
                 {
-                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
                     transform.localPosition = Vector2.Lerp(startPos, Vector2.zero, t);
                     yield return null;
                 }
@@ -290,7 +290,7 @@ namespace EcoBuilder
                 float startTime = Time.time;
                 while (Time.time < startTime+duration)
                 {
-                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
                     rt.sizeDelta = Vector2.Lerp(startSize, endSize, t);
                     shade.color = new Color(0,0,0, Mathf.Lerp(aShade,.3f,t));
                     thumbnailGroup.alpha = Mathf.Lerp(aThumb,0,t);
@@ -327,7 +327,7 @@ namespace EcoBuilder
                 float startTime = Time.time;
                 while (Time.time < startTime+duration)
                 {
-                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
                     rt.sizeDelta = Vector2.Lerp(startSize, endSize, t);
                     shade.color = new Color(0,0,0, Mathf.Lerp(aShade,0,t));
                     thumbnailGroup.alpha = Mathf.Lerp(aThumb,1,t);
@@ -376,7 +376,7 @@ namespace EcoBuilder
                 float startSize = rt.sizeDelta.x;
                 while (Time.time < startTime + duration)
                 {
-                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime) / duration);
+                    float t = Tweens.QuadraticInOut((Time.time-startTime) / duration);
                     float size = Mathf.Lerp(startSize, 0, t);
                     rt.sizeDelta = new Vector2(size, size);
                     yield return null;
@@ -453,7 +453,7 @@ namespace EcoBuilder
                 float startTime = Time.time;
                 while (Time.time < startTime+duration)
                 {
-                    float t = UI.Tweens.QuadraticInOut((Time.time-startTime)/duration);
+                    float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
 
                     float y = Mathf.Lerp(startY, targetY, t);
                     back.transform.localPosition = new Vector2(transform.localPosition.x, y);

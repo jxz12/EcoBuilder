@@ -41,7 +41,7 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainHealthyPlant()
         {
-            help.Message = "Your plant has a very high population! Low interference for plants is usually what healthy ecosystems need. Now try adding an animal.";
+            help.Message = "Your plant has a very high population! Interference has a large effect on plants, and you will usually want to keep it as low as possible. Now try adding an animal.";
         }
         void ExplainAnimal()
         {
@@ -49,7 +49,7 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainConflict1()
         {
-            help.Message = "Great job! There is one more rule inside research world that you must follow. Try adding another plant to see it.";
+            help.Message = "Great job! There is one more rule inside Research World that you must follow. Try adding another plant to see it.";
         }
         void ExplainConflict2()
         {
@@ -62,7 +62,7 @@ namespace EcoBuilder.Tutorials
         void ExplainSuperFocus1()
         {
             graph.AllowSuperfocus = true;
-            help.Message = "Research mode also unlocks a final tool to explore your ecosystem, which is useful in case your ecosystem becomes very complex. If you tap a species twice, the game will focus only on the direct connections to that species. Try tapping this plant twice.";
+            help.Message = "Research World also unlocks a final tool to explore your ecosystem, which is useful in case your ecosystem becomes very complex. If you tap a species twice, the game will focus only on the direct connections to that species. Try tapping this plant twice.";
 
             // TODO: disable clicking on other two plants
         }
@@ -83,7 +83,8 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainAlternateScore()
         {
-            help.Message = "The final feature of research world is the a scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. The higher you score, the more your strategies will help researchers understand ecosystems, so please try your best, and good luck!";
+            // TODO: show score
+            help.Message = "The final feature of Research World is the a scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. The higher you score, the more your strategies will help researchers understand ecosystems, so please try your best, and good luck!";
         }
     }
 }

@@ -1449,7 +1449,7 @@ MonoBehaviour:
     sizeSliderHidden: 0
     greedSliderHidden: 0
     conflictsAllowed: 0
-    superfocusAllowed: 0
+    superfocusAllowed: 1
     numInitSpecies: 0
     edits: 
     types: 

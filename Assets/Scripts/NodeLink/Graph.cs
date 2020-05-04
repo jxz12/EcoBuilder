@@ -85,8 +85,8 @@ namespace EcoBuilder.NodeLink
                 Johnson.Init(nodes.Indices, links.GetColumnIndicesInRow);
             }
             Func<int, float> YConstraint;
+            Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow); // do this anyway to calculate chain length
             if (ConstrainTrophic) {
-                Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow);
                 YConstraint = Trophic.GetScaledTrophicLevel;
             } else {
                 YConstraint = null;

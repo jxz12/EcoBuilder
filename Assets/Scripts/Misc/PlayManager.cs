@@ -15,7 +15,7 @@ namespace EcoBuilder
         [SerializeField] UI.Recorder recorder;
         [SerializeField] UI.Score score;
 
-        [SerializeField] UI.Effect heartPrefab, skullPrefab, poofPrefab;
+        [SerializeField] Effect heartPrefab, skullPrefab, poofPrefab;
 
         void Start()
         {

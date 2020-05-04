@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace EcoBuilder.UI
+namespace EcoBuilder
 {
     public class Effect : MonoBehaviour
     {

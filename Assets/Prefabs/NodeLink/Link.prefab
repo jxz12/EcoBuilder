@@ -76,7 +76,7 @@ LineRenderer:
   - {x: 0, y: 0, z: -100}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.12
+    widthMultiplier: 0.1
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -145,3 +145,8 @@ MonoBehaviour:
   curveRatio: -0.25
   curveSegments: 10
   numBalls: 1.5
+  Curved: 0
+  TileSpeed: 0
+  Removable: 1
+  Source: {fileID: 0}
+  Target: {fileID: 0}

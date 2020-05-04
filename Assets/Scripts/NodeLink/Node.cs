@@ -74,24 +74,48 @@ namespace EcoBuilder.NodeLink
                 outline.enabled = false;
             }
         }
-        public void SetNewParentKeepPos(Transform newParent)
-        {
-            transform.SetParent(newParent, true);
-            transform.localRotation = Quaternion.identity;
-            transform.localScale = Vector3.one * defaultSize;
-        }
-
         public void Highlight()
         {
+            // TODO: make the node bigger maybe
             // defaultSize *= 1.2f;
             // transform.localScale = Vector3.one * defaultSize;
         }
         public void Unhighlight()
         {
+            // TODO: make the node smaller maybe
             // defaultSize /= 1.2f;
             // transform.localScale = Vector3.one * defaultSize;
         }
 
+        IEnumerator resizeRoutine;
+        public void SetNewParentKeepPos(Transform newParent)
+        {
+            transform.SetParent(newParent, true);
+            transform.localRotation = Quaternion.identity;
+
+            // if (resizeRoutine != null)
+            // {
+            //     StopCoroutine(resizeRoutine);
+            //     resizeRoutine = null;
+            // }
+            // StartCoroutine(resizeRoutine = Resize(.5f));
+            // IEnumerator Resize(float duration)
+            // {
+            //     float startSize = transform.localScale.x;
+            //     float startTime = Time.time;
+            //     while (Time.time < startTime + duration)
+            //     {
+            //         float t = (Time.time-startTime) / duration;
+            //         t = t<.5f? 2*t*t : (4-2*t)*t-1;
+
+            //         float size = Mathf.Lerp(startSize, defaultSize, t);
+            //         transform.localScale = new Vector3(size, size, size);
+            //         yield return null;
+            //     }
+            //     transform.localScale = new Vector3(defaultSize, defaultSize, defaultSize);
+            //     resizeRoutine = null;
+            // }
+        }
 
         IEnumerator flashRoutine;
         public void Flash(bool isFlashing)
@@ -105,47 +129,48 @@ namespace EcoBuilder.NodeLink
                 flashRoutine = null;
                 shapeRenderer.enabled = true;
             }
-
             if (isFlashing) {
                 StartCoroutine(flashRoutine = Flash(1f));
             }
-        }
-        IEnumerator Flash(float period)
-        {
-            bool enabled = true;
-            float start = Time.time;
-            while (true)
+
+            IEnumerator Flash(float period)
             {
-                if ((Time.time-start) % period > period/2)
+                bool enabled = true;
+                float start = Time.time;
+                while (true)
                 {
-                    if (enabled)
+                    if ((Time.time-start) % period > period/2)
                     {
-                        shapeRenderer.enabled = false;
-                        enabled = false;
+                        if (enabled)
+                        {
+                            shapeRenderer.enabled = false;
+                            enabled = false;
+                        }
                     }
-                }
-                else
-                {
-                    if (!enabled)
+                    else
                     {
-                        shapeRenderer.enabled = true;
-                        enabled = true;
+                        if (!enabled)
+                        {
+                            shapeRenderer.enabled = true;
+                            enabled = true;
+                        }
                     }
+                    yield return null;
                 }
-                yield return null;
             }
         }
-
-
-        Vector3 velocity; // for use with smoothdamp
+        // for use with smoothdamp
+        Vector3 velocity;
+        float sizocity;
         public void TweenPos(float smoothTime)
         {
-            if (State == PositionState.Stress)
-            {
+            if (State == PositionState.Stress) {
                 transform.localPosition = Vector3.SmoothDamp(transform.localPosition, StressPos, ref velocity, smoothTime);
             } else { // superfocus
                 transform.localPosition = Vector3.SmoothDamp(transform.localPosition, FocusPos, ref velocity, smoothTime);
             }
+            float size = Mathf.SmoothDamp(transform.localScale.x, defaultSize, ref sizocity, smoothTime);
+            transform.localScale = new Vector3(size, size, size);
         }
     }
 }
