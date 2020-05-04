@@ -72,7 +72,10 @@ namespace EcoBuilder.UI
                 instantiated[prefab.Details.Idx] = Instantiate(prefab, parent);
 
                 long? score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
+
+#if !UNITY_EDITOR
                 if (score != null)
+#endif
                 {
                     unlockedIdxs.Add(prefab.Details.Idx);
                     if (prefab.NextLevelPrefab!=null) {
@@ -138,7 +141,7 @@ namespace EcoBuilder.UI
                     GameManager.Instance.HelpText.DelayThenShow(2f, splashLearningText);
                 }
             }
-            GameManager.Instance.HelpText.ResetPosition();
+            GameManager.Instance.HelpText.ResetMenuPosition();
 
             foreach (var idx in unlockedIdxs) {
                 instantiated[idx].Unlock();
@@ -203,7 +206,7 @@ namespace EcoBuilder.UI
         public void ResetHelpToSplash()
         {
             GameManager.Instance.HelpText.Message = researchWorld.interactable? splashResearchText : splashLearningText;
-            GameManager.Instance.HelpText.ResetPosition();
+            GameManager.Instance.HelpText.ResetMenuPosition();
         }
         public void SetHelpHeight(float height)
         {

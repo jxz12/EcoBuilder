@@ -232,9 +232,7 @@ namespace EcoBuilder
         void Update()
         {
             // save a level for convenience
-            if (Input.GetKeyDown(KeyCode.Q) &&
-                Input.GetKeyDown(KeyCode.W) &&
-                Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 var randomSeeds = new List<int>();
                 var plants = new List<bool>();
@@ -272,7 +270,12 @@ namespace EcoBuilder
                 }
                 Level.SaveAsNewPrefab(randomSeeds, plants, sizes, greeds, sources, targets, DateTime.Now.Ticks.ToString());
             }
+            if (Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                ScreenCapture.CaptureScreenshot($"{Screen.width}x{Screen.height} {nScreenShots++}");
+            }
         }
+        int nScreenShots = 0;
 #endif
     }
 }

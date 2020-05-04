@@ -5,15 +5,16 @@ add imperial logo with permission
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
 some final bosses
-unlock all research levels after its tutorial is passed
-fix batching of level sprites in menu
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
 test server going down and up and down
+test email recovery from server
 
 use reflection to smell the smellylisteners
 check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO' and star scores are not 0
+alt tabbing out of application could break graphinteraction
+play all the tutorials by hand
 
 # Research world
 verify high scores by checking matrices
@@ -41,6 +42,7 @@ apparent
 1 885 1080
 2 850 900
 3 1100 1500
+4 970 1000
 chain
 1 950 1000
 2 950 1000
@@ -53,6 +55,7 @@ heavy
 1 1100 1900
 2 2000 2800
 3 1650 1700
+4 3800 4200
 link
 1 3000 4000
 loop

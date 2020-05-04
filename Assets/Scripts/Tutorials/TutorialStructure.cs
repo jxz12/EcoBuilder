@@ -35,7 +35,7 @@ namespace EcoBuilder.Tutorials
             {
                 help.Message = GameManager.Instance.PlayedLevelDetails.Introduction;
                 help.Showing = true;
-                help.ResetPosition();
+                help.ResetLevelPosition();
             }
 
             AttachSmellyListener(inspector, "OnIncubated", ExplainInspector);

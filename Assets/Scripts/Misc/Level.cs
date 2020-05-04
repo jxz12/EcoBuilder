@@ -14,7 +14,6 @@ namespace EcoBuilder
         // metadata
         [SerializeField] int idx;
         [SerializeField] string title;
-        [SerializeField] string description;
         [SerializeField] string introduction;
         [SerializeField] string completedMessage;
         [SerializeField] string threeStarsMessage;
@@ -56,7 +55,6 @@ namespace EcoBuilder
 
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
-        public string Description { get { return description; } }
         public string Introduction { get { return introduction; } }
         public string CompletedMessage { get { return completedMessage; } }
         public string ThreeStarsMessage { get { return threeStarsMessage; } }
@@ -118,7 +116,6 @@ namespace EcoBuilder
 
         // card
         [SerializeField] TMPro.TextMeshProUGUI titleText;
-        [SerializeField] TMPro.TextMeshProUGUI descriptionText;
         [SerializeField] TMPro.TextMeshProUGUI target1;
         [SerializeField] TMPro.TextMeshProUGUI target2;
         [SerializeField] TMPro.TextMeshProUGUI highScore;
@@ -136,7 +133,6 @@ namespace EcoBuilder
             Assert.IsFalse(m!=details.Sources.Count || m!=details.Targets.Count, $"num edge sources and targets do not match in {name}");
 
             titleText.text = details.Title;
-            descriptionText.text = details.Description;
 
             indexText.text = ((details.Idx) % 100).ToString(); // a little smelly and probably unecessary
 
@@ -256,7 +252,6 @@ namespace EcoBuilder
                 return;
             }
 #endif
-
             extraCanvas.overrideSorting = false; // RectMask2D breaks otherwise
             Destroy(extraRaycaster);
             Destroy(extraCanvas);
@@ -283,7 +278,7 @@ namespace EcoBuilder
                 tweeningCard = true;
                 var rt = GetComponent<RectTransform>();
                 var startSize = rt.sizeDelta;
-                var endSize = new Vector2(400,500);
+                var endSize = new Vector2(400,400);
                 float aShade = shade.color.a;
                 float aThumb = thumbnailGroup.alpha;
                 float aCard = cardGroup.alpha;
@@ -425,7 +420,7 @@ namespace EcoBuilder
                 if (tutorialPrefab != null) {
                     teacher = Instantiate(tutorialPrefab, GameManager.Instance.TutCanvas.transform);
                 }
-                GameManager.Instance.HelpText.ResetPosition();
+                GameManager.Instance.HelpText.ResetLevelPosition();
                 GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
 
                 // necessary because we do not have a separate animator state for playing
@@ -484,7 +479,7 @@ namespace EcoBuilder
             Assert.IsTrue(seeds.Count==plants.Count && plants.Count==sizes.Count && sizes.Count==greeds.Count);
             Assert.IsTrue(sources.Count==targets.Count);
 
-            var basePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<Level>($"Assets/Prefabs/Levels/Level Base.prefab");
+            var basePrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<Level>($"Assets/Prefabs/Levels/Base Level.prefab");
             var newPrefab = (Level)UnityEditor.PrefabUtility.InstantiatePrefab(basePrefab);
             newPrefab.details.SetEcosystem(seeds, plants, sizes, greeds, sources, targets);
 

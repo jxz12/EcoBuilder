@@ -61,7 +61,7 @@ namespace EcoBuilder.Archie
             // // convert yuv to rgb
             // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
             // // scale mesh
-            animal.transform.localScale = Vector3.one * (1+bodySize*.1f);
+            animal.transform.localScale = Vector3.one;// * (1+bodySize*.1f);
             // var lab = new LABColor(70-50*bodySize, 10+40*greediness, -50);
 
             float L = 70-50*bodySize;
@@ -89,7 +89,7 @@ namespace EcoBuilder.Archie
             // var yuv = new Vector3(.7f-.7f*bodySize, -.4f, .8f*greediness-.4f);
             // Color rgb = (Vector4)(AnimalTexture.yuv_to_rgb.MultiplyVector(yuv)) + new Vector4(0,0,0,1);
             // // scale mesh
-            plant.transform.localScale = Vector3.one * (1+bodySize*.1f);
+            plant.transform.localScale = Vector3.one;// * (1+bodySize*.1f);
             // var lab = new LABColor(80-50*bodySize, -50+40*greediness, 50);
             float L = 80-50*bodySize;
             var lab1 = new LABColor(L, -50, 10);

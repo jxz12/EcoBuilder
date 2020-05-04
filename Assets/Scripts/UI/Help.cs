@@ -150,12 +150,19 @@ namespace EcoBuilder.UI
             Message = delayedMessage;
             Showing = true;
         }
-        public void ResetPosition(bool damp=true)
+        public void ResetMenuPosition(bool damp=true)
         {
             SetSide(false, damp);
             SetPivotHeight(1, damp);
             SetAnchorHeight(.8f, damp);
-            SetPixelWidth(380, damp);
+            SetPixelWidth(400, damp);
+        }
+        public void ResetLevelPosition(bool damp=true)
+        {
+            SetSide(false, damp);
+            SetPivotHeight(1, damp);
+            SetAnchorHeight(.88f, damp);
+            SetPixelWidth(350, damp);
         }
 
         void UserShow(bool showing) // to attach to button

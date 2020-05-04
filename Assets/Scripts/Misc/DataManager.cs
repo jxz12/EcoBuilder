@@ -262,11 +262,7 @@ namespace EcoBuilder
         {
             long score;
             if (!player.highScores.TryGetValue(levelIdx, out score)) {
-#if UNITY_EDITOR
-                return 0;
-#else
                 return null;
-#endif
             }
             return score;
         }

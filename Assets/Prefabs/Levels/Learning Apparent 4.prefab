@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &293626306184329929
+--- !u!1001 &6297793816795128003
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,7 +10,7 @@ PrefabInstance:
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_text
-      value: Title TODO
+      value: TODO
       objectReference: {fileID: 0}
     - target: {fileID: 1421968146328607452, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -20,12 +20,27 @@ PrefabInstance:
     - target: {fileID: 1421968146328607452, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421968146328607452, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.wordCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421968146328607452, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.lineCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1421968146328607452, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.pageCount
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3298662015735737884, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_Name
-      value: Learning Heavy 1
+      value: Learning Apparent 4
       objectReference: {fileID: 0}
     - target: {fileID: 3298662015735737885, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -134,12 +149,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.plants.Array.size
+      propertyPath: details.edits.Array.size
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.randomSeeds.Array.size
+      propertyPath: details.types.Array.size
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
@@ -154,147 +169,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.editables.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.sources.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.targets.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.edits.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.types.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
       propertyPath: details.numInitSpecies
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.plants.Array.data[0]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.randomSeeds.Array.data[0]
-      value: 843870794
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.randomSeeds.Array.data[1]
-      value: 1950446740
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
       propertyPath: details.sizes.Array.data[0]
-      value: 0
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.sizes.Array.data[1]
-      value: 3
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.numInitInteractions
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.targets.Array.data[0]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.editables.Array.data[0]
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.numProducers
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.numConsumers
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.minEdges
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.minChain
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.title
-      value: Heavy
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.description
-      value: In this level you will try to save a heavy species.
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.introduction
-      value: In this level the animal is going extinct again! But it has a blue outline,
-        which means that you cannot change its size. Try to save it with the resources
-        you have available, as shown by the panel on the left.
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.completedMessage
-      value: Well done! It is not possible to save this animal with a single food
-        source, but with two food sources its diet is varied enough.
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.threeStarsMessage
-      value: Great job! You will find that keeping plants as light as possible is
-        usually a good choice to maximise your score.
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.idx
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.targetScore1
-      value: 1100
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.targetScore2
-      value: 1900
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: nextLevelPrefab
-      value: 
-      objectReference: {fileID: 2238870616355856567, guid: 703b8137c86dc5e458f5c737ef3a8333,
-        type: 3}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.types.Array.data[1]
+      propertyPath: details.edits.Array.data[0]
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
@@ -304,18 +194,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.edits.Array.data[0]
+      propertyPath: details.idx
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: nextLevelPrefab
+      value: 
+      objectReference: {fileID: 3637074921852462570, guid: 67171f771290e854686888639aef640c,
+        type: 3}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.minChain
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.title
+      value: Opposite Plants
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.introduction
+      value: Here you must construct a chain of two, while keeping two very different
+        plants alive.
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.superfocusAllowed
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.twoStarScore
-      value: 1100
-      objectReference: {fileID: 0}
-    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: details.threeStarScore
-      value: 1900
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -334,13 +241,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.superfocusAllowed
-      value: 0
+      propertyPath: details.numProducers
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
-      propertyPath: details.minLoop
-      value: -1
+      propertyPath: details.numConsumers
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.twoStarScore
+      value: 970
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.threeStarScore
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -350,37 +267,27 @@ PrefabInstance:
     - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.wordCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.lineCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.pageCount
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7152265202980475453, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_text
-      value: Description TODO
-      objectReference: {fileID: 0}
-    - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: m_textInfo.characterCount
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: m_textInfo.wordCount
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: m_textInfo.lineCount
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: m_textInfo.pageCount
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
-        type: 3}
-      propertyPath: m_text
-      value: 3
+      value: TODO
       objectReference: {fileID: 0}
     - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -390,11 +297,26 @@ PrefabInstance:
     - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.spaceCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.wordCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.lineCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_textInfo.pageCount
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

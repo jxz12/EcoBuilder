@@ -40,8 +40,9 @@ namespace EcoBuilder.NodeLink
                 idxUnsquished.Add(idx);
 
                 var randPos = new Vector2((float)rand.NextDouble(), (float)rand.NextDouble());
-                posUnsquished.TryGetValue(idx, out var initPos);
-                posSquished[squished] = initPos + randPos;
+                // posUnsquished.TryGetValue(idx, out var initPos);
+                // posSquished[squished] = initPos + randPos;
+                posSquished[squished] = randPos;
             }
             sources.Clear();
             targets.Clear();

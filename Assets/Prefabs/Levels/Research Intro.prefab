@@ -41,32 +41,32 @@ PrefabInstance:
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_fontSize
-      value: 18
+      value: 38.05
       objectReference: {fileID: 0}
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_firstOverflowCharacterIndex
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.lineCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 819636082316679619, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.pageCount
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1115312211979449859, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -77,12 +77,22 @@ PrefabInstance:
     - target: {fileID: 1381635380954031430, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0.47
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 1381635380954031430, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1381635380954031430, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1381635380954031430, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: -30
       objectReference: {fileID: 0}
     - target: {fileID: 3014809516054757889, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -102,7 +112,7 @@ PrefabInstance:
     - target: {fileID: 3298662015735737884, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_Name
-      value: Research Standard
+      value: Research Intro
       objectReference: {fileID: 0}
     - target: {fileID: 3298662015735737885, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -380,7 +390,7 @@ PrefabInstance:
     - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_firstOverflowCharacterIndex
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -400,7 +410,7 @@ PrefabInstance:
     - target: {fileID: 7711810067912495237, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_fontSize
-      value: 18
+      value: 35.25
       objectReference: {fileID: 0}
     - target: {fileID: 8796435707511260849, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -411,7 +421,7 @@ PrefabInstance:
     - target: {fileID: 8949998794776018958, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_fontSize
-      value: 18
+      value: 126.3
       objectReference: {fileID: 0}
     - target: {fileID: 8949998794776018958, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -421,7 +431,7 @@ PrefabInstance:
     - target: {fileID: 8949998794776018958, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8949998794776018958, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -441,7 +451,7 @@ PrefabInstance:
     - target: {fileID: 8949998794776018958, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_isTextTruncated
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2897088b9804946c7a2c8f09c72d4ffb, type: 3}

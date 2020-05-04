@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5763924807512114079}
   - component: {fileID: 4202099562516421047}
   - component: {fileID: 3392456729478539714}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_fontSize: 25
   m_fontSizeBase: 25
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
@@ -166,7 +166,7 @@ GameObject:
   - component: {fileID: 8332976394198660715}
   - component: {fileID: 6318858207524059736}
   - component: {fileID: 8130343266404729252}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -239,8 +239,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6257852118201395556}
   - component: {fileID: 7439519437894096}
-  m_Layer: 0
-  m_Name: Reg Input
+  m_Layer: 5
+  m_Name: Registration Input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -374,7 +374,7 @@ GameObject:
   - component: {fileID: 3274976136358914853}
   - component: {fileID: 495578959376473248}
   - component: {fileID: 1411763771127535410}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}

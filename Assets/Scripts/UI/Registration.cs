@@ -43,6 +43,9 @@ namespace EcoBuilder.UI
             recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
+
+            // top stop Unity UI complaining
+            // errorText.GetComponent<ContentSizeFitter>().enabled = true;
         }
         public void Begin()
         {

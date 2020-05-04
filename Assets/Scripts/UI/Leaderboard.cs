@@ -75,7 +75,6 @@ namespace EcoBuilder.UI
 
             int updatingIdx = (int)currentIdx;
             long? playerScore = GameManager.Instance.GetHighScoreLocal(updatingIdx);
-            // long? playerScore = 100000;
             long? median = GameManager.Instance.GetCachedMedian(updatingIdx);
             SetText(null);
             if (playerScore != null) {

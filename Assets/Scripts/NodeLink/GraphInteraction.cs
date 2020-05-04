@@ -12,7 +12,8 @@ namespace EcoBuilder.NodeLink
         IScrollHandler
     {
         [SerializeField] Tooltip tooltip;
-        [SerializeField] float rotationPerInch, zoomPerInch, panPerInch;
+        [SerializeField] float rotationPerInch;
+        // [SerializeField] float zoomPerInch, panPerInch;
 
         public bool AllowSuperfocus { get; set; }
         enum FocusState { Unfocus, Focus, SuperFocus };

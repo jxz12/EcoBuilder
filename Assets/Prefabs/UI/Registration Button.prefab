@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5583584483108847030}
   - component: {fileID: 5583584483108847024}
   - component: {fileID: 5583584483108847031}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,7 +166,7 @@ GameObject:
   - component: {fileID: 5583584484389016412}
   - component: {fileID: 5583584484389016414}
   - component: {fileID: 5583584484389016413}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -191,7 +191,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -160, y: 0}
+  m_SizeDelta: {x: -130, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5583584484389016414
 CanvasRenderer:
@@ -239,8 +239,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5583584484440352418}
   - component: {fileID: 6969023389141018058}
-  m_Layer: 0
-  m_Name: Reg Button
+  m_Layer: 5
+  m_Name: Registration Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
