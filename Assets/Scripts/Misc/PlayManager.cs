@@ -197,7 +197,7 @@ namespace EcoBuilder
                 score.EnableStatsText(GameManager.Instance.GetHighScoreLocal(details.Idx));
                 score.SetStatsText("You", GameManager.Instance.GetCachedMedian(details.Idx));
                 score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:"offline", GameManager.Instance.GetCachedMedian(details.Idx)));
-                score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus
+                score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // but don't unfocus, unlike above:
             }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);

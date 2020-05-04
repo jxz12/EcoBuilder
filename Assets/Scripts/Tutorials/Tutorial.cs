@@ -125,43 +125,53 @@ namespace EcoBuilder.Tutorials
                 yield return null;
             }
         }
-        protected IEnumerator Track(Transform tracked)
+        protected void Track(Transform tracked)
         {
-            targetAnchor = new Vector3(0f,0f);
-            while (true)
+            IEnumerator DoTrack()
             {
-                targetPos = ToAnchoredPos(tracked.position) + new Vector2(0,-20);
-                yield return null;
+                targetAnchor = new Vector3(0f,0f);
+                while (true)
+                {
+                    targetPos = ToAnchoredPos(tracked.position) + new Vector2(0,-20);
+                    yield return null;
+                }
             }
+            StartCoroutine(DoTrack());
         }
-        protected IEnumerator ShuffleOnSlider(float period, float yPos)
+        protected void ShuffleOnSlider(float period, float yPos)
         {
-            float start = Time.time - period/4;
-            targetAnchor = new Vector2(.5f, 0);
-            targetSize = new Vector2(50,50);
-            targetZRot = 0;
-            smoothTime = .7f;
-            GetComponent<Animator>().SetInteger("State", 1); // grab
-            while (true)
+            IEnumerator Shuffle()
             {
-                if (((Time.time - start) % period) < (period/2f))
+                float start = Time.time - period/4;
+                targetAnchor = new Vector2(.5f, 0);
+                targetSize = new Vector2(50,50);
+                targetZRot = 0;
+                smoothTime = .7f;
+                GetComponent<Animator>().SetInteger("State", 1); // grab
+                while (true)
                 {
-                    targetPos = new Vector2(-60,yPos);
+                    if (((Time.time - start) % period) < (period/2f))
+                    {
+                        targetPos = new Vector2(-60,yPos);
+                    }
+                    else
+                    {
+                        targetPos = new Vector2(130,yPos);
+                        smoothTime = 1f;
+                    }
+                    yield return null;
                 }
-                else
-                {
-                    targetPos = new Vector2(130,yPos);
-                    smoothTime = 1f;
-                }
-                yield return null;
             }
+            StartCoroutine(Shuffle());
         }
-        protected IEnumerator WaitThenDo(float seconds, Action Todo)
+        protected void WaitThenDo(float seconds, Action Todo)
         {
-            if (seconds > 0) {
+            IEnumerator Wait()
+            {
                 yield return new WaitForSeconds(seconds);
+                Todo();
             }
-            Todo();
+            StartCoroutine(Wait());
         }
 
 

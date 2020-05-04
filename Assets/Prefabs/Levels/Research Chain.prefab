@@ -169,15 +169,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
         type: 3}
-      propertyPath: tutorialPrefab
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
-        type: 3}
       propertyPath: nextLevelPrefab
       value: 
-      objectReference: {fileID: 744665013351679385, guid: 698ad6ca76317b542b5cf8081a7e962b,
-        type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
         type: 3}
       propertyPath: details.metric
@@ -192,6 +186,17 @@ PrefabInstance:
         type: 3}
       propertyPath: details.title
       value: Chain
+      objectReference: {fileID: 0}
+    - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
+        type: 3}
+      propertyPath: tutorialPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
+        type: 3}
+      propertyPath: details.introduction
+      value: In this final research level you gain an extra million points for each
+        additional chain length. Have fun and thank you for playing!
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e08a2d308233dd4d934f727f2372c3b, type: 3}

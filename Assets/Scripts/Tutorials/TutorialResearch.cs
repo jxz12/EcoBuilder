@@ -9,42 +9,69 @@ namespace EcoBuilder.Tutorials
     {
         protected override void StartLesson()
         {
-            targetSize = new Vector2(100,100);
-
+            targetSize = Vector2.zero;
             ExplainIntro(false);
         }
         void ExplainIntro(bool reshowText)
         {
+            // DetachSmellyListeners();
+            // targetPos = new Vector2(100,-220);
+            // targetAnchor = new Vector2(0,1);
+            // targetZRot = 30;
+
+            score.Hide();
+            score.DisableStarCalculation(true);
+            recorder.Hide();
+
+            inspector.HideSizeSlider();
+            inspector.HideGreedSlider();
+            inspector.SetConsumerAvailability(false);
+            inspector.FixGreedInitialValue();
+
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>ExplainInterference());
+        }
+
+        void ExplainInterference()
+        {
             DetachSmellyListeners();
-            targetSize = new Vector2(100,100);
-            targetPos = new Vector2(100,-220);
-            targetAnchor = new Vector2(0,1);
-            targetZRot = 30;
+            help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much species competes with itself. Low interference results in a high population, and a high interference results in a low population. Try dragging both sliders down as low as possible.";
 
-            help.Message = "Well done for finishing Learning World! This is where the true challenge begins, as you will now attempt to take on players from around the world in problems that even researchers do not know the solution to! But first, there are some extra rules that you will need to know. Start by adding a plant to your ecosystem, or skip this tutorial at any time by TODO: spawn a skip button and put it somewhere on the screen";
+            inspector.HideSizeSlider(false);
+            inspector.HideGreedSlider(false);
+            inspector.SetProducerAvailability(false);
+            WaitThenDo(1f, ()=>help.Showing = true);
 
-            AttachSmellyListener(inspector, "OnIncubated", ExplainInterference1);
+            float plantSize=-1, plantGreed=-1;
+            void TrackPlantTrait(bool sizeOrGreed, float val)
+            {
+                if (sizeOrGreed) {
+                    plantSize = val;
+                } else {
+                    plantGreed = val;
+                }
+                if (plantSize==0 && plantGreed==0) {
+                    ExplainThiccPlant();
+                }
+            }
+            AttachSmellyListener<int, float>(inspector, "OnSizeSet", (i,x)=>TrackPlantTrait(true, x));
+            AttachSmellyListener<int, float>(inspector, "OnGreedSet", (i,x)=>TrackPlantTrait(false, x));
         }
-        void ExplainInterference1()
+        void ExplainThiccPlant()
         {
-            help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures the amount that individuals in a species compete with each other. Try adding the plant to your ecosystem to start tweaking it.";
+            DetachSmellyListeners();
 
-            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawn", (i,b,g)=>ExplainInterference2());
-            AttachSmellyListener(graph, "OnEmptyTapped", ()=>ExplainIntro(true));
-        }
-        void ExplainInterference2()
-        {
-            help.Message = "The higher the value of the slider, the more the species interferes with itself. This means that a low interference results in a high population, and a high interference results in a low population. Try dragging it as low as possible.";
+            graph.ForceUnfocus();
+            inspector.SetConsumerAvailability(true);
 
-            // attach next to spawn
-            // attach hide message to incubation
-        }
-        void ExplainHealthyPlant()
-        {
-            help.Message = "Your plant has a very high population! Interference has a large effect on plants, and you will usually want to keep it as low as possible. Now try adding an animal.";
+            help.Showing = false;
+            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! You will usually want to keep it as low as possible for plants. Now try adding an animal."; help.Showing = true; });
+
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>ExplainAnimal());
         }
         void ExplainAnimal()
         {
+            DetachSmellyListeners();
+
             help.Message = "And this time try... TODO: super healthy animal too. Interference is not well understood by even researchers, so try different combinations to see what works best!";
         }
         void ExplainConflict1()
@@ -83,8 +110,11 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainAlternateScore()
         {
-            // TODO: show score
+            score.DisableStarCalculation(false);
+            score.Hide(false);
+            inspector.UnfixGreedInitialValue();
             help.Message = "The final feature of Research World is the a scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. The higher you score, the more your strategies will help researchers understand ecosystems, so please try your best, and good luck!";
+
         }
     }
 }

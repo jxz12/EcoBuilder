@@ -96,12 +96,9 @@ namespace EcoBuilder.Tutorials
             secondIdx = idx;
             smoothTime = .7f;
 
-            if (GameManager.Instance.ReverseDragDirection)
-            {
+            if (GameManager.Instance.ReverseDragDirection) {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from it to the " + firstSpecies.name + " to make them interact.";
-            }
-            else
-            {
+            } else {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from the " + firstSpecies.name + " to it to make them interact.";
             }
             StartCoroutine(DragAndDrop(firstSpecies.transform, secondSpecies.transform, 2f));
@@ -120,11 +117,11 @@ namespace EcoBuilder.Tutorials
 
             if (GameManager.Instance.ReverseDragDirection)
             {
-                StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."; }));
+                WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."; });
             }
             else
             {
-                StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the plant to the animal."; }));
+                WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the plant to the animal."; });
             }
 
             AttachSmellyListener<int,int>(graph, "OnUserUnlinked", (i,j)=>ExplainRemove1(1));
@@ -142,10 +139,10 @@ namespace EcoBuilder.Tutorials
             graph.ForceUnfocus();
             graph.SetIfNodeCanBeFocused(firstIdx, false);
 
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; targetSize = new Vector3(100,100); targetZRot = 360; }));
+            WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; targetSize = new Vector3(100,100); targetZRot = 360; });
 
             Point();
-            StartCoroutine(Track(secondSpecies.transform));
+            Track(secondSpecies.transform);
 
             AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainRemove2());
         }
@@ -182,7 +179,7 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.8f);
             recorder.Hide(false); 
 
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."; }));
+            WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "And don't worry if you make mistakes! You can always undo any move you make, using these controls in the bottom left. Try that now."; });
 
             AttachSmellyListener(recorder, "OnUndoOrRedo", ()=>ExplainFinishCondition(1.5f));
         }
@@ -199,7 +196,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             graph.SetIfNodeCanBeFocused(firstIdx, true);
 
-            StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; }));
+            WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; });
 
             AttachSmellyListener(score, "OnOneStarAchieved", ExplainFinish);
         }

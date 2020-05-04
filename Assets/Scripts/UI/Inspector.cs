@@ -317,6 +317,7 @@ namespace EcoBuilder.UI
         void SetSizeFromSlider(int prevValue, int newValue)
         {
             Assert.IsTrue(incubated!=null || inspected!=null, "nothing inspected or incubated");
+            Assert.IsFalse(incubated!=null && inspected!=null, "both inspecting and incubating");
 
             Species toSet = incubated!=null? incubated : inspected;
             toSet.BodySize = newValue;
@@ -328,13 +329,14 @@ namespace EcoBuilder.UI
 
             if (inspected != null) // only call events on spawned species
             {
-                OnSizeSet?.Invoke(inspected.Idx, sizeTrait.NormaliseValue(newValue));
-                OnUserSizeSet?.Invoke(inspected.Idx, prevValue, newValue);
+                OnSizeSet?.Invoke(toSet.Idx, sizeTrait.NormaliseValue(newValue));
+                OnUserSizeSet?.Invoke(toSet.Idx, prevValue, newValue);
             }
         }
         void SetGreedFromSlider(int prevValue, int newValue)
         {
             Assert.IsTrue(incubated!=null || inspected!=null, "nothing inspected or incubated");
+            Assert.IsFalse(incubated!=null && inspected!=null, "both inspecting and incubating");
 
             Species toSet = incubated!=null? incubated : inspected;
             toSet.Greediness = newValue;
@@ -346,8 +348,8 @@ namespace EcoBuilder.UI
 
             if (inspected != null) // only call events on spawned species
             {
-                OnGreedSet?.Invoke(inspected.Idx, greedTrait.NormaliseValue(newValue));
-                OnUserGreedSet?.Invoke(inspected.Idx, prevValue, newValue);
+                OnGreedSet?.Invoke(toSet.Idx, greedTrait.NormaliseValue(newValue));
+                OnUserGreedSet?.Invoke(toSet.Idx, prevValue, newValue);
             }
         }
 
@@ -538,8 +540,7 @@ namespace EcoBuilder.UI
         }
         public void DrawHealthBars(Func<int, float> Health)
         {
-            foreach (var kvp in spawnedSpecies)
-            {
+            foreach (var kvp in spawnedSpecies) {
                 kvp.Value.Status.SetHealth(Health(kvp.Key));
             }
         }
@@ -561,11 +562,23 @@ namespace EcoBuilder.UI
         }
         public void FixSizeInitialValue(int initialValue=0)
         {
+            Assert.IsTrue(greedTrait.RandomiseInitialValue, "cannot fix both size and greed");
             sizeTrait.FixInitialValue(initialValue);
         }
         public void FixGreedInitialValue(int initialValue=0)
         {
+            Assert.IsTrue(sizeTrait.RandomiseInitialValue, "cannot fix both size and greed");
             greedTrait.FixInitialValue(initialValue);
+        }
+        public void UnfixSizeInitialValue()
+        {
+            Assert.IsFalse(sizeTrait.RandomiseInitialValue);
+            sizeTrait.UnfixInitialValue();
+        }
+        public void UnfixGreedInitialValue()
+        {
+            Assert.IsFalse(greedTrait.RandomiseInitialValue);
+            greedTrait.UnfixInitialValue();
         }
         public void HideStatusBars(bool hidden=true)
         {
@@ -574,12 +587,9 @@ namespace EcoBuilder.UI
         
         public void Finish()
         {
-            if (incubated != null)
-            {
+            if (incubated != null) {
                 GetComponent<Animator>().SetTrigger("Unincubate");
-            }
-            else if (inspected != null)
-            {
+            } else if (inspected != null) {
                 GetComponent<Animator>().SetTrigger("Uninspect");
             }
             incubator.Finish();
@@ -607,7 +617,5 @@ namespace EcoBuilder.UI
                 yield return Tuple.Create(s.Idx, s.RandomSeed, s.IsProducer, s.BodySize, s.Greediness);
             }
         }
-        
-
     }
 }

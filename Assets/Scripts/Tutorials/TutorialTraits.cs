@@ -46,7 +46,7 @@ namespace EcoBuilder.Tutorials
             
             smoothTime = .3f;
             Point();
-            StartCoroutine(Track(plant.transform));
+            Track(plant.transform);
 
             DetachSmellyListeners();
             AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainSize());
@@ -63,7 +63,7 @@ namespace EcoBuilder.Tutorials
             help.SetSide(true);
             help.SetAnchorHeight(.95f);
 
-            StartCoroutine(ShuffleOnSlider(3, 40));
+            ShuffleOnSlider(3, 40);
 
             AttachSmellyListener<int>(model, "OnRescued", i=>ExplainMetabolism(2));
             AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainIntro(true));
@@ -82,7 +82,7 @@ namespace EcoBuilder.Tutorials
             smoothTime = .3f;
             
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Point(); StartCoroutine(Track(animal.transform)); targetSize = new Vector2(100,100); }));
+            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Point(); Track(animal.transform); targetSize = new Vector2(100,100); });
 
             AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainInterference());
         }
@@ -95,7 +95,7 @@ namespace EcoBuilder.Tutorials
             help.Message = "The same concept applies to animals, where lighter animals eat much faster than heavier ones. For example, a swarm of locusts devours a field much faster than a herd of cows. Here, heavier species have darker colours. Try changing the animal here in order to make it go extinct again.";
             help.Showing = true;
 
-            StartCoroutine(ShuffleOnSlider(3, 40));
+            ShuffleOnSlider(3, 40);
 
             AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainMetabolism(0));
             AttachSmellyListener<int>(model, "OnEndangered", i=>ExplainScore());
@@ -112,7 +112,7 @@ namespace EcoBuilder.Tutorials
             graph.ForceUnfocus();
 
             help.Showing = false;
-            StartCoroutine(WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,false); help.Showing = true; help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); })); 
+            WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,false); help.Showing = true; help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); }); 
         }
     }
 }

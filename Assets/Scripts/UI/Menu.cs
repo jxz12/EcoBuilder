@@ -73,9 +73,9 @@ namespace EcoBuilder.UI
 
                 long? score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
 
-#if !UNITY_EDITOR
+// #if !UNITY_EDITOR
                 if (score != null)
-#endif
+// #endif
                 {
                     unlockedIdxs.Add(prefab.Details.Idx);
                     if (prefab.NextLevelPrefab!=null) {
@@ -442,10 +442,11 @@ namespace EcoBuilder.UI
             Assert.IsTrue(state == State.Splash);
 
             ClearTweens();
-            TweenY(SplashRT, 0, -1000, ()=>settingsCanvas.enabled=false);
+            TweenY(SplashRT, 0, -1000, ()=>splashCanvas.enabled=false);
             TweenY(SettingsRT, -1000, 0);
             TweenY(ReturnRT, 60, -60);
 
+            settingsCanvas.enabled = true;
             SetHelp(settingsText);
 
             state = State.Settings;

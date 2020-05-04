@@ -36,7 +36,7 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
 
-            StartCoroutine(WaitThenDo(2, ()=>{targetSize = new Vector2(100, 100); smoothTime = .5f; StartCoroutine(DragAndDrop(nodes[1].transform, nodes[3].transform, 2.6f)); }));
+            WaitThenDo(2, ()=>{targetSize = new Vector2(100, 100); smoothTime = .5f; StartCoroutine(DragAndDrop(nodes[1].transform, nodes[3].transform, 2.6f)); });
 
             AttachSmellyListener(graph, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainWrongLoop(1.5f)));
         }
@@ -55,7 +55,7 @@ namespace EcoBuilder.Tutorials
             targetSize = Vector2.zero;
 
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Oops! You may think that this is a loop, because there is a ring of animals eating each other, but it is not. This is because the links do not all flow around in one direction. Let's fix that by first removing the link you just made."; help.Showing = true; }));
+            WaitThenDo(delay, ()=>{ help.Message = "Oops! You may think that this is a loop, because there is a ring of animals eating each other, but it is not. This is because the links do not all flow around in one direction. Let's fix that by first removing the link you just made."; help.Showing = true; });
 
             AttachSmellyListener(graph, "OnLayedOut", ()=>CheckChainOfHeight(3, ()=>ExplainWrongLoop2(1f)));
         }
@@ -69,7 +69,7 @@ namespace EcoBuilder.Tutorials
             graph.SetIfNodeCanBeTarget(3, false);
 
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "And now add the same link back, but going the other direction."; help.Showing = true; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(nodes[3].transform, nodes[1].transform, 3f)); }));
+            WaitThenDo(delay, ()=>{ help.Message = "And now add the same link back, but going the other direction."; help.Showing = true; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(nodes[3].transform, nodes[1].transform, 3f)); });
 
             AttachSmellyListener(graph, "OnLayedOut", ()=>CheckLoopOfLength(3, ()=>ExplainLoopThree(1.5f)));
         }
@@ -92,7 +92,7 @@ namespace EcoBuilder.Tutorials
 
             help.Showing = false;
             targetSize = Vector2.zero;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "Great! You have now created an ecosystem loop, and the icon on the left panel should reflect this. You can interact with this icon to highlight the species in your loop. Let's try one more thing. First add one more species."; Point(); targetZRot = 30; targetSize = new Vector2(100,100); targetAnchor = new Vector2(0,1); targetPos = new Vector2(55, -400); constraints.LimitPaw(4); }));
+            WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "Great! You have now created an ecosystem loop, and the icon on the left panel should reflect this. You can interact with this icon to highlight the species in your loop. Let's try one more thing. First add one more species."; Point(); targetZRot = 30; targetSize = new Vector2(100,100); targetAnchor = new Vector2(0,1); targetPos = new Vector2(55, -400); constraints.LimitPaw(4); });
 
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ Assert.IsTrue(i == 4); extraTransform=g.transform; });
@@ -109,7 +109,7 @@ namespace EcoBuilder.Tutorials
 
             help.Showing = false;
             targetZRot = 0;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.85f); help.Message = "Let's add another loop by first making it eat this animal."; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(nodes[1].transform, extraTransform, 3f)); }));
+            WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.85f); help.Message = "Let's add another loop by first making it eat this animal."; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(nodes[1].transform, extraTransform, 3f)); });
 
             AttachSmellyListener(graph, "OnLayedOut", ()=>RequestDoubleLoop2(1f));
         }
@@ -124,7 +124,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             targetSize = Vector2.zero;
             targetZRot = 0;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "And now make this animal eat the new species."; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(extraTransform, nodes[3].transform, 3f));}));
+            WaitThenDo(delay, ()=>{ help.Showing = true; help.SetAnchorHeight(.5f); help.Message = "And now make this animal eat the new species."; targetSize = new Vector2(100,100); StartCoroutine(DragAndDrop(extraTransform, nodes[3].transform, 3f));});
 
             AttachSmellyListener(graph, "OnLayedOut", ()=>ExplainDoubleLoop(2f));
         }

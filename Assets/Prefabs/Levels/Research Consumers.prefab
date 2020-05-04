@@ -172,5 +172,23 @@ PrefabInstance:
       propertyPath: details.title
       value: Consumers
       objectReference: {fileID: 0}
+    - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
+        type: 3}
+      propertyPath: nextLevelPrefab
+      value: 
+      objectReference: {fileID: 8973040549518741022, guid: 9782f6e8575b6c14da8c259057aabf98,
+        type: 3}
+    - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
+        type: 3}
+      propertyPath: tutorialPrefab
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
+        type: 3}
+      propertyPath: details.introduction
+      value: 'The objective in this level is simple: maximise the number of animals
+        in your ecosystem! You will gain an additional million points for each animal,
+        so try to add as many as possible!'
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e08a2d308233dd4d934f727f2372c3b, type: 3}

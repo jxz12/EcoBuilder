@@ -94,7 +94,7 @@ namespace EcoBuilder.Tutorials
             targetSize = Vector2.zero;
             graph.ForceUnfocus();
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is two. However, you will notice that it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it, but without adding any more links."; help.Showing = true; inspector.HideSizeSlider(false); }));
+            WaitThenDo(delay, ()=>{ help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is two. However, you will notice that it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it, but without adding any more links."; help.Showing = true; inspector.HideSizeSlider(false); });
 
             graph.SetIfLinkRemovable(herbivoreIdx, carnivoreIdx, false);
 
@@ -106,7 +106,7 @@ namespace EcoBuilder.Tutorials
 
             graph.ForceUnfocus();
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain of two also eat the plant."; help.Showing = true; }));
+            WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain of two also eat the plant."; help.Showing = true; });
 
             graph.SetIfNodeCanBeSource(producerIdx, true);
 
@@ -118,7 +118,7 @@ namespace EcoBuilder.Tutorials
 
             graph.ForceUnfocus();
             help.Showing = false;
-            StartCoroutine(WaitThenDo(delay, ()=>{ help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to any plant, and so the path going through both animals is overridden by the path from the plant. To finish this level, reconstruct the ecosystem with a chain of 2."; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); })); 
+            WaitThenDo(delay, ()=>{ help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to any plant, and so the path going through both animals is overridden by the path from the plant. To finish this level, reconstruct the ecosystem with a chain of 2."; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }); 
 
             constraints.ConstrainChain(2);
             recorder.Hide(false);

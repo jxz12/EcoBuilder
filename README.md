@@ -2,9 +2,10 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
+
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
-some final bosses
+procrustes does not seem to work too well sometimes
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
@@ -12,9 +13,8 @@ test server going down and up and down
 test email recovery from server
 
 use reflection to smell the smellylisteners
-check all levels to see if their parent variant is base, and if their flavour texts are not 'TODO' and star scores are not 0
+either remove all scene unityevents or test to see if they are null
 alt tabbing out of application could break graphinteraction
-play all the tutorials by hand
 
 # Research world
 verify high scores by checking matrices
