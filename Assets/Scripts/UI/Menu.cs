@@ -345,14 +345,24 @@ namespace EcoBuilder.UI
             }
             StartCoroutine(WaitThenDisable());
         }
-        [SerializeField] Canvas learningCanvas, researchCanvas;
 
-        [SerializeField] RectTransform splashRT, levelsRT, settingsRT, returnRT;
-        enum State { Hidden, Splash, Levels, Settings };
+
+
+        ///////////////////////
+        // animation
+
+        [SerializeField] Canvas learningCanvas, researchCanvas, settingsCanvas, splashCanvas, returnCanvas;
+        RectTransform SplashRT { get { return splashCanvas.GetComponent<RectTransform>(); } }
+        RectTransform LearningRT { get { return learningCanvas.GetComponent<RectTransform>(); } }
+        RectTransform ResearchRT { get { return researchCanvas.GetComponent<RectTransform>(); } }
+        RectTransform SettingsRT { get { return settingsCanvas.GetComponent<RectTransform>(); } }
+        RectTransform ReturnRT { get { return returnCanvas.GetComponent<RectTransform>(); } }
+
+        enum State { Hidden, Splash, Learning, Research, Settings };
         private State state;
         void Reveal()
         {
-            TweenY(splashRT, -1000, 0);
+            TweenY(splashCanvas.GetComponent<RectTransform>(), -1000, 0);
 
             Assert.IsTrue(state == State.Hidden);
             state = State.Splash;
@@ -360,8 +370,8 @@ namespace EcoBuilder.UI
         void Reset()
         {
             Assert.IsTrue(state == State.Settings, "should only be able to reset from settings");
-            TweenY(settingsRT, 0, -1000);
-            TweenY(returnRT, -60, 60);
+            TweenY(SettingsRT, 0, -1000, ()=>settingsCanvas.enabled=false);
+            TweenY(ReturnRT, -60, 60);
             state = State.Hidden;
             foreach (Transform child in learningGrid.transform) {
                 Destroy(child.gameObject);
@@ -373,45 +383,58 @@ namespace EcoBuilder.UI
         }
         public void ShowSplash()
         {
+            Assert.IsTrue(state==State.Learning || state==State.Research || state==State.Settings);
             ClearTweens();
-            TweenY(splashRT, -1000, 0);
-            TweenY(returnRT, -60, 60);
+            TweenY(SplashRT, -1000, 0);
+            TweenY(ReturnRT, -60, 60);
+            splashCanvas.enabled = true;
 
-            Assert.IsTrue(state==State.Levels || state==State.Settings);
-            if (state == State.Levels) {
-                TweenY(levelsRT, 0, -1000);
+            if (state == State.Learning) {
+                TweenY(LearningRT, 0, -1000, ()=>learningCanvas.enabled=false);
+            } else if (state == State.Research) {
+                TweenY(ResearchRT, 0, -1000, ()=>researchCanvas.enabled=false);
             } else if (state == State.Settings) {
-                TweenY(settingsRT, 0, -1000);
+                TweenY(SettingsRT, 0, -1000, ()=>settingsCanvas.enabled=false);
             }
-
             SetHelp(researchWorld.interactable? levelsResearchText : levelsLearningText);
 
             state = State.Splash;
         }
-        public void ShowLevels(bool learning)
+        public void ShowLearningWorld(bool learning)
         {
+            Assert.IsTrue(state == State.Splash);
             ClearTweens();
-            TweenY(splashRT, 0, -1000);
-            TweenY(levelsRT, -1000, 0);
-            TweenY(returnRT, 60, -60);
+            TweenY(SplashRT, 0, -1000, ()=>splashCanvas.enabled=false);
+            TweenY(LearningRT, -1000, 0);
+            TweenY(ReturnRT, 60, -60);
 
-            learningCanvas.enabled = learning;
-            researchCanvas.enabled = !learning;
+            learningCanvas.enabled = true;
+            SetHelp(levelsLearningText);
 
-            SetHelp(learning? levelsLearningText : levelsResearchText);
-
-            if (!learning) {
-                SetCurrentResearchLeaderboard();
-            }
-
-            state = State.Levels;
+            state = State.Learning;
         }
+        public void ShowResearchWorld(bool learning)
+        {
+            Assert.IsTrue(state == State.Splash);
+            ClearTweens();
+            TweenY(SplashRT, 0, -1000, ()=>splashCanvas.enabled=false);
+            TweenY(ResearchRT, -1000, 0);
+            TweenY(ReturnRT, 60, -60);
+
+            researchCanvas.enabled = true;
+            SetHelp(levelsResearchText);
+
+            state = State.Research;
+            SetCurrentResearchLeaderboard();
+        }
+
         public void ShowSettings()
         {
+            Assert.IsTrue(state == State.Splash);
             ClearTweens();
-            TweenY(splashRT, 0, -1000);
-            TweenY(settingsRT, -1000, 0);
-            TweenY(returnRT, 60, -60);
+            TweenY(SplashRT, 0, -1000, ()=>settingsCanvas.enabled=false);
+            TweenY(SettingsRT, -1000, 0);
+            TweenY(ReturnRT, 60, -60);
 
             SetHelp(settingsText);
 
@@ -427,7 +450,7 @@ namespace EcoBuilder.UI
             navigationRoutines.Clear();
         }
         [SerializeField] float tweenDuration;
-        private void TweenY(RectTransform toMove, float startY, float endY)
+        private void TweenY(RectTransform toMove, float startY, float endY, Action OnFinish=null)
         {
             IEnumerator TweenYRoutine()
             {
@@ -441,6 +464,7 @@ namespace EcoBuilder.UI
                     yield return null;
                 }
                 toMove.anchoredPosition = new Vector3(startPos.x, endY, startPos.z);
+                OnFinish?.Invoke();
             }
             var routine = TweenYRoutine();
             StartCoroutine(routine);
