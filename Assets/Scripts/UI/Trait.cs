@@ -76,14 +76,17 @@ namespace EcoBuilder.UI
 
         // does not set randomly if initial value is fixed
         public bool RandomiseInitialValue { get; private set; } = true;
+        int? fixedInitialValue = null;
         public void FixInitialValue(int initialValue)
         {
             RandomiseInitialValue = false;
+            fixedInitialValue = initialValue;
             SetValueWithoutCallback(initialValue);
         }
         public void UnfixInitialValue()
         {
             RandomiseInitialValue = true;
+            fixedInitialValue = null;
         }
         public void SetValueFromRandomSeed(int randomSeed)
         {
@@ -92,7 +95,11 @@ namespace EcoBuilder.UI
                 UnityEngine.Random.InitState(randomSeed);
                 SetValueWithoutCallback(UnityEngine.Random.Range((int)slider.minValue, (int)slider.maxValue));
             }
-            // otherwise leave slider alone
+            else
+            {
+                Assert.IsFalse(fixedInitialValue==null);
+                SetValueWithoutCallback((int)fixedInitialValue);
+            }
         }
         public void SetValueWithoutCallback(int value)
         {

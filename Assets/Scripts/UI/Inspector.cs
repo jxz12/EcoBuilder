@@ -574,12 +574,10 @@ namespace EcoBuilder.UI
         }
         public void UnfixSizeInitialValue()
         {
-            Assert.IsFalse(sizeTrait.RandomiseInitialValue);
             sizeTrait.UnfixInitialValue();
         }
         public void UnfixGreedInitialValue()
         {
-            Assert.IsFalse(greedTrait.RandomiseInitialValue);
             greedTrait.UnfixInitialValue();
         }
         public void HideStatusBars(bool hidden=true)

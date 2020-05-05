@@ -10,9 +10,10 @@ namespace EcoBuilder.Tutorials
         protected override void StartLesson()
         {
             targetSize = Vector2.zero;
-            ExplainIntro(false);
+
+            ExplainIntro();
         }
-        void ExplainIntro(bool reshowText)
+        void ExplainIntro()
         {
             // point at leaf icon
             targetSize = new Vector2(100,100);
@@ -29,20 +30,22 @@ namespace EcoBuilder.Tutorials
             inspector.HideGreedSlider();
             inspector.SetConsumerAvailability(false);
             inspector.AllowConflicts();
-            inspector.FixGreedInitialValue();
+            inspector.FixSizeInitialValue();
             inspector.FixGreedInitialValue();
             
             graph.AllowSuperfocus = false;
 
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
             AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ targetSize=new Vector2(100,100); help.Showing=true; });
-            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ plantIdx=i; ExplainInterference(); });
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ plantIdx=i; plantObj=g; ExplainInterference(); });
         }
         int plantIdx=-1;
         float plantSize=-1, plantGreed=-1;
+        GameObject plantObj;
         void ExplainInterference()
         {
             DetachSmellyListeners();
+            StopAllCoroutines();
 
             inspector.HideSizeSlider(false);
             inspector.HideGreedSlider(false);
@@ -50,7 +53,16 @@ namespace EcoBuilder.Tutorials
 
             help.Showing = false;
             targetSize = Vector2.zero;
-            WaitThenDo(1f, ()=>{ help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much a species competes with itself. Low interference results in a high population, and a high interference results in a low population. Try dragging both sliders down as low as possible."; help.Showing=true; ShuffleOnSlider(3, 40); });
+            targetZRot = 0;
+            ShuffleOnSlider(3, 40);
+            WaitThenDo(1f, WaitingFor);
+            void WaitingFor()
+            {
+                help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much a species competes with itself. Low interference results in a high population, and a high interference results in a low population. Try dragging both sliders down as low as possible."; 
+                help.Showing=true;
+                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); targetSize = new Vector2(100,100); smoothTime=.2f; Point(); Track(plantObj.transform); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); targetSize = new Vector2(50,50); ShuffleOnSlider(3, 40); });
+            }
 
             void TrackPlantTrait(bool sizeOrGreed, float val)
             {
@@ -63,8 +75,6 @@ namespace EcoBuilder.Tutorials
                     ExplainThiccPlant();
                 }
             }
-            AttachSmellyListener(graph, "OnEmptyTapped", ()=>targetSize=Vector2.zero);
-            AttachSmellyListener<int>(graph, "OnFocused", (i)=>targetSize=new Vector2(50,50));
             AttachSmellyListener<int, float>(inspector, "OnSizeSet", (i,x)=>TrackPlantTrait(true, x));
             AttachSmellyListener<int, float>(inspector, "OnGreedSet", (i,x)=>TrackPlantTrait(false, x));
         }
@@ -80,24 +90,35 @@ namespace EcoBuilder.Tutorials
             targetSize = Vector2.zero;
             smoothTime = .2f;
             help.Showing = false;
-            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! This is useful if you think your animals need more food. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); targetPos = new Vector2(-61, 60) * hud.BottomScale; targetZRot = 270; targetSize=new Vector2(100,100); Point(); });
+            targetZRot = 270; 
+            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! This is often what you will want for plants. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); targetPos = new Vector2(-61, 60) * hud.BottomScale; targetSize=new Vector2(100,100); Point(); });
 
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
             AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ targetSize=new Vector2(100,100); help.Showing=true; });
-            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ animalIdx=i; ExplainAnimal(); });
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ animalIdx=i; animalObj=g; ExplainAnimal(); });
         }
 
+        GameObject animalObj;
         int animalIdx=-1;
         float animalSize=-1, animalGreed=-1;
+        bool edge1added = false;
         void ExplainAnimal()
         {
             DetachSmellyListeners();
             StopAllCoroutines();
 
             inspector.SetConsumerAvailability(false);
-
-            help.Message = "And try dragging both sliders as high as possible.";
-            help.Showing = true;
+            targetZRot = 0;
+            help.Showing = false;
+            ShuffleOnSlider(3, 40);
+            WaitThenDo(1f, WaitingFor);
+            void WaitingFor()
+            {
+                help.Message = "Then make it eat the plant, and drag both sliders as high as possible.";
+                help.Showing = true;
+                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); targetSize = new Vector2(100,100); smoothTime=.2f; Point(); Track(animalObj.transform); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); targetSize = new Vector2(50,50); ShuffleOnSlider(3, 40); });
+            }
 
             void TrackAnimalTrait(bool sizeOrGreed, float val)
             {
@@ -106,87 +127,183 @@ namespace EcoBuilder.Tutorials
                 } else {
                     animalGreed = val;
                 }
-                if (animalSize==0 && animalGreed==0) {
+                if (animalSize==1 && animalGreed==1 && graph.NumComponents==1) {
                     ExplainConflict1();
                 }
             }
+            void TrackConnected()
+            {
+                if (animalSize==1 && animalGreed==1 && graph.NumComponents==1) {
+                    ExplainConflict1();
+                }
+            }
+            AttachSmellyListener(graph, "OnLayedOut", TrackConnected);
             AttachSmellyListener<int, float>(inspector, "OnSizeSet", (i,x)=>TrackAnimalTrait(true, x));
             AttachSmellyListener<int, float>(inspector, "OnGreedSet", (i,x)=>TrackAnimalTrait(false, x));
         }
         int plantIdx2 = -1;
+        GameObject plantObj2;
+        bool edge2added = false;
         void ExplainConflict1()
         {
             DetachSmellyListeners();
+            StopAllCoroutines();
 
+            edge1added = true;
             graph.ForceUnfocus();
+            graph.SetIfLinkRemovable(plantIdx, animalIdx, false);
             graph.SetIfNodeCanBeFocused(animalIdx, false);
+            graph.SetIfNodeCanBeTarget(animalIdx, false);
             inspector.SetProducerAvailability(true);
+
+            targetSize = Vector2.zero;
+            smoothTime = .2f;
+            targetZRot = -45;
 
             help.Showing = false;
             // point at plant again
-            WaitThenDo(1f, ()=>{ targetSize = new Vector2(100,100); targetPos = new Vector2(-61,115) * hud.BottomScale; targetAnchor = new Vector2(1,0); help.Message = "Great job! A plant with low interference can enable even the heaviest of species to survive. Also notice how much higher your score is! Try adding one final plant."; help.Showing = true; });
+            WaitThenDo(1f, ()=>{ targetSize = new Vector2(100,100); smoothTime = .2f; Point(); targetPos = new Vector2(-61,115) * hud.BottomScale; targetAnchor = new Vector2(1,0); help.Message = "Great job! A plant with low interference can enable even the heaviest species survive. Now try adding one final plant."; help.Showing = true; });
 
-            AttachSmellyListener(inspector, "OnIncubated", ExplainConflict2);
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ targetSize=new Vector2(100,100); help.Showing=true; });
+            AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ plantIdx2=i; plantObj2=g; ExplainConflict2(); });
         }
         void ExplainConflict2()
         {
-            help.SetSide(true);
-            help.Message = "There is one more rule in Research world that you must follow: no two species can be identical! Try making the new plant identical to the first by dragging both sliders as low as they can go.";
-            help.Showing = true;
+            DetachSmellyListeners();
+            StopAllCoroutines();
+            inspector.SetProducerAvailability(false);
+            inspector.UnfixSizeInitialValue();
+            inspector.UnfixGreedInitialValue();
+            inspector.AllowConflicts(false);
 
-
+            help.Showing = false;
+            targetZRot = 0;
+            ShuffleOnSlider(3, 40);
+            WaitThenDo(1f, WaitingFor);
+            void WaitingFor()
+            {
+                help.Message = "There is one more rule in Research world that you must follow: no two species can be identical! Try making the new plant identical to the first by dragging both sliders as low as possible.";
+                help.Showing = true;
+                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); targetSize = new Vector2(100,100); smoothTime=.2f; Point(); Track(plantObj2.transform); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); targetSize = new Vector2(50,50); ShuffleOnSlider(3, 40); });
+            }
             AttachSmellyListener<int, string>(inspector, "OnConflicted", (i,s)=>ExplainConflict3());
         }
         void ExplainConflict3()
         {
-            help.Showing = false;
-            WaitThenDo(1f, ()=>{ help.Message = "Uh oh! If you try to make two identical species, the original will be outlined with a message telling you that it is not possible. Now try making the animal eat both plants."; help.Showing = true; });
+            DetachSmellyListeners();
+            StopAllCoroutines();
+
+            targetSize = Vector2.zero;
+            smoothTime = .2f;
+            graph.SetIfNodeCanBeTarget(animalIdx, true);
+            help.Message = "Uh oh! If you try to make two identical species, the original will be outlined with a message telling you that it is not possible. Now try making the animal eat both plants.";
+            help.SetAnchorHeight(.7f);
+            help.Showing = true;
+
+            AttachSmellyListener(graph, "OnLayedOut", ()=>{ if (graph.NumComponents==1) ExplainSuperFocus1(); });
         }
         void ExplainSuperFocus1()
         {
             DetachSmellyListeners();
             StopAllCoroutines();
 
+            edge2added = true;
+            graph.ForceUnfocus();
+            graph.SetIfLinkRemovable(plantIdx2, animalIdx, false);
             graph.SetIfNodeCanBeFocused(animalIdx, false);
-            help.SetSide(false);
+            graph.SetIfNodeCanBeFocused(plantIdx, false);
             graph.AllowSuperfocus = true;
-            help.Message = "Research World also unlocks a final tool which is useful in case your ecosystem becomes very complex. If you tap a species twice, the game will show only on the direct connections to it. Try that now.";
-            help.Showing = true;
 
-            // TODO: track ome species
+            help.Showing = false;
+            smoothTime = .2f; 
+            Point();
+            WaitThenDo(1, ()=>{ help.Message = "Research World also unlocks a final tool which is useful in case your ecosystem becomes very complex: if you tap a species twice, the game will show only its direct connections. Try that now."; help.Showing = true; Track(plantObj2.transform); targetSize = new Vector2(100,100); help.SetAnchorHeight(.85f); });
+
+            void CheckSuperFocus()
+            {
+                if (graph.FocusedState == NodeLink.Graph.FocusState.SuperFocus) {
+                    ExplainSuperFocus2();
+                }
+            }
+            AttachSmellyListener<int>(graph, "OnNodeTapped", (i)=>CheckSuperFocus());
         }
         void ExplainSuperFocus2()
         {
-            help.Message = "The first plant has shrunk in order for you to get a more zoomed in picture of your ecosystem. From here you can navigate through your ecosystem one species at a time. Try tapping the animal";
-        
-            // TODO: back to normal focus foes back to prev step
+            DetachSmellyListeners();
+            StopAllCoroutines();
 
+            graph.SetIfNodeCanBeFocused(animalIdx, true);
+
+            smoothTime = .2f;
+            targetSize = Vector2.zero;
+            help.Showing = false;
+            WaitThenDo(2, ()=>{ help.Message = "The second plant has been centered on the screen in to give you a zoomed in view of your ecosystem. From here you can navigate through your ecosystem one species at a time. Try tapping the animal."; help.SetAnchorHeight(.4f); help.Showing = true; Track(animalObj.transform); targetSize = new Vector2(100,100);});
+
+            void CheckSuperFocus(int tappedIdx)
+            {
+                if (graph.FocusedState == NodeLink.Graph.FocusState.SuperFocus && tappedIdx == animalIdx)
+                {
+                    ExplainSuperFocus3();
+                }
+            }
+            AttachSmellyListener<int>(graph, "OnNodeTapped", CheckSuperFocus);
         }
         void ExplainSuperFocus3()
         {
-            help.Message = "And now try tapping the other plant";
-        }
-        void ExplainSuperFocus4()
-        {
-            help.Message = "Great job! You can exit this view at any time by simply tapping the background.";
+            DetachSmellyListeners();
+            StopAllCoroutines();
+
+            graph.SetIfNodeCanBeFocused(plantIdx, true);
+            help.Showing = false;
+            targetSize = Vector2.zero;
+            WaitThenDo(1f, ()=>{ help.Message = "Great job! You can exit this view completely by simply tapping empty space twice."; help.SetAnchorHeight(.85f); help.Showing = true; });
+
+            AttachSmellyListener(graph, "OnUnfocused", ExplainAlternateScore);
         }
         void ExplainAlternateScore()
         {
+            DetachSmellyListeners();
+            StopAllCoroutines();
+
             score.DisableStarCalculation(false);
             score.Hide(false);
-
-            inspector.HideRemoveButton();
+            inspector.HideRemoveButton(false);
             inspector.SetProducerAvailability(true);
             inspector.SetConsumerAvailability(true);
             inspector.HideSizeSlider(false);
             inspector.HideGreedSlider(false);
+            inspector.AllowConflicts(false);
             inspector.UnfixSizeInitialValue();
             inspector.UnfixGreedInitialValue();
-            inspector.AllowConflicts(false);
             graph.AllowSuperfocus = true;
 
-            help.SetPixelWidth(400);
-            help.Message = "The final feature of Research World is the new scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. The higher you score, the more your strategies will help researchers understand ecosystems, so please try your best, and good luck!";
+            if (plantIdx >= 0) {
+                graph.SetIfNodeCanBeFocused(plantIdx, true);
+            }
+            if (animalIdx >= 0) {
+                graph.SetIfNodeCanBeFocused(animalIdx, true);
+                graph.SetIfNodeCanBeTarget(animalIdx, true);
+            }
+            if (plantIdx2 >= 0) {
+                graph.SetIfNodeCanBeFocused(plantIdx2, true);
+            }
+            if (edge1added) {
+                graph.SetIfLinkRemovable(plantIdx, animalIdx, true);
+            }
+            if (edge2added) {
+                graph.SetIfLinkRemovable(plantIdx2, animalIdx, true);
+            }
+
+            help.Showing = false;
+            WaitThenDo(2, ShowAll);
+            void ShowAll()
+            {
+                help.ResetLevelPosition();
+                help.Message = "The final feature of Research World is a new scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. Good luck!";
+                help.Showing = true;
+            }
 
         }
     }

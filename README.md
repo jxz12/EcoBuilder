@@ -2,10 +2,8 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
-
-# LEVELS
-research TUTORIAL!!! (give option to skip tutorial by performing some action)
-center on y-axis 
+fix score when not connected/no median
+add skip button on tutorial 
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
@@ -20,7 +18,6 @@ alt tabbing out of application could break graphinteraction
 verify high scores by checking matrices
 
 # Other
-make health go blue if above a super threshold (will need another fill sprite)
 change press/tap to hold/click based on platform
 release game with australian fires as angle?
 experiments to see how the score changes over time

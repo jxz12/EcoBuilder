@@ -16,8 +16,8 @@ namespace EcoBuilder.NodeLink
         // [SerializeField] float zoomPerInch, panPerInch;
 
         public bool AllowSuperfocus { get; set; }
-        enum FocusState { Unfocus, Focus, SuperFocus };
-        FocusState focusState = FocusState.Unfocus;
+        public enum FocusState { Unfocus, Focus, SuperFocus };
+        public FocusState FocusedState { get; private set; } = FocusState.Unfocus;
         Node focusedNode = null;
         private void TapNode(int idx)
         {
@@ -34,18 +34,18 @@ namespace EcoBuilder.NodeLink
                 }
             }
 
-            if (focusState == FocusState.Unfocus)
+            if (FocusedState == FocusState.Unfocus)
             {
-                focusState = FocusState.Focus;
+                FocusedState = FocusState.Focus;
             }
-            else if (focusState == FocusState.Focus)
+            else if (FocusedState == FocusState.Focus)
             {
                 if (focusedNode == nodes[idx])
                 {
                     if (AllowSuperfocus)
                     {
                         SuperFocus(idx);
-                        focusState = FocusState.SuperFocus;
+                        FocusedState = FocusState.SuperFocus;
                     }
                     else
                     {
@@ -54,7 +54,7 @@ namespace EcoBuilder.NodeLink
                     }
                 }
             }
-            else if (focusState == FocusState.SuperFocus)
+            else if (FocusedState == FocusState.SuperFocus)
             {
                 if (focusedNode == nodes[idx]) {
                     TapEmpty();
@@ -63,27 +63,27 @@ namespace EcoBuilder.NodeLink
                 }
             }
             focusedNode = nodes[idx];
-            OnFocused?.Invoke(idx);
+            OnNodeTapped?.Invoke(idx);
         }
         private void TapEmpty()
         {
-            if (focusState == FocusState.Unfocus)
+            if (FocusedState == FocusState.Unfocus)
             {
                 OnEmptyTapped?.Invoke();
             }
-            else if (focusState == FocusState.Focus)
+            else if (FocusedState == FocusState.Focus)
             {
                 focusedNode.PopOutline();
                 focusedNode.Highlight();
                 int idx = focusedNode.Idx;
                 focusedNode = null;
 
-                focusState = FocusState.Unfocus;
-                OnUnfocused?.Invoke(idx);
+                FocusedState = FocusState.Unfocus;
+                OnUnfocused?.Invoke();
             }
-            else if (focusState == FocusState.SuperFocus)
+            else if (FocusedState == FocusState.SuperFocus)
             {
-                focusState = FocusState.Focus;
+                FocusedState = FocusState.Focus;
                 foreach (Node no in nodes)
                 {
                     no.State = Node.PositionState.Stress;
@@ -96,7 +96,7 @@ namespace EcoBuilder.NodeLink
         }
         public void ForceUnfocus()
         {
-            while (focusState != FocusState.Unfocus) {
+            while (FocusedState != FocusState.Unfocus) {
                 TapEmpty();
             }
         }

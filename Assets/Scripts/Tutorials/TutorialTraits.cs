@@ -49,7 +49,7 @@ namespace EcoBuilder.Tutorials
             Track(plant.transform);
 
             DetachSmellyListeners();
-            AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainSize());
+            AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainSize());
         }
 
         void ExplainSize()
@@ -66,7 +66,7 @@ namespace EcoBuilder.Tutorials
             ShuffleOnSlider(3, 40);
 
             AttachSmellyListener<int>(model, "OnRescued", i=>ExplainMetabolism(2));
-            AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainIntro(true));
+            AttachSmellyListener(graph, "OnUnfocused", ()=>ExplainIntro(true));
         }
         void ExplainMetabolism(float delay)
         {
@@ -84,7 +84,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Point(); Track(animal.transform); targetSize = new Vector2(100,100); });
 
-            AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainInterference());
+            AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainInterference());
         }
         void ExplainInterference()
         {
@@ -97,7 +97,7 @@ namespace EcoBuilder.Tutorials
 
             ShuffleOnSlider(3, 40);
 
-            AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainMetabolism(0));
+            AttachSmellyListener(graph, "OnUnfocused", ()=>ExplainMetabolism(0));
             AttachSmellyListener<int>(model, "OnEndangered", i=>ExplainScore());
         }
         void ExplainScore()

@@ -38,6 +38,7 @@ namespace EcoBuilder.Tutorials
                 help.ResetLevelPosition();
             }
 
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>help.Showing=true);
             AttachSmellyListener(inspector, "OnIncubated", ExplainInspector);
         }
         void ExplainInspector()
@@ -145,7 +146,7 @@ namespace EcoBuilder.Tutorials
             Point();
             Track(secondSpecies.transform);
 
-            AttachSmellyListener<int>(graph, "OnFocused", i=>ExplainRemove2());
+            AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainRemove2());
         }
         void ExplainRemove2()
         {
@@ -162,7 +163,7 @@ namespace EcoBuilder.Tutorials
             help.SetAnchorHeight(.1f);
             help.Message = "And tap this skull button to remove the species.";
 
-            AttachSmellyListener<int>(graph, "OnUnfocused", i=>ExplainRemove1(0));
+            AttachSmellyListener(graph, "OnUnfocused", ()=>ExplainRemove1(0));
             AttachSmellyListener<int>(inspector, "OnUserDespawned", i=>ExplainUndo(1.5f));
         }
         void ExplainUndo(float delay)

@@ -45,10 +45,10 @@ namespace EcoBuilder
             // the above will always (but not exclusively) cause the below in the next three things
             // smelly because the second callback does something that should already be done
             inspector.OnUserSpawned += (i)=> graph.ForceFocus(i);
-            graph.OnFocused +=         (i)=> inspector.InspectSpecies(i);
+            graph.OnNodeTapped +=      (i)=> inspector.InspectSpecies(i);
 
             inspector.OnUserDespawned += (i)=> graph.ForceUnfocus();
-            graph.OnUnfocused +=         (i)=> inspector.Uninspect();
+            graph.OnUnfocused +=          ()=> inspector.Uninspect();
             ////////////////////////////
 
             // constraints

@@ -13,7 +13,7 @@ namespace EcoBuilder.NodeLink
         Vector3 nodesVelocity, graphVelocity;
         void TweenNodesToStress()
         {
-            if (focusState != FocusState.SuperFocus)
+            if (FocusedState != FocusState.SuperFocus)
             {
                 // // get bounds of layout and center to middle
                 // Vector2 minPos = new Vector2(float.MaxValue, float.MaxValue);
@@ -70,7 +70,7 @@ namespace EcoBuilder.NodeLink
         Vector3 panVelocity;
         void TweenZoomToFit()
         {
-            if (focusState != FocusState.SuperFocus)
+            if (FocusedState != FocusState.SuperFocus)
             {
                 // adjust zoom target and pan when unfocused
                 float maxError = float.MinValue;
@@ -123,7 +123,7 @@ namespace EcoBuilder.NodeLink
         private Queue<int> todoBFS = new Queue<int>();
         private void FineTuneLayout()
         {
-            if (nodes.Count==0 || focusState==FocusState.SuperFocus) {
+            if (nodes.Count==0 || FocusedState==FocusState.SuperFocus) {
                 return;
             }
             int idx = todoBFS.Dequeue(); // only do one vertex at a time

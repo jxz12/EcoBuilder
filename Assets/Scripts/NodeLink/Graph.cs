@@ -13,14 +13,14 @@ namespace EcoBuilder.NodeLink
     public partial class Graph : MonoBehaviour
     {
         // called regardless of user
-        public event Action<int> OnFocused;
-        public event Action<int> OnUnfocused;
+        public event Action<int> OnNodeTapped;
+        public event Action OnUnfocused;
+        public event Action OnEmptyTapped;
         public event Action OnLayedOut;
 
         // called only when user does something
         public event Action<int, int> OnUserLinked;
         public event Action<int, int> OnUserUnlinked;
-        public event Action OnEmptyTapped;
 
         [SerializeField] Node nodePrefab;
         [SerializeField] Link linkPrefab;
