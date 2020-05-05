@@ -562,12 +562,12 @@ namespace EcoBuilder.UI
         }
         public void FixSizeInitialValue(int initialValue=0)
         {
-            Assert.IsTrue(greedTrait.RandomiseInitialValue, "cannot fix both size and greed");
+            Assert.IsFalse(greedTrait.RandomiseInitialValue && !allowConflicts, "cannot fix both size and greed if conflicts not allowed");
             sizeTrait.FixInitialValue(initialValue);
         }
         public void FixGreedInitialValue(int initialValue=0)
         {
-            Assert.IsTrue(sizeTrait.RandomiseInitialValue, "cannot fix both size and greed");
+            Assert.IsFalse(sizeTrait.RandomiseInitialValue && !allowConflicts, "cannot fix both size and greed if conflits not allowed");
             greedTrait.FixInitialValue(initialValue);
         }
         public void UnfixSizeInitialValue()
@@ -604,7 +604,7 @@ namespace EcoBuilder.UI
         {
             removeHidden = hidden;
         }
-        public void HideIncubatorButtons(bool hidden=true)
+        public void HideInitiatorButtons(bool hidden=true)
         {
             initiator.HideTypeButtons(hidden);
         }

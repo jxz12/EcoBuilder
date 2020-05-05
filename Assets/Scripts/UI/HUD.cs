@@ -15,6 +15,10 @@ namespace EcoBuilder.UI
         [SerializeField] float maxAspect, minAspect;
         [SerializeField] float minInspectorScale, minScoreScale;
         [SerializeField] float minConstraintsY, maxConstraintsY;
+
+        public float TopScale { get; private set; }
+        public float BottomScale { get; private set; }
+        public float ConstraintsY { get; private set; }
         void Start()
         {
             // custom layout fitter to avoid use of layout groups to cause UI spikes
@@ -22,15 +26,15 @@ namespace EcoBuilder.UI
             if (aspect < maxAspect)
             {
                 float lerp = (aspect-minAspect) / (maxAspect-minAspect);
-                float botScale = Mathf.Lerp(minInspectorScale, 1, lerp);
+                BottomScale = Mathf.Lerp(minInspectorScale, 1, lerp);
                 inspector.transform.localScale = recorder.transform.localScale
                                                = initiator.transform.localScale
-                                               = new Vector3(botScale, botScale,1);
-                float topScale = Mathf.Lerp(minScoreScale, 1, lerp);
-                score.transform.localScale = new Vector3(topScale, topScale, 1);
+                                               = new Vector3(BottomScale, BottomScale,1);
+                TopScale = Mathf.Lerp(minScoreScale, 1, lerp);
+                score.transform.localScale = new Vector3(TopScale, TopScale, 1);
 
-                float newConstraintsY = Mathf.Lerp(maxConstraintsY, minConstraintsY, lerp);
-                constraints.GetComponent<RectTransform>().anchoredPosition = new Vector2(0,newConstraintsY);
+                ConstraintsY = Mathf.Lerp(maxConstraintsY, minConstraintsY, lerp);
+                constraints.GetComponent<RectTransform>().anchoredPosition = new Vector2(0,ConstraintsY);
             }
         }
     }

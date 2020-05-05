@@ -11,7 +11,7 @@ namespace EcoBuilder.Tutorials
         NodeLink.Node plant, animal;
         protected override void StartLesson()
         {
-            inspector.HideIncubatorButtons();
+            inspector.HideInitiatorButtons();
             inspector.HideRemoveButton();
             score.Hide();
             recorder.Hide();

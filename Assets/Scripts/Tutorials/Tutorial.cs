@@ -11,12 +11,13 @@ namespace EcoBuilder.Tutorials
     // Unity prefab variants aren't that good just yet
     public abstract class Tutorial : MonoBehaviour
     {
-        // smellllly
+        // smellllly references
         protected UI.Help help;
         protected UI.Inspector inspector;
         protected UI.Score score;
         protected UI.Recorder recorder;
         protected UI.Constraints constraints;
+        protected UI.HUD hud;
         protected NodeLink.Graph graph;
         protected FoodWeb.Model model;
 
@@ -59,6 +60,7 @@ namespace EcoBuilder.Tutorials
             score = FindObjectOfType<UI.Score>();
             constraints = FindObjectOfType<UI.Constraints>();
             recorder = FindObjectOfType<UI.Recorder>();
+            hud = FindObjectOfType<UI.HUD>();
             graph = FindObjectOfType<NodeLink.Graph>();
             model = FindObjectOfType<FoodWeb.Model>();
 
@@ -69,6 +71,7 @@ namespace EcoBuilder.Tutorials
             Assert.IsNotNull(recorder);
             Assert.IsNotNull(graph);
             Assert.IsNotNull(model);
+            Assert.IsNotNull(hud);
         }
 
 

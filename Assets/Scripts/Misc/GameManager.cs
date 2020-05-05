@@ -158,8 +158,9 @@ namespace EcoBuilder
         {
             void BackToMenu()
             {
-                HelpText.Showing = false;
-                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.ResetParent(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                HelpText.ForceHide();
+                earth.ResetParent(); 
+                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
             confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");

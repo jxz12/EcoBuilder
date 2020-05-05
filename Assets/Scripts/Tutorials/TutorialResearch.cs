@@ -14,10 +14,10 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainIntro(bool reshowText)
         {
-            // DetachSmellyListeners();
-            // targetPos = new Vector2(100,-220);
-            // targetAnchor = new Vector2(0,1);
-            // targetZRot = 30;
+            // point at leaf icon
+            targetSize = new Vector2(100,100);
+            targetPos = new Vector2(-61,115);
+            targetAnchor = new Vector2(1,0);
 
             score.Hide();
             score.DisableStarCalculation(true);
@@ -28,6 +28,8 @@ namespace EcoBuilder.Tutorials
             inspector.SetConsumerAvailability(false);
             inspector.FixGreedInitialValue();
 
+            AttachSmellyListener(inspector, "OnIncubated", ()=>targetSize=Vector2.zero);
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>targetSize=new Vector2(100,100));
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>ExplainInterference());
         }
 
@@ -39,7 +41,8 @@ namespace EcoBuilder.Tutorials
             inspector.HideSizeSlider(false);
             inspector.HideGreedSlider(false);
             inspector.SetProducerAvailability(false);
-            WaitThenDo(1f, ()=>help.Showing = true);
+
+            WaitThenDo(1f, ()=>{ help.Showing=true; ShuffleOnSlider(3, 40); });
 
             float plantSize=-1, plantGreed=-1;
             void TrackPlantTrait(bool sizeOrGreed, float val)
@@ -64,13 +67,18 @@ namespace EcoBuilder.Tutorials
             inspector.SetConsumerAvailability(true);
 
             help.Showing = false;
-            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! You will usually want to keep it as low as possible for plants. Now try adding an animal."; help.Showing = true; });
+            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! This is useful if you think your animals need more food. Now try adding an animal."; help.Showing = true; });
 
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>ExplainAnimal());
         }
         void ExplainAnimal()
         {
             DetachSmellyListeners();
+
+            // point at paw button
+            targetAnchor = new Vector2(1,0);
+            targetPos = new Vector2(-61, 60);
+            targetZRot = 270;
 
             help.Message = "And this time try... TODO: super healthy animal too. Interference is not well understood by even researchers, so try different combinations to see what works best!";
         }

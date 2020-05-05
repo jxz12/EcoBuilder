@@ -26,7 +26,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
 
             targetSize = new Vector2(100,100);
-            targetPos = new Vector2(-61,115);
+            targetPos = new Vector2(-61,115) * hud.BottomScale;
             targetAnchor = new Vector2(1,0);
             targetZRot = 315;
 
@@ -44,7 +44,7 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
 
-            targetPos = new Vector2(160, 50);
+            targetPos = new Vector2(160, 50) * hud.BottomScale;
             targetAnchor = new Vector2(.5f, 0);
             targetZRot = 450;
 
@@ -64,7 +64,7 @@ namespace EcoBuilder.Tutorials
             Assert.IsTrue(isProducer, "first species should be producer");
 
             targetAnchor = new Vector2(1,0);
-            targetPos = new Vector2(-61, 60);
+            targetPos = new Vector2(-61, 60) * hud.BottomScale;
             targetZRot = 270;
 
             firstSpecies = first;
@@ -88,7 +88,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             Assert.IsFalse(isProducer, "second species should be consumer");
 
-            inspector.HideIncubatorButtons();
+            inspector.HideInitiatorButtons();
             targetSize = new Vector3(100,100);
             targetZRot = 360;
 
@@ -152,7 +152,7 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines(); // stop tracking
 
             targetAnchor = new Vector2(.5f, 0);
-            targetPos = new Vector2(160, 50);
+            targetPos = new Vector2(160, 50) * hud.BottomScale;
             targetZRot = 450;
             targetSize = new Vector3(100,100);
 
@@ -172,7 +172,7 @@ namespace EcoBuilder.Tutorials
             targetAnchor = new Vector2(0, 0);
             targetZRot = 405;
             targetSize = new Vector2(100,100);
-            targetPos = new Vector2(40, 120);
+            targetPos = new Vector2(60, 120) * hud.BottomScale;
 
             help.Showing = false;
             help.SetPivotHeight(1);
@@ -211,7 +211,7 @@ namespace EcoBuilder.Tutorials
             targetAnchor = pointerRT.anchorMin = pointerRT.anchorMax = new Vector2(1,1);
             targetPos = pointerRT.anchoredPosition = new Vector2(-90,-90);
 
-            // this should be taken care of by EventMediator
+            // this should be taken care of by PlayManager
             // help.Message = "Well done! Tap this button to finish the level.";
             // help.Showing = true;
             help.SetPixelWidth(350);
@@ -222,15 +222,6 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
             targetSize = Vector2.zero;
-            // targetAnchor = new Vector2(.5f,0);
-            // targetZRot = 405;
-            // targetPos = new Vector2(140, 70);
-            // smoothTime = .5f;
-
-            // help.Showing = false;
-            // help.SetPixelWidth(400);
-            // StartCoroutine(WaitThenDo(delay, ()=> { help.Showing = true; help.SetPivotHeight(0); help.SetAnchorHeight(.2f); help.Message = "Great! You can access the next level by tapping it here."; }));
-
         }
     }
 }

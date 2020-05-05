@@ -369,7 +369,7 @@ namespace EcoBuilder.NodeLink
 
                         cosA = setsurcorp[cc,0];
                         sinA = setsurcorp[cc,1];
-                        newPos = -newPos; // reflect
+                        newPos.x = -newPos.x; // reflect
                         rotated = new Vector2(newPos.x*cosA - newPos.y*sinA, newPos.x*sinA + newPos.y*cosA);
                         proDistances[cc,1] += (oldPos-rotated).sqrMagnitude;
                     }
@@ -379,18 +379,17 @@ namespace EcoBuilder.NodeLink
                 {
                     int cc = componentMap[i];
                     float cosA, sinA;
-                    Vector2 unrotated;
+                    Vector2 unrotated = posSquished[i];
                     if (proDistances[cc,0] <= proDistances[cc,1])
                     {
                         cosA = procrustes[cc,0];
                         sinA = procrustes[cc,1];
-                        unrotated = posSquished[i];
                     }
                     else
                     {
                         cosA = setsurcorp[cc,0];
                         sinA = setsurcorp[cc,1];
-                        unrotated = -posSquished[i];
+                        unrotated.x = -unrotated.x;
                     }
                     posSquished[i] = new Vector2(unrotated.x*cosA - unrotated.y*sinA, unrotated.x*sinA + unrotated.y*cosA);
                 }

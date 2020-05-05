@@ -52,7 +52,11 @@ namespace EcoBuilder.UI
         // for tutorials
         public void HideTypeButtons(bool hidden=true)
         {
-            gameObject.SetActive(!hidden);
+            if (hidden && cg.interactable) {
+                ShowButtons(false);
+            } else if (!hidden && !cg.interactable) {
+                ShowButtons(true);
+            }
         }
         public void EnableProducerButton(bool enabled)
         {
