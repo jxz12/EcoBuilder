@@ -122,6 +122,7 @@ namespace EcoBuilder
 
         public void LoadLevelScene(Level toPlay)
         {
+            earth.ResetParent(); 
             if (playedLevel != null) // if playing already
             {
                 if (playedLevel != toPlay)

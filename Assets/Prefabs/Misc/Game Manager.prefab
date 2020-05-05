@@ -1053,7 +1053,7 @@ MonoBehaviour:
     type: 3}
   cardAnchor: {fileID: 3403238050878025269}
   playAnchor: {fileID: 3403238051093408243}
-  tutorialCanvas: {fileID: 3403238049415391013}
+  tutorialCanvas: {fileID: 4388596105821356007}
   confirmation: {fileID: 3403238050382710255}
   earthPrefab: {fileID: 8403942010702710680, guid: e870b3622af02b54dae3f4349ee976cd,
     type: 3}
@@ -1111,8 +1111,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3403238049415391012}
-  - component: {fileID: 3403238049415391013}
-  - component: {fileID: 3403238049415391002}
+  - component: {fileID: 4388596105821356007}
+  - component: {fileID: 1514882378009947899}
   m_Layer: 5
   m_Name: Level Anchors
   m_TagString: Untagged
@@ -1141,7 +1141,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!223 &3403238049415391013
+--- !u!223 &4388596105821356007
 Canvas:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1162,7 +1162,7 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 2
   m_TargetDisplay: 0
---- !u!114 &3403238049415391002
+--- !u!114 &1514882378009947899
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2575,7 +2575,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 5
   m_TargetDisplay: 0
 --- !u!114 &3403238050382710254
 MonoBehaviour:
@@ -4635,7 +4635,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 4
+  m_SortingOrder: 10
   m_TargetDisplay: 0
 --- !u!222 &3403238051056720720
 CanvasRenderer:

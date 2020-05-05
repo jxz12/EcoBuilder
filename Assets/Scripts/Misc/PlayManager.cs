@@ -91,8 +91,9 @@ namespace EcoBuilder
             inspector.OnUserDespawned += (i)=> model.TriggerSolve();
             inspector.OnSizeSet +=     (i,x)=> model.TriggerSolve();
             inspector.OnGreedSet +=    (i,x)=> model.TriggerSolve();
-            graph.OnUserLinked +=      (i,j)=> model.TriggerSolve();
-            graph.OnUserUnlinked +=    (i,j)=> model.TriggerSolve();
+            graph.OnLayedOut +=           ()=> model.TriggerSolve();
+            // graph.OnUserLinked +=      (i,j)=> model.TriggerSolve();
+            // graph.OnUserUnlinked +=    (i,j)=> model.TriggerSolve();
 
             //////////////////////
             // initialise level //

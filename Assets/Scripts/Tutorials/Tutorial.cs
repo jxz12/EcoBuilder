@@ -155,11 +155,11 @@ namespace EcoBuilder.Tutorials
                 {
                     if (((Time.time - start) % period) < (period/2f))
                     {
-                        targetPos = new Vector2(-60,yPos);
+                        targetPos = new Vector2(-60,yPos) * hud.BottomScale;
                     }
                     else
                     {
-                        targetPos = new Vector2(130,yPos);
+                        targetPos = new Vector2(130,yPos) * hud.BottomScale;
                         smoothTime = 1f;
                     }
                     yield return null;

@@ -235,29 +235,6 @@ namespace EcoBuilder
             StartCoroutine(Tween());
         }
 
-        // a hack to keep the card on top of the other thumbnails
-        Canvas extraCanvas;
-        GraphicRaycaster extraRaycaster;
-        private void RenderOnTop(int sortOrder)
-        {
-            extraCanvas = gameObject.AddComponent<Canvas>();
-            extraRaycaster = gameObject.AddComponent<GraphicRaycaster>();
-            extraCanvas.overrideSorting = true;
-            extraCanvas.sortingOrder = sortOrder;
-        }
-        private void RenderBelow()
-        {
-#if UNITY_EDITOR
-            if (extraCanvas == null) {
-                return;
-            }
-#endif
-            extraCanvas.overrideSorting = false; // RectMask2D breaks otherwise
-            Destroy(extraRaycaster);
-            Destroy(extraCanvas);
-        }
-    
-
 
 
         //////////////////////////
@@ -267,14 +244,19 @@ namespace EcoBuilder
         [SerializeField] CanvasGroup thumbnailGroup, cardGroup;
         [SerializeField] Image shade, back;
         bool tweeningCard;
+
+        // a hack to keep the card on top of the other thumbnails
+        Canvas extraCanvas;
+        GraphicRaycaster extraRaycaster;
         void TweenToCard(float duration)
         {
+            StartCoroutine(Tween());
             IEnumerator Tween()
             {
                 while (tweeningCard == true) {
                     yield return null;
                 }
-                RenderOnTop(2);
+                RenderOnTop(4);
                 tweeningCard = true;
                 var rt = GetComponent<RectTransform>();
                 var startSize = rt.sizeDelta;
@@ -305,10 +287,17 @@ namespace EcoBuilder
                 cardGroup.alpha = 1;
                 tweeningCard = false;
             }
-            StartCoroutine(Tween());
+            void RenderOnTop(int sortOrder)
+            {
+                extraCanvas = gameObject.AddComponent<Canvas>();
+                extraRaycaster = gameObject.AddComponent<GraphicRaycaster>();
+                extraCanvas.overrideSorting = true;
+                extraCanvas.sortingOrder = sortOrder;
+            }
         }
         void TweenFromCard(float duration)
         {
+            StartCoroutine(Tween());
             IEnumerator Tween()
             {
                 while (tweeningCard == true) {
@@ -346,7 +335,19 @@ namespace EcoBuilder
 
                 RenderBelow();
             }
-            StartCoroutine(Tween());
+            void RenderBelow()
+            {
+#if UNITY_EDITOR
+                // for play mode opened from the start
+                // so card was never displayed in the first place
+                if (extraCanvas == null) {
+                    return;
+                }
+#endif
+                extraCanvas.overrideSorting = false; // RectMask2D breaks otherwise
+                Destroy(extraRaycaster);
+                Destroy(extraCanvas);
+            }
         }
         [SerializeField] Image flagBack, flagIcon;
         bool flagging;
@@ -400,7 +401,7 @@ namespace EcoBuilder
         ///////////////////////
         // Scene changing
 
-        public void Play() // for external attaching
+        public void Play() // attached to 'GO' button
         {
             GameManager.Instance.LoadLevelScene(this);
         }

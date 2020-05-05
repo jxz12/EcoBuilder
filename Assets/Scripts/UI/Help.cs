@@ -175,13 +175,13 @@ namespace EcoBuilder.UI
         {
             // these magnitudes are used as threshold to stop the layout being dirtied if arbitrarily close
             float pivotMag = (rt.pivot - targetPivot).sqrMagnitude;
-            if (pivotMag > .00001f) {
+            if (pivotMag > .000001f) {
                 rt.pivot = Vector2.SmoothDamp(rt.pivot, targetPivot, ref pivosity, smoothTime);
             } else if (pivotMag > 0) {
                 rt.pivot = targetPivot;
             }
             float anchorMag = (rt.anchorMin - targetAnchor).sqrMagnitude;
-            if (anchorMag > .00001f) {
+            if (anchorMag > .000001f) {
                 rt.anchorMax = rt.anchorMin = Vector2.SmoothDamp(rt.anchorMin, targetAnchor, ref anchosity, smoothTime);
             } else if (anchorMag > 0) {
                 rt.anchorMax = rt.anchorMin = targetAnchor;

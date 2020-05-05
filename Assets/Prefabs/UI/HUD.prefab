@@ -3938,8 +3938,7 @@ MonoBehaviour:
   minAspect: 0.46153846
   minInspectorScale: 0.82
   minScoreScale: 0.8
-  minConstraintsY: -125
-  maxConstraintsY: -100
+  maxConstraintsOffset: 25
 --- !u!1 &7958780057486799718
 GameObject:
   m_ObjectHideFlags: 0

@@ -26,6 +26,7 @@ namespace EcoBuilder.UI
 
         void Start()
         {
+            splashCanvas.enabled = settingsCanvas.enabled = learningCanvas.enabled = researchCanvas.enabled = false;
             if (GameManager.Instance.AskForRegistration) {
                 StartRegistration();
             } else {
@@ -107,18 +108,19 @@ namespace EcoBuilder.UI
                 toSpawn = toSpawn.NextLevelPrefab;
             }
 
-            bool IsLearningFinished()
+            bool ResearchWorldUnlocked()
             {
+                return true;
                 var prefab = firstLearningLevel;
                 while (prefab != null) {
-                    if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) < 0) {
+                    if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) == null) {
                         return false;
                     }
                     prefab = prefab.NextLevelPrefab;
                 }
                 return true;
             }
-            if (IsLearningFinished())
+            if (ResearchWorldUnlocked())
             {
                 // set splash button status
                 researchWorld.interactable = true;

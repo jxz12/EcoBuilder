@@ -16,7 +16,6 @@ namespace EcoBuilder.NodeLink
         public event Action<int> OnFocused;
         public event Action<int> OnUnfocused;
         public event Action OnLayedOut;
-        // public event Action OnLinked;
 
         // called only when user does something
         public event Action<int, int> OnUserLinked;

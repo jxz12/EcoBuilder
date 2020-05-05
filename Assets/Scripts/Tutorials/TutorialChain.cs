@@ -50,7 +50,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             Assert.IsTrue(producerIdx!=-1 && herbivoreIdx!=-1);
 
-            help.Message = "You should notice that this number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By interacting with this icon, you can highlight species with that chain. Now try adding another animal.";
+            help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By touching this icon, you can highlight all species with that chain length. Now try adding another animal.";
             help.Showing = true;
 
             // point at constraints panel
@@ -58,7 +58,7 @@ namespace EcoBuilder.Tutorials
             targetZRot = 30;
             targetSize = new Vector2(100,100);
             targetAnchor = new Vector2(0,1);
-            targetPos = new Vector2(55, -350);
+            targetPos = new Vector2(55, -350 + hud.ConstraintsOffset);
 
             // allow animal again, but only one more
             constraints.LimitPaw(2);

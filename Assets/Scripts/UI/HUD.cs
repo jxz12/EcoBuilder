@@ -14,11 +14,11 @@ namespace EcoBuilder.UI
 
         [SerializeField] float maxAspect, minAspect;
         [SerializeField] float minInspectorScale, minScoreScale;
-        [SerializeField] float minConstraintsY, maxConstraintsY;
+        [SerializeField] float maxConstraintsOffset;
 
         public float TopScale { get; private set; }
         public float BottomScale { get; private set; }
-        public float ConstraintsY { get; private set; }
+        public float ConstraintsOffset { get; private set; }
         void Start()
         {
             // custom layout fitter to avoid use of layout groups to cause UI spikes
@@ -33,8 +33,8 @@ namespace EcoBuilder.UI
                 TopScale = Mathf.Lerp(minScoreScale, 1, lerp);
                 score.transform.localScale = new Vector3(TopScale, TopScale, 1);
 
-                ConstraintsY = Mathf.Lerp(maxConstraintsY, minConstraintsY, lerp);
-                constraints.GetComponent<RectTransform>().anchoredPosition = new Vector2(0,ConstraintsY);
+                ConstraintsOffset = Mathf.Lerp(0, maxConstraintsOffset, lerp);
+                constraints.GetComponent<RectTransform>().anchoredPosition += new Vector2(0,ConstraintsOffset);
             }
         }
     }
