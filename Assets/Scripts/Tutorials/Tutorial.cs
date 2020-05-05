@@ -99,37 +99,41 @@ namespace EcoBuilder.Tutorials
             Vector2 viewportPos = mainCam.WorldToViewportPoint(worldPos);
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
-        protected IEnumerator DragAndDrop(Transform grab, Transform drop, float period)
+        protected void DragAndDrop(Transform grab, Transform drop, float period)
         {
-            float start = Time.time;
-
-            if (GameManager.Instance.ReverseDragDirection)
+            StartCoroutine(Drag());
+            IEnumerator Drag()
             {
-                Transform temp = grab;
-                grab = drop;
-                drop = temp;
-            }
-            // transform.position = ToAnchoredPos(grab.position);
-
-            targetAnchor = new Vector3(0f,0f);
-            while (true)
-            {
-                if (((Time.time - start) % period) < (period/2f)) {
-                    targetPos = ToAnchoredPos(drop.position) + new Vector2(0,-20);
-                } else {
-                    targetPos = ToAnchoredPos(grab.position) + new Vector2(0,-20);
+                float start = Time.time;
+                if (GameManager.Instance.ReverseDragDirection)
+                {
+                    Transform temp = grab;
+                    grab = drop;
+                    drop = temp;
                 }
+                // transform.position = ToAnchoredPos(grab.position);
 
-                if (((Time.time - start + 3*period/5) % period) < (period/2f)) {
-                    GetComponent<Animator>().SetInteger("State", 2); // pan
-                } else {
-                    GetComponent<Animator>().SetInteger("State", 1); // grab
+                targetAnchor = new Vector3(0f,0f);
+                while (true)
+                {
+                    if (((Time.time - start) % period) < (period/2f)) {
+                        targetPos = ToAnchoredPos(drop.position) + new Vector2(0,-20);
+                    } else {
+                        targetPos = ToAnchoredPos(grab.position) + new Vector2(0,-20);
+                    }
+
+                    if (((Time.time - start + 3*period/5) % period) < (period/2f)) {
+                        GetComponent<Animator>().SetInteger("State", 2); // pan
+                    } else {
+                        GetComponent<Animator>().SetInteger("State", 1); // grab
+                    }
+                    yield return null;
                 }
-                yield return null;
             }
         }
         protected void Track(Transform tracked)
         {
+            StartCoroutine(DoTrack());
             IEnumerator DoTrack()
             {
                 targetAnchor = new Vector3(0f,0f);
@@ -139,10 +143,10 @@ namespace EcoBuilder.Tutorials
                     yield return null;
                 }
             }
-            StartCoroutine(DoTrack());
         }
         protected void ShuffleOnSlider(float period, float yPos)
         {
+            StartCoroutine(Shuffle());
             IEnumerator Shuffle()
             {
                 float start = Time.time - period/4;
@@ -165,16 +169,15 @@ namespace EcoBuilder.Tutorials
                     yield return null;
                 }
             }
-            StartCoroutine(Shuffle());
         }
         protected void WaitThenDo(float seconds, Action Todo)
         {
+            StartCoroutine(Wait());
             IEnumerator Wait()
             {
                 yield return new WaitForSeconds(seconds);
                 Todo();
             }
-            StartCoroutine(Wait());
         }
 
 

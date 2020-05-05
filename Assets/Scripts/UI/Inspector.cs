@@ -546,18 +546,20 @@ namespace EcoBuilder.UI
         }
 
         private bool allowConflicts = true;
-        public void AllowConflicts(bool allowed)
+        public void AllowConflicts(bool allowed=true)
         {
             allowConflicts = allowed;
         }
         public void HideSizeSlider(bool hidden=true)
         {
             sizeTrait.gameObject.SetActive(!hidden);
+
             StatusBar.HideSize(hidden);
         }
         public void HideGreedSlider(bool hidden=true)
         {
             greedTrait.gameObject.SetActive(!hidden);
+
             StatusBar.HideGreed(hidden);
         }
         public void FixSizeInitialValue(int initialValue=0)

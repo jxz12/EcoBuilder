@@ -5,7 +5,7 @@ add imperial logo with permission
 
 # LEVELS
 research TUTORIAL!!! (give option to skip tutorial by performing some action)
-procrustes does not seem to work too well sometimes
+center on y-axis 
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)

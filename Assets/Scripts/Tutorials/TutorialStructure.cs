@@ -101,7 +101,7 @@ namespace EcoBuilder.Tutorials
             } else {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from the " + firstSpecies.name + " to it to make them interact.";
             }
-            StartCoroutine(DragAndDrop(firstSpecies.transform, secondSpecies.transform, 2f));
+            DragAndDrop(firstSpecies.transform, secondSpecies.transform, 2f);
             help.Showing = true;
 
             AttachSmellyListener<int,int>(graph, "OnUserLinked", (i,j)=>ExplainFirstEcosystem(2));
@@ -112,6 +112,7 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines();
 
             targetSize = new Vector2(0,0);
+            smoothTime = .2f;
             help.Showing = false;
             graph.ForceUnfocus();
 

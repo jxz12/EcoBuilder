@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using System.Text;
+using System.Collections.Generic;
 
 namespace EcoBuilder.UI
 {
@@ -10,11 +11,13 @@ namespace EcoBuilder.UI
         [SerializeField] Image health, healthBorder;
         [SerializeField] TMPro.TextMeshProUGUI traitsText;
 
+        static HashSet<StatusBar> allBars = new HashSet<StatusBar>();
         RectTransform rt;
         void Awake()
         {
             rt = GetComponent<RectTransform>();
             health.enabled = healthBorder.enabled = healthShowing;
+            allBars.Add(this);
         }
         GameObject target;
         public void FollowSpecies(GameObject target)
@@ -30,10 +33,18 @@ namespace EcoBuilder.UI
         public static void HideSize(bool hidden=true)
         {
             sizeShowing = !hidden;
+            // redraw if needed
+            foreach (var bar in allBars) {
+                bar.SetSize(bar.Size);
+            }
         }
         public static void HideGreed(bool hidden=true)
         {
             greedShowing = !hidden;
+            // redraw if needed
+            foreach (var bar in allBars) {
+                bar.SetGreed(bar.Greed);
+            }
         }
         bool healthShowing=false;
         public void ShowHealth(bool showing=true)
@@ -61,26 +72,34 @@ namespace EcoBuilder.UI
                 health.fillAmount = -normalisedHealth;
             }
         }
-        StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#84b2ff>0");
+        StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#84b2ff>3");
+        public int Size { get; private set; }
+        public int Greed { get; private set; }
         public void SetSize(int size)
         {
-            Assert.IsFalse(size.ToString().Length != 1);
+            Assert.IsTrue(size.ToString().Length == 1);
 
             char digit = size.ToString()[0];
             sb[15] = sizeShowing? digit : ' ';
             traitsText.text = sb.ToString();
+
+            Size = size;
         }
         public void SetGreed(int greed)
         {
-            Assert.IsFalse(greed.ToString().Length != 1);
+            Assert.IsTrue(greed.ToString().Length == 1);
 
             char digit = greed.ToString()[0];
             sb[32] = greedShowing? digit : ' ';
             traitsText.text = sb.ToString();
+
+            Greed = greed;
         }
         void LateUpdate()
         {
-            if (target == null) {
+            if (target == null)
+            {
+                allBars.Remove(this);
                 Destroy(gameObject);
                 return;
             }

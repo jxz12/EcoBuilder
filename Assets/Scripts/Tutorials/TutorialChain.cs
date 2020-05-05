@@ -80,7 +80,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = true;
             targetSize = new Vector2(100,100);
             smoothTime = .5f;
-            StartCoroutine(DragAndDrop(herbivoreTransform, carnivoreTransform, 2.5f));
+            DragAndDrop(herbivoreTransform, carnivoreTransform, 2.5f);
             
             AttachSmellyListener(graph, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainChainOfTwo(1.5f)));
         }
