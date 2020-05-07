@@ -27,11 +27,12 @@ namespace EcoBuilder
             public Team team = Team.Unassigned;
 
             public bool reverseDrag = true;
+            public bool levelsUnlockedRegardless = false;
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
-            public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
-            public int unsentCount=0;
+            // public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
+            // public int unsentCount=0;
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -44,16 +45,14 @@ namespace EcoBuilder
 #else
         public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
 #endif
+        public bool AnyLevelsCompleted { get { return player.highScores.Count > 0; }}
+        public bool LevelsUnlockedRegardless { get { return player.levelsUnlockedRegardless; } }
 
         static string playerPath;
         public void InitPlayer() // called by Awake()
         {
             // ugh unity annoying so hard-coded
             playerPath = Application.persistentDataPath+"/player.data";
-
-#if UNITY_EDITOR
-            // DeletePlayerDetailsLocal();
-#endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
             }
@@ -84,7 +83,7 @@ namespace EcoBuilder
             }
             catch (Exception e)
             {
-                Debug.LogWarning("could not load player: " + e.Message);
+                Debug.LogWarning($"could not load player: {e.Message}");
                 return false;
             }
         }
@@ -95,7 +94,7 @@ namespace EcoBuilder
             try {
                 File.Delete(playerPath);
             } catch (Exception e) {
-                Debug.LogError("could not delete player: " + e.Message);
+                Debug.LogError($"could not delete player: {e.Message}");
             }
         }
 
@@ -180,7 +179,7 @@ namespace EcoBuilder
                 player.team = (PlayerDetails.Team)int.Parse(details[0]);
                 player.reverseDrag = int.Parse(details[1])==1? true:false;
 
-                player.highScores.Clear();
+                // player.highScores.Clear();
                 for (int i=2; i<details.Length; i++)
                 {
                     string[] level = details[i].Split(':');
@@ -219,7 +218,23 @@ namespace EcoBuilder
             // note that this function purposefully does not delete the player in order to keep their highscore info
             player.team = PlayerDetails.Team.Unassigned;
         }
-
+        public void LogOut(Action Reset)
+        {
+            Assert.IsNotNull(Reset);
+            Assert.IsTrue(LoggedIn);
+            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); Reset(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
+        }
+        public void DeleteAccount(Action Reset)
+        {
+            Assert.IsNotNull(Reset);
+            Assert.IsTrue(LoggedIn);
+            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(Reset, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
+        }
+        public void UnlockAllLevels(Action Reset)
+        {
+            Assert.IsNotNull(Reset);
+            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = true; SavePlayerDetailsLocal(); Reset(); }, "Are you sure you want to unlock all levels?");
+        }
 
         //////////////////////////////////////////////
         // things that can be saved and posted later
@@ -298,21 +313,26 @@ namespace EcoBuilder
         ///////////////////////////////////////////////////////////////////
         // used to cache results from startup in case player goes into tube
 
-        public void CacheMediansRemote()
+        public void CacheMediansRemote(Action<bool> OnCompletion=null)
         {
             var data = new Dictionary<string, string>() {
                 { "__address__", ServerURL+"medians.php" },
             };
-            void CacheMedians(string medians)
+            pat.Post(data, CacheMedians);
+
+            void CacheMedians(bool successful, string medians)
             {
-                var levels = medians.Split(',');
-                foreach (var level in levels)
+                if (successful)
                 {
-                    var score = level.Split(':');
-                    player.cachedMedians[int.Parse(score[0])] = long.Parse(score[1]);
+                    var levels = medians.Split(',');
+                    foreach (var level in levels)
+                    {
+                        var score = level.Split(':');
+                        player.cachedMedians[int.Parse(score[0])] = long.Parse(score[1]);
+                    }
                 }
+                OnCompletion?.Invoke(successful);
             }
-            pat.Post(data, (b,s)=>{ if (b) CacheMedians(s); });
         }
         public long? GetCachedMedian(int level_idx)
         {
@@ -346,9 +366,13 @@ namespace EcoBuilder
 
         private void SavePost(Dictionary<string, string> data)
         {
-            player.unsentPost.Enqueue(data);
-            player.unsentCount = player.unsentPost.Count;
-            SavePlayerDetailsLocal();
+            string filename = DateTime.Now.Ticks.ToString();
+            using (var file = new StreamWriter($"{Application.persistentDataPath}/{filename}.post"))
+            {
+                foreach (var kvp in data) {
+                    file.WriteLine($"{kvp.Key} {kvp.Value}");
+                }
+            }
         }
 
         bool sendingUnsent;
@@ -359,15 +383,37 @@ namespace EcoBuilder
             }
             sendingUnsent = true;
 
+            var unsentPost = new Queue<Tuple<string, Dictionary<string,string>>>();
+            // TODO: OrderBy date and also don't send new post until this is cleared
+            foreach (string filename in Directory.GetFiles(Application.persistentDataPath, "*.post"))
+            {
+                var post = new Dictionary<string,string>();
+                foreach (var line in File.ReadLines(filename))
+                {
+                    var kvp = line.Split(' ');
+                    post[kvp[0]] = kvp[1];
+                }
+                if (post.Count > 0) {
+                    unsentPost.Enqueue(Tuple.Create(filename,post));
+                }
+            }
+            if (unsentPost.Count > 0) {
+                pat.Post(unsentPost.Peek().Item2, (b,s)=>SendNextIfPossible(b));
+            }
+
+            // recursive local function to clear queue one by one
             void SendNextIfPossible(bool prevSuccess)
             {
                 if (prevSuccess)
                 {
-                    player.unsentPost.Dequeue();
-                    player.unsentCount = player.unsentPost.Count;
-                    SavePlayerDetailsLocal();
-                    if (player.unsentPost.Count > 0) {
-                        pat.Post(player.unsentPost.Peek(), (b,s)=>SendNextIfPossible(b));
+                    var sentFilename = unsentPost.Dequeue().Item1;
+                    try {
+                        File.Delete(sentFilename);
+                    } catch (Exception e) {
+                        Debug.LogWarning($"could not delete post: {e.Message}");
+                    }
+                    if (unsentPost.Count > 0) {
+                        pat.Post(unsentPost.Peek().Item2, (b,s)=>SendNextIfPossible(b));
                     } else {
                         sendingUnsent = false;
                     }
@@ -376,10 +422,6 @@ namespace EcoBuilder
                 {
                     sendingUnsent = false;
                 }
-            }
-            if (player.unsentPost.Count > 0)
-            {
-                pat.Post(player.unsentPost.Peek(), (b,s)=>SendNextIfPossible(b));
             }
         }
 

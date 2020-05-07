@@ -44,7 +44,10 @@ namespace EcoBuilder.UI
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
 
-            // top stop Unity UI complaining
+            // // to stop Unity UI complaining
+            // foreach (var fitter in fittersToDisable) {
+            //     fitter.enabled = false;
+            // }
             // errorText.GetComponent<ContentSizeFitter>().enabled = true;
         }
         public void Begin()
@@ -54,6 +57,7 @@ namespace EcoBuilder.UI
         }
 
         [SerializeField] GameObject[] startObj, idObj, gdprObj, resetObj, demoObj, skipObj; // required because hierarchy with sub-layout components causes strange frames
+        // [SerializeField] ContentSizeFitter[] fittersToDisable;
         [SerializeField] GameObject navObj;
         public enum State { Null, Start, Skip, Register, Login, GDPR, Reset, Demographics, End };
         private State _state = State.Null;

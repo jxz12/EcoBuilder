@@ -20,13 +20,16 @@ namespace EcoBuilder.UI
         [SerializeField] Button researchWorld;
         [SerializeField] Image researchLock;
 
-        [SerializeField] Button quit, logout, createAccount, deleteAccount;
+        [SerializeField] Button quit, logout, createAccount, deleteAccount, unlockAll;
         [SerializeField] TMPro.TextMeshProUGUI accountStatus;
         [SerializeField] Animator logoAnim;
 
-        void Start()
+        void Awake()
         {
             splashCanvas.enabled = settingsCanvas.enabled = learningCanvas.enabled = researchCanvas.enabled = false;
+        }
+        void Start()
+        {
             if (GameManager.Instance.AskForRegistration) {
                 StartRegistration();
             } else {
@@ -74,7 +77,7 @@ namespace EcoBuilder.UI
 
                 long? score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
 
-                if (score != null)
+                if (score != null || GameManager.Instance.LevelsUnlockedRegardless)
                 {
                     unlockedIdxs.Add(prefab.Details.Idx);
                     if (prefab.NextLevelPrefab!=null) {
@@ -108,7 +111,9 @@ namespace EcoBuilder.UI
 
             bool ResearchWorldUnlocked()
             {
-                return true;
+                if (GameManager.Instance.LevelsUnlockedRegardless) {
+                    return true;
+                }
                 var prefab = firstLearningLevel;
                 while (prefab != null) {
                     if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) == null) {
@@ -163,6 +168,7 @@ namespace EcoBuilder.UI
                 logout.gameObject.SetActive(false);
                 deleteAccount.gameObject.SetActive(false);
             }
+            unlockAll.interactable = !GameManager.Instance.LevelsUnlockedRegardless;
 
             logoAnim.SetTrigger("Show");
             WaitThenDisableLevelCanvases();
@@ -179,6 +185,13 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.Quit();
         }
+        public void SetReverseDrag(bool reversed)
+        {
+            GameManager.Instance.SetDragDirectionLocal(reversed);
+            if (GameManager.Instance.LoggedIn) {
+                GameManager.Instance.SetDragDirectionRemote();
+            }
+        }
         public void CreateAccount()
         {
             GameManager.Instance.AskAgainForLogin();
@@ -192,12 +205,9 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.DeleteAccount(Reset);
         }
-        public void SetReverseDrag(bool reversed)
+        public void UnlockLevelsRegardless()
         {
-            GameManager.Instance.SetDragDirectionLocal(reversed);
-            if (GameManager.Instance.LoggedIn) {
-                GameManager.Instance.SetDragDirectionRemote();
-            }
+            GameManager.Instance.UnlockAllLevels(Reset);
         }
         [SerializeField] string splashLearningText, splashResearchText;
         [SerializeField] string settingsText;

@@ -28,7 +28,6 @@ namespace EcoBuilder.UI
             topScoresShowing = 0;
             topScoresText = "";
             topPanelLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-            ForceUpdateLayout();
 
             UpdateTopScores();
             UpdateLowerScores();
@@ -41,30 +40,35 @@ namespace EcoBuilder.UI
 
             int updatingIdx = (int)currentIdx;
             topScores.text = topScoresText + (topScoresText==""? "loading...":$"\nloading...");
+            ForceUpdateLayout();
             moreButton.interactable = false;
+
             GameManager.Instance.GetRankedScoresRemote(updatingIdx, topScoresShowing, 10, Update);
             void Update(bool successful, string newScoresText)
             {
+                // in case a request was somehow sent from another leaderboard
                 if (currentIdx != updatingIdx) {
                     return;
                 }
                 if (!successful) {
-                    topScores.text = topScoresText + "Please try again later.";
+                    topScores.text = topScoresText + "Could not connect,\nplease try again later";
                     moreButton.interactable = true;
-                    return;
-                }
-                topScoresText += topScoresText==""? newScoresText : $"\n{newScoresText}";
-                topScores.text = topScoresText;
-                int newLines = CountLines(newScoresText);
-                topScoresShowing += newLines;
-                if (newLines < 10)
-                {
-                    moreButton.interactable = false;
-                    topScores.text = topScoresText==""? "No more scores!" : topScoresText+"\nNo more scores!";
                 }
                 else
                 {
-                    moreButton.interactable = true;
+                    topScoresText += topScoresText==""? newScoresText : $"\n{newScoresText}";
+                    topScores.text = topScoresText;
+                    int newLines = CountLines(newScoresText);
+                    topScoresShowing += newLines;
+                    if (newLines < 10)
+                    {
+                        moreButton.interactable = false;
+                        topScores.text = topScoresText==""? "No more scores!" : topScoresText+"\nNo more scores!";
+                    }
+                    else
+                    {
+                        moreButton.interactable = true;
+                    }
                 }
                 ForceUpdateLayout();
             }
@@ -90,6 +94,8 @@ namespace EcoBuilder.UI
                 }
                 if (median != null) {
                     lowerScoresText.Append($"\nAverage: {(median??0).ToString("N0")}");
+                } else {
+                    GameManager.Instance.CacheMediansRemote(b=>{ if (b) UpdateLowerScores(); });
                 }
                 lowerScores.text = lowerScoresText.ToString();
             }

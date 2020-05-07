@@ -41,6 +41,7 @@ namespace EcoBuilder
             // Screen.SetResolution(576, 1024, false);
             // Screen.fullScreen = true;
 #endif
+            SendUnsentPost();
         }
         void OnDestroy()
         {
@@ -178,16 +179,6 @@ namespace EcoBuilder
 #else
             Application.Quit();
 #endif
-        }
-        public void LogOut(Action Reset)
-        {
-            Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); Reset(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
-        }
-        public void DeleteAccount(Action Reset)
-        {
-            Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(Reset, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
 
         [SerializeField] Planet earthPrefab;

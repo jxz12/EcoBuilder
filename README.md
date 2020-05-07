@@ -2,8 +2,8 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
-fix level unlocking
 add skip button on research tutorial 
+remove unlock all levels on final build
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
