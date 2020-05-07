@@ -25,10 +25,8 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
 
-            targetSize = new Vector2(100,100);
-            targetPos = new Vector2(-61,115) * hud.BottomScale;
             targetAnchor = new Vector2(1,0);
-            targetZRot = 315;
+            Point(new Vector2(-61,115) * hud.BottomScale, -45);
 
             // in case the user goes back
             if (reshowText)
@@ -45,9 +43,8 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
 
-            targetPos = new Vector2(160, 50) * hud.BottomScale;
+            Point(new Vector2(160, 50) * hud.BottomScale, 90);
             targetAnchor = new Vector2(.5f, 0);
-            targetZRot = 450;
 
             help.Message = "Here you can choose a new name for your species. You can then introduce it by dragging it into the world.";
             help.Showing = true;
@@ -65,8 +62,7 @@ namespace EcoBuilder.Tutorials
             Assert.IsTrue(isProducer, "first species should be producer");
 
             targetAnchor = new Vector2(1,0);
-            targetPos = new Vector2(-61, 60) * hud.BottomScale;
-            targetZRot = 270;
+            Point(new Vector2(-61, 60) * hud.BottomScale, -90);
 
             firstSpecies = first;
             firstIdx = idx;
@@ -78,8 +74,8 @@ namespace EcoBuilder.Tutorials
             help.Showing = true;
 
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ExplainInteraction);
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Showing = false; targetSize = Vector2.zero; });
-            AttachSmellyListener(inspector, "OnUnincubated", ()=>{ help.Showing = true; targetSize = new Vector2(100,100); });
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Showing = false; Hide(); });
+            AttachSmellyListener(inspector, "OnUnincubated", ()=>{ help.Showing = true; Point(); });
         }
 
         GameObject secondSpecies;
@@ -90,12 +86,9 @@ namespace EcoBuilder.Tutorials
             Assert.IsFalse(isProducer, "second species should be consumer");
 
             inspector.HideInitiatorButtons();
-            targetSize = new Vector3(100,100);
-            targetZRot = 360;
 
             secondSpecies = second;
             secondIdx = idx;
-            smoothTime = .7f;
 
             if (GameManager.Instance.ReverseDragDirection) {
                 help.Message = "Your " + secondSpecies.name + " is hungry! It is flashing because it is going extinct, as it has no food source. Drag from it to the " + firstSpecies.name + " to make them interact.";
@@ -112,17 +105,13 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            targetSize = new Vector2(0,0);
-            smoothTime = .2f;
+            Hide(0);
             help.Showing = false;
             graph.ForceUnfocus();
 
-            if (GameManager.Instance.ReverseDragDirection)
-            {
+            if (GameManager.Instance.ReverseDragDirection) {
                 WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the animal to the plant."; });
-            }
-            else
-            {
+            } else {
                 WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You have created your very own ecosystem. Well done! Now try removing the link you just made, by performing the same dragging action from the plant to the animal."; });
             }
 
@@ -136,15 +125,12 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             inspector.HideRemoveButton(false);
             targetAnchor = new Vector2(0,0);
-            smoothTime = .3f;
 
             graph.ForceUnfocus();
             graph.SetIfNodeCanBeFocused(firstIdx, false);
 
-            WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; targetSize = new Vector3(100,100); targetZRot = 360; });
+            WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; Track(secondSpecies.transform); }); 
 
-            Point();
-            Track(secondSpecies.transform);
 
             AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainRemove2());
         }
@@ -154,9 +140,7 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines(); // stop tracking
 
             targetAnchor = new Vector2(.5f, 0);
-            targetPos = new Vector2(160, 50) * hud.BottomScale;
-            targetZRot = 450;
-            targetSize = new Vector3(100,100);
+            Point(new Vector2(160, 50) * hud.BottomScale, 90);
 
             help.Showing = true;
             help.SetPivotHeight(0);
@@ -172,9 +156,7 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines();
 
             targetAnchor = new Vector2(0, 0);
-            targetZRot = 405;
-            targetSize = new Vector2(100,100);
-            targetPos = new Vector2(60, 120) * hud.BottomScale;
+            Point(new Vector2(60, 120) * hud.BottomScale, 45, .3f);
 
             help.Showing = false;
             help.SetPivotHeight(1);
@@ -190,8 +172,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            targetSize = new Vector2(0,0);
-            targetZRot = 315;
+            Hide();
 
             score.DisableStarCalculation(false); 
             help.SetAnchorHeight(.9f);
@@ -207,23 +188,23 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            targetSize = new Vector2(100,100);
-
             // do not smooth for this
+            Point(new Vector2(-90,-90), -45);
             targetAnchor = pointerRT.anchorMin = pointerRT.anchorMax = new Vector2(1,1);
-            targetPos = pointerRT.anchoredPosition = new Vector2(-90,-90);
+            pointerRT.anchoredPosition = new Vector2(-90,-90);
 
             // this should be taken care of by PlayManager
             // help.Message = "Well done! Tap this button to finish the level.";
             // help.Showing = true;
             help.SetPixelWidth(350);
+            help.SetAnchorHeight(.8f);
 
             AttachSmellyListener(GameManager.Instance, "OnPlayedLevelFinished", ()=>ExplainNavigation(2.5f));
         }
         void ExplainNavigation(float delay)
         {
             DetachSmellyListeners();
-            targetSize = Vector2.zero;
+            Hide();
         }
     }
 }

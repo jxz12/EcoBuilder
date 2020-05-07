@@ -2,8 +2,8 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
-fix score when not connected/no median
-add skip button on tutorial 
+fix level unlocking
+add skip button on research tutorial 
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)

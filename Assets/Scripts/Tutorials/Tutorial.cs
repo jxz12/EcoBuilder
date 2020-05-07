@@ -26,11 +26,14 @@ namespace EcoBuilder.Tutorials
         protected RectTransform pointerRT;
         protected Vector2 canvasRefRes { get; private set; }
         
-        protected Vector2 targetPos, targetSize, targetAnchor;
+        protected Vector2 targetAnchor;
+
+        private Vector2 targetSize;
+        private float targetZRot;
+        private Vector2 targetPos;
         private Vector2 velocity, sizocity, anchosity;
-        protected float targetZRot;
         private float zRotation, rotocity;
-        protected float smoothTime;
+        private float smoothTime;
 
         void Start()
         {
@@ -89,27 +92,46 @@ namespace EcoBuilder.Tutorials
                 pointerRT.sizeDelta = targetSize;
             }
         }
-
-        protected void Point()
-        {
-            GetComponent<Animator>().SetInteger("State", 0);
-        }
         private Vector2 ToAnchoredPos(Vector3 worldPos)
         {
             Vector2 viewportPos = mainCam.WorldToViewportPoint(worldPos);
             return new Vector2(viewportPos.x*canvasRefRes.x, viewportPos.y*canvasRefRes.y);
         }
-        protected void DragAndDrop(Transform grab, Transform drop, float period)
+
+        protected void Point(Vector3 anchoredPos, float zRotation, float smoothTime=.2f)
         {
+            targetPos = anchoredPos;
+            targetSize = new Vector2(100,100);
+            this.targetZRot = zRotation;
+            this.smoothTime = smoothTime;
+            GetComponent<Animator>().SetInteger("State", 0);
+        }
+        protected void Point(float smoothTime=.2f)
+        {
+            targetSize = new Vector2(100,100);
+            this.smoothTime=smoothTime;
+            GetComponent<Animator>().SetInteger("State", 0);
+        }
+        protected void Hide(float zRotation=0, float smoothTime=.2f)
+        {
+            this.smoothTime=smoothTime;
+            targetSize = Vector2.zero;
+            targetZRot = zRotation;
+        }
+        protected void DragAndDrop(Transform source, Transform target, float period=2f, float smoothTime=.5f)
+        {
+            targetSize = new Vector2(100,100);
+            this.smoothTime = smoothTime;
+            targetZRot = 0;
             StartCoroutine(Drag());
             IEnumerator Drag()
             {
                 float start = Time.time;
                 if (GameManager.Instance.ReverseDragDirection)
                 {
-                    Transform temp = grab;
-                    grab = drop;
-                    drop = temp;
+                    Transform temp = source;
+                    source = target;
+                    target = temp;
                 }
                 // transform.position = ToAnchoredPos(grab.position);
 
@@ -117,9 +139,9 @@ namespace EcoBuilder.Tutorials
                 while (true)
                 {
                     if (((Time.time - start) % period) < (period/2f)) {
-                        targetPos = ToAnchoredPos(drop.position) + new Vector2(0,-20);
+                        targetPos = ToAnchoredPos(target.position) + new Vector2(0,-20);
                     } else {
-                        targetPos = ToAnchoredPos(grab.position) + new Vector2(0,-20);
+                        targetPos = ToAnchoredPos(source.position) + new Vector2(0,-20);
                     }
 
                     if (((Time.time - start + 3*period/5) % period) < (period/2f)) {
@@ -131,8 +153,12 @@ namespace EcoBuilder.Tutorials
                 }
             }
         }
-        protected void Track(Transform tracked)
+        protected void Track(Transform tracked, float smoothTime=.2f)
         {
+            GetComponent<Animator>().SetInteger("State", 0);
+            targetSize = new Vector2(100,100);
+            targetZRot = 0;
+            this.smoothTime = smoothTime;
             StartCoroutine(DoTrack());
             IEnumerator DoTrack()
             {
@@ -144,16 +170,16 @@ namespace EcoBuilder.Tutorials
                 }
             }
         }
-        protected void ShuffleOnSlider(float period, float yPos)
+        protected void ShuffleOnSlider(float period, float yPos, float moveSmoothTime=.3f, float shuffleSmoothTime=1)
         {
+            smoothTime = moveSmoothTime;
+            targetAnchor = new Vector2(.5f,0);
+            targetZRot = 0;
+            targetSize = new Vector2(50,50);
             StartCoroutine(Shuffle());
             IEnumerator Shuffle()
             {
                 float start = Time.time - period/4;
-                targetAnchor = new Vector2(.5f, 0);
-                targetSize = new Vector2(50,50);
-                targetZRot = 0;
-                smoothTime = .7f;
                 GetComponent<Animator>().SetInteger("State", 1); // grab
                 while (true)
                 {
@@ -164,7 +190,7 @@ namespace EcoBuilder.Tutorials
                     else
                     {
                         targetPos = new Vector2(130,yPos) * hud.BottomScale;
-                        smoothTime = 1f;
+                        smoothTime = shuffleSmoothTime;
                     }
                     yield return null;
                 }

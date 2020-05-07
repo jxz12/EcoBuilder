@@ -9,7 +9,7 @@ namespace EcoBuilder.Tutorials
     {
         protected override void StartLesson()
         {
-            targetSize = Vector2.zero;
+            Hide();
             recorder.Hide();
             inspector.HideSizeSlider();
             inspector.HideRemoveButton();
@@ -54,11 +54,8 @@ namespace EcoBuilder.Tutorials
             help.Showing = true;
 
             // point at constraints panel
-            Point();
-            targetZRot = 30;
-            targetSize = new Vector2(100,100);
             targetAnchor = new Vector2(0,1);
-            targetPos = new Vector2(55, -350 + hud.ConstraintsOffset);
+            Point(new Vector2(55, -350 + hud.ConstraintsOffset), 30); 
 
             // allow animal again, but only one more
             constraints.LimitPaw(2);
@@ -68,7 +65,7 @@ namespace EcoBuilder.Tutorials
             graph.SetIfNodeCanBeTarget(herbivoreIdx, false);
             graph.SetIfNodeCanBeSource(producerIdx, false);
 
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Showing = false; targetSize=Vector2.zero; });
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Showing = false; Hide(); });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>carnivoreTransform=g.transform);
             AttachSmellyListener(graph, "OnLayedOut", ()=>RequestChainOfTwo());
         }
@@ -78,8 +75,6 @@ namespace EcoBuilder.Tutorials
 
             help.Message = "And now make it eat the previous animal.";
             help.Showing = true;
-            targetSize = new Vector2(100,100);
-            smoothTime = .5f;
             DragAndDrop(herbivoreTransform, carnivoreTransform, 2.5f);
             
             AttachSmellyListener(graph, "OnLayedOut", ()=>CheckChainOfHeight(2, ()=>ExplainChainOfTwo(1.5f)));
@@ -91,7 +86,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            targetSize = Vector2.zero;
+            Hide();
             graph.ForceUnfocus();
             help.Showing = false;
             WaitThenDo(delay, ()=>{ help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is two. However, you will notice that it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it, but without adding any more links."; help.Showing = true; inspector.HideSizeSlider(false); });

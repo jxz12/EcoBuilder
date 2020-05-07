@@ -159,7 +159,7 @@ namespace EcoBuilder
         {
             void BackToMenu()
             {
-                HelpText.ForceHide();
+                HelpText.ResetMenuPosition(false);
                 earth.ResetParent(); 
                 StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()

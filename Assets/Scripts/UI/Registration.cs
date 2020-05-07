@@ -156,6 +156,7 @@ namespace EcoBuilder.UI
 
             GetComponent<Canvas>().enabled = true;
             float startTime = Time.time;
+            shade.raycastTarget = applyShade;
             while (Time.time < startTime+duration)
             {
                 float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
@@ -163,6 +164,8 @@ namespace EcoBuilder.UI
                 shade.color = new Color(0,0,0,Mathf.Lerp(startCol.a, applyShade?.5f:0, t));
                 yield return null;
             }
+            transform.localPosition = endPos;
+            shade.color = new Color(0,0,0,applyShade?.5f:0);
             if (!applyShade) {
                 GetComponent<Canvas>().enabled = false;
             }

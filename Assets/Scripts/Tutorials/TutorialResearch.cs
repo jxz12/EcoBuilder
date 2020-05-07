@@ -9,17 +9,15 @@ namespace EcoBuilder.Tutorials
     {
         protected override void StartLesson()
         {
-            targetSize = Vector2.zero;
+            Hide();
 
             ExplainIntro();
         }
         void ExplainIntro()
         {
             // point at leaf icon
-            targetSize = new Vector2(100,100);
-            targetPos = new Vector2(-61,115) * hud.BottomScale;
             targetAnchor = new Vector2(1,0);
-            targetZRot = 315;
+            Point(new Vector2(-61,115) * hud.BottomScale, -45);
 
             score.Hide();
             score.DisableStarCalculation(true);
@@ -35,8 +33,8 @@ namespace EcoBuilder.Tutorials
             
             graph.AllowSuperfocus = false;
 
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
-            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ targetSize=new Vector2(100,100); help.Showing=true; });
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(); help.Showing=false; });
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ Point(); help.Showing=true; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ plantIdx=i; plantObj=g; ExplainInterference(); });
         }
         int plantIdx=-1;
@@ -52,16 +50,15 @@ namespace EcoBuilder.Tutorials
             inspector.SetProducerAvailability(false);
 
             help.Showing = false;
-            targetSize = Vector2.zero;
-            targetZRot = 0;
+            Hide(0);
             ShuffleOnSlider(3, 40);
             WaitThenDo(1f, WaitingFor);
             void WaitingFor()
             {
                 help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much a species competes with itself. Low interference results in a high population, and a high interference results in a low population. Try dragging both sliders down as low as possible."; 
                 help.Showing=true;
-                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); targetSize = new Vector2(100,100); smoothTime=.2f; Point(); Track(plantObj.transform); });
-                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); targetSize = new Vector2(50,50); ShuffleOnSlider(3, 40); });
+                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(plantObj.transform); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
             }
 
             void TrackPlantTrait(bool sizeOrGreed, float val)
@@ -87,14 +84,12 @@ namespace EcoBuilder.Tutorials
             inspector.SetConsumerAvailability(true);
             graph.SetIfNodeCanBeFocused(plantIdx, false);
 
-            targetSize = Vector2.zero;
-            smoothTime = .2f;
+            Hide();
             help.Showing = false;
-            targetZRot = 270; 
-            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! This is often what you will want for plants. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); targetPos = new Vector2(-61, 60) * hud.BottomScale; targetSize=new Vector2(100,100); Point(); });
+            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! This is often what you will want for plants. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); Point(new Vector2(-61, 60) * hud.BottomScale, -90); });
 
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
-            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ targetSize=new Vector2(100,100); help.Showing=true; });
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(); help.Showing=false; });
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ Point(); help.Showing=true; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ animalIdx=i; animalObj=g; ExplainAnimal(); });
         }
 
@@ -108,7 +103,6 @@ namespace EcoBuilder.Tutorials
             StopAllCoroutines();
 
             inspector.SetConsumerAvailability(false);
-            targetZRot = 0;
             help.Showing = false;
             ShuffleOnSlider(3, 40);
             WaitThenDo(1f, WaitingFor);
@@ -116,8 +110,8 @@ namespace EcoBuilder.Tutorials
             {
                 help.Message = "Then make it eat the plant, and drag both sliders as high as possible.";
                 help.Showing = true;
-                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); targetSize = new Vector2(100,100); smoothTime=.2f; Point(); Track(animalObj.transform); });
-                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); targetSize = new Vector2(50,50); ShuffleOnSlider(3, 40); });
+                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(animalObj.transform); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
             }
 
             void TrackAnimalTrait(bool sizeOrGreed, float val)
@@ -127,8 +121,21 @@ namespace EcoBuilder.Tutorials
                 } else {
                     animalGreed = val;
                 }
-                if (animalSize==1 && animalGreed==1 && graph.NumComponents==1) {
-                    ExplainConflict1();
+                if (animalSize==1 && animalGreed==1)
+                {
+                    if (graph.NumComponents!=1)
+                    {
+                        StopAllCoroutines();
+                        Transform drag = graph.DragFromTarget? animalObj.transform : plantObj.transform;
+                        Transform drop = graph.DragFromTarget? plantObj.transform : animalObj.transform;
+                        DragAndDrop(drag, drop, 2f);
+                    } else {
+                        ExplainConflict1();
+                    }
+                }
+                else
+                {
+                    // start coroutine if not already running
                 }
             }
             void TrackConnected()
@@ -156,16 +163,13 @@ namespace EcoBuilder.Tutorials
             graph.SetIfNodeCanBeTarget(animalIdx, false);
             inspector.SetProducerAvailability(true);
 
-            targetSize = Vector2.zero;
-            smoothTime = .2f;
-            targetZRot = -45;
-
+            Hide();
             help.Showing = false;
             // point at plant again
-            WaitThenDo(1f, ()=>{ targetSize = new Vector2(100,100); smoothTime = .2f; Point(); targetPos = new Vector2(-61,115) * hud.BottomScale; targetAnchor = new Vector2(1,0); help.Message = "Great job! A plant with low interference can enable even the heaviest species survive. Now try adding one final plant."; help.Showing = true; });
+            WaitThenDo(1f, ()=>{ Point(new Vector2(-61,115) * hud.BottomScale, -45); targetAnchor = new Vector2(1,0); help.Message = "Great job! A plant with low interference can enable even the heaviest species survive. Now try adding one final plant."; help.Showing = true; });
 
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ targetSize=Vector2.zero; help.Showing=false; });
-            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ targetSize=new Vector2(100,100); help.Showing=true; });
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(); help.Showing=false; });
+            AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ Point(); help.Showing=true; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ plantIdx2=i; plantObj2=g; ExplainConflict2(); });
         }
         void ExplainConflict2()
@@ -178,15 +182,14 @@ namespace EcoBuilder.Tutorials
             inspector.AllowConflicts(false);
 
             help.Showing = false;
-            targetZRot = 0;
             ShuffleOnSlider(3, 40);
             WaitThenDo(1f, WaitingFor);
             void WaitingFor()
             {
                 help.Message = "There is one more rule in Research world that you must follow: no two species can be identical! Try making the new plant identical to the first by dragging both sliders as low as possible.";
                 help.Showing = true;
-                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); targetSize = new Vector2(100,100); smoothTime=.2f; Point(); Track(plantObj2.transform); });
-                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); targetSize = new Vector2(50,50); ShuffleOnSlider(3, 40); });
+                AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(plantObj2.transform); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
             }
             AttachSmellyListener<int, string>(inspector, "OnConflicted", (i,s)=>ExplainConflict3());
         }
@@ -195,8 +198,7 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             StopAllCoroutines();
 
-            targetSize = Vector2.zero;
-            smoothTime = .2f;
+            Hide();
             graph.SetIfNodeCanBeTarget(animalIdx, true);
             help.Message = "Uh oh! If you try to make two identical species, the original will be outlined with a message telling you that it is not possible. Now try making the animal eat both plants.";
             help.SetAnchorHeight(.7f);
@@ -217,9 +219,7 @@ namespace EcoBuilder.Tutorials
             graph.AllowSuperfocus = true;
 
             help.Showing = false;
-            smoothTime = .2f; 
-            Point();
-            WaitThenDo(1, ()=>{ help.Message = "Research World also unlocks a final tool which is useful in case your ecosystem becomes very complex: if you tap a species twice, the game will show only its direct connections. Try that now."; help.Showing = true; Track(plantObj2.transform); targetSize = new Vector2(100,100); help.SetAnchorHeight(.85f); });
+            WaitThenDo(1, ()=>{ help.Message = "Research World also unlocks a final tool which is useful in case your ecosystem becomes very complex: if you tap a species twice, the game will show only its direct connections. Try that now."; help.Showing = true; Track(plantObj2.transform); help.SetAnchorHeight(.85f); });
 
             void CheckSuperFocus()
             {
@@ -236,10 +236,9 @@ namespace EcoBuilder.Tutorials
 
             graph.SetIfNodeCanBeFocused(animalIdx, true);
 
-            smoothTime = .2f;
-            targetSize = Vector2.zero;
+            Hide();
             help.Showing = false;
-            WaitThenDo(2, ()=>{ help.Message = "The second plant has been centered on the screen in to give you a zoomed in view of your ecosystem. From here you can navigate through your ecosystem one species at a time. Try tapping the animal."; help.SetAnchorHeight(.4f); help.Showing = true; Track(animalObj.transform); targetSize = new Vector2(100,100);});
+            WaitThenDo(2, ()=>{ help.Message = "The second plant has been centered on the screen in to give you a zoomed in view of your ecosystem. From here you can navigate through your ecosystem one species at a time. Try tapping the animal."; help.SetAnchorHeight(.4f); help.Showing = true; Track(animalObj.transform); });
 
             void CheckSuperFocus(int tappedIdx)
             {
@@ -257,7 +256,7 @@ namespace EcoBuilder.Tutorials
 
             graph.SetIfNodeCanBeFocused(plantIdx, true);
             help.Showing = false;
-            targetSize = Vector2.zero;
+            Hide();
             WaitThenDo(1f, ()=>{ help.Message = "Great job! You can exit this view completely by simply tapping empty space twice."; help.SetAnchorHeight(.85f); help.Showing = true; });
 
             AttachSmellyListener(graph, "OnUnfocused", ExplainAlternateScore);

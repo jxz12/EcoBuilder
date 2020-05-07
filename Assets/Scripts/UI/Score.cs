@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace EcoBuilder.UI
     {
         public event Action OnOneStarAchieved;
         public event Action OnThreeStarsAchieved;
-        public event Action OnHighestScoreBroken;
+        public event Action OnHighestScoreBroken; // this is used for requesting stats
 
         [SerializeField] Animator star1, star2, star3;
 
@@ -37,12 +38,16 @@ namespace EcoBuilder.UI
         long target1=0, target2=0;
         public void SetStarThresholds(long target1, long target2)
         {
+            statsObject.SetActive(false);
             this.target1 = target1;
             this.target2 = target2;
         }
         [SerializeField] GameObject starsObject, statsObject;
+        [SerializeField] float rankCheckDelay;
         public void EnableStatsText(long? prevHighScore)
         {
+            Assert.IsTrue(rankCheckDelay > 1, "trying to check too often");
+            starsObject.SetActive(false);
             GetComponent<Image>().sprite = researchWorldBackground;
             starsObject.SetActive(false);
             statsObject.SetActive(true);
@@ -50,13 +55,24 @@ namespace EcoBuilder.UI
             this.target2 = prevHighScore ?? 0; // TODO: change behaviour with stars and stuff and test this whole thing
             HighestScore = prevHighScore ?? 0;
             LastStatsRank = null;
+
+            OnHighestScoreBroken?.Invoke(); // request a rank at first
         }
         public string LastStatsRank { get; private set; }
-        public void SetStatsText(string rank, long? median) // called from levelmanager
+        public void SetStatsText(string rank, long? median)
         {
             Assert.IsTrue(statsObject.activeSelf);
-            LastStatsRank = rank;;
-            statsText.text = $"Rank: {rank}\nAverage: {median??0}";
+            var sb = new StringBuilder();
+            if (rank != null) {
+                sb.Append($"Your Rank: {rank}");
+            } else {
+                sb.Append($"Currently offline");
+            }
+            if (median != null) {
+                sb.Append($"\nWorld Average: {median}");
+            }
+            statsText.text = sb.ToString();
+            LastStatsRank = rank;
         }
 
         //////////////////////
@@ -90,9 +106,11 @@ namespace EcoBuilder.UI
         public int HighestStars { get; private set; } = 0;
         int displayedStars = 0;
         double latestValidScore = 0;
+        float lastHighScoreTime = 0;
 
         public void Update()
         {
+            Assert.IsFalse(starsObject.activeSelf && statsObject.activeSelf);
             double score = 0;
             foreach (var Source in AttachedSources) {
                 score += Source.Invoke();
@@ -138,8 +156,10 @@ namespace EcoBuilder.UI
                 if (prevHighestStars <= 2 && HighestStars == 3) {
                     OnThreeStarsAchieved?.Invoke();
                 }
-                if (HighestScore > prevHighestScore) {
+                if (HighestScore > prevHighestScore)
+                {
                     OnHighestScoreBroken?.Invoke();
+                    lastHighScoreTime = Time.time;
                 }
                 displayedScoreCol = Color.Lerp(displayedScoreCol, defaultScoreCol, .5f*Time.deltaTime);
             }
@@ -166,6 +186,12 @@ namespace EcoBuilder.UI
                 StartReminding();
             } else {
                 EndReminding();
+            }
+            // periodically request a new rank + median after long enough wait
+            if (Time.time > lastHighScoreTime+rankCheckDelay)
+            {
+                OnHighestScoreBroken?.Invoke();
+                lastHighScoreTime = Time.time;
             }
         }
         [SerializeField] Image scoreIcon;

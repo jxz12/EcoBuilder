@@ -30,7 +30,6 @@ namespace EcoBuilder
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
-            // public Dictionary<int, int> cachedRanks = new Dictionary<int, int>();
             public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
             public int unsentCount=0;
         }
@@ -53,7 +52,7 @@ namespace EcoBuilder
             playerPath = Application.persistentDataPath+"/player.data";
 
 #if UNITY_EDITOR
-            DeletePlayerDetailsLocal();
+            // DeletePlayerDetailsLocal();
 #endif
             if (LoadPlayerDetailsLocal() == false) {
                 player = new PlayerDetails();
@@ -269,7 +268,8 @@ namespace EcoBuilder
         // returns whether new high score is achieved
         public bool SaveHighScoreLocal(int levelIdx, long score)
         {
-            if (GetHighScoreLocal(levelIdx) < score)
+            long? currentScore = GetHighScoreLocal(levelIdx);
+            if (currentScore == null || currentScore < score)
             {
                 player.highScores[levelIdx] = score;
                 SavePlayerDetailsLocal();

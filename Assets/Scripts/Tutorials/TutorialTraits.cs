@@ -18,9 +18,6 @@ namespace EcoBuilder.Tutorials
             constraints.Hide();
             score.DisableStarCalculation(true);
 
-            targetSize = new Vector2(100,100);
-            // targetZRot = 45;  
-
             var nodes = graph.gameObject.GetComponentsInChildren<NodeLink.Node>();
             Assert.IsTrue(nodes.Length == 2);
 
@@ -44,8 +41,6 @@ namespace EcoBuilder.Tutorials
                 help.ResetLevelPosition();
             }
             
-            smoothTime = .3f;
-            Point();
             Track(plant.transform);
 
             DetachSmellyListeners();
@@ -78,11 +73,10 @@ namespace EcoBuilder.Tutorials
             graph.SetIfNodeCanBeFocused(animal.Idx, true);
             graph.SetIfNodeCanBeFocused(plant.Idx, false);
 
-            targetSize = Vector2.zero;
-            smoothTime = .3f;
+            Hide();
             
             help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Point(); Track(animal.transform); targetSize = new Vector2(100,100); });
+            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Track(animal.transform); });
 
             AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainInterference());
         }
@@ -104,9 +98,8 @@ namespace EcoBuilder.Tutorials
         {
             DetachSmellyListeners();
             StopAllCoroutines();
-            targetSize = new Vector2(0,0);
-            smoothTime = .2f;
 
+            Hide();
             recorder.gameObject.SetActive(true); 
             graph.SetIfNodeCanBeFocused(plant.Idx, true);
             graph.ForceUnfocus();

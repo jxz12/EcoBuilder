@@ -74,9 +74,7 @@ namespace EcoBuilder.UI
 
                 long? score = GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx);
 
-// #if !UNITY_EDITOR
                 if (score != null)
-// #endif
                 {
                     unlockedIdxs.Add(prefab.Details.Idx);
                     if (prefab.NextLevelPrefab!=null) {
