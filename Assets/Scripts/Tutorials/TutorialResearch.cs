@@ -1,16 +1,20 @@
-using System;
-using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 
 namespace EcoBuilder.Tutorials
 {
     // this tutorial teaches the greed slider and superfocus
     public class TutorialResearch : Tutorial
     {
+        [SerializeField] Button skipPrefab;
+        Button skipButton;
+        bool skipped;
         protected override void StartLesson()
         {
             Hide();
-
+            skipButton = Instantiate(skipPrefab, transform.parent);
+            skipButton.onClick.AddListener(()=>{ skipped=true; ExplainAlternateScore(); });
             ExplainIntro();
         }
         void ExplainIntro()
@@ -295,15 +299,36 @@ namespace EcoBuilder.Tutorials
                 graph.SetIfLinkRemovable(plantIdx2, animalIdx, true);
             }
 
+            Hide();
             help.Showing = false;
-            WaitThenDo(2, ShowAll);
+            if (!skipped) {
+                WaitThenDo(2, ShowAll);
+            } else {
+                help.ResetLevelPosition(true);
+                help.Message = "The higher your score, the more you will help researchers to understand real ecosystems. Good luck!";
+                help.Showing = false;
+            }
+            StartCoroutine(DestroySkipButton());
+
             void ShowAll()
             {
                 help.ResetLevelPosition();
                 help.Message = "The final feature of Research World is a new scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. Good luck!";
                 help.Showing = true;
             }
-
+            IEnumerator DestroySkipButton(float duration=.5f)
+            {
+                skipButton.interactable = false;
+                float tStart = Time.time;
+                while (Time.time < tStart+duration)
+                {
+                    float t = Tweens.QuadraticInOut((Time.time-tStart)/duration);
+                    float size = Mathf.Lerp(1,0,t);
+                    skipButton.transform.localScale = new Vector3(size,size,1);
+                    yield return null;
+                }
+                Destroy(skipButton.gameObject);
+            }
         }
     }
 }

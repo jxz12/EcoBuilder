@@ -33,7 +33,7 @@ namespace EcoBuilder.UI
                 TopScale = Mathf.Lerp(minScoreScale, 1, lerp);
                 score.transform.localScale = new Vector3(TopScale, TopScale, 1);
 
-                ConstraintsOffset = Mathf.Lerp(0, maxConstraintsOffset, lerp);
+                ConstraintsOffset = Mathf.Lerp(maxConstraintsOffset, 0, lerp);
                 constraints.GetComponent<RectTransform>().anchoredPosition += new Vector2(0,ConstraintsOffset);
             }
         }

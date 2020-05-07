@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e734937f90f5b0d4d94d23a6d92297a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  skipPrefab: {fileID: 145771984388968052, guid: 476d0f933358f3142aeac835b273a7b4,
+    type: 3}
 --- !u!1001 &5963460067763826239
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -127,7 +129,7 @@ PrefabInstance:
     - target: {fileID: 7558127652860218879, guid: 7e37e2b78a146eb46bfc6ae23e45356a,
         type: 3}
       propertyPath: m_Name
-      value: Tutorial 6
+      value: Tutorial Research
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7e37e2b78a146eb46bfc6ae23e45356a, type: 3}

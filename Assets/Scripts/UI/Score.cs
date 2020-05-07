@@ -69,7 +69,7 @@ namespace EcoBuilder.UI
                 sb.Append($"Currently offline");
             }
             if (median != null) {
-                sb.Append($"\nWorld Average: {median}");
+                sb.Append($"\nAverage: {median}");
             }
             statsText.text = sb.ToString();
             LastStatsRank = rank;

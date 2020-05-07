@@ -195,12 +195,11 @@ namespace EcoBuilder
             }
             else
             {
-                score.EnableStatsText(GameManager.Instance.GetHighScoreLocal(details.Idx));
-                long? median = GameManager.Instance.GetCachedMedian(details.Idx);
-                if (median == null) {
+                if (GameManager.Instance.GetCachedMedian(details.Idx) == null) {
                     GameManager.Instance.CacheMediansRemote(); // try once to get median
                 }
                 score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:null, GameManager.Instance.GetCachedMedian(details.Idx)));
+                score.EnableStatsText(GameManager.Instance.GetHighScoreLocal(details.Idx));
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // but don't unfocus, unlike a stars level
             }
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
