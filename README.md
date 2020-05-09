@@ -2,7 +2,7 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
-make the two species system always rotated 45 degrees
+procrustes seems crap sometimes
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)

@@ -17,11 +17,12 @@ namespace EcoBuilder.NodeLink
         // positions will be rewritten into this dictionary
         static Dictionary<int, Vector2> posUnsquished = new Dictionary<int, Vector2>();
 
-        // for BFS, SGD, NCC
+        // undirected graph data for BFS, SGD, NCC
         static List<int> sources = new List<int>();
         static List<int> targets = new List<int>();
         static Vector2[] posSquished = new Vector2[0];
         static List<int> componentMap = new List<int>();
+        static List<int> componentCounts = new List<int>();
         static System.Random rand;
         public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
@@ -63,18 +64,19 @@ namespace EcoBuilder.NodeLink
         }
         public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint)
         {
+            FindConnectedComponents();
             FindStressTerms();
 
+            bool yFixed = YConstraint != null;
             var etas = new List<float>(ExpoSchedule(d_max*d_max, t_max, eps));
-            if (YConstraint == null) {
+            if (!yFixed) {
                 PerformSGD(etas);
             } else {
                 InitYConstraint(YConstraint);
                 PerformSGDConstrained(etas);
             }
-            FindConnectedComponents();
-            MatchComponentsProcrustes(YConstraint == null);
-            SeparateAndUnsquishComponents();
+            MatchComponentsProcrustes(!yFixed);
+            SeparateAndUnsquishComponents(!yFixed);
         }
         public static void RewriteSGD(Action<int, Vector2> SetPos)
         {
@@ -149,6 +151,7 @@ namespace EcoBuilder.NodeLink
             }
             componentMap.TrimExcess();
 
+            componentCounts.Clear();
             int component = 0;
             for (int source=0; source<componentMap.Count; source++)
             {
@@ -173,7 +176,13 @@ namespace EcoBuilder.NodeLink
                     }
                 }
                 component += 1;
+                componentCounts.Add(0); // init to 0, count later
             }
+            
+            for (int i=0; i<componentMap.Count; i++) {
+                componentCounts[componentMap[i]] += 1;
+            }
+            componentCounts.TrimExcess();
             NumComponents = component;
         }
         private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)
@@ -269,7 +278,7 @@ namespace EcoBuilder.NodeLink
         {
             // center the new positions first ([n,0] is old, [n,1] is new)
             var centroids = new Vector2[NumComponents, 2];
-            var counts = new int[NumComponents];
+            var overlapCounts = new int[NumComponents];
 
             // calculate centroids
             for (int i=0; i<componentMap.Count; i++)
@@ -281,15 +290,15 @@ namespace EcoBuilder.NodeLink
                     int cc = componentMap[i];
                     centroids[cc,0] += prevPos;
                     centroids[cc,1] += posSquished[i];
-                    counts[cc] += 1;
+                    overlapCounts[cc] += 1;
                 }
             }
             // take average
             for (int cc=0; cc<NumComponents; cc++)
             {
-                if (counts[cc] > 0) {
-                    centroids[cc,0] /= counts[cc];
-                    centroids[cc,1] /= counts[cc];
+                if (overlapCounts[cc] > 0) {
+                    centroids[cc,0] /= overlapCounts[cc];
+                    centroids[cc,1] /= overlapCounts[cc];
                 }
             }
             // center individual components
@@ -360,7 +369,6 @@ namespace EcoBuilder.NodeLink
                     if (posUnsquished.TryGetValue(idx, out oldPos))
                     {
                         int cc = componentMap[i];
-
                         float cosA = procrustes[cc,0];
                         float sinA = procrustes[cc,1];
                         Vector2 newPos = posSquished[i];
@@ -411,7 +419,7 @@ namespace EcoBuilder.NodeLink
                         proDistances[cc,1] += (oldPos-newPos).sqrMagnitude;
                     }
                 }
-                // choose either reflected or non-reflected rotation matrices
+                // choose either reflected or non-reflected versions
                 for (int i=0; i<componentMap.Count; i++)
                 {
                     int cc = componentMap[i];
@@ -423,10 +431,27 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        private static void SeparateAndUnsquishComponents()
+        private static void SeparateAndUnsquishComponents(bool fixK2)
         {
             if (NumComponents <= 0) {
                 return;
+            }
+            if (fixK2)
+            {
+                for (int i=0; i<componentMap.Count; i++)
+                {
+                    int cc = componentMap[i];
+                    if (componentCounts[cc] == 2)
+                    {
+                        posSquished[i] = new Vector2(-.35355f,-.35355f);
+                        componentCounts[cc] = -2;
+                    }
+                    else if (componentCounts[cc] == -2) // hacky way to determine second vertex in cc
+                    {
+                        posSquished[i] = new Vector2(.35355f,.35355f);
+                        componentCounts[cc] = 2;
+                    }
+                }
             }
             // xMin, xMax, yMin for each component
             var minMaxes = new float[NumComponents, 3];
@@ -449,8 +474,8 @@ namespace EcoBuilder.NodeLink
             float cumul = minMaxes[0,1] - minMaxes[0,0]; // end of CC range
             for (int cc=1; cc<NumComponents; cc++)
             {
-                offsets[cc] = cumul - minMaxes[cc,0] + 1;
-                cumul += minMaxes[cc,1] - minMaxes[cc,0] + 1;
+                offsets[cc] = cumul - minMaxes[cc,0] + .75f;
+                cumul += minMaxes[cc,1] - minMaxes[cc,0] + .75f;
             }
 
             // place in order on x axis

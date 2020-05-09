@@ -41,7 +41,8 @@ namespace EcoBuilder
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
 #if UNITY_EDITOR
-        public bool ConstrainTrophic { get { return false; } }
+        [SerializeField] bool constrainTrophic;
+        public bool ConstrainTrophic { get { return constrainTrophic; } }
 #else
         public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
 #endif
@@ -425,7 +426,5 @@ namespace EcoBuilder
                 }
             }
         }
-
-
     }
 }
