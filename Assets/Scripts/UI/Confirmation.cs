@@ -6,15 +6,16 @@ namespace EcoBuilder.UI
 {
     public class Confirmation : MonoBehaviour
     {
-        [SerializeField] Button yes, no, okay;
+        [SerializeField] Button shade, yes, no, okay;
         [SerializeField] TMPro.TextMeshProUGUI question;
         [SerializeField] ContentSizeFitter fitter;
         [SerializeField] VerticalLayoutGroup layout;
         void Start()
         {
-            yes.onClick.AddListener(()=> YesCallback?.Invoke());
-            no.onClick.AddListener(()=> NoCallback?.Invoke());
-            okay.onClick.AddListener(()=> OkayCallback?.Invoke());
+            yes.onClick.AddListener(()=>YesCallback?.Invoke());
+            shade.onClick.AddListener(()=>NoCallback?.Invoke());
+            no.onClick.AddListener(()=>NoCallback?.Invoke());
+            okay.onClick.AddListener(()=>OkayCallback?.Invoke());
             canvas = GetComponent<Canvas>();
 
             // enabling here prevents scene getting dirty, Unity autolayout sucks

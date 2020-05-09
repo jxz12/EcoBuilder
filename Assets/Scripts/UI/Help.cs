@@ -58,7 +58,7 @@ namespace EcoBuilder.UI
         {
             targetAnchor = new Vector2(targetAnchor.x, normalisedHeight);
             if (!damp) {
-                rt.anchorMin = rt.anchorMin = targetAnchor;
+                rt.anchorMin = rt.anchorMax = targetAnchor;
             }
         }
         public void SetPivotHeight(float normalisedHeight, bool damp=true)
@@ -145,12 +145,20 @@ namespace EcoBuilder.UI
             Message = delayedMessage;
             Showing = true;
         }
-        public void ResetMenuPosition(bool damp=true)
+        public void ResetMenuPosition(bool damp=false, bool forceHide=true)
         {
             SetSide(false, damp);
             SetPivotHeight(1, damp);
             SetAnchorHeight(.8f, damp);
             SetPixelWidth(400, damp);
+
+            if (forceHide)
+            {
+                if (Showing) {
+                    Toggle();
+                }
+                rt.pivot = new Vector2(0, rt.pivot.y);
+            }
         }
         public void ResetLevelPosition(bool damp=true)
         {

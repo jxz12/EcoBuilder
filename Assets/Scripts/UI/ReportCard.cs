@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 
 namespace EcoBuilder.UI
@@ -49,15 +50,7 @@ namespace EcoBuilder.UI
         }
         void Quit()
         {
-            void DestroyLevels()
-            {
-                quitBtn.interactable = false;
-                Destroy(currLvl);
-                if (nextLvl != null) {
-                    Destroy(nextLvl);
-                }
-            }
-            GameManager.Instance.ReturnToMenu(DestroyLevels);
+            GameManager.Instance.ReturnToMenu(()=>quitBtn.interactable=false, null);
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;
@@ -143,10 +136,19 @@ namespace EcoBuilder.UI
             if (canvas.enabled)
             {
                 StopAllCoroutines();
-                StartCoroutine(ShowRoutine(1f, 0, -1000, .5f, 0));
+                StartCoroutine(ShowRoutine(1f, 0, -1000, .5f, 0, DestroyLevels));
+            }
+            void DestroyLevels()
+            {
+                if (currLvl != null) {
+                    Destroy(currLvl);
+                }
+                if (nextLvl != null) {
+                    Destroy(nextLvl);
+                }
             }
         }
-        IEnumerator ShowRoutine(float duration, float y0, float y1, float a0, float a1)
+        IEnumerator ShowRoutine(float duration, float y0, float y1, float a0, float a1, Action OnCompletion=null)
         {
             canvas.enabled = true;
             float startTime = Time.time;

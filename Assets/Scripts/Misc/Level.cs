@@ -123,7 +123,7 @@ namespace EcoBuilder
         [SerializeField] Button quitButton;
         [SerializeField] Button replayButton;
 
-        [SerializeField] Effect fireworksPrefab, confettiPrefab;
+        [SerializeField] Effect fireworksPrefab;
 
         void Awake()
         {
@@ -202,7 +202,9 @@ namespace EcoBuilder
 
         public void HideFinishFlag(float duration=.5f) // called on finish flag pressed
         {
-            Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
+            if (teacher != null) {
+                Destroy(teacher);
+            }
             TweenFromFlag(duration);
             OnFinished?.Invoke();
         }
@@ -405,12 +407,21 @@ namespace EcoBuilder
         {
             GameManager.Instance.LoadLevelScene(this);
         }
+        public void Replay() // for button
+        {
+            if (teacher != null) {
+                Destroy(teacher.gameObject);
+            }
+            GameManager.Instance.ReloadLevelScene(this);
+        }
 
         GameObject teacher;
         public void BeginPlay()
         {
             Assert.IsTrue(GameManager.Instance.PlayedLevelDetails == details, "wrong level being started");
 
+            // wait one frame to avoid lag spike
+            StartCoroutine(WaitOneFrameThenBeginPlay());
             IEnumerator WaitOneFrameThenBeginPlay()
             {
                 yield return null;
@@ -424,7 +435,6 @@ namespace EcoBuilder
                 GameManager.Instance.HelpText.ResetLevelPosition();
                 GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
 
-                // necessary because we do not have a separate animator state for playing
                 playButton.interactable = false;
                 yield return new WaitForSeconds(1f);
 
@@ -432,27 +442,25 @@ namespace EcoBuilder
                 quitButton.gameObject.SetActive(true);
                 replayButton.gameObject.SetActive(true);
             }
-            StartCoroutine(WaitOneFrameThenBeginPlay());
-        }
-        public void Replay() // for button
-        {
-            if (teacher != null) {
-                Destroy(teacher.gameObject);
-            }
-            Play();
         }
         private void Quit()
         {
-            IEnumerator LeaveThenDestroyFromNextFrame(float targetY, float duration)
+            GameManager.Instance.ReturnToMenu(ClearLeaks, ()=> StartCoroutine(LeaveThenDestroyFromNextFrame(-1000, 1)));
+
+            void ClearLeaks()
             {
-                StopAllCoroutines();
-                gameObject.AddComponent<CanvasGroup>().interactable = false; // make sure not interactable
-                yield return null;
-                
-                shade.enabled = false;
                 if (teacher != null) {
                     Destroy(teacher.gameObject);
                 }
+                StopAllCoroutines();
+                gameObject.AddComponent<CanvasGroup>().interactable = false; // make sure not interactable
+            }
+            IEnumerator LeaveThenDestroyFromNextFrame(float targetY, float duration)
+            {
+                // wait one frame to avoid lag spike
+                yield return null;
+                
+                shade.enabled = false;
                 float startY = back.transform.localPosition.y;
                 float startTime = Time.time;
                 while (Time.time < startTime+duration)
@@ -465,7 +473,6 @@ namespace EcoBuilder
                 }
                 Destroy(gameObject);
             }
-            GameManager.Instance.ReturnToMenu(()=> StartCoroutine(LeaveThenDestroyFromNextFrame(-1000, 1)));
         }
         void OnDestroy()
         {

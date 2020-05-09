@@ -199,6 +199,8 @@ MonoBehaviour:
     type: 3}
   poofPrefab: {fileID: 295529541162420560, guid: 5fa6fa8ad86bc0143a0993aef612f52a,
     type: 3}
+  confettiPrefab: {fileID: 2354476291600607311, guid: b9e80853802ac784aa11b54c39acefdf,
+    type: 3}
 --- !u!4 &1080646977
 Transform:
   m_ObjectHideFlags: 0

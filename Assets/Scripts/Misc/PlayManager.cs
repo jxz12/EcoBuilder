@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace EcoBuilder
@@ -15,7 +16,7 @@ namespace EcoBuilder
         [SerializeField] UI.Recorder recorder;
         [SerializeField] UI.Score score;
 
-        [SerializeField] Effect heartPrefab, skullPrefab, poofPrefab;
+        [SerializeField] Effect heartPrefab, skullPrefab, poofPrefab, confettiPrefab;
 
         void Start()
         {
@@ -221,14 +222,24 @@ namespace EcoBuilder
 
         void FinishPlaythrough()
         {
-            inspector.Finish();
-            graph.Finish();
-            recorder.Finish();
-            score.Finish();
-            constraints.Finish();
-
-            GameManager.Instance.SetResultsScreen(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions());
-            Destroy(gameObject);
+            // spreads computation across frames to avoid too big a lag spike
+            StartCoroutine(FinishGradually());
+            IEnumerator FinishGradually()
+            {
+                Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
+                yield return null;
+                graph.Finish();
+                yield return null;
+                inspector.Finish();
+                recorder.Finish();
+                yield return null;
+                score.Finish();
+                constraints.Finish();
+                yield return null;
+                GameManager.Instance.SetResultsScreen(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions());
+                yield return null;
+                Destroy(gameObject);
+            }
         }
 
 #if UNITY_EDITOR

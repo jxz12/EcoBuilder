@@ -145,6 +145,11 @@ namespace EcoBuilder
             }
             report.HideIfShowing();
         }
+        public void ReloadLevelScene(Level toPlay)
+        {
+            confirmation.GiveChoice(()=>LoadLevelScene(toPlay), "Are you sure you want to restart the level?");
+        }
+
 
 
 
@@ -156,16 +161,17 @@ namespace EcoBuilder
         public Canvas TutCanvas { get { return tutorialCanvas; } }
 
         [SerializeField] UI.Confirmation confirmation;
-        public void ReturnToMenu(Action OnReturn)
+        public void ReturnToMenu(Action OnConfirm, Action OnMenuLoaded)
         {
+            confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
             void BackToMenu()
             {
+                OnConfirm.Invoke(); 
                 HelpText.ResetMenuPosition(false);
                 earth.ResetParent(); 
-                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnReturn.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnMenuLoaded?.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
-            confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
         }
 
         public void Quit()
