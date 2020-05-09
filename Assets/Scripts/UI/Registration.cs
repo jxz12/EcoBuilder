@@ -154,18 +154,18 @@ namespace EcoBuilder.UI
 
         IEnumerator TweenY(float duration, float yStart, float yEnd, bool applyShade)
         {
-            Color startCol = shade.color;
             Vector3 startPos = new Vector3(0, yStart, 0);
             Vector3 endPos = new Vector3(0, yEnd, 0);
 
             GetComponent<Canvas>().enabled = true;
             float startTime = Time.time;
             shade.raycastTarget = applyShade;
+            shade.color = new Color(0,0,0,applyShade?0:.5f);
             while (Time.time < startTime+duration)
             {
                 float t = Tweens.QuadraticInOut((Time.time-startTime)/duration);
                 transform.localPosition = Vector3.Lerp(startPos, endPos, t);
-                shade.color = new Color(0,0,0,Mathf.Lerp(startCol.a, applyShade?.5f:0, t));
+                shade.color = new Color(0,0,0,Mathf.Lerp(applyShade?0:.5f, applyShade?.5f:0, t));
                 yield return null;
             }
             transform.localPosition = endPos;

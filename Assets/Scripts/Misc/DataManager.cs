@@ -217,23 +217,24 @@ namespace EcoBuilder
             Assert.IsFalse(player.team == PlayerDetails.Team.Wolf || player.team == PlayerDetails.Team.Lion, "should not have option to create account");
             // note that this function purposefully does not delete the player in order to keep their highscore info
             player.team = PlayerDetails.Team.Unassigned;
+            SavePlayerDetailsLocal();
         }
-        public void LogOut(Action Reset)
+        public void LogOut(Action OnConfirm)
         {
-            Assert.IsNotNull(Reset);
+            Assert.IsNotNull(OnConfirm);
             Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); Reset(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
+            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
         }
-        public void DeleteAccount(Action Reset)
+        public void DeleteAccount(Action OnConfirm)
         {
-            Assert.IsNotNull(Reset);
+            Assert.IsNotNull(OnConfirm);
             Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(Reset, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
+            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(OnConfirm, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
-        public void UnlockAllLevels(Action Reset)
+        public void UnlockAllLevels(Action OnConfirm)
         {
-            Assert.IsNotNull(Reset);
-            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = true; SavePlayerDetailsLocal(); Reset(); }, "Are you sure you want to unlock all levels?");
+            Assert.IsNotNull(OnConfirm);
+            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = true; SavePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to unlock all levels?");
         }
 
         //////////////////////////////////////////////

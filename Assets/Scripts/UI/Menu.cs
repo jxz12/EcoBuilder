@@ -65,6 +65,9 @@ namespace EcoBuilder.UI
             int collectedStars = 0;
             int totalStars = 0;
 
+            Assert.IsFalse(learningGrid.transform.childCount > 0, "learning levels already spawned");
+            Assert.IsFalse(researchList.transform.childCount > 0, "research levels already spawned");
+
             void SpawnLevel(Level prefab, Transform layout)
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
@@ -92,10 +95,6 @@ namespace EcoBuilder.UI
                     totalStars += 3;
                 }
             };
-
-            Assert.IsFalse(learningGrid.transform.childCount > 0, "learning levels already spawned");
-            Assert.IsFalse(researchList.transform.childCount > 0, "research levels already spawned");
-
             Level toSpawn = firstLearningLevel;
             while (toSpawn != null)
             {
@@ -170,13 +169,23 @@ namespace EcoBuilder.UI
             }
             unlockAll.interactable = !GameManager.Instance.LevelsUnlockedRegardless;
 
-            logoAnim.SetTrigger("Show");
-            WaitThenDisableLevelCanvases();
+            // don't want to keep layoutgroups enabled as they are slow, so only enable for one frame
             EnableThenDisableLevelLayouts();
-            Reveal();
+            void EnableThenDisableLevelLayouts()
+            {
+                learningGrid.enabled = researchList.enabled = true;
+                IEnumerator WaitThenDisable()
+                {
+                    yield return null;
+                    learningGrid.enabled = researchList.enabled = false;
+                }
+                StartCoroutine(WaitThenDisable());
+            }
 
             // update medians every time menu is entered
             GameManager.Instance.CacheMediansRemote();
+            logoAnim.SetTrigger("Show");
+            Reveal();
         }
 
         ////////////////////////
@@ -334,31 +343,6 @@ namespace EcoBuilder.UI
         ///////////////
         // animation
 
-        public void WaitThenDisableLevelCanvases(float delay=0)
-        {
-            // learningCanvas.enabled = researchCanvas.enabled = true;
-            learningGrid.enabled = researchList.enabled = true;
-            IEnumerator WaitThenDisable()
-            {
-                // this first delay is so that textmeshpro components don't get messed up
-                yield return null;
-                // second is to wait for levels to go off screen
-                yield return new WaitForSeconds(delay);
-                learningCanvas.enabled = researchCanvas.enabled = false;
-            }
-            StartCoroutine(WaitThenDisable());
-        }
-        public void EnableThenDisableLevelLayouts()
-        {
-            learningGrid.enabled = researchList.enabled = true;
-            IEnumerator WaitThenDisable()
-            {
-                yield return null;
-                learningGrid.enabled = researchList.enabled = false;
-            }
-            StartCoroutine(WaitThenDisable());
-        }
-
 
 
         ///////////////////////
@@ -388,6 +372,8 @@ namespace EcoBuilder.UI
 
             TweenY(SettingsRT, 0, -1000, ()=>settingsCanvas.enabled=false);
             TweenY(ReturnRT, -60, 60);
+
+            // destroy levels as Start() reinstantiates them (unnecessary I know)
             foreach (Transform child in learningGrid.transform) {
                 Destroy(child.gameObject);
             }
@@ -395,7 +381,14 @@ namespace EcoBuilder.UI
                 Destroy(child.gameObject);
             }
             state = State.Hidden;
-            Start();
+
+            // GameObjects not destroyed until next frame, so delay is needed
+            StartCoroutine(WaitThenStart());
+            IEnumerator WaitThenStart()
+            {
+                yield return null;
+                Start();
+            }
         }
         public void ShowSplash()
         {
