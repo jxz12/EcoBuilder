@@ -50,7 +50,17 @@ namespace EcoBuilder.UI
         }
         void Quit()
         {
-            GameManager.Instance.ReturnToMenu(()=>quitBtn.interactable=false, null);
+            GameManager.Instance.ReturnToMenu(ClearLeaks, null);
+            void ClearLeaks()
+            {
+                quitBtn.interactable = false;
+                if (currLvl != null) {
+                    Destroy(currLvl);
+                }
+                if (nextLvl != null) {
+                    Destroy(nextLvl);
+                }
+            }
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;
@@ -136,16 +146,7 @@ namespace EcoBuilder.UI
             if (canvas.enabled)
             {
                 StopAllCoroutines();
-                StartCoroutine(ShowRoutine(1f, 0, -1000, .5f, 0, DestroyLevels));
-            }
-            void DestroyLevels()
-            {
-                if (currLvl != null) {
-                    Destroy(currLvl);
-                }
-                if (nextLvl != null) {
-                    Destroy(nextLvl);
-                }
+                StartCoroutine(ShowRoutine(1f, 0, -1000, .5f, 0));
             }
         }
         IEnumerator ShowRoutine(float duration, float y0, float y1, float a0, float a1, Action OnCompletion=null)
@@ -167,6 +168,7 @@ namespace EcoBuilder.UI
             if (a1 == 0) {
                 canvas.enabled = false;
             }
+            OnCompletion?.Invoke();
         }
         IEnumerator StarRoutine(float delay1, float delay2, float delay3, int numStars)
         {

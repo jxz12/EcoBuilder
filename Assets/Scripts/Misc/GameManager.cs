@@ -166,6 +166,7 @@ namespace EcoBuilder
             confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
             void BackToMenu()
             {
+                // playedLevel = null;
                 OnConfirm.Invoke(); 
                 HelpText.ResetMenuPosition(false);
                 earth.ResetParent(); 

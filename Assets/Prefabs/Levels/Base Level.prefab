@@ -750,12 +750,12 @@ RectTransform:
   m_Children:
   - {fileID: 1902078868061688843}
   m_Father: {fileID: 6542962971601848806}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.85}
+  m_AnchorMin: {x: 0, y: 0.82}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -5}
-  m_SizeDelta: {x: -50, y: 10}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -50, y: -0.0000014305115}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2788347427815183552
 CanvasRenderer:
@@ -818,7 +818,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 45
   m_fontStyle: 0
-  m_textAlignment: 1026
+  m_textAlignment: 514
   m_characterSpacing: 0
   m_wordSpacing: 0
   m_lineSpacing: 0
@@ -1237,8 +1237,6 @@ MonoBehaviour:
   quitButton: {fileID: 1020050105958342126}
   replayButton: {fileID: 5138229676841934199}
   fireworksPrefab: {fileID: 6047318902721678427, guid: e8c59575ef85bfe49b00632e5351780c,
-    type: 3}
-  confettiPrefab: {fileID: 2354476291600607311, guid: b9e80853802ac784aa11b54c39acefdf,
     type: 3}
   padlock: {fileID: 4297244884304339903}
   cardCanvas: {fileID: 275259046526093926}
@@ -2763,8 +2761,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 901836385849589682}
   - {fileID: 3879141964668913463}
+  - {fileID: 901836385849589682}
   - {fileID: 1381635380954031430}
   m_Father: {fileID: 1407153908476907423}
   m_RootOrder: 1
@@ -2855,7 +2853,7 @@ RectTransform:
   - {fileID: 8737895774289797500}
   - {fileID: 4132130096143069714}
   m_Father: {fileID: 6542962971601848806}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.3}
   m_AnchorMax: {x: 1, y: 0.85}

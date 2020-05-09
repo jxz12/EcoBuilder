@@ -105,7 +105,7 @@ namespace EcoBuilder.Tutorials
             graph.ForceUnfocus();
 
             help.Showing = false;
-            WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,false); help.Showing = true; help.SetAnchorHeight(.85f); score.DisableStarCalculation(false); }); 
+            WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,true); help.Showing = true; help.SetAnchorHeight(.85f); help.SetPixelWidth(400); score.DisableStarCalculation(false); }); 
         }
     }
 }
