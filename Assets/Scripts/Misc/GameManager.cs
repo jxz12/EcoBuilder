@@ -237,9 +237,10 @@ namespace EcoBuilder
                 report.SetResults(nStars, score, prevScore, null, GetCachedMedian(idx), scoreInfo);
             }
         }
-        // called by level
+        // called by level when it is ready
         public void ShowReportCard()
         {
+            HelpText.Showing = false;
             if (playedLevel.NextLevelPrefab != null) {
                 report.GiveNavigation(playedLevel, Instantiate(playedLevel.NextLevelPrefab));
             } else {
@@ -247,7 +248,6 @@ namespace EcoBuilder
             }
 
             report.ShowResults();
-            HelpText.Showing = false;
         }
     }
 }

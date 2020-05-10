@@ -384,16 +384,21 @@ namespace EcoBuilder
                 {
                     float t = Tweens.QuadraticInOut((Time.time-startTime) / duration);
                     float size = Mathf.Lerp(1, 0, t);
+                    float rot = Mathf.Lerp(0,720, t);
                     rt.localScale = new Vector3(size, size, 1);
+                    rt.localRotation = Quaternion.Euler(0,0,rot);
                     yield return null;
                 }
-                flagBack.enabled = flagIcon.enabled = false;
                 rt.localScale = Vector3.one;
+                rt.localRotation = Quaternion.identity;
+
+                flagBack.enabled = flagIcon.enabled = false;
                 playButton.interactable = true;
                 playButton.gameObject.SetActive(true);
                 quitButton.gameObject.SetActive(false);
                 replayButton.gameObject.SetActive(false);
 
+                yield return null;
                 GameManager.Instance.ShowReportCard();
             }
         }

@@ -229,6 +229,8 @@ namespace EcoBuilder
             StartCoroutine(FinishGradually());
             IEnumerator FinishGradually()
             {
+                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions(), model.GetComplexityDescription());
+                yield return null;
                 Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
                 yield return null;
                 graph.Finish();
@@ -238,8 +240,6 @@ namespace EcoBuilder
                 yield return null;
                 score.Finish();
                 constraints.Finish();
-                yield return null;
-                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions(), model.GetComplexityDescription());
                 yield return null;
                 Destroy(gameObject);
             }

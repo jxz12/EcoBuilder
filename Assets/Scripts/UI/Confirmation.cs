@@ -90,10 +90,11 @@ namespace EcoBuilder.UI
         public void Alert(string message)
         {
             // does nothing but show a temporary message 
+            canvas.enabled = true;
             yes.gameObject.SetActive(false);
             no.gameObject.SetActive(false);
             okay.gameObject.SetActive(true);
-            OkayCallback = ()=>canvas.enabled = false;
+            OkayCallback = NoCallback = ()=>canvas.enabled = false;
             SetText(message);
         }
     }
