@@ -103,6 +103,7 @@ namespace EcoBuilder.UI
                 {
                     currentMsg.text = "Well done!";
                     points.sprite = pointSprite;
+                    points.transform.localRotation = Quaternion.identity;
                 }
             }
             else
@@ -122,6 +123,7 @@ namespace EcoBuilder.UI
                 else
                 {
                     averageMsg.text = "World average";
+                    globe.transform.localRotation = Quaternion.identity;
                 }
             }
             else

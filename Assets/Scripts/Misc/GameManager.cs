@@ -53,7 +53,11 @@ namespace EcoBuilder
         [SerializeField] UI.LoadingBar loadingBar;
         private IEnumerator UnloadSceneThenLoad(string toUnload, string toLoad, Action OnLoaded=null)
         {
+            float tStart = Time.time;
             loadingBar.Show(true);
+            yield return null;
+
+            SendUnsentPost();
             if (toUnload != null)
             {
                 var unloading = SceneManager.UnloadSceneAsync(toUnload, UnloadSceneOptions.None);
@@ -64,9 +68,6 @@ namespace EcoBuilder
                 }
             }
             loadingBar.SetProgress(.333f);
-#if UNITY_EDITOR
-            yield return new WaitForSeconds(.5f);
-#endif
             if (toLoad != null)
             {
                 var loading = SceneManager.LoadSceneAsync(toLoad, LoadSceneMode.Additive);
@@ -78,7 +79,11 @@ namespace EcoBuilder
             }
             loadingBar.Show(false);
             OnLoaded?.Invoke();
-            SendUnsentPost();
+
+            // minimum loading time so they can read the flavour text hehe
+            if (Time.time < tStart+.5f) {
+                yield return new WaitForSeconds(.5f-(Time.time-tStart));
+            }
         }
 
 
