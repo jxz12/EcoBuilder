@@ -40,7 +40,7 @@ The species with the... is...
 apparent
 1 885 1080
 2 850 900
-3 1100 1500
+3 1200 1500
 4 970 1000
 chain
 1 950 1000

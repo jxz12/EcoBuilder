@@ -27,17 +27,23 @@ namespace EcoBuilder.UI
         void Awake()
         {
             splashCanvas.enabled = settingsCanvas.enabled = learningCanvas.enabled = researchCanvas.enabled = false;
-        }
-        void Start()
-        {
-            if (GameManager.Instance.AskForRegistration) {
-                StartRegistration();
-            } else {
-                ShowMainMenu();
-            }
 #if UNITY_WEBGL
             quit.gameObject.SetActive(false);
 #endif
+        }
+        void Start()
+        {
+            // prevents a lag spike in animation
+            StartCoroutine(WaitOneFrameThenStart());
+            IEnumerator WaitOneFrameThenStart()
+            {
+                yield return null;
+                if (GameManager.Instance.AskForRegistration) {
+                    StartRegistration();
+                } else {
+                    ShowMainMenu();
+                }
+            }
         }
 
         void StartRegistration()
