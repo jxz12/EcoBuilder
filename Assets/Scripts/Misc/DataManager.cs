@@ -235,7 +235,7 @@ namespace EcoBuilder
         public void UnlockAllLevels(Action OnConfirm)
         {
             Assert.IsNotNull(OnConfirm);
-            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = true; SavePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to unlock all levels?");
+            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to (un)lock all levels?");
         }
 
         //////////////////////////////////////////////
@@ -385,9 +385,11 @@ namespace EcoBuilder
             }
             sendingUnsent = true;
 
-            var unsentPost = new Queue<Tuple<string, Dictionary<string,string>>>();
-            // TODO: OrderBy date and also don't send new post until this is cleared
-            foreach (string filename in Directory.GetFiles(Application.persistentDataPath, "*.post"))
+            // TODO: don't send new post until this is cleared, even though order shouldn't matter
+            var unsentFiles = Directory.GetFiles(Application.persistentDataPath, "*.post");
+            Array.Sort(unsentFiles);
+            var unsentQueue = new Queue<Tuple<string, Dictionary<string,string>>>();
+            foreach (string filename in unsentFiles)
             {
                 var post = new Dictionary<string,string>();
                 foreach (var line in File.ReadLines(filename))
@@ -396,11 +398,11 @@ namespace EcoBuilder
                     post[kvp[0]] = kvp[1];
                 }
                 if (post.Count > 0) {
-                    unsentPost.Enqueue(Tuple.Create(filename,post));
+                    unsentQueue.Enqueue(Tuple.Create(filename,post));
                 }
             }
-            if (unsentPost.Count > 0) {
-                pat.Post(unsentPost.Peek().Item2, (b,s)=>SendNextIfPossible(b));
+            if (unsentQueue.Count > 0) {
+                pat.Post(unsentQueue.Peek().Item2, (b,s)=>SendNextIfPossible(b));
             }
 
             // recursive local function to clear queue one by one
@@ -408,14 +410,14 @@ namespace EcoBuilder
             {
                 if (prevSuccess)
                 {
-                    var sentFilename = unsentPost.Dequeue().Item1;
+                    var sentFilename = unsentQueue.Dequeue().Item1;
                     try {
                         File.Delete(sentFilename);
                     } catch (Exception e) {
                         Debug.LogWarning($"could not delete post: {e.Message}");
                     }
-                    if (unsentPost.Count > 0) {
-                        pat.Post(unsentPost.Peek().Item2, (b,s)=>SendNextIfPossible(b));
+                    if (unsentQueue.Count > 0) {
+                        pat.Post(unsentQueue.Peek().Item2, (b,s)=>SendNextIfPossible(b));
                     } else {
                         sendingUnsent = false;
                     }

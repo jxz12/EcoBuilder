@@ -185,14 +185,14 @@ namespace EcoBuilder
                 constraints.HighlightLoop();
                 break;
             }
+
+            long? prevHighScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
             if (!details.ResearchMode)
             {
-                score.SetStarThresholds(details.TwoStarScore, details.ThreeStarScore);
+                score.SetStarThresholds(prevHighScore, details.TwoStarScore, details.ThreeStarScore);
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
                 score.OnOneStarAchieved +=    ()=> graph.ForceUnfocus();
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
-                score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
-                score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
             }
             else
             {
@@ -200,9 +200,12 @@ namespace EcoBuilder
                     GameManager.Instance.CacheMediansRemote(); // try once to get median
                 }
                 score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:null, GameManager.Instance.GetCachedMedian(details.Idx)));
-                score.EnableStatsText(GameManager.Instance.GetHighScoreLocal(details.Idx));
-                score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // but don't unfocus, unlike a stars level
+                score.EnableStatsText(prevHighScore);
+                score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus or show message, unlike a stars level
             }
+            score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
+            score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
+
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);
 

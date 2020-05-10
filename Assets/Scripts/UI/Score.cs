@@ -36,26 +36,38 @@ namespace EcoBuilder.UI
             Hide(false);
         }
         long target1=0, target2=0;
-        public void SetStarThresholds(long target1, long target2)
+        public void SetStarThresholds(long? prevHighScore, long target1, long target2)
         {
             statsObject.SetActive(false);
+            starsObject.SetActive(true);
             this.target1 = target1;
             this.target2 = target2;
+
+            HighestScore = prevHighScore ?? 0; // this means highscore is viewable regardless of finish flag
         }
         [SerializeField] GameObject starsObject, statsObject;
         [SerializeField] float rankCheckDelay;
         public void EnableStatsText(long? prevHighScore)
         {
             Assert.IsTrue(rankCheckDelay > 1, "trying to check too often");
-            starsObject.SetActive(false);
             GetComponent<Image>().sprite = researchWorldBackground;
             starsObject.SetActive(false);
             statsObject.SetActive(true);
-            this.target1 = 0;
-            this.target2 = prevHighScore ?? 0; // TODO: change behaviour with stars and stuff and test this whole thing
-            HighestScore = prevHighScore ?? 0;
-            LastStatsRank = null;
 
+            target1 = 0; // ignore this target as it doesn't show a message anyway
+            HighestScore = prevHighScore ?? 0;
+            if (prevHighScore != null)
+            {
+                HighestScore = (long)prevHighScore;
+                target2 = (long)prevHighScore;
+                StartReminding();
+            }
+            else
+            {
+                target2 = long.MaxValue; // never show 'you beat your previous score' dialog
+            }
+
+            LastStatsRank = null;
             OnHighestScoreBroken?.Invoke(); // request a rank at first
         }
         public string LastStatsRank { get; private set; }

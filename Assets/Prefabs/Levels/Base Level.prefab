@@ -1193,10 +1193,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   details:
     idx: 0
-    title: TODO
-    introduction: TODO
-    completedMessage: TODO
-    threeStarsMessage: TODO
+    title: Level
+    introduction: Thank you for playing!
+    completedMessage: Well done for completing the level!
+    threeStarsMessage: You got three stars, fantastic work!
     numProducers: 0
     numConsumers: 0
     minEdges: 0

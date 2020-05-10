@@ -20,7 +20,7 @@ namespace EcoBuilder.UI
         [SerializeField] Button researchWorld;
         [SerializeField] Image researchLock;
 
-        [SerializeField] Button quit, logout, createAccount, deleteAccount, unlockAll;
+        [SerializeField] Button quit, logout, createAccount, deleteAccount;
         [SerializeField] TMPro.TextMeshProUGUI accountStatus;
         [SerializeField] Animator logoAnim;
 
@@ -68,6 +68,63 @@ namespace EcoBuilder.UI
             Assert.IsFalse(learningGrid.transform.childCount > 0, "learning levels already spawned");
             Assert.IsFalse(researchList.transform.childCount > 0, "research levels already spawned");
 
+            Level toSpawn = firstLearningLevel;
+            while (toSpawn != null)
+            {
+                SpawnLevel(toSpawn, learningGrid.transform);
+                toSpawn = toSpawn.NextLevelPrefab;
+            }
+            toSpawn = firstResearchLevel;
+            while (toSpawn != null)
+            {
+                SpawnLevel(toSpawn, researchList.transform);
+                toSpawn = toSpawn.NextLevelPrefab;
+            }
+            foreach (var idx in unlockedIdxs) {
+                instantiated[idx].Unlock();
+            }
+
+
+            bool unlockResearch = ResearchWorldUnlocked();
+            researchWorld.interactable = unlockResearch;
+            researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = unlockResearch? Color.white : new Color(1,1,1,.5f);
+            researchLock.enabled = !unlockResearch;
+            GameManager.Instance.HelpText.Message = unlockResearch? splashResearchText : splashLearningText;
+
+            int firstLevel = unlockResearch? firstResearchLevel.Details.Idx : firstLearningLevel.Details.Idx;
+            if (GameManager.Instance.GetHighScoreLocal(firstLevel) == null)
+            {
+                // show help on first time learning/researching
+                GameManager.Instance.HelpText.DelayThenShow(2f, splashResearchText);
+            }
+
+            // set up settings menu
+            reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
+            if (GameManager.Instance.LoggedIn)
+            {
+                accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
+                createAccount.gameObject.SetActive(false);
+                logout.gameObject.SetActive(true);
+                deleteAccount.gameObject.SetActive(true);
+            }
+            else
+            {
+                accountStatus.text = "You are not currently logged in.";
+                createAccount.gameObject.SetActive(true);
+                logout.gameObject.SetActive(false);
+                deleteAccount.gameObject.SetActive(false);
+            }
+
+            // don't want to keep layoutgroups enabled as they are slow, so only enable for one frame
+            EnableThenDisableLevelLayouts();
+
+            // update medians every time menu is entered
+            GameManager.Instance.HelpText.ResetMenuPosition();
+            GameManager.Instance.CacheMediansRemote();
+            logoAnim.SetTrigger("Show");
+            Reveal();
+
+            // local functions below
             void SpawnLevel(Level prefab, Transform layout)
             {
                 var parent = new GameObject().AddComponent<RectTransform>();
@@ -95,19 +152,6 @@ namespace EcoBuilder.UI
                     totalStars += 3;
                 }
             };
-            Level toSpawn = firstLearningLevel;
-            while (toSpawn != null)
-            {
-                SpawnLevel(toSpawn, learningGrid.transform);
-                toSpawn = toSpawn.NextLevelPrefab;
-            }
-            toSpawn = firstResearchLevel;
-            while (toSpawn != null)
-            {
-                SpawnLevel(toSpawn, researchList.transform);
-                toSpawn = toSpawn.NextLevelPrefab;
-            }
-
             bool ResearchWorldUnlocked()
             {
                 if (GameManager.Instance.LevelsUnlockedRegardless) {
@@ -122,55 +166,6 @@ namespace EcoBuilder.UI
                 }
                 return true;
             }
-            if (ResearchWorldUnlocked())
-            {
-                // set splash button status
-                researchWorld.interactable = true;
-                researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = Color.white; // remove transparency
-                researchLock.enabled = false;
-
-                GameManager.Instance.HelpText.Message = splashResearchText;
-                if (GameManager.Instance.GetHighScoreLocal(firstResearchLevel.Details.Idx) < 0)
-                {
-                    // show help on first time researching
-                    GameManager.Instance.HelpText.DelayThenShow(2f, splashResearchText);
-                }
-            }
-            else 
-            {
-                GameManager.Instance.HelpText.Message = splashLearningText;
-                if (GameManager.Instance.GetHighScoreLocal(firstLearningLevel.Details.Idx) < 0)
-                {
-                    // show help on first time playing
-                    GameManager.Instance.HelpText.DelayThenShow(2f, splashLearningText);
-                }
-            }
-            GameManager.Instance.HelpText.ResetMenuPosition();
-
-            foreach (var idx in unlockedIdxs) {
-                instantiated[idx].Unlock();
-            }
-
-            // set up settings menu
-            reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
-            if (GameManager.Instance.LoggedIn)
-            {
-                accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
-                createAccount.gameObject.SetActive(false);
-                logout.gameObject.SetActive(true);
-                deleteAccount.gameObject.SetActive(true);
-            }
-            else
-            {
-                accountStatus.text = "You are not currently logged in.";
-                createAccount.gameObject.SetActive(true);
-                logout.gameObject.SetActive(false);
-                deleteAccount.gameObject.SetActive(false);
-            }
-            unlockAll.interactable = !GameManager.Instance.LevelsUnlockedRegardless;
-
-            // don't want to keep layoutgroups enabled as they are slow, so only enable for one frame
-            EnableThenDisableLevelLayouts();
             void EnableThenDisableLevelLayouts()
             {
                 learningGrid.enabled = researchList.enabled = true;
@@ -182,10 +177,6 @@ namespace EcoBuilder.UI
                 StartCoroutine(WaitThenDisable());
             }
 
-            // update medians every time menu is entered
-            GameManager.Instance.CacheMediansRemote();
-            logoAnim.SetTrigger("Show");
-            Reveal();
         }
 
         ////////////////////////
@@ -240,7 +231,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                GameManager.Instance.HelpText.DelayThenSet(.5f, researchWorld.interactable? splashResearchText : splashLearningText);
+                GameManager.Instance.HelpText.DelayThenSet(.6f, researchWorld.interactable? splashResearchText : splashLearningText);
                 GameManager.Instance.HelpText.Showing = false;
             }
         }
@@ -340,9 +331,6 @@ namespace EcoBuilder.UI
             leaderboard.SwitchLevel(selected.Details.Idx, selected.Details.Title);
         }
 
-        ///////////////
-        // animation
-
 
 
         ///////////////////////
@@ -406,7 +394,7 @@ namespace EcoBuilder.UI
             } else if (state == State.Settings) {
                 TweenY(SettingsRT, 0, -1000, ()=>settingsCanvas.enabled=false);
             }
-            SetHelp(researchWorld.interactable? levelsResearchText : levelsLearningText);
+            SetHelp(researchWorld.interactable? splashResearchText : splashLearningText);
 
             state = State.Splash;
         }

@@ -43,10 +43,6 @@ namespace EcoBuilder
 #endif
             SendUnsentPost();
         }
-        void OnDestroy()
-        {
-            SendUnsentPost();
-        }
             
 
 
@@ -134,16 +130,15 @@ namespace EcoBuilder
                 } else {
                     // replay level so no need to destroy
                 }
-                StartCoroutine(UnloadSceneThenLoad("Play", "Play"));
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play", report.HideIfShowing));
             }
             else
             {
                 // play from menu
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
-                StartCoroutine(UnloadSceneThenLoad("Menu", "Play"));
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", report.HideIfShowing));
             }
-            report.HideIfShowing();
         }
         public void ReloadLevelScene(Level toPlay)
         {
@@ -181,6 +176,7 @@ namespace EcoBuilder
         }
         public void CloseGameFully()
         {
+            SendUnsentPost();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

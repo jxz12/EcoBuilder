@@ -376,8 +376,8 @@ namespace EcoBuilder.FoodWeb
             // A*x=b
             // n 1 1
 
-            return MathNetMatStr(interaction, "e5") + '\n' +
-                   MathNetVecStr(negGrowth, "e5") + '\n' +
+            return MathNetMatStr(interaction, "e5") + ':' +
+                   MathNetVecStr(negGrowth, "e5") + ':' +
                    MathNetVecStr(abundance, "e5");
             // return MathNetMatStr(interaction, "f") + '\n' +
             //        MathNetVecStr(negGrowth, "f") + '\n' +
@@ -396,11 +396,12 @@ namespace EcoBuilder.FoodWeb
             {
                 for (int j=0; j<n; j++)
                 {
-                    sb.Append(mat[i, j].ToString(formatter) + " ");
+                    sb.Append(mat[i, j].ToString(formatter) + ",");
                 }
-                sb.Append("\n");
+                sb.Length -= 1;
+                sb.Append(";");
             }
-            sb.Remove(sb.Length - 1, 1);
+            sb.Length -= 1;
             return sb.ToString();
         }
         
@@ -410,9 +411,9 @@ namespace EcoBuilder.FoodWeb
             int n = vec.Count;
             for (int i=0; i<n; i++)
             {
-                sb.Append(vec[i].ToString(formatter) + " ");
+                sb.Append(vec[i].ToString(formatter) + ",");
             }
-            sb.Remove(sb.Length - 1, 1);
+            sb.Length -= 1;
             return sb.ToString();
         }
     }

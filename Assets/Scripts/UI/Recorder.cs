@@ -41,10 +41,10 @@ namespace EcoBuilder.UI
             redoButton.onClick.AddListener(Redo);
 
             record = new List<string>();
-            RecordAction(""); // empty action to mark first Time.time and initialise deltatime
         }
         void Start()
         {
+            prevActionTime = Time.time;
             Hide(false);
         }
         void PushMove(Move move)
@@ -82,22 +82,22 @@ namespace EcoBuilder.UI
         public void SpeciesSpawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
             PushMove(new Move(()=>Despawn(idx), ()=>Respawn(idx), idx, Move.Type.Spawn));
-            RecordAction("+"+idx);
+            RecordAction($"+{idx}");
         }
         public void SpeciesDespawn(int idx, Action<int> Respawn, Action<int> Despawn)
         {
             PushMove(new Move(()=>Respawn(idx), ()=>Despawn(idx), idx, Move.Type.Despawn));
-            RecordAction("-"+idx);
+            RecordAction($"-{idx}");
         }
         public void InteractionAdded(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
             PushMove(new Move(()=>Remove(res,con), ()=>Add(res,con), int.MinValue, Move.Type.Link));
-            RecordAction("*"+res+","+con);
+            RecordAction($"*{res},{con}");
         }
         public void InteractionRemoved(int res, int con, Action<int,int> Add, Action<int,int> Remove)
         {
             PushMove(new Move(()=>Add(res,con), ()=>Remove(res,con), int.MinValue, Move.Type.Unlink));
-            RecordAction("/"+res+","+con);
+            RecordAction($"/{res},{con}");
         }
 
         // public void ProductionSet(int idx, bool prev, bool current, Action<int, bool> SetType)
@@ -114,12 +114,12 @@ namespace EcoBuilder.UI
             {
                 var prevMove = undos.Pop();
                 PushMove(new Move(prevMove.Undo, ()=>SetSize(idx,current), idx, Move.Type.Size));
-                UpdateAction("s"+(int)(current*8));
+                UpdateAction($"s{idx},{current}");
             }
             else
             {
                 PushMove(new Move(()=>SetSize(idx,prev), ()=>SetSize(idx,current), idx, Move.Type.Size));
-                RecordAction("s"+(int)(current*8));
+                RecordAction($"s{idx},{current}");
             }
         }
         public void GreedSet(int idx, int prev, int current, Action<int, int> SetGreed)
@@ -128,12 +128,12 @@ namespace EcoBuilder.UI
             {
                 var prevMove = undos.Pop();
                 PushMove(new Move(prevMove.Undo, ()=>SetGreed(idx,current), idx, Move.Type.Greed));
-                UpdateAction("g"+current);
+                UpdateAction($"g{idx},{current}");
             }
             else
             {
                 PushMove(new Move(()=>SetGreed(idx,prev), ()=>SetGreed(idx,current), idx, Move.Type.Greed));
-                RecordAction("g"+current);
+                RecordAction($"g{idx},{current}");
             }
         }
 
