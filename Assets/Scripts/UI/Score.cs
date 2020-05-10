@@ -36,6 +36,7 @@ namespace EcoBuilder.UI
             Hide(false);
         }
         long target1=0, target2=0;
+        long prevHighScore=0;
         public void SetStarThresholds(long? prevHighScore, long target1, long target2)
         {
             statsObject.SetActive(false);
@@ -43,29 +44,17 @@ namespace EcoBuilder.UI
             this.target1 = target1;
             this.target2 = target2;
 
-            HighestScore = prevHighScore ?? 0; // this means highscore is viewable regardless of finish flag
+            this.prevHighScore = prevHighScore ?? 0; // this means highscore is viewable regardless of finish flag
         }
         [SerializeField] GameObject starsObject, statsObject;
-        [SerializeField] float rankCheckDelay;
         public void EnableStatsText(long? prevHighScore)
         {
-            Assert.IsTrue(rankCheckDelay > 1, "trying to check too often");
+            // Assert.IsTrue(rankCheckDelay > 1, "trying to check too often");
             GetComponent<Image>().sprite = researchWorldBackground;
             starsObject.SetActive(false);
             statsObject.SetActive(true);
 
-            target1 = 0; // ignore this target as it doesn't show a message anyway
-            HighestScore = prevHighScore ?? 0;
-            if (prevHighScore != null)
-            {
-                HighestScore = (long)prevHighScore;
-                target2 = (long)prevHighScore;
-                StartReminding();
-            }
-            else
-            {
-                target2 = long.MaxValue; // never show 'you beat your previous score' dialog
-            }
+            target1 = target2 = this.prevHighScore = prevHighScore ?? 0; // this means highscore is viewable regardless of finish flag
 
             LastStatsRank = null;
             OnHighestScoreBroken?.Invoke(); // request a rank at first
@@ -81,7 +70,7 @@ namespace EcoBuilder.UI
                 sb.Append($"Currently offline");
             }
             if (median != null) {
-                sb.Append($"\nAverage: {median}");
+                sb.Append($"\nAverage: {((long)median).ToString("N0")}");
             }
             statsText.text = sb.ToString();
             LastStatsRank = rank;
@@ -92,10 +81,12 @@ namespace EcoBuilder.UI
 
         // to fetch the score
         List<Func<double>> AttachedSources = new List<Func<double>>();
-        public void AttachScoreSource(Func<double> Source)
+        List<Func<double,string>> AttachedDescriptions = new List<Func<double,string>>();
+        public void AttachScoreSource(Func<double> Source, Func<double,string> Description)
         {
             Assert.IsNotNull(Source);
             AttachedSources.Add(Source);
+            AttachedDescriptions.Add(Description);
         }
         // to check whether constraints have been met
         Func<bool> AttachedSatisfied = ()=>false;
@@ -111,6 +102,21 @@ namespace EcoBuilder.UI
         public void AttachScoreValidity(Func<bool> IsValid)
         {
             AttachedValidity = IsValid;
+        }
+        public string GetDescription()
+        {
+            Assert.IsTrue(AttachedSources.Count == AttachedDescriptions.Count);
+            if (AttachedSources.Count == 0) {
+                return null;
+            }
+            var sb = new StringBuilder();
+            sb.Append("Your score was comprised of ").Append(AttachedDescriptions[0].Invoke(AttachedSources[0].Invoke()));
+            for (int i=1; i<AttachedSources.Count; i++)
+            {
+                sb.Append(", plus ").Append(AttachedDescriptions[i].Invoke(AttachedSources[i].Invoke()));
+            }
+            sb.Append(".");
+            return sb.ToString();
         }
 
         public long HighestScore { get; private set; } = 0;
@@ -198,12 +204,6 @@ namespace EcoBuilder.UI
                 StartReminding();
             } else {
                 EndReminding();
-            }
-            // periodically request a new rank + median after long enough wait
-            if (Time.time > lastHighScoreTime+rankCheckDelay)
-            {
-                OnHighestScoreBroken?.Invoke();
-                lastHighScoreTime = Time.time;
             }
         }
         [SerializeField] Image scoreIcon;

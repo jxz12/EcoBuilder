@@ -45,13 +45,11 @@ namespace EcoBuilder.UI
             panelLayout.SetLayoutVertical();
             panelFitter.SetLayoutVertical();
         }
-        public void SetPixelWidth(float pixelWidth, bool damp=true)
+        public void SetPixelWidth(float pixelWidth)
         {
             targetWidth = pixelWidth;
-            if (!damp) {
-                width = targetWidth;
-                rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
-            }
+            width = targetWidth;
+            rt.sizeDelta = new Vector2(width, rt.sizeDelta.y);
             ForceUpdateLayout();
         }
         public void SetAnchorHeight(float normalisedHeight, bool damp=true) // 0-1 range
@@ -150,7 +148,7 @@ namespace EcoBuilder.UI
             SetSide(false, damp);
             SetPivotHeight(1, damp);
             SetAnchorHeight(.8f, damp);
-            SetPixelWidth(400, damp);
+            SetPixelWidth(400);
 
             if (forceHide)
             {
@@ -165,7 +163,7 @@ namespace EcoBuilder.UI
             SetSide(false, damp);
             SetPivotHeight(1, damp);
             SetAnchorHeight(.88f, damp);
-            SetPixelWidth(350, damp);
+            SetPixelWidth(350);
         }
 
         void UserShow(bool showing) // to attach to button

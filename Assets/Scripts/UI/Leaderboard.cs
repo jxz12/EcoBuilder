@@ -88,7 +88,7 @@ namespace EcoBuilder.UI
             {
                 var lowerScoresText = new StringBuilder();
                 if (rank == null) {
-                    lowerScoresText.Append($"You: {(playerScore??0).ToString("N0")}");
+                    lowerScoresText.Append($"You: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
                 } else {
                     lowerScoresText.Append($"{rank}: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
                 }

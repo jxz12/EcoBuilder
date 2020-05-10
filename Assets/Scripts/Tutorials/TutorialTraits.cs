@@ -30,6 +30,7 @@ namespace EcoBuilder.Tutorials
         }
         void ExplainIntro(bool showText)
         {
+            DetachSmellyListeners();
             StopAllCoroutines();
             inspector.HideStatusBars();
 
@@ -43,7 +44,6 @@ namespace EcoBuilder.Tutorials
             
             Track(plant.transform);
 
-            DetachSmellyListeners();
             AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainSize());
         }
 
@@ -76,7 +76,7 @@ namespace EcoBuilder.Tutorials
             Hide();
             
             help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(450, false); help.Showing = true; Track(animal.transform); });
+            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(430); help.Showing = true; Track(animal.transform); });
 
             AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainInterference());
         }
@@ -105,7 +105,7 @@ namespace EcoBuilder.Tutorials
             graph.ForceUnfocus();
 
             help.Showing = false;
-            WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,true); help.Showing = true; help.SetAnchorHeight(.85f); help.SetPixelWidth(400); score.DisableStarCalculation(false); }); 
+            WaitThenDo(2, ()=>{ help.Message = "Good job! This bar at the top displays your score, which is determined by the number of species, the number of links, and the total health of every species. Make both species survive again to complete this level!"; score.Hide(false); help.SetSide(false,true); help.Showing = true; help.SetAnchorHeight(.85f); help.SetPixelWidth(420); score.DisableStarCalculation(false); }); 
         }
     }
 }

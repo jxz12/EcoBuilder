@@ -302,11 +302,6 @@ namespace EcoBuilder.FoodWeb
                 return (realPlex / maxRealPlex);
             }
         }
-        public string GetComplexityDescription()
-        {
-            // TODO: scaling
-            return $"#species={simulation.Richness}\n#interactions={simulation.Connectance}\nhealth={simulation.TotalAbundance}";
-        }
 
         public string GetMatrix()
         {

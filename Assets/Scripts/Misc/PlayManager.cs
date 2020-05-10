@@ -54,7 +54,7 @@ namespace EcoBuilder
 
             // constraints
             graph.OnLayedOut += ()=> constraints.UpdateDisjoint(graph.NumComponents > 1);
-            graph.OnLayedOut += ()=> constraints.DisplayEdge(graph.NumEdges);
+            graph.OnLayedOut += ()=> constraints.DisplayEdge(graph.NumLinks);
             graph.OnLayedOut += ()=> constraints.DisplayChain(graph.MaxChain);
             graph.OnLayedOut += ()=> constraints.DisplayLoop(graph.MaxLoop);
 
@@ -157,31 +157,27 @@ namespace EcoBuilder
             model.AttachAdjacency(graph.GetActiveTargets);
 
             // set up scoring
+            if (details.Metric != LevelDetails.ScoreMetric.None) {
+                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier, x=>$"{graph.NumNodes} species, multiplied by {graph.NumLinks} interaction(s), multiplied by {(x/graph.NumNodes/graph.NumLinks).ToString("F1")} health");
+            }
             switch (GameManager.Instance.PlayedLevelDetails.Metric)
             {
             case LevelDetails.ScoreMetric.None:
                 break;
-            case LevelDetails.ScoreMetric.Standard:
-                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                break;
             case LevelDetails.ScoreMetric.Producers:
-                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                score.AttachScoreSource(()=> constraints.LeafValue * details.AltMultiplier);
+                score.AttachScoreSource(()=> constraints.LeafValue * details.AltMultiplier, x=>$"{constraints.LeafValue} plant(s) multiplied by {details.AltMultiplier.ToString("N0")}");
                 constraints.HighlightPaw();
                 break;
             case LevelDetails.ScoreMetric.Consumers:
-                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                score.AttachScoreSource(()=> constraints.PawValue * details.AltMultiplier);
+                score.AttachScoreSource(()=> constraints.PawValue * details.AltMultiplier, x=>$"{constraints.PawValue} animal(s) multiplied by {details.AltMultiplier.ToString("N0")}");
                 constraints.HighlightPaw();
                 break;
             case LevelDetails.ScoreMetric.Chain:
-                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                score.AttachScoreSource(()=> graph.MaxChain * details.AltMultiplier);
+                score.AttachScoreSource(()=> graph.MaxChain * details.AltMultiplier, x=>$"{graph.MaxChain} chain length multiplied by {details.AltMultiplier.ToString("N0")}");
                 constraints.HighlightChain();
                 break;
             case LevelDetails.ScoreMetric.Loop:
-                score.AttachScoreSource(()=> model.GetNormalisedComplexity() * details.MainMultiplier);
-                score.AttachScoreSource(()=> graph.MaxLoop * details.AltMultiplier);
+                score.AttachScoreSource(()=> graph.MaxLoop * details.AltMultiplier, x=>$"{graph.MaxLoop} loop length multiplied by {details.AltMultiplier.ToString("N0")}");
                 constraints.HighlightLoop();
                 break;
             }
@@ -193,6 +189,8 @@ namespace EcoBuilder
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable();
                 score.OnOneStarAchieved +=    ()=> graph.ForceUnfocus();
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.CompletedMessage);
+                score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
+                score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
             }
             else
             {
@@ -203,8 +201,6 @@ namespace EcoBuilder
                 score.EnableStatsText(prevHighScore);
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus or show message, unlike a stars level
             }
-            score.OnThreeStarsAchieved += ()=> graph.ForceUnfocus();
-            score.OnThreeStarsAchieved += ()=> GameManager.Instance.HelpText.DelayThenShow(1, details.ThreeStarsMessage);
 
             score.AttachConstraintsSatisfied(()=> constraints.AllSatisfied());
             score.AttachScoreValidity(()=> graph.GraphLayedOut && model.EquilibriumSolved);
@@ -229,7 +225,7 @@ namespace EcoBuilder
             StartCoroutine(FinishGradually());
             IEnumerator FinishGradually()
             {
-                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions(), model.GetComplexityDescription());
+                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions(), score.GetDescription());
                 yield return null;
                 Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
                 yield return null;

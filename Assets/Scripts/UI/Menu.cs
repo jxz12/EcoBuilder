@@ -91,18 +91,35 @@ namespace EcoBuilder.UI
             }
 
 
-            bool unlockResearch = ResearchWorldUnlocked();
+            bool unlockResearch = AllLevelsCompleted(firstLearningLevel);
             researchWorld.interactable = unlockResearch;
             researchWorld.GetComponentInChildren<TMPro.TextMeshProUGUI>().color = unlockResearch? Color.white : new Color(1,1,1,.5f);
             researchLock.enabled = !unlockResearch;
-            GameManager.Instance.HelpText.Message = unlockResearch? splashResearchText : splashLearningText;
+
+            if (unlockResearch)
+            {
+                if (AllLevelsCompleted(firstResearchLevel)) {
+                    splashText = splashCreditsText;
+                    SetHelp(splashText);
+                    GameManager.Instance.HelpText.DelayThenShow(2f, splashText);
+                } else {
+                    splashText = splashResearchText;
+                    SetHelp(splashText);
+                    if (GameManager.Instance.GetHighScoreLocal(firstResearchLevel.Details.Idx) == null) {
+                        // show help on first time learning/researching
+                        GameManager.Instance.HelpText.DelayThenShow(2f, splashText);
+                    }
+                }
+            } else {
+                splashText = splashLearningText;
+                SetHelp(splashText);
+                if (GameManager.Instance.GetHighScoreLocal(firstLearningLevel.Details.Idx) == null) {
+                    // show help on first time learning/researching
+                    GameManager.Instance.HelpText.DelayThenShow(2f, splashText);
+                }
+            }
 
             int firstLevel = unlockResearch? firstResearchLevel.Details.Idx : firstLearningLevel.Details.Idx;
-            if (GameManager.Instance.GetHighScoreLocal(firstLevel) == null)
-            {
-                // show help on first time learning/researching
-                GameManager.Instance.HelpText.DelayThenShow(2f, splashResearchText);
-            }
 
             // set up settings menu
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
@@ -158,20 +175,6 @@ namespace EcoBuilder.UI
                     totalStars += 3;
                 }
             };
-            bool ResearchWorldUnlocked()
-            {
-                if (GameManager.Instance.LevelsUnlockedRegardless) {
-                    return true;
-                }
-                var prefab = firstLearningLevel;
-                while (prefab != null) {
-                    if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) == null) {
-                        return false;
-                    }
-                    prefab = prefab.NextLevelPrefab;
-                }
-                return true;
-            }
             void EnableThenDisableLevelLayouts()
             {
                 learningGrid.enabled = researchList.enabled = true;
@@ -183,6 +186,20 @@ namespace EcoBuilder.UI
                 StartCoroutine(WaitThenDisable());
             }
 
+        }
+        bool AllLevelsCompleted(Level firstPrefab)
+        {
+            if (GameManager.Instance.LevelsUnlockedRegardless) {
+                return true;
+            }
+            var prefab = firstPrefab;
+            while (prefab != null) {
+                if (GameManager.Instance.GetHighScoreLocal(prefab.Details.Idx) == null) {
+                    return false;
+                }
+                prefab = prefab.NextLevelPrefab;
+            }
+            return true;
         }
 
         ////////////////////////
@@ -215,13 +232,14 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.UnlockAllLevels(Reset);
         }
-        [SerializeField] string splashLearningText, splashResearchText;
+        [SerializeField] string splashLearningText, splashResearchText, splashCreditsText;
         [SerializeField] string settingsText;
         [SerializeField] string levelsLearningText, levelsResearchText;
         [SerializeField] string lockHelp;
+        string splashText = "Welcome to EcoBuilder!";
         public void ResetHelpToSplash()
         {
-            GameManager.Instance.HelpText.Message = researchWorld.interactable? splashResearchText : splashLearningText;
+            GameManager.Instance.HelpText.Message = splashText;
             GameManager.Instance.HelpText.ResetMenuPosition();
         }
         public void SetHelpHeight(float height)
@@ -237,7 +255,7 @@ namespace EcoBuilder.UI
             }
             else
             {
-                GameManager.Instance.HelpText.DelayThenSet(.6f, researchWorld.interactable? splashResearchText : splashLearningText);
+                GameManager.Instance.HelpText.DelayThenSet(.6f, splashText);
                 GameManager.Instance.HelpText.Showing = false;
             }
         }
@@ -400,7 +418,7 @@ namespace EcoBuilder.UI
             } else if (state == State.Settings) {
                 TweenY(SettingsRT, 0, -1000, ()=>settingsCanvas.enabled=false);
             }
-            SetHelp(researchWorld.interactable? splashResearchText : splashLearningText);
+            SetHelp(splashText);
 
             state = State.Splash;
         }

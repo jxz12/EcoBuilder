@@ -2,10 +2,8 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
-procrustes seems crap sometimes
 test research levels
 make incubator appear ahead of statusbars
-improve level 10
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)

@@ -13,6 +13,7 @@ namespace EcoBuilder.Tutorials
             recorder.Hide();
             inspector.HideSizeSlider();
             inspector.HideRemoveButton();
+            inspector.FixSizeInitialValue(-1);
             score.Hide();
             score.DisableStarCalculation();
 
@@ -50,12 +51,20 @@ namespace EcoBuilder.Tutorials
             DetachSmellyListeners();
             Assert.IsTrue(producerIdx!=-1 && herbivoreIdx!=-1);
 
-            help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By touching this icon, you can highlight all species with that chain length. Now try adding another animal.";
-            help.Showing = true;
+            graph.ForceUnfocus();
+            help.Showing = false;
+            WaitThenDo(1, Show);
+            void Show()
+            {
+                help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By touching this icon, you can highlight all species with that chain length.";
+                help.SetSide(true);
+                help.SetAnchorHeight(.6f);
+                help.Showing = true;
 
-            // point at constraints panel
-            targetAnchor = new Vector2(0,1);
-            Point(new Vector2(55, -350 + hud.ConstraintsOffset), 30); 
+                // point at constraints panel
+                targetAnchor = new Vector2(0,1);
+                Point(new Vector2(70, (-360*hud.TopScale) + hud.ConstraintsOffset), 30); 
+            }
 
             // allow animal again, but only one more
             constraints.LimitPaw(2);
@@ -65,15 +74,35 @@ namespace EcoBuilder.Tutorials
             graph.SetIfNodeCanBeTarget(herbivoreIdx, false);
             graph.SetIfNodeCanBeSource(producerIdx, false);
 
+            float delay = 1.5f;
+            void PointAtPaw()
+            {
+                Hide();
+                help.Showing = false;
+                WaitThenDo(delay, DoPoint);
+                delay = 0;
+                void DoPoint() // lol at this function
+                {
+                    targetAnchor = new Vector2(1,0);
+                    Point(new Vector2(-61, 60) * hud.BottomScale, -90);
+                    help.SetAnchorHeight(.25f);
+                    help.Message = "Now try adding another animal.";
+                    help.Showing = true;
+                }
+            }
+            AttachSmellyListener(constraints, "OnChainHovered", PointAtPaw);
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Showing = false; Hide(); });
+            AttachSmellyListener(graph, "OnEmptyTapped", PointAtPaw);
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>carnivoreTransform=g.transform);
             AttachSmellyListener(graph, "OnLayedOut", ()=>RequestChainOfTwo());
         }
         void RequestChainOfTwo()
         {
             DetachSmellyListeners();
+            StopAllCoroutines();
 
-            help.Message = "And now make it eat the previous animal.";
+            help.SetAnchorHeight(.7f);
+            help.Message = "And make it eat the previous animal.";
             help.Showing = true;
             DragAndDrop(herbivoreTransform, carnivoreTransform, 2.5f);
             
@@ -89,37 +118,72 @@ namespace EcoBuilder.Tutorials
             Hide();
             graph.ForceUnfocus();
             help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is two. However, you will notice that it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it, but without adding any more links."; help.Showing = true; inspector.HideSizeSlider(false); });
+            help.SetAnchorHeight(.95f, true);
+            WaitThenDo(delay, Todo);
+            void Todo()
+            {
+                help.SetPixelWidth(430);
+                help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is now two. However it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it by changing the plant.";
+                help.Showing = true;
+                inspector.HideSizeSlider(false);
+                Track(producerTransform);
+            }
 
             graph.SetIfLinkRemovable(herbivoreIdx, carnivoreIdx, false);
+            graph.SetIfNodeCanBeTarget(carnivoreIdx, false);
+            graph.SetIfNodeCanBeFocused(herbivoreIdx, false);
+            graph.SetIfNodeCanBeFocused(carnivoreIdx, false);
 
+            inspector.HideSizeSlider(false);
+
+            AttachSmellyListener(graph, "OnUnfocused", ()=>{ help.Showing = true; StopAllCoroutines(); Track(producerTransform); });
+            AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ help.Showing = false; StopAllCoroutines(); ShuffleOnSlider(3, 40); });
             AttachSmellyListener(model, "OnEquilibrium", ()=>{ if (model.Feasible) ExplainTopSurvival(1.5f); });
         }
         void ExplainTopSurvival(float delay)
         {
             DetachSmellyListeners();
+            StopAllCoroutines();
+            Hide();
 
             graph.ForceUnfocus();
             help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain of two also eat the plant."; help.Showing = true; });
+            WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain of two also eat the plant."; help.SetPixelWidth(400); help.Showing = true; help.SetAnchorHeight(.85f); DragAndDrop(producerTransform, carnivoreTransform, 2.5f, .5f); });
 
+            graph.SetIfNodeCanBeFocused(producerIdx, false);
             graph.SetIfNodeCanBeSource(producerIdx, true);
+            graph.SetIfNodeCanBeTarget(carnivoreIdx, true);
 
             AttachSmellyListener(graph, "OnLayedOut", ()=>CheckChainOfHeight(1, ()=>ExplainBackToOne(1)));
         }
         void ExplainBackToOne(float delay)
         {
             DetachSmellyListeners();
+            StopAllCoroutines();
 
+            Hide();
             graph.ForceUnfocus();
-            help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to any plant, and so the path going through both animals is overridden by the path from the plant. To finish this level, reconstruct the ecosystem with a chain of 2."; help.Showing = true; score.Hide(false); score.DisableStarCalculation(false); }); 
-
-            constraints.ConstrainChain(2);
-            recorder.Hide(false);
+            graph.SetIfNodeCanBeFocused(producerIdx, true);
+            graph.SetIfNodeCanBeFocused(herbivoreIdx, true);
+            graph.SetIfNodeCanBeFocused(carnivoreIdx, true);
             graph.SetIfNodeCanBeTarget(herbivoreIdx, true);
-            score.Hide(false);
-            score.DisableStarCalculation(false);
+
+            help.Showing = false;
+            WaitThenDo(delay, Finish);
+            void Finish()
+            {
+                recorder.Hide(false);
+                score.Hide(false);
+                score.DisableStarCalculation(false);
+                help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to a plant, and so the path going through both animals is overridden by linking to the plant. To finish this level, reconstruct a chain of 2.";
+                help.SetSide(false, true);
+                help.SetAnchorHeight(.85f, true);
+                help.SetPixelWidth(360);
+                help.Showing = true;
+                score.DisableStarCalculation(false); 
+                score.Hide(false);
+            }
+
         }
     }
 }

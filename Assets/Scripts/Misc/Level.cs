@@ -389,7 +389,7 @@ namespace EcoBuilder
                     rt.localRotation = Quaternion.Euler(0,0,rot);
                     yield return null;
                 }
-                rt.localScale = Vector3.one;
+                rt.localScale = Vector3.zero;
                 rt.localRotation = Quaternion.identity;
 
                 flagBack.enabled = flagIcon.enabled = false;
@@ -400,6 +400,7 @@ namespace EcoBuilder
 
                 yield return null;
                 GameManager.Instance.ShowReportCard();
+                rt.localScale = Vector3.one;
             }
         }
 

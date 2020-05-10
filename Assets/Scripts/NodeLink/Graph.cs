@@ -33,6 +33,10 @@ namespace EcoBuilder.NodeLink
             xAxle.SetParent(transform);
             yAxle = new GameObject("Y Axle").transform;
             yAxle.SetParent(xAxle);
+
+            SGD.Clear();
+            Trophic.Clear();
+            Johnson.Clear();
         }
         Camera mainCam;
         void Start()
@@ -76,7 +80,7 @@ namespace EcoBuilder.NodeLink
         {
             isCalculatingAsync = true;
 
-            NumEdges = links.Count();
+            NumLinks = links.Count();
 
             // Init functions are not async to ensure synchronized adjacency
             SGD.Init(undirected);
@@ -343,7 +347,8 @@ namespace EcoBuilder.NodeLink
         }
 
         // chain and loop
-        public int NumEdges { get; private set; } = 0;
+        public int NumNodes { get { return nodes.Count; } }
+        public int NumLinks { get; private set; } = 0;
         public int NumComponents { get { return SGD.NumComponents; } }
         public int MaxChain { get { return Trophic.MaxChain; } }
         public int NumMaxChain { get { return Trophic.NumMaxChain; } }

@@ -553,13 +553,11 @@ namespace EcoBuilder.UI
         public void HideSizeSlider(bool hidden=true)
         {
             sizeTrait.gameObject.SetActive(!hidden);
-
             StatusBar.HideSize(hidden);
         }
         public void HideGreedSlider(bool hidden=true)
         {
             greedTrait.gameObject.SetActive(!hidden);
-
             StatusBar.HideGreed(hidden);
         }
         public void FixSizeInitialValue(int initialValue=0)

@@ -105,7 +105,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.idx
-      value: 17
+      value: 18
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -176,28 +176,33 @@ PrefabInstance:
         type: 3}
       propertyPath: nextLevelPrefab
       value: 
-      objectReference: {fileID: 378217392143623204, guid: 54903d5158302b547aa909fc2fa9c6a3,
-        type: 3}
+      objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.introduction
-      value: There are three heavy animals in this level, and you must save them
-        all. Luckily you have access to three extra species.
+      value: There are three heavy animals in this final level, and you must save
+        them all! Luckily you have access to three extra species.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.completedMessage
-      value: Nice work! It is hard work feeding all of these hungry animals.
+      value: Well done, you have completed learning world! You may now return to
+        the menu to access Research World.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.threeStarsMessage
-      value: Great job!
+      value: Amazing work! You are fully prepared for Research World.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.minEdges
-      value: 6
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.minChain
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7152265202980475453, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

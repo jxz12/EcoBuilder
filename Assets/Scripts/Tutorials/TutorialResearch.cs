@@ -59,7 +59,7 @@ namespace EcoBuilder.Tutorials
             WaitThenDo(1f, WaitingFor);
             void WaitingFor()
             {
-                help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much a species competes with itself. Low interference results in a high population, and a high interference results in a low population. Try dragging both sliders down as low as possible."; 
+                help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much a species competes with itself. Low interference results in higher health, and a high interference results in lower health. Try dragging both sliders down as low as possible."; 
                 help.Showing=true;
                 AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(plantObj.transform); });
                 AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
@@ -90,7 +90,7 @@ namespace EcoBuilder.Tutorials
 
             Hide();
             help.Showing = false;
-            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum population possible! This is often what you will want for plants. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); Point(new Vector2(-61, 60) * hud.BottomScale, -90); });
+            WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum health possible! This is often what you will want for plants. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); Point(new Vector2(-61, 60) * hud.BottomScale, -90); });
 
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(); help.Showing=false; });
             AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ Point(); help.Showing=true; });
@@ -120,6 +120,7 @@ namespace EcoBuilder.Tutorials
 
             void TrackAnimalTrait(bool sizeOrGreed, float val)
             {
+                float prevSize = animalSize, prevGreed = animalGreed;
                 if (sizeOrGreed) {
                     animalSize = val;
                 } else {
@@ -130,16 +131,17 @@ namespace EcoBuilder.Tutorials
                     if (graph.NumComponents!=1)
                     {
                         StopAllCoroutines();
-                        Transform drag = graph.DragFromTarget? animalObj.transform : plantObj.transform;
-                        Transform drop = graph.DragFromTarget? plantObj.transform : animalObj.transform;
+                        Transform drag = graph.DragFromTarget? plantObj.transform : animalObj.transform;
+                        Transform drop = graph.DragFromTarget? animalObj.transform : plantObj.transform;
                         DragAndDrop(drag, drop, 2f);
                     } else {
                         ExplainConflict1();
                     }
                 }
-                else
+                else if (prevSize==1 && prevGreed==1)
                 {
-                    // start coroutine if not already running
+                    StopAllCoroutines();
+                    Track(animalObj.transform);
                 }
             }
             void TrackConnected()
@@ -327,6 +329,12 @@ namespace EcoBuilder.Tutorials
                     skipButton.transform.localScale = new Vector3(size,size,1);
                     yield return null;
                 }
+                Destroy(skipButton.gameObject);
+            }
+        }
+        void OnDestroy()
+        {
+            if (skipButton != null && skipButton.gameObject != null) {
                 Destroy(skipButton.gameObject);
             }
         }

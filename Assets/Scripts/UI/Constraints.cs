@@ -412,7 +412,7 @@ namespace EcoBuilder.UI
             } else if (!IsSatisfied(Type.Edge)) {
                 return "You have not added enough links.";
             } else if (!IsSatisfied(Type.Chain)) {
-                return "Your web is not tall enough.";
+                return "You do not have a long enough chain.";
             } else if (!IsSatisfied(Type.Loop)) {
                 return "You do not have a long enough loop.";
             } else {

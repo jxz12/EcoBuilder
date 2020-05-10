@@ -33,6 +33,11 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        public static void Clear()
+        {
+            johnsonLongestLoop.Clear();
+            johnsonNumLongest = 0;
+        }
 
         public static int MaxLoop {
             get { return johnsonLongestLoop.Count; }

@@ -89,6 +89,11 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
+        public static void Clear()
+        {
+            MaxChain = 0;
+            MaxTrophicLevel = 0;
+        }
         // public to allow outside to force convergence
         private static float trophicScaling = 1;
         public static void SolveTrophic(float eps=.01f)

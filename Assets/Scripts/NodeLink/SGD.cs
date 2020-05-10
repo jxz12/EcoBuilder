@@ -62,6 +62,10 @@ namespace EcoBuilder.NodeLink
             sources.TrimExcess();
             targets.TrimExcess();
         }
+        public static void Clear()
+        {
+            NumComponents = 0;
+        }
         public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint)
         {
             FindConnectedComponents();
