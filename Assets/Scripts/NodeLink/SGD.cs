@@ -332,7 +332,7 @@ namespace EcoBuilder.NodeLink
                         procrustes[cc,0] += newPos.x*oldPos.y - newPos.y*oldPos.x;
                         procrustes[cc,1] += newPos.x*oldPos.x + newPos.y*oldPos.y;
 
-                        newPos = -newPos;
+                        newPos.x = -newPos.x; // reflect
                         setsurcorp[cc,0] += newPos.x*oldPos.y - newPos.y*oldPos.x;
                         setsurcorp[cc,1] += newPos.x*oldPos.x + newPos.y*oldPos.y;
                     }

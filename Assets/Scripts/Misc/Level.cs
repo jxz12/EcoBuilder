@@ -375,28 +375,27 @@ namespace EcoBuilder
         {
             flagging = false;
 
-            IEnumerator Tween()
+            StartCoroutine(Spin());
+            IEnumerator Spin()
             {
                 var rt = GetComponent<RectTransform>();
                 float startTime = Time.time;
-                float startSize = rt.sizeDelta.x;
                 while (Time.time < startTime + duration)
                 {
                     float t = Tweens.QuadraticInOut((Time.time-startTime) / duration);
-                    float size = Mathf.Lerp(startSize, 0, t);
-                    rt.sizeDelta = new Vector2(size, size);
+                    float size = Mathf.Lerp(1, 0, t);
+                    rt.localScale = new Vector3(size, size, 1);
                     yield return null;
                 }
                 flagBack.enabled = flagIcon.enabled = false;
-                rt.sizeDelta = new Vector2(100,100);
+                rt.localScale = Vector3.one;
                 playButton.interactable = true;
                 playButton.gameObject.SetActive(true);
                 quitButton.gameObject.SetActive(false);
                 replayButton.gameObject.SetActive(false);
 
-                GameManager.Instance.ShowResultsScreen();
+                GameManager.Instance.ShowReportCard();
             }
-            StartCoroutine(Tween());
         }
 
 

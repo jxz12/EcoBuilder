@@ -302,13 +302,10 @@ namespace EcoBuilder.FoodWeb
                 return (realPlex / maxRealPlex);
             }
         }
-        public Dictionary<string, double> GetComplexityComponents()
+        public string GetComplexityDescription()
         {
-            return new Dictionary<string, double>() {
-                {"# Species",  simulation.Richness},
-                {"# Interactions", simulation.Connectance},
-                {"Total Health", simulation.TotalAbundance}
-            };
+            // TODO: scaling
+            return $"#species={simulation.Richness}\n#interactions={simulation.Connectance}\nhealth={simulation.TotalAbundance}";
         }
 
         public string GetMatrix()

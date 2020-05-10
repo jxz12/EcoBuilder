@@ -239,7 +239,7 @@ namespace EcoBuilder
                 score.Finish();
                 constraints.Finish();
                 yield return null;
-                GameManager.Instance.SetResultsScreen(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions());
+                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions(), model.GetComplexityDescription());
                 yield return null;
                 Destroy(gameObject);
             }

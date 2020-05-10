@@ -31,6 +31,7 @@ namespace EcoBuilder.Tests
                 var obj = (GameObject)AssetDatabase.LoadMainAssetAtPath(path);
                 foreach (var monoB in obj.GetComponents<MonoBehaviour>())
                 {
+                    Assert.IsNotNull(monoB, $"null monob at {path}");
                     AssertSerializeFieldsNotNull(monoB);
                 }
             }
@@ -45,6 +46,9 @@ namespace EcoBuilder.Tests
             foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                                         .Where(f=> Attribute.IsDefined(f, typeof(SerializeField))))
             {
+                if (field.Name == "tutorialPrefab" || field.Name == "nextLevelPrefab") {
+                    continue;
+                }
                 // sb.Append($"{field.Name} {field.GetValue(monoB)}");
                 Assert.IsNotNull(field.GetValue(monoB), $"SerializeField {field.Name} in {monoB.name} is null");
             }

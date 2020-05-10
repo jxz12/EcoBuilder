@@ -34,7 +34,9 @@ namespace EcoBuilder
         void Start()
         {
 #if !UNITY_EDITOR
-            StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
+            if (SceneManager.sceneCount == 1) {
+                StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
+            }
 #endif
 #if UNITY_WEBGL
             print($"TODO: set this to the dependent on screen size for webgl using {Screen.currentResolution}");
@@ -66,7 +68,14 @@ namespace EcoBuilder
                     loadingBar.SetProgress(unloading.progress * .333f);
                     yield return null;
                 }
+                loadingBar.SetProgress(.333f);
             }
+#if UNITY_EDITOR
+            // minimum loading time so they can read the flavour text hehe
+            if (Time.time < tStart+.5f) {
+                yield return new WaitForSeconds(.5f-(Time.time-tStart));
+            }
+#endif
             loadingBar.SetProgress(.333f);
             if (toLoad != null)
             {
@@ -76,14 +85,10 @@ namespace EcoBuilder
                     loadingBar.SetProgress(.333f + .667f*loading.progress);
                     yield return null;
                 }
+                loadingBar.SetProgress(1);
             }
             loadingBar.Show(false);
             OnLoaded?.Invoke();
-
-            // minimum loading time so they can read the flavour text hehe
-            if (Time.time < tStart+.5f) {
-                yield return new WaitForSeconds(.5f-(Time.time-tStart));
-            }
         }
 
 
@@ -139,7 +144,7 @@ namespace EcoBuilder
             }
             else
             {
-                // play from menu
+                // play from menu or report card
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
                 StartCoroutine(UnloadSceneThenLoad("Menu", "Play", report.HideIfShowing));
@@ -179,6 +184,11 @@ namespace EcoBuilder
         {
             confirmation.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
         }
+        public void ShowInfo(string message)
+        {
+            // like javascript alert()
+            confirmation.Alert(message);
+        }
         public void CloseGameFully()
         {
             SendUnsentPost();
@@ -208,7 +218,7 @@ namespace EcoBuilder
         [SerializeField] UI.ReportCard report;
 
         // called by playmanager
-        public void SetResultsScreen(int nStars, long score, string rank, string matrix, string actions)
+        public void SetReportCard(int nStars, long score, string rank, string matrix, string actions, string scoreInfo)
         {
             int idx = playedLevel.Details.Idx;
 
@@ -219,23 +229,23 @@ namespace EcoBuilder
                 SavePlaythroughRemote(idx, score, matrix, actions);
             }
 
+            if (playedLevel.Details.Metric == LevelDetails.ScoreMetric.None) {
+                report.SetResults(null, null, null, null, null, null);
+            } else if (playedLevel.Details.ResearchMode) {
+                report.SetResults(null, score, prevScore, rank, GetCachedMedian(idx), scoreInfo);
+            } else {
+                report.SetResults(nStars, score, prevScore, null, GetCachedMedian(idx), scoreInfo);
+            }
+        }
+        // called by level
+        public void ShowReportCard()
+        {
             if (playedLevel.NextLevelPrefab != null) {
                 report.GiveNavigation(playedLevel, Instantiate(playedLevel.NextLevelPrefab));
             } else {
                 report.GiveNavigation(playedLevel, null);
             }
 
-            if (playedLevel.Details.Metric == LevelDetails.ScoreMetric.None) {
-                report.SetResults(null, null, null, null, null);
-            } else if (playedLevel.Details.ResearchMode) {
-                report.SetResults(null, score, prevScore, rank, GetCachedMedian(idx));
-            } else {
-                report.SetResults(nStars, score, prevScore, null, GetCachedMedian(idx));
-            }
-        }
-        // called by level
-        public void ShowResultsScreen()
-        {
             report.ShowResults();
             HelpText.Showing = false;
         }

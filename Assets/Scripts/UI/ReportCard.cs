@@ -11,7 +11,7 @@ namespace EcoBuilder.UI
         [SerializeField] TMPro.TextMeshProUGUI title, rank, current, currentMsg, average, averageMsg;
         [SerializeField] Image points, globe, shade;
         [SerializeField] Animator star1, star2, star3;
-        [SerializeField] Button quitBtn;
+        [SerializeField] Button quitBtn, infoBtn;
 
         [SerializeField] GameObject starsParent, rankParent, currentParent, averageParent;
         [SerializeField] RectTransform rankTextAnchor, prevLevelAnchor, nextLevelAnchor;
@@ -22,8 +22,10 @@ namespace EcoBuilder.UI
         {
             rt = GetComponent<RectTransform>();
             canvas = GetComponent<Canvas>();
+            WarpText();
 
             quitBtn.onClick.AddListener(Quit);
+            infoBtn.onClick.AddListener(Info);
         }
 
         [SerializeField] TMPro.TextMeshProUGUI nextLvlMsg;
@@ -62,10 +64,15 @@ namespace EcoBuilder.UI
                 }
             }
         }
+        void Info()
+        {
+            GameManager.Instance.ShowInfo(information);
+        }
 
         [SerializeField] Sprite pointSprite, trophySprite;
         int numStars;
-        public void SetResults(int? numStars, long? score, long? prevScore, string rank, long? worldAvg)
+        string information;
+        public void SetResults(int? numStars, long? score, long? prevScore, string rank, long? worldAvg, string scoreInfo)
         {
             StopAllCoroutines();
 
@@ -96,12 +103,20 @@ namespace EcoBuilder.UI
                 if ((long)score > (prevScore??0))
                 {
                     currentMsg.text = "You got a new high score!";
+                    var margin = currentMsg.margin;
+                    margin.z = 40;
+                    currentMsg.margin = margin;
+
                     points.sprite = trophySprite;
                     StartCoroutine(WiggleSprite(points));
                 }
                 else
                 {
                     currentMsg.text = "Well done!";
+                    var margin = currentMsg.margin;
+                    margin.z = 0;
+                    currentMsg.margin = margin;
+
                     points.sprite = pointSprite;
                     points.transform.localRotation = Quaternion.identity;
                 }
@@ -115,7 +130,7 @@ namespace EcoBuilder.UI
             {
                 averageParent.SetActive(true);
                 average.text = ((long)worldAvg).ToString("N0");
-                if (score > worldAvg)
+                if (score >= worldAvg)
                 {
                     averageMsg.text = "You beat the world average!";
                     StartCoroutine(WiggleSprite(globe));
@@ -130,6 +145,7 @@ namespace EcoBuilder.UI
             {
                 averageParent.SetActive(false);
             }
+            information = scoreInfo;
         }
         public void ShowResults()
         {
@@ -217,11 +233,6 @@ namespace EcoBuilder.UI
         // public AnimationCurve VertexCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.25f, 2.0f), new Keyframe(0.5f, 0), new Keyframe(0.75f, 2.0f), new Keyframe(1, 0f));
         public AnimationCurve VertexCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(0.5f, 0), new Keyframe(1, 0f));
         public float CurveScale = 1.0f;
-
-        void Start()
-        {
-            WarpText();
-        }
 
         private AnimationCurve CopyAnimationCurve(AnimationCurve curve)
         {

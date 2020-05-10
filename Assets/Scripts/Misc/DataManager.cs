@@ -230,6 +230,7 @@ namespace EcoBuilder
         {
             Assert.IsNotNull(OnConfirm);
             Assert.IsTrue(LoggedIn);
+            // yes this is spaghetti
             confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(OnConfirm, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
         public void UnlockAllLevels(Action OnConfirm)

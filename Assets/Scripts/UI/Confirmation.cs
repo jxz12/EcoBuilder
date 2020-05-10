@@ -64,16 +64,16 @@ namespace EcoBuilder.UI
             NoCallback = ()=> canvas.enabled = false;
             canvas.enabled = true;
             SetQuestion(description);
-        }
-        private void Wait(string message)
-        {
-            if (message == null) {
-                SetText("Attempting...");
-            } else {
-                SetText(message);
+            void Wait(string message)
+            {
+                if (message == null) {
+                    SetText("Attempting...");
+                } else {
+                    SetText(message);
+                }
+                yes.interactable = false;
+                no.interactable = false;
             }
-            yes.interactable = false;
-            no.interactable = false;
         }
         public void FinishWaiting(Action OnOkay, bool successful, string msg)
         {
@@ -86,6 +86,15 @@ namespace EcoBuilder.UI
             yes.gameObject.SetActive(false);
             no.gameObject.SetActive(false);
             okay.gameObject.SetActive(true);
+        }
+        public void Alert(string message)
+        {
+            // does nothing but show a temporary message 
+            yes.gameObject.SetActive(false);
+            no.gameObject.SetActive(false);
+            okay.gameObject.SetActive(true);
+            OkayCallback = ()=>canvas.enabled = false;
+            SetText(message);
         }
     }
 }

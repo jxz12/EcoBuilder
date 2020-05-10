@@ -3,6 +3,9 @@ write a cover letter
 add imperial logo with permission
 
 procrustes seems crap sometimes
+test research levels
+make incubator appear ahead of statusbars
+improve level 10
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
@@ -46,7 +49,7 @@ chain
 exclusion
 1 1000 1500
 2 700 750
-3 900 950
+3 1000 1100
 heavy
 1 1100 1900
 2 2000 2800
