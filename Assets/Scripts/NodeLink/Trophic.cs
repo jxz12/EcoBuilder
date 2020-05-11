@@ -93,6 +93,7 @@ namespace EcoBuilder.NodeLink
         {
             MaxChain = 0;
             MaxTrophicLevel = 0;
+            trophicLevels.Clear();
         }
         // public to allow outside to force convergence
         private static float trophicScaling = 1;

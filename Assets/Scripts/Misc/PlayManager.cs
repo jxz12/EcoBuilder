@@ -238,6 +238,8 @@ namespace EcoBuilder
                 constraints.Finish();
                 yield return null;
                 Destroy(gameObject);
+                yield return null;
+                GameManager.Instance.HelpText.Showing = false;
             }
         }
 

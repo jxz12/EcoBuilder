@@ -300,7 +300,8 @@ namespace EcoBuilder.NodeLink
         }
     }
 
-    public class SparseVector<T> : IEnumerable<T> {
+    public class SparseVector<T> : IEnumerable<T>
+    {
         Dictionary<int, T> _items;
 
         public SparseVector() {
@@ -372,6 +373,10 @@ namespace EcoBuilder.NodeLink
             get {
                 return _items.Count;
             }
+        }
+        public void Clear()
+        {
+            _items.Clear();
         }
         public IEnumerator<T> GetEnumerator() {
             return _items.Values.GetEnumerator();

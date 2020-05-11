@@ -62,10 +62,6 @@ namespace EcoBuilder.NodeLink
             sources.TrimExcess();
             targets.TrimExcess();
         }
-        public static void Clear()
-        {
-            NumComponents = 0;
-        }
         public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint)
         {
             FindConnectedComponents();
@@ -87,6 +83,10 @@ namespace EcoBuilder.NodeLink
             foreach (var kvp in posUnsquished) {
                 SetPos(kvp.Key, kvp.Value);
             }
+        }
+        public static void Clear()
+        {
+            posUnsquished.Clear();
         }
 
         struct StressTerm {

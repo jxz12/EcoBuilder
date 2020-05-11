@@ -240,7 +240,6 @@ namespace EcoBuilder
         // called by level when it is ready
         public void ShowReportCard()
         {
-            HelpText.Showing = false;
             if (playedLevel.NextLevelPrefab != null) {
                 report.GiveNavigation(playedLevel, Instantiate(playedLevel.NextLevelPrefab));
             } else {
