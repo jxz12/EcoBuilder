@@ -15,7 +15,7 @@ namespace EcoBuilder.UI
         private static extern void OpenURL();
         public void OnPointerDown(PointerEventData ped)
         {
-            OpenURL(DataManager.Instance.ServerURL+"GDPR_Privacy_Notice.html");
+            OpenURL(GameManager.Instance.ServerURL+"GDPR_Privacy_Notice.html");
         }
 #else
         public void OnPointerDown(PointerEventData ped)

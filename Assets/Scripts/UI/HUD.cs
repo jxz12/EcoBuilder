@@ -36,6 +36,12 @@ namespace EcoBuilder.UI
                 ConstraintsOffset = Mathf.Lerp(maxConstraintsOffset, 0, lerp);
                 constraints.GetComponent<RectTransform>().anchoredPosition += new Vector2(0,ConstraintsOffset);
             }
+            else
+            {
+                BottomScale = 1;
+                TopScale = 1;
+                ConstraintsOffset = 0;
+            }
         }
     }
 }

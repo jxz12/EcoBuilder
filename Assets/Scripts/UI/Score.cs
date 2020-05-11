@@ -60,6 +60,8 @@ namespace EcoBuilder.UI
             OnHighestScoreBroken?.Invoke(); // request a rank at first
         }
         public string LastStatsRank { get; private set; }
+        [SerializeField] float rankCheckDelay;
+        float lastHighScoreTime = 0;
         public void SetStatsText(string rank, long? median)
         {
             Assert.IsTrue(statsObject.activeSelf);
@@ -124,7 +126,6 @@ namespace EcoBuilder.UI
         public int HighestStars { get; private set; } = 0;
         int displayedStars = 0;
         double latestValidScore = 0;
-        float lastHighScoreTime = 0;
 
         public void Update()
         {
@@ -204,6 +205,12 @@ namespace EcoBuilder.UI
                 StartReminding();
             } else {
                 EndReminding();
+            }
+            // periodically request a new rank + median after long enough wait
+            if (Time.time > lastHighScoreTime+rankCheckDelay)
+            {
+                OnHighestScoreBroken?.Invoke();
+                lastHighScoreTime = Time.time;
             }
         }
         [SerializeField] Image scoreIcon;
