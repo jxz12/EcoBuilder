@@ -2,13 +2,11 @@ ECOBUILDER:
 write a cover letter
 add imperial logo with permission
 
-test research levels
 make incubator appear ahead of statusbars
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
-test server going down and up and down
-test email recovery from server
+check all sprite atlases
 
 use reflection to smell the smellylisteners
 either remove all scene unityevents or test to see if they are null
@@ -22,9 +20,7 @@ change press/tap to hold/click based on platform
 release game with australian fires as angle?
 experiments to see how the score changes over time
 
-I have read
-I understand the purposes
-I consent to data
+I had my first heisenbug today! async trophic levels
 
 # REPORT CARD
 Your final score was XXX
