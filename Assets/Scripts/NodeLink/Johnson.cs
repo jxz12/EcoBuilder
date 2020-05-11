@@ -4,14 +4,18 @@ using System.Collections.Generic;
 
 namespace EcoBuilder.NodeLink
 {
-    public static class Johnson
+    public class Johnson
     {
         ///////////////////////////////////
         // loops with Johnson's algorithm
 
-        static Dictionary<int, HashSet<int>> johnsonIncoming = new Dictionary<int, HashSet<int>>();
-        static Dictionary<int, HashSet<int>> johnsonOutgoing = new Dictionary<int, HashSet<int>>();
-        public static void Init(IEnumerable<int> indices, Func<int, IEnumerable<int>> Targets)
+        Dictionary<int, HashSet<int>> johnsonIncoming = new Dictionary<int, HashSet<int>>();
+        Dictionary<int, HashSet<int>> johnsonOutgoing = new Dictionary<int, HashSet<int>>();
+        public Johnson()
+        {
+
+        }
+        public void Init(IEnumerable<int> indices, Func<int, IEnumerable<int>> Targets)
         {
             // a function to initialise outgoing and incoming edges for johnson's algorithm below
             // ignores 'graveyard' species
@@ -33,28 +37,28 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        public static void Clear()
+        public void Clear()
         {
             johnsonLongestLoop.Clear();
             johnsonNumLongest = 0;
         }
 
-        public static int MaxLoop {
+        public int MaxLoop {
             get { return johnsonLongestLoop.Count; }
         }
-        public static IReadOnlyList<int> MaxLoopIndices {
+        public IReadOnlyList<int> MaxLoopIndices {
             get { return johnsonLongestLoop; }
         }
-        public static int NumMaxLoop {
+        public int NumMaxLoop {
             get { return johnsonNumLongest; }
         }
 
 
         // from https://github.com/mission-peace/interview/blob/master/src/com/interview/graph/AllCyclesInDirectedGraphJohnson.java
         // can be very slow, so run async if possible
-        static List<int> johnsonLongestLoop = new List<int>();
-        static int johnsonNumLongest = 0;
-        public static void SolveLoop()
+        List<int> johnsonLongestLoop = new List<int>();
+        int johnsonNumLongest = 0;
+        public void SolveLoop()
         {
             johnsonLongestLoop = new List<int>(); // empty list is no loop
             var indices = new List<int>(johnsonOutgoing.Keys);
@@ -78,10 +82,10 @@ namespace EcoBuilder.NodeLink
             }
             johnsonLongestLoop.Reverse();
         }
-        static Stack<int> johnsonStack = new Stack<int>();
-        static HashSet<int> johnsonSet = new HashSet<int>();
-        static Dictionary<int, HashSet<int>> johnsonMap = new Dictionary<int, HashSet<int>>();
-        static void JohnsonSingleSource(int source)
+        Stack<int> johnsonStack = new Stack<int>();
+        HashSet<int> johnsonSet = new HashSet<int>();
+        Dictionary<int, HashSet<int>> johnsonMap = new Dictionary<int, HashSet<int>>();
+        void JohnsonSingleSource(int source)
         {
             johnsonStack.Clear();
             johnsonSet.Clear();
@@ -91,7 +95,7 @@ namespace EcoBuilder.NodeLink
             }
             JohnsonDFS(source, source);
         }
-        static bool JohnsonDFS(int source, int current)
+        bool JohnsonDFS(int source, int current)
         {
             bool foundCycle = false;
             johnsonStack.Push(current);
@@ -132,7 +136,7 @@ namespace EcoBuilder.NodeLink
             johnsonStack.Pop();
             return foundCycle;
         }
-        static void JohnsonUnblock(int toUnblock)
+        void JohnsonUnblock(int toUnblock)
         {
             // recursively unblock everything on path that we are freeing up
             johnsonSet.Remove(toUnblock);
@@ -146,10 +150,10 @@ namespace EcoBuilder.NodeLink
 
 
         // returns the strongly connected component including idx
-        static Dictionary<int, HashSet<int>> johnsonOutgoingSubset = new Dictionary<int, HashSet<int>>();
-        static HashSet<int> johnsonComponentOut = new HashSet<int>();
-        static HashSet<int> johnsonComponentIn = new HashSet<int>();
-        static void JohnsonSCC(int idx)
+        Dictionary<int, HashSet<int>> johnsonOutgoingSubset = new Dictionary<int, HashSet<int>>();
+        HashSet<int> johnsonComponentOut = new HashSet<int>();
+        HashSet<int> johnsonComponentIn = new HashSet<int>();
+        void JohnsonSCC(int idx)
         {
             JohnsonWCC(idx, johnsonOutgoing, johnsonComponentOut);
             JohnsonWCC(idx, johnsonIncoming, johnsonComponentIn);
@@ -167,7 +171,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        static void JohnsonWCC(int idx, Dictionary<int, HashSet<int>> outgoing, HashSet<int> component)
+        void JohnsonWCC(int idx, Dictionary<int, HashSet<int>> outgoing, HashSet<int> component)
         {
             var q = new Queue<int>();
             component.Clear();

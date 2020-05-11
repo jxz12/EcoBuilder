@@ -33,10 +33,6 @@ namespace EcoBuilder.NodeLink
             xAxle.SetParent(transform);
             yAxle = new GameObject("Y Axle").transform;
             yAxle.SetParent(xAxle);
-
-            SGD.Clear();
-            Trophic.Clear();
-            Johnson.Clear();
         }
         Camera mainCam;
         void Start()
@@ -71,6 +67,10 @@ namespace EcoBuilder.NodeLink
         [SerializeField] int t_max=30;
         [SerializeField] float epsSGD=.01f, epsGS=.1f;
 
+        SGD stressSolver = new SGD();
+        Trophic trophicSolver = new Trophic();
+        Johnson loopSolver = new Johnson();
+
 // because webgl does not support threads
 #if !UNITY_WEBGL
         async void Layout()
@@ -83,34 +83,38 @@ namespace EcoBuilder.NodeLink
             NumLinks = links.Count();
 
             // Init functions are not async to ensure synchronized adjacency
-            SGD.Init(undirected);
+            stressSolver.Init(undirected);
             if (FindLoops) {
-                Johnson.Init(nodes.Indices, links.GetColumnIndicesInRow);
+                loopSolver.Init(nodes.Indices, links.GetColumnIndicesInRow);
             }
             Func<int, float> YConstraint;
-            Trophic.Init(nodes.Indices, links.GetColumnIndicesInRow); // do this anyway to calculate chain length
+            trophicSolver.Init(nodes.Indices, links.GetColumnIndicesInRow); // do this anyway to calculate chain length
             if (ConstrainTrophic) {
-                YConstraint = Trophic.GetScaledTrophicLevel;
+                YConstraint = trophicSolver.GetScaledTrophicLevel;
             } else {
                 YConstraint = null;
             }
 
 #if !UNITY_WEBGL
-            if (FindLoops) { await Task.Run(()=> Johnson.SolveLoop()); }
-            if (ConstrainTrophic) { await Task.Run(()=> Trophic.SolveTrophic(epsGS)); }
-            await Task.Run(()=> SGD.SolveStress(t_max, epsSGD, YConstraint));
-            SGD.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
+            if (FindLoops) { await Task.Run(()=> loopSolver.SolveLoop()); }
+            if (ConstrainTrophic) { await Task.Run(()=> trophicSolver.SolveTrophic(epsGS)); }
+            await Task.Run(()=> stressSolver.SolveStress(t_max, epsSGD, YConstraint));
+            stressSolver.RewriteSGD((i,v)=>{ if (nodes[i]!=null) nodes[i].StressPos=v; }); // 'if' used in case node is deleted
 #else
-            if (FindLoops) { Johnson.SolveLoop(); }
-            if (ConstrainTrophic) { Trophic.SolveTrophic(epsGS); }
-            SGD.SolveStress(t_max, epsSGD, YConstraint);
-            SGD.RewriteSGD((i,v)=>nodes[i].StressPos=v);
+            if (FindLoops) { loopSolver.SolveLoop(); }
+            if (ConstrainTrophic) { trophicSolver.SolveTrophic(epsGS); }
+            stressSolver.SolveStress(t_max, epsSGD, YConstraint);
+            stressSolver.RewriteSGD((i,v)=>nodes[i].StressPos=v);
 #endif
 #if UNITY_EDITOR
-            print($"stress: {SGD.CalculateStress()}");
+            print($"stress: {stressSolver.CalculateStress()}");
 #endif
             isCalculatingAsync = false;
             OnLayedOut?.Invoke();
+        }
+        public float CalculateStress()
+        {
+            return stressSolver.CalculateStress();
         }
 
         ///////////////////////////////////
@@ -286,7 +290,7 @@ namespace EcoBuilder.NodeLink
         // for tutorial
         public int GetNodeChainLength(int idx)
         {
-            return Trophic.GetChainLength(idx);
+            return trophicSolver.GetChainLength(idx);
         }
 
 
@@ -349,11 +353,11 @@ namespace EcoBuilder.NodeLink
         // chain and loop
         public int NumNodes { get { return nodes.Count; } }
         public int NumLinks { get; private set; } = 0;
-        public int NumComponents { get { return SGD.NumComponents; } }
-        public int MaxChain { get { return Trophic.MaxChain; } }
-        public int NumMaxChain { get { return Trophic.NumMaxChain; } }
-        public int MaxLoop { get { return Johnson.MaxLoop; } }
-        public int NumMaxLoop { get { return Johnson.NumMaxLoop; } }
+        public int NumComponents { get { return stressSolver.NumComponents; } }
+        public int MaxChain { get { return trophicSolver.MaxChain; } }
+        public int NumMaxChain { get { return trophicSolver.NumMaxChain; } }
+        public int MaxLoop { get { return loopSolver.MaxLoop; } }
+        public int NumMaxLoop { get { return loopSolver.NumMaxLoop; } }
 
         private List<Action> toUnoutline = new List<Action>();
         public void OutlineChain(cakeslice.Outline.Colour colour)
@@ -375,7 +379,7 @@ namespace EcoBuilder.NodeLink
             while (isCalculatingAsync) {
                 yield return null;
             }
-            foreach (int idx in Trophic.MaxChainIndices)
+            foreach (int idx in trophicSolver.MaxChainIndices)
             {
                 nodes[idx].PushOutline(colour);
                 toUnoutline.Add(()=> nodes[idx].PopOutline());
@@ -383,17 +387,17 @@ namespace EcoBuilder.NodeLink
         }
         private IEnumerator WaitThenOutlineLoop(cakeslice.Outline.Colour colour)
         {
-            if (Johnson.MaxLoop == 0) {
+            if (!FindLoops || loopSolver.MaxLoop == 0) {
                 yield break;
             }
             // if calculating then we could potentially try to outline inactive or destroyed nodes
             while (isCalculatingAsync) {
                 yield return null;
             }
-            for (int i=0; i<Johnson.MaxLoop; i++)
+            for (int i=0; i<loopSolver.MaxLoop; i++)
             {
-                int src = Johnson.MaxLoopIndices[i];
-                int tgt = Johnson.MaxLoopIndices[(i+1) % Johnson.MaxLoop];
+                int src = loopSolver.MaxLoopIndices[i];
+                int tgt = loopSolver.MaxLoopIndices[(i+1) % loopSolver.MaxLoop];
                 var loopNode = nodes[src];
                 var loopLink = links[src,tgt];
 

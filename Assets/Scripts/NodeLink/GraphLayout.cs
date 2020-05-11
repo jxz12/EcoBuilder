@@ -129,7 +129,7 @@ namespace EcoBuilder.NodeLink
             int idx = todoBFS.Dequeue(); // only do one vertex at a time
             if (ConstrainTrophic)
             {
-                Trophic.IterateTrophic((i,y)=> nodes[i].StressPos.y = y);
+                trophicSolver.IterateTrophic((i,y)=> nodes[i].StressPos.y = y);
                 LocalMajorizationHorizontal(idx);
             }
             else

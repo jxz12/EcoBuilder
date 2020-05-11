@@ -286,7 +286,7 @@ namespace EcoBuilder.UI
         {
             Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
-            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(0,0)));
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(0,0), 1, ()=>GetComponent<Canvas>().enabled=false));
         }
 
 

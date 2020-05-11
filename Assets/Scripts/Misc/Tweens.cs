@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 
 namespace EcoBuilder
@@ -32,7 +33,7 @@ namespace EcoBuilder
         {
             return (--t)*t*t+1;
         }
-        public static IEnumerator Pivot(RectTransform rt, Vector2 start, Vector2 end, float duration=1)
+        public static IEnumerator Pivot(RectTransform rt, Vector2 start, Vector2 end, float duration=1, Action OnCompletion=null)
         {
             float startTime = Time.time;
             while (Time.time < startTime+duration)
@@ -42,6 +43,7 @@ namespace EcoBuilder
                 yield return null;
             }
             rt.pivot = end;
+            OnCompletion?.Invoke();
         }
         // TODO: move other tweens in here too
     }

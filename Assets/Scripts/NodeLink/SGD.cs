@@ -5,26 +5,29 @@ using UnityEngine.Assertions;
 
 namespace EcoBuilder.NodeLink
 {
-    public static class SGD
+    public class SGD
     {
         ////////////////////////////
         // layout with SGD
 
         // store indices and their components
-        static Dictionary<int, int> idxSquished = new Dictionary<int, int>();
-        static List<int> idxUnsquished = new List<int>();
+        Dictionary<int, int> idxSquished = new Dictionary<int, int>();
+        List<int> idxUnsquished = new List<int>();
 
         // positions will be rewritten into this dictionary
-        static Dictionary<int, Vector2> posUnsquished = new Dictionary<int, Vector2>();
+        Dictionary<int, Vector2> posUnsquished = new Dictionary<int, Vector2>();
 
         // undirected graph data for BFS, SGD, NCC
-        static List<int> sources = new List<int>();
-        static List<int> targets = new List<int>();
-        static Vector2[] posSquished = new Vector2[0];
-        static List<int> componentMap = new List<int>();
-        static List<int> componentCounts = new List<int>();
-        static System.Random rand;
-        public static void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
+        List<int> sources = new List<int>();
+        List<int> targets = new List<int>();
+        Vector2[] posSquished = new Vector2[0];
+        List<int> componentMap = new List<int>();
+        List<int> componentCounts = new List<int>();
+        System.Random rand;
+        public SGD()
+        {
+        }
+        public void Init(Dictionary<int, HashSet<int>> undirected, int seed=0)
         {
             idxSquished.Clear();
             idxUnsquished.Clear();
@@ -62,7 +65,7 @@ namespace EcoBuilder.NodeLink
             sources.TrimExcess();
             targets.TrimExcess();
         }
-        public static void SolveStress(int t_max, float eps, Func<int, float> YConstraint)
+        public void SolveStress(int t_max, float eps, Func<int, float> YConstraint)
         {
             FindConnectedComponents();
             FindStressTerms();
@@ -78,13 +81,13 @@ namespace EcoBuilder.NodeLink
             MatchComponentsProcrustes(!yFixed);
             SeparateAndUnsquishComponents(!yFixed);
         }
-        public static void RewriteSGD(Action<int, Vector2> SetPos)
+        public void RewriteSGD(Action<int, Vector2> SetPos)
         {
             foreach (var kvp in posUnsquished) {
                 SetPos(kvp.Key, kvp.Value);
             }
         }
-        public static void Clear()
+        public void Clear()
         {
             posUnsquished.Clear();
         }
@@ -93,9 +96,9 @@ namespace EcoBuilder.NodeLink
             public int i, j;
             public float d, w;
         }
-        static List<StressTerm> terms = new List<StressTerm>();
-        static int d_max;
-        static void FindStressTerms()
+        List<StressTerm> terms = new List<StressTerm>();
+        int d_max;
+        void FindStressTerms()
         {
             // calculate terms with BFS
             terms.Clear();
@@ -137,8 +140,8 @@ namespace EcoBuilder.NodeLink
             // in case nodes are deleted
             terms.TrimExcess();
         }
-        public static int NumComponents { get; private set; } = 0;
-        static void FindConnectedComponents()
+        public int NumComponents { get; private set; } = 0;
+        void FindConnectedComponents()
         {
             // componentMap.Clear();
             // for (int i=0; i<posSquished.Length; i++) {
@@ -189,7 +192,7 @@ namespace EcoBuilder.NodeLink
             componentCounts.TrimExcess();
             NumComponents = component;
         }
-        private static IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)
+        private IEnumerable<float> ExpoSchedule(float eta_max, int t_max, float eps)
         {
             float lambda = Mathf.Log(eta_max/eps) / (t_max-1);
             for (int t=0; t<t_max; t++)
@@ -198,7 +201,7 @@ namespace EcoBuilder.NodeLink
             }
         }
         const float muMax=1.1f;
-        static void PerformSGD(IList<float> etas)
+        void PerformSGD(IList<float> etas)
         {
             int t_max = etas.Count;
             for (int t=-t_init; t<t_max; t++)
@@ -222,7 +225,7 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        static void InitYConstraint(Func<int, float> YConstraint)
+        void InitYConstraint(Func<int, float> YConstraint)
         {
             for (int i=0; i<idxUnsquished.Count; i++)
             {
@@ -230,7 +233,7 @@ namespace EcoBuilder.NodeLink
             }
         }
         const int t_init = 5;
-        static void PerformSGDConstrained(IList<float> etas)
+        void PerformSGDConstrained(IList<float> etas)
         {
             int t_max = etas.Count;
 
@@ -254,7 +257,7 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        public static float CalculateStress()
+        public float CalculateStress()
         {
             float stress = 0;
             foreach (var term in terms)
@@ -265,7 +268,7 @@ namespace EcoBuilder.NodeLink
             }
             return stress;
         }
-        public static void FYShuffle<T>(List<T> deck, System.Random rand)
+        public void FYShuffle<T>(List<T> deck, System.Random rand)
         {
             int n = deck.Count;
             for (int i=0; i<n-1; i++)
@@ -278,7 +281,7 @@ namespace EcoBuilder.NodeLink
         }
 
         // optimal rotation by procrustes analysis
-        static void MatchComponentsProcrustes(bool rotate)
+        void MatchComponentsProcrustes(bool rotate)
         {
             // center the new positions first ([n,0] is old, [n,1] is new)
             var centroids = new Vector2[NumComponents, 2];
@@ -435,7 +438,7 @@ namespace EcoBuilder.NodeLink
             }
         }
 
-        private static void SeparateAndUnsquishComponents(bool fixK2)
+        private void SeparateAndUnsquishComponents(bool fixK2)
         {
             if (NumComponents <= 0) {
                 return;

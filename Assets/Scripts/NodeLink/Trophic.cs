@@ -7,27 +7,31 @@ namespace EcoBuilder.NodeLink
 {
     ///////////////////////////////////////////////////////////////////////
     // for trophic level calculation (and chain length as a consequence)
-    public static class Trophic
+    public class Trophic
     {
-        public static bool LaplacianDetZero { get; private set; } = false;
-        public static int MaxChain { get; private set; } = 0;
-        public static IEnumerable<int> MaxChainIndices {
+        public bool LaplacianDetZero { get; private set; } = false;
+        public int MaxChain { get; private set; } = 0;
+        public IEnumerable<int> MaxChainIndices {
             get { return tallestNodes; }
         }
-        public static int NumMaxChain {
+        public int NumMaxChain {
             get { return tallestNodes.Count; }
         }
-        public static float MaxTrophicLevel { get; private set; } = 0;
+        public float MaxTrophicLevel { get; private set; } = 0;
 
-        private static List<int> tallestNodes = new List<int>();
-        private static Dictionary<int,int> chainLengths = new Dictionary<int, int>();
+        private List<int> tallestNodes = new List<int>();
+        private Dictionary<int,int> chainLengths = new Dictionary<int, int>();
 
-        private static IEnumerable<int> indices;
-        private static Func<int, IEnumerable<int>> Targets;
+        private IEnumerable<int> indices;
+        private Func<int, IEnumerable<int>> Targets;
 
-        private static SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector here
-        private static SparseVector<float> trophicLevels = new SparseVector<float>();
-        public static void Init(IEnumerable<int> nodeIndices, Func<int, IEnumerable<int>> GetTargets)
+        private SparseVector<float> trophicA = new SparseVector<float>(); // we can assume all matrix values are equal, so only need a vector here
+        private SparseVector<float> trophicLevels = new SparseVector<float>();
+        public Trophic()
+        {
+
+        }
+        public void Init(IEnumerable<int> nodeIndices, Func<int, IEnumerable<int>> GetTargets)
         {
             indices = nodeIndices;
             Targets = GetTargets;
@@ -89,15 +93,9 @@ namespace EcoBuilder.NodeLink
                 }
             }
         }
-        public static void Clear()
-        {
-            MaxChain = 0;
-            MaxTrophicLevel = 0;
-            trophicLevels.Clear();
-        }
         // public to allow outside to force convergence
-        private static float trophicScaling = 1;
-        public static void SolveTrophic(float eps=.01f)
+        private float trophicScaling = 1;
+        public void SolveTrophic(float eps=.01f)
         {
             if (LaplacianDetZero) {
                 return;
@@ -119,14 +117,14 @@ namespace EcoBuilder.NodeLink
                 trophicScaling = 1;
             }
         }
-        public static void IterateTrophic(Action<int, float> SetY)
+        public void IterateTrophic(Action<int, float> SetY)
         {
             SolveTrophic(float.MaxValue); // ensures only 1 iteration
         }
 
         // tightly optimised gauss-seidel iteration because of the simplicity of the laplacian
         // returns if converged
-        private static bool TrophicGaussSeidel(float eps)
+        private bool TrophicGaussSeidel(float eps)
         {
             Assert.IsNotNull(indices);
             Assert.IsNotNull(Targets);
@@ -150,11 +148,11 @@ namespace EcoBuilder.NodeLink
             }
             return converged;
         }
-        public static float GetScaledTrophicLevel(int idx)
+        public float GetScaledTrophicLevel(int idx)
         {
             return trophicScaling * (trophicLevels[idx]-1);
         }
-        public static int GetChainLength(int idx)
+        public int GetChainLength(int idx)
         {
             Assert.IsTrue(chainLengths.ContainsKey(idx));
             return chainLengths[idx];
@@ -163,7 +161,7 @@ namespace EcoBuilder.NodeLink
         /////////////////////////
         // for trophic coherence
 
-        public static float CalculateOmnivory()
+        public float CalculateOmnivory()
         {
             Assert.IsNotNull(indices);
             Assert.IsNotNull(Targets);

@@ -274,7 +274,7 @@ namespace EcoBuilder.UI
         public void Finish()
         {
             StopAllCoroutines();
-            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1)));
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1), 1, ()=>GetComponent<Canvas>().enabled=false));
         }
 
         public void OnPointerEnter(PointerEventData ped)

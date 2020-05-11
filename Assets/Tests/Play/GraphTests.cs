@@ -177,22 +177,22 @@ namespace EcoBuilder.Tests
             {
                 graph.AddLink(0,3);
                 while (!graph.GraphLayedOut) { yield return null; }
-                Assert.IsTrue(SGD.CalculateStress() < 1);
+                Assert.IsTrue(graph.CalculateStress() < 1);
 
                 graph.RemoveLink(0,3);
                 graph.AddLink(1,3);
                 while (!graph.GraphLayedOut) { yield return null; }
-                Assert.IsTrue(SGD.CalculateStress() < 1);
+                Assert.IsTrue(graph.CalculateStress() < 1);
 
                 graph.RemoveLink(1,3);
                 graph.AddLink(0,4);
                 while (!graph.GraphLayedOut) { yield return null; }
-                Assert.IsTrue(SGD.CalculateStress() < 1);
+                Assert.IsTrue(graph.CalculateStress() < 1);
 
                 graph.RemoveLink(0,4);
                 graph.AddLink(1,4);
                 while (!graph.GraphLayedOut) { yield return null; }
-                Assert.IsTrue(SGD.CalculateStress() < 1);
+                Assert.IsTrue(graph.CalculateStress() < 1);
             }
         }
         [UnityTest]
@@ -214,13 +214,13 @@ namespace EcoBuilder.Tests
             int nTests = 0, testsPassed = 0;
 
             graph.ConstrainTrophic = false;
-            Func<bool> ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? .8f:.5f);
+            Func<bool> ThresholdPassed = ()=> graph.CalculateStress() < (nEdges==6? .8f:.5f);
             yield return TryEdges(0);
             string debug1 = $"{testsPassed}/{nTests} passed";
             Assert.IsTrue(testsPassed==nTests, debug1);
 
             graph.ConstrainTrophic = true;
-            ThresholdPassed = ()=> SGD.CalculateStress() < (nEdges==6? 2f:1.3f);
+            ThresholdPassed = ()=> graph.CalculateStress() < (nEdges==6? 2f:1.3f);
             yield return TryEdges(0);
             string debug2 = $"{testsPassed}/{nTests} passed";
             Assert.IsTrue(testsPassed==nTests, debug2);
