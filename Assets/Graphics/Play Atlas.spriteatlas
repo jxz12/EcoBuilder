@@ -45,6 +45,30 @@ SpriteAtlas:
       m_Overridden: 1
       m_AndroidETC2FallbackOverride: 0
       m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    - serializedVersion: 3
+      m_BuildTarget: Android
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 65
+      m_TextureCompression: 1
+      m_CompressionQuality: 100
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    - serializedVersion: 3
+      m_BuildTarget: WebGL
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 29
+      m_TextureCompression: 1
+      m_CompressionQuality: 100
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
       padding: 4
@@ -102,13 +126,17 @@ SpriteAtlas:
     - {fileID: -5072820133543761511, guid: b35635cda87be2b4fabede720678e0c5, type: 3}
     - {fileID: 2971986971330815575, guid: b35635cda87be2b4fabede720678e0c5, type: 3}
     - {fileID: 21300000, guid: 06beb2d7972443849aefc32508efc468, type: 3}
-    totalSpriteSurfaceArea: 287286
+    - {fileID: 21300000, guid: 8c78600be78f3ab49a5a74c540eb9bcc, type: 3}
+    - {fileID: 21300000, guid: 2d51f7919d7861740b467e1d1fa24867, type: 3}
+    - {fileID: 21300000, guid: 4db942fb23bbc3041b97e2ee448ea126, type: 3}
+    totalSpriteSurfaceArea: 314059
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: e4430d406d9e002418f1d3cf864fb0ff, type: 3}
   - {fileID: 21300000, guid: e73dd9c018a08e74e9e3b6b52eba48b4, type: 3}
   - {fileID: 21300000, guid: cdcc1931095dc8544b4ab733bf2b3fde, type: 3}
+  - {fileID: 21300000, guid: 2d51f7919d7861740b467e1d1fa24867, type: 3}
   - {fileID: 21300000, guid: 4d2c74121b9d52d42aa59140289fef72, type: 3}
   - {fileID: 21300000, guid: 7ff78b329f164464ea5df9a3227b3f0d, type: 3}
   - {fileID: 21300000, guid: d40499526caa6e243958c6071f4d5b0f, type: 3}
@@ -138,7 +166,9 @@ SpriteAtlas:
   - {fileID: 21300000, guid: ac72d49ad4e38cc4687522deb4e615ca, type: 3}
   - {fileID: 21300000, guid: 4d0c72ca523bbd647aaee383ecde1808, type: 3}
   - {fileID: 21300000, guid: 3c188aca631be544faf93bdb0415fa27, type: 3}
+  - {fileID: 21300000, guid: 8c78600be78f3ab49a5a74c540eb9bcc, type: 3}
   - {fileID: 21300000, guid: bedd3acb531621c4ca84c09e6e0d67b9, type: 3}
+  - {fileID: 21300000, guid: 4db942fb23bbc3041b97e2ee448ea126, type: 3}
   - {fileID: 21300000, guid: bcb5b4fb84e360f4ab517305cc7ea5ab, type: 3}
   - {fileID: 21300000, guid: 5f800e8c23f52d9439d7929cf06cd922, type: 3}
   - {fileID: 21300000, guid: 4acc179c0277ddf4fa72e6d397096d84, type: 3}
@@ -158,6 +188,7 @@ SpriteAtlas:
   - textinput_a
   - point_beige
   - box_a_02
+  - point
   - constraint loop
   - box_b
   - gage_b_fill08
@@ -187,7 +218,9 @@ SpriteAtlas:
   - constraint chain
   - 1
   - back
+  - grab
   - nametag
+  - pan
   - gage_b_fill02
   - gage_b_fill05
   - box_c_03
