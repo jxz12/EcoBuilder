@@ -12,7 +12,7 @@ namespace EcoBuilder.UI
 
 #if !UNITY_EDITOR && UNITY_WEBGL
         [DllImport("__Internal")]
-        private static extern void OpenURL();
+        private static extern void OpenURL(string url);
         public void OnPointerDown(PointerEventData ped)
         {
             OpenURL(GameManager.Instance.ServerURL+"GDPR_Privacy_Notice.html");
