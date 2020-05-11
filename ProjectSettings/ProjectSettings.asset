@@ -257,8 +257,8 @@ PlayerSettings:
   templatePackageId: 
   templateDefaultScene: 
   AndroidTargetArchitectures: 3
-  AndroidSplashScreenScale: 1
-  androidSplashScreen: {fileID: 2800000, guid: c7432e67bf39b0a498eedfd545ca8767, type: 3}
+  AndroidSplashScreenScale: 2
+  androidSplashScreen: {fileID: 2800000, guid: c49c55ebcb829ca47923582bc2a983bf, type: 3}
   AndroidKeystoreName: C:/Users/jz/Work/Unity/Stop Touching Your Face/Build/androidsign.keystore
   AndroidKeyaliasName: jz
   AndroidBuildApkPerCpuArchitecture: 0
@@ -287,44 +287,8 @@ PlayerSettings:
   - m_BuildTarget: Android
     m_Icons:
     - m_Textures:
-      - {fileID: 2800000, guid: 4da1355e576a5bf4ab7be07c49976daf, type: 3}
-      m_Width: 192
-      m_Height: 192
-      m_Kind: 0
-      m_SubKind: 
-    - m_Textures:
-      - {fileID: 0}
-      m_Width: 144
-      m_Height: 144
-      m_Kind: 0
-      m_SubKind: 
-    - m_Textures:
-      - {fileID: 0}
-      m_Width: 96
-      m_Height: 96
-      m_Kind: 0
-      m_SubKind: 
-    - m_Textures:
-      - {fileID: 0}
-      m_Width: 72
-      m_Height: 72
-      m_Kind: 0
-      m_SubKind: 
-    - m_Textures:
-      - {fileID: 0}
-      m_Width: 48
-      m_Height: 48
-      m_Kind: 0
-      m_SubKind: 
-    - m_Textures:
-      - {fileID: 0}
-      m_Width: 36
-      m_Height: 36
-      m_Kind: 0
-      m_SubKind: 
-    - m_Textures:
       - {fileID: 2800000, guid: b9421b42dfea06b44b819df151ed9a80, type: 3}
-      - {fileID: 2800000, guid: c7432e67bf39b0a498eedfd545ca8767, type: 3}
+      - {fileID: 2800000, guid: c581401c4c09e49c7bdae5e0d4d042c2, type: 3}
       m_Width: 432
       m_Height: 432
       m_Kind: 2
@@ -389,6 +353,42 @@ PlayerSettings:
       m_Width: 36
       m_Height: 36
       m_Kind: 1
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 2800000, guid: 4da1355e576a5bf4ab7be07c49976daf, type: 3}
+      m_Width: 192
+      m_Height: 192
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 0}
+      m_Width: 144
+      m_Height: 144
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 0}
+      m_Width: 96
+      m_Height: 96
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 0}
+      m_Width: 72
+      m_Height: 72
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 0}
+      m_Width: 48
+      m_Height: 48
+      m_Kind: 0
+      m_SubKind: 
+    - m_Textures:
+      - {fileID: 0}
+      m_Width: 36
+      m_Height: 36
+      m_Kind: 0
       m_SubKind: 
   - m_BuildTarget: iPhone
     m_Icons:
@@ -764,8 +764,9 @@ PlayerSettings:
   monoEnv: 
   splashScreenBackgroundSourceLandscape: {fileID: 21300000, guid: 4d0c72ca523bbd647aaee383ecde1808,
     type: 3}
-  splashScreenBackgroundSourcePortrait: {fileID: 0}
-  blurSplashScreenBackground: 1
+  splashScreenBackgroundSourcePortrait: {fileID: 21300000, guid: 4d0c72ca523bbd647aaee383ecde1808,
+    type: 3}
+  blurSplashScreenBackground: 0
   spritePackerPolicy: 
   webGLMemorySize: 256
   webGLExceptionSupport: 1
