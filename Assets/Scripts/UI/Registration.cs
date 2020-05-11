@@ -249,16 +249,17 @@ namespace EcoBuilder.UI
         {
             resetSubmit.interactable = false;
             GameManager.Instance.SendPasswordResetEmail(recipient.text, ResetCallback);
+            errorText.text = "Sending...";
         }
         void ResetCallback(bool success, string msg)
         {
             errorText.gameObject.SetActive(true);
-            resetSubmit.interactable = false;
             if (success) {
                 recipient.text = "";
                 errorText.text = "Reset email sent!";
             } else {
                 errorText.text = msg;
+                resetSubmit.interactable = true;
             }
         }
         void CancelRegistration()

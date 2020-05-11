@@ -197,7 +197,7 @@ namespace EcoBuilder.NodeLink
                 yield return eta_max * Mathf.Exp(-lambda * t);
             }
         }
-        const float muMax=1f;
+        const float muMax=1.1f;
         static void PerformSGD(IList<float> etas)
         {
             int t_max = etas.Count;

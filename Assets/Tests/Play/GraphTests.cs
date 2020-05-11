@@ -136,6 +136,7 @@ namespace EcoBuilder.Tests
         [UnityTest]
         public IEnumerator LoopTest()
         {
+            graph.FindLoops = true;
             for (int i=0; i<4; i++)
             {
                 graph.AddNode(i);
