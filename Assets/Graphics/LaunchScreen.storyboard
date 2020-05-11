@@ -17,10 +17,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon.png" translatesAutoresizingMaskIntoConstraints="NO" id="1WO-TP-wDw">
-                                <rect key="frame" x="107" y="348" width="200" height="200"/>
+                                <rect key="frame" x="32" y="273" width="350" height="350"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="200" id="105-XK-Lxo"/>
-                                    <constraint firstAttribute="height" constant="200" id="q8B-F8-54u"/>
+                                    <constraint firstAttribute="width" constant="350" id="105-XK-Lxo"/>
+                                    <constraint firstAttribute="height" constant="350" id="q8B-F8-54u"/>
                                 </constraints>
                             </imageView>
                         </subviews>
@@ -38,6 +38,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="icon.png" width="218.25" height="218.25"/>
+        <image name="icon.png" width="158.55484008789062" height="158.55484008789062"/>
     </resources>
 </document>
