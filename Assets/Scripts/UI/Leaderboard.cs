@@ -82,7 +82,7 @@ namespace EcoBuilder.UI
             long? median = GameManager.Instance.GetCachedMedian(updatingIdx);
             SetText(null);
             if (playerScore != null) {
-                GameManager.Instance.GetSingleRankRemote(updatingIdx, (long)playerScore, Update);
+                GameManager.Instance.GetSingleRankRemote(updatingIdx, (long)playerScore, UpdateRank);
             }
             void SetText(string rank)
             {
@@ -92,14 +92,10 @@ namespace EcoBuilder.UI
                 } else {
                     lowerScoresText.Append($"{rank}: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
                 }
-                if (median != null) {
-                    lowerScoresText.Append($"\nAverage: {(median??0).ToString("N0")}");
-                } else {
-                    GameManager.Instance.CacheMediansRemote(b=>{ if (b) UpdateLowerScores(); });
-                }
+                lowerScoresText.Append($"\nAverage: {(median??0).ToString("N0")}");
                 lowerScores.text = lowerScoresText.ToString();
             }
-            void Update(bool successful, string rank)
+            void UpdateRank(bool successful, string rank)
             {
                 if (!successful || currentIdx != updatingIdx) {
                     return;

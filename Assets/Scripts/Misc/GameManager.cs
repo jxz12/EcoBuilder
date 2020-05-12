@@ -46,6 +46,15 @@ namespace EcoBuilder
             SendUnsentPost();
         }
             
+#if UNITY_EDITOR
+        int screenshotIdx=0;
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Return)) {
+                ScreenCapture.CaptureScreenshot($"{Screen.width}x{Screen.height} {screenshotIdx++}.png");
+            }
+        }
+#endif
 
 
         ///////////////////

@@ -3,6 +3,7 @@ write a cover letter
 add imperial logo with permission
 
 make incubator appear ahead of statusbars
+add 'please wait while loads' onto splash images
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)

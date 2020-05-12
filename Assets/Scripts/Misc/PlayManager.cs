@@ -285,12 +285,7 @@ namespace EcoBuilder
                 }
                 Level.SaveAsNewPrefab(randomSeeds, plants, sizes, greeds, sources, targets, DateTime.Now.Ticks.ToString());
             }
-            if (Input.GetKeyDown(KeyCode.KeypadEnter))
-            {
-                ScreenCapture.CaptureScreenshot($"{Screen.width}x{Screen.height} {nScreenShots++}");
-            }
         }
-        int nScreenShots = 0;
 #endif
     }
 }
