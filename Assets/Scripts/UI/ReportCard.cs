@@ -33,7 +33,9 @@ namespace EcoBuilder.UI
         Level currLvl, nextLvl;
         public void GiveNavigation(Level currLvl, Level nextLvl)
         {
+            Assert.IsNotNull(currLvl);
             currLvl.transform.SetParent(prevLevelAnchor, false);
+            currLvl.SetLocalHighScore();
 
             if (nextLvl != null)
             {

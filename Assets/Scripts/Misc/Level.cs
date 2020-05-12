@@ -138,7 +138,10 @@ namespace EcoBuilder
 
             target1.text = details.TwoStarScore.ToString("N0");
             target2.text = details.ThreeStarScore.ToString("N0");
-
+            SetLocalHighScore();
+        }
+        public void SetLocalHighScore()
+        {
             long? score = GameManager.Instance.GetHighScoreLocal(details.Idx);
             highScore.text = (score??0).ToString("N0");
             int numStars = 0;
