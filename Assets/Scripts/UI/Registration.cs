@@ -14,7 +14,7 @@ namespace EcoBuilder.UI
         public event Action OnFinished;
 
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;
-        [SerializeField] TMPro.TMP_InputField username, password, email, recipient;
+        [SerializeField] TMPro.TMP_InputField username, password, passwordRepeat, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle termsConsent, emailConsent, askAgain;
         [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, forgotGoto;
@@ -38,6 +38,8 @@ namespace EcoBuilder.UI
             cancelButton.onClick.AddListener(CancelRegistration);
 
             username.onValueChanged.AddListener(s=> CheckUsernameEmail());
+            password.onValueChanged.AddListener(b=> CheckUsernameEmail());
+            passwordRepeat.onValueChanged.AddListener(b=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
             password.onSubmit.AddListener(s=> LoginOrRegister());
             recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
@@ -83,12 +85,14 @@ namespace EcoBuilder.UI
                 loginSubmit.interactable = false;
                 loginText.gameObject.SetActive(false);
                 registerText.gameObject.SetActive(true);
+                passwordRepeat.gameObject.SetActive(true);
                 break;
             case State.Login:
                 ShowObjectsOnly(idObj);
                 email.gameObject.SetActive(false);
                 loginText.gameObject.SetActive(true);
                 registerText.gameObject.SetActive(false);
+                passwordRepeat.gameObject.SetActive(false);
                 break;
             case State.GDPR:
                 ShowObjectsOnly(gdprObj);
@@ -178,7 +182,7 @@ namespace EcoBuilder.UI
         void CheckUsernameEmail()
         {
             if (_state == State.Register) {
-                loginSubmit.interactable = UsernameOkay() && EmailOkay();
+                loginSubmit.interactable = UsernameOkay() && EmailOkay() && PasswordOkay();
             } else {
                 loginSubmit.interactable = UsernameOkay();
             }
@@ -191,6 +195,10 @@ namespace EcoBuilder.UI
         private bool EmailOkay()
         {
             return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text);
+        }
+        private bool PasswordOkay()
+        {
+            return password.text == passwordRepeat.text;
         }
         void CheckResetRecipient()
         {

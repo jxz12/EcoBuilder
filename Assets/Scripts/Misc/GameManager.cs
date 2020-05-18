@@ -66,6 +66,7 @@ namespace EcoBuilder
         {
             float tStart = Time.time;
             loadingBar.Show(true);
+            loadingBar.SetProgress(0);
             yield return null;
 
             SendUnsentPost();
@@ -149,14 +150,14 @@ namespace EcoBuilder
                 } else {
                     // replay level so no need to destroy
                 }
-                StartCoroutine(UnloadSceneThenLoad("Play", "Play", report.HideIfShowing));
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play", ()=>report.Hide(toPlay)));
             }
             else
             {
                 // play from menu or report card
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
-                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", report.HideIfShowing));
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", ()=>report.Hide(toPlay)));
             }
         }
         public void ReloadLevelScene(Level toPlay)
@@ -184,7 +185,7 @@ namespace EcoBuilder
                 OnConfirm.Invoke(); 
                 HelpText.ResetMenuPosition(false);
                 earth.ResetParent(); 
-                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnMenuLoaded?.Invoke(); report.HideIfShowing(); earth.TweenToRestPositionFromNextFrame(2); })); 
+                StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnMenuLoaded?.Invoke(); report.Hide(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
         }

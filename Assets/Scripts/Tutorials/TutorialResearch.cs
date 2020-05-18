@@ -92,7 +92,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             WaitThenDo(1f, ()=>{ help.Message = "This causes plants to have the maximum health possible! This is often what you will want for plants. Now try adding an animal."; help.Showing = true; targetAnchor = new Vector2(1,0); Point(new Vector2(-61, 60) * hud.BottomScale, -90); });
 
-            AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(); help.Showing=false; });
+            AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(-90); help.Showing=false; });
             AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ Point(); help.Showing=true; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ animalIdx=i; animalObj=g; ExplainAnimal(); });
         }
@@ -130,6 +130,8 @@ namespace EcoBuilder.Tutorials
                 {
                     if (graph.NumComponents!=1)
                     {
+                        graph.ForceUnfocus();
+                        graph.SetIfNodeCanBeFocused(animalIdx, false);
                         StopAllCoroutines();
                         Transform drag = graph.DragFromTarget? plantObj.transform : animalObj.transform;
                         Transform drop = graph.DragFromTarget? animalObj.transform : plantObj.transform;

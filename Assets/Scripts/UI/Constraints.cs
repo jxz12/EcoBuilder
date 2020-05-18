@@ -277,6 +277,7 @@ namespace EcoBuilder.UI
             StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1), 1, ()=>GetComponent<Canvas>().enabled=false));
         }
 
+        Touch enteredTouch; // TODO:
         public void OnPointerEnter(PointerEventData ped)
         {
             ShowError(.5f, true);
@@ -285,6 +286,12 @@ namespace EcoBuilder.UI
         private IEnumerator growCoroutine, followCoroutine;
         void ShowError(float duration, bool showing)
         {
+            if (growCoroutine != null)
+            {
+                StopCoroutine(growCoroutine);
+                growCoroutine = null;
+            }
+            StartCoroutine(growCoroutine = Grow());
             IEnumerator Follow()
             {
                 var errorRT = error.GetComponent<RectTransform>();
@@ -351,12 +358,6 @@ namespace EcoBuilder.UI
                     followCoroutine = null;
                 }
             }
-            if (growCoroutine != null)
-            {
-                StopCoroutine(growCoroutine);
-                growCoroutine = null;
-            }
-            StartCoroutine(growCoroutine = Grow());
         }
         
         bool chainHovered=false, loopHovered=false;

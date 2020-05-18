@@ -46,10 +46,11 @@ namespace EcoBuilder.Tutorials
             Point(new Vector2(160, 50) * hud.BottomScale, 90);
             targetAnchor = new Vector2(.5f, 0);
 
-            help.Message = "Here you can choose a new name for your species. You can then introduce it by dragging it into the world.";
+            help.Message = "Here you can choose a new name for your species by pressing this button or double tapping the text. You can then introduce it by dragging it into the world.";
             help.Showing = true;
             help.SetSide(true);
-            help.SetAnchorHeight(.35f);
+            help.SetAnchorHeight(.37f);
+            help.SetPixelWidth(380);
 
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ExplainSpawn);
             AttachSmellyListener(graph, "OnEmptyTapped", ()=>ExplainIntro(true));
@@ -72,6 +73,7 @@ namespace EcoBuilder.Tutorials
             help.Message = "Your " + firstSpecies.name + " is born! Plants grow on their own, and so do not need to eat any other species to survive. Now try adding an animal by tapping the paw button.";
             help.SetAnchorHeight(.85f, true);
             help.Showing = true;
+            help.SetPixelWidth(350);
 
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", ExplainInteraction);
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ help.Showing = false; Hide(); });

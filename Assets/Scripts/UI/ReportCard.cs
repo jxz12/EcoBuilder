@@ -161,8 +161,19 @@ namespace EcoBuilder.UI
                 StartCoroutine(RankRoutine(2,4));
             }
         }
-        public void HideIfShowing()
+        public void Hide(Level notToDestroy=null)
         {
+            // remove any leaks for levels that would never be used again
+            if (currLvl != null && currLvl != notToDestroy)
+            {
+                Destroy(currLvl.gameObject);
+                currLvl = null;
+            }
+            if (nextLvl != null && nextLvl != notToDestroy)
+            {
+                Destroy(nextLvl.gameObject);
+                nextLvl = null;
+            }
             if (canvas.enabled)
             {
                 StopAllCoroutines();

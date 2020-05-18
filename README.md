@@ -1,17 +1,36 @@
 ECOBUILDER:
 write a cover letter
-add imperial logo with permission
 
-make incubator appear ahead of statusbars
-add 'please wait while loads' onto splash images
+make incubator appear ahead of statusbars?
+add 'please wait while loads' and imperial logo onto splash images
+constraints touch release
+
+introduce superfocus earlier than research world!
+always remove any double touch in one frame (two fingers bad)
+
+text input at login can be buggy on tap or not on tap
+add a hint text that comes up after 2/3 minutes for each level
+double tap name to change name, and limit its length to 255 chars
+ask samraat to remove the TODO
+give extra information for heaviest level
+give a reminder for which one is apparent and which is exclusion - add a glossary as a hyperlink
+mention the speed of the link balls going is important
+the incubator may stay open when it shouldn't sometimes - the trigger is not being used when undo and delete at same time also check redo and undo spamming with incubator, level 9 (can have more species than allowed?)
+species is deleted and spawned at the same time
+
+make level 9 easier - it's a little hard to figure out, or give a better hint?
+level 10 might be too hard as well
+the model calculation may not run sometimes - see pamela's screenshot
+sound effects! and some relaxing music
+instead of going grey, reserve the first third of the bar for extinction, and make it go yellow/red depending on extinction (like a phone battery bar)
+level 13: test if 3 stars is possible
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
 check all sprite atlases
 
 use reflection to smell the smellylisteners
-either remove all scene unityevents or test to see if they are null
-alt tabbing out of application could break graphinteraction
+alt tabbing out of application could break graphinteraction?
 
 # Research world
 verify high scores by checking matrices

@@ -63,7 +63,7 @@ namespace EcoBuilder.Tutorials
 
                 // point at constraints panel
                 targetAnchor = new Vector2(0,1);
-                Point(new Vector2(70, (-360*hud.TopScale) + hud.ConstraintsOffset), 30); 
+                Point(new Vector2(70, -300 + hud.ConstraintsOffset), 30); 
             }
 
             // allow animal again, but only one more
@@ -77,11 +77,13 @@ namespace EcoBuilder.Tutorials
             float delay = 1.5f;
             void PointAtPaw()
             {
-                Hide();
-                help.Showing = false;
+                if (delay > 0) {
+                    Hide();
+                    help.Showing = false;
+                }
                 WaitThenDo(delay, DoPoint);
-                delay = 0;
-                void DoPoint() // lol at this function
+                delay = 0; // lol at this
+                void DoPoint() // and this
                 {
                     targetAnchor = new Vector2(1,0);
                     Point(new Vector2(-61, 60) * hud.BottomScale, -90);
@@ -178,7 +180,7 @@ namespace EcoBuilder.Tutorials
                 help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to a plant, and so the path going through both animals is overridden by linking to the plant. To finish this level, reconstruct a chain of 2.";
                 help.SetSide(false, true);
                 help.SetAnchorHeight(.85f, true);
-                help.SetPixelWidth(360);
+                help.SetPixelWidth(380);
                 help.Showing = true;
                 score.DisableStarCalculation(false); 
                 score.Hide(false);
