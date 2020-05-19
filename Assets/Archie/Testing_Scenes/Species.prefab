@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6703066943072308409}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Armature
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5559407904452828943}
   - component: {fileID: 3940715445861364156}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -126,7 +126,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4249680001383008638}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Lower
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -159,7 +159,7 @@ GameObject:
   - component: {fileID: 7036902423685564215}
   - component: {fileID: 6337480157876188455}
   - component: {fileID: 1558682969434995755}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Species
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -224,7 +224,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3745943648127988151}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Upper
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -84,7 +84,7 @@ GameObject:
   - component: {fileID: 2252438044143872376}
   - component: {fileID: 4592832217479764149}
   - component: {fileID: 5609530970385801105}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -660,7 +660,7 @@ GameObject:
   - component: {fileID: 7200589977088875132}
   - component: {fileID: 7200589977088875138}
   - component: {fileID: 7200589977088875139}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Pickup Zone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -737,7 +737,7 @@ GameObject:
   - component: {fileID: 7200589977299644785}
   - component: {fileID: 7200589977299644784}
   - component: {fileID: 7200589977299644787}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Incubator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -752,7 +752,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7200589977299644781}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 7200589977746216855}
@@ -850,7 +850,7 @@ GameObject:
   - component: {fileID: 7200589977746216855}
   - component: {fileID: 7200589977746216853}
   - component: {fileID: 7200589977746216854}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Drop Zone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -921,7 +921,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7200589978517346469}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Incubated Parent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -960,7 +960,7 @@ GameObject:
   - component: {fileID: 7200589978673140267}
   - component: {fileID: 7200589978673140265}
   - component: {fileID: 7200589978673140264}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Grab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2689,7 +2689,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7958780056552481180}
   - component: {fileID: 7958780056552481251}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Status Bars
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4311,7 +4311,7 @@ MonoBehaviour:
   recorder: {fileID: 7958780055953065213}
   initiator: {fileID: 2712649660785955006}
   cameraCanvas: {fileID: 4592832217479764149}
-  planeDistance: 5
+  playCamera: {fileID: 0}
   maxAspect: 0.5625
   minAspect: 0.46153846
   minInspectorScale: 0.82

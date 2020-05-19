@@ -19,10 +19,12 @@ namespace EcoBuilder.UI
             rt = GetComponent<RectTransform>();
             health.enabled = healthBorder.enabled = healthShowing;
             allBars.Add(this);
-            StartCoroutine(Grow());
+            StartCoroutine(Grow(1,.2f));
         }
-        IEnumerator Grow(float duration=1)
+        IEnumerator Grow(float duration=1, float delay=0)
         {
+            transform.localScale = Vector3.zero;
+            yield return new WaitForSeconds(delay);
             float tStart = Time.time;
             while (Time.time < tStart+duration)
             {

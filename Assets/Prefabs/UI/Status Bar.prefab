@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 886387111704767003}
   - component: {fileID: 886387111704767004}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Status Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63,7 +63,7 @@ GameObject:
   - component: {fileID: 7898913412278253017}
   - component: {fileID: 6615070307682963076}
   - component: {fileID: 2311731354161083244}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Traits
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -219,7 +219,7 @@ GameObject:
   - component: {fileID: 3678096251488583282}
   - component: {fileID: 4740860595842212672}
   - component: {fileID: 8593993140477911755}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Health
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,7 +294,7 @@ GameObject:
   - component: {fileID: 6378849369844847139}
   - component: {fileID: 633876641555413274}
   - component: {fileID: 4866263237837212862}
-  m_Layer: 5
+  m_Layer: 8
   m_Name: Border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
