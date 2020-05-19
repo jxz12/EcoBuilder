@@ -111,8 +111,8 @@ namespace EcoBuilder.NodeLink
                 Debug.Log($"gsIter: {iter}");
             }
 #endif
-            if (MaxTrophicLevel-1 > MaxChain) {
-                trophicScaling = MaxChain / (MaxTrophicLevel-1);
+            if (MaxTrophicLevel-1 > MaxChain+.5f) {
+                trophicScaling = (MaxChain+.5f) / (MaxTrophicLevel-1);
             } else {
                 trophicScaling = 1;
             }

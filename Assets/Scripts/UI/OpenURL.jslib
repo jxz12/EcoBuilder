@@ -1,6 +1,6 @@
 mergeInto(LibraryManager.library, {
-    OpenURL: function (url) {
-        var link = Pointer_stringify(url)
+    OpenURL: function (link) {
+        var url = Pointer_stringify(link)
         document.onmouseup = function()
         {
             window.open(url);

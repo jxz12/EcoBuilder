@@ -15,6 +15,7 @@ namespace EcoBuilder
         [SerializeField] int idx;
         [SerializeField] string title;
         [SerializeField] string introduction;
+        [SerializeField] string hintMessage;
         [SerializeField] string completedMessage;
         [SerializeField] string threeStarsMessage;
 
@@ -56,6 +57,7 @@ namespace EcoBuilder
         public int Idx { get { return idx; } }
         public string Title { get { return title; } }
         public string Introduction { get { return introduction; } }
+        public string HintMessage { get { return hintMessage; } }
         public string CompletedMessage { get { return completedMessage; } }
         public string ThreeStarsMessage { get { return threeStarsMessage; } }
 
@@ -442,6 +444,18 @@ namespace EcoBuilder
                 }
                 GameManager.Instance.HelpText.ResetLevelPosition();
                 GameManager.Instance.HelpText.DelayThenShow(2, details.Introduction);
+                if (details.HintMessage != "") {
+                    StartCoroutine(WaitThenShowHint());
+                }
+                IEnumerator WaitThenShowHint(float delay=120f)
+                {
+                    yield return new WaitForSeconds(delay);
+                    if (!flagging)
+                    {
+                        GameManager.Instance.HelpText.Message = details.HintMessage;
+                        GameManager.Instance.HelpText.Showing = true;
+                    }
+                }
 
                 playButton.interactable = false;
                 yield return new WaitForSeconds(1f);

@@ -80,11 +80,11 @@ namespace EcoBuilder.UI
             currentHealth = normalisedHealth;
             if (currentHealth > 0)
             {
-                health.fillAmount = .333f + .667f*normalisedHealth;
+                health.fillAmount = .35f + .65f*normalisedHealth;
             }
             else
             {
-                health.fillAmount = .333f*(1+normalisedHealth);
+                health.fillAmount = .05f + .3f*(1+normalisedHealth);
             }
         }
         StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#84b2ff>3");

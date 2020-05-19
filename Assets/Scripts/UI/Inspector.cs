@@ -454,11 +454,6 @@ namespace EcoBuilder.UI
             toSpawn.BodySize = size;
             toSpawn.Greediness = greed;
             toSpawn.GObject = factory.GenerateSpecies(isProducer, sizeTrait.NormaliseValue(size), greedTrait.NormaliseValue(greed), seed);
-
-            // toSpawn.Status = Instantiate(statusPrefab, statusCanvas.transform);
-            // toSpawn.Status.FollowSpecies(toSpawn.GObject);
-            // toSpawn.Status.SetSize(sizeTrait.PositivifyValue(toSpawn.BodySize));
-            // toSpawn.Status.SetGreed(greedTrait.PositivifyValue(toSpawn.Greediness));
             
             SpawnWithNonUserEvents(toSpawn);
         }

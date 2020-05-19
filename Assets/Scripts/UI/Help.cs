@@ -124,24 +124,24 @@ namespace EcoBuilder.UI
         public void DelayThenSet(float delay, string delayedMessage)
         {
             StopAllCoroutines();
-            StartCoroutine(DelayThenSetRoutine(delay, delayedMessage));
-        }
-        IEnumerator DelayThenSetRoutine(float delay, string delayedMessage)
-        {
-            yield return new WaitForSeconds(delay);
-            Message = delayedMessage;
+            StartCoroutine(DelayThenSetRoutine());
+            IEnumerator DelayThenSetRoutine()
+            {
+                yield return new WaitForSeconds(delay);
+                Message = delayedMessage;
+            }
         }
         public void DelayThenShow(float delay, string delayedMessage)
         {
             StopAllCoroutines();
             Showing = false;
-            StartCoroutine(DelayThenShowRoutine(delay, delayedMessage!=null? delayedMessage : Message));
-        }
-        IEnumerator DelayThenShowRoutine(float delay, string delayedMessage)
-        {
-            yield return new WaitForSeconds(delay);
-            Message = delayedMessage;
-            Showing = true;
+            StartCoroutine(DelayThenShowRoutine());
+            IEnumerator DelayThenShowRoutine()
+            {
+                yield return new WaitForSeconds(delay);
+                Message = delayedMessage!=null? delayedMessage : Message;
+                Showing = true;
+            }
         }
         public void ResetMenuPosition(bool damp=false, bool forceHide=true)
         {
