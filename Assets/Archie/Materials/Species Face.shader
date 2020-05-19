@@ -11,7 +11,7 @@
     SubShader
     {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" }
-        ZWrite On
+        ZWrite Off
         ZTest Less
         Blend SrcAlpha OneMinusSrcAlpha
 

@@ -64,6 +64,9 @@ namespace EcoBuilder.NodeLink
             outline.enabled = true;
             outline.colour = colour;
             outlines.Push(colour);
+            if (outlines.Count == 1 && flashRoutine != null) {
+                flashStart = Time.time - 2*flashPeriod/3;
+            }
         }
         public void PopOutline()
         {
@@ -88,37 +91,15 @@ namespace EcoBuilder.NodeLink
             // transform.localScale = Vector3.one * defaultSize;
         }
 
-        IEnumerator resizeRoutine;
         public void SetNewParentKeepPos(Transform newParent)
         {
             transform.SetParent(newParent, true);
             transform.localRotation = Quaternion.identity;
-
-            // if (resizeRoutine != null)
-            // {
-            //     StopCoroutine(resizeRoutine);
-            //     resizeRoutine = null;
-            // }
-            // StartCoroutine(resizeRoutine = Resize(.5f));
-            // IEnumerator Resize(float duration)
-            // {
-            //     float startSize = transform.localScale.x;
-            //     float startTime = Time.time;
-            //     while (Time.time < startTime + duration)
-            //     {
-            //         float t = (Time.time-startTime) / duration;
-            //         t = t<.5f? 2*t*t : (4-2*t)*t-1;
-
-            //         float size = Mathf.Lerp(startSize, defaultSize, t);
-            //         transform.localScale = new Vector3(size, size, size);
-            //         yield return null;
-            //     }
-            //     transform.localScale = new Vector3(defaultSize, defaultSize, defaultSize);
-            //     resizeRoutine = null;
-            // }
         }
 
         IEnumerator flashRoutine;
+        float flashStart;
+        const float flashPeriod=1f;
         public void Flash(bool isFlashing)
         {
             if (shapeRenderer == null) {
@@ -128,32 +109,32 @@ namespace EcoBuilder.NodeLink
             {
                 StopCoroutine(flashRoutine);
                 flashRoutine = null;
-                shapeRenderer.enabled = true;
             }
             if (isFlashing) {
-                StartCoroutine(flashRoutine = Flash(1f));
+                StartCoroutine(flashRoutine = Flash(flashPeriod));
+            } else {
+                shapeRenderer.enabled = true;
             }
 
             IEnumerator Flash(float period)
             {
-                bool enabled = true;
-                float start = Time.time;
+                flashStart = Time.time;
                 while (true)
                 {
-                    if ((Time.time-start) % period > period/2)
+                    if ((Time.time-flashStart) > period)
                     {
-                        if (enabled)
-                        {
+                        flashStart = Time.time;
+                    }
+                    else if ((Time.time-flashStart) > period/2)
+                    {
+                        if (shapeRenderer.enabled) {
                             shapeRenderer.enabled = false;
-                            enabled = false;
                         }
                     }
                     else
                     {
-                        if (!enabled)
-                        {
+                        if (!shapeRenderer.enabled) {
                             shapeRenderer.enabled = true;
-                            enabled = true;
                         }
                     }
                     yield return null;

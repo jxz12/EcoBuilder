@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using System.Text;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace EcoBuilder.UI
@@ -18,10 +19,22 @@ namespace EcoBuilder.UI
             rt = GetComponent<RectTransform>();
             health.enabled = healthBorder.enabled = healthShowing;
             allBars.Add(this);
+            StartCoroutine(Grow());
+        }
+        IEnumerator Grow(float duration=1)
+        {
+            float tStart = Time.time;
+            while (Time.time < tStart+duration)
+            {
+                float size = Tweens.ElasticOut((Time.time-tStart)/duration);
+                transform.localScale = new Vector3(size,size,1);
+                yield return null;
+            }
         }
         GameObject target;
         public void FollowSpecies(GameObject target)
         {
+            name = $"{target.name} Status";
             this.target = target;
         }
         static Camera eye;
@@ -57,19 +70,19 @@ namespace EcoBuilder.UI
             Assert.IsFalse(normalisedHealth < -1 || normalisedHealth > 1, $"given health of {normalisedHealth}");
 
             if (normalisedHealth > currentHealth && normalisedHealth > 0) {
-                health.color = new Color(0,1f,.2f);
+                health.color = new Color(0,1,0);
             }
             if (normalisedHealth < currentHealth) {
-                health.color = new Color(.2f,.2f,.2f);
+                health.color = new Color(.5f,0,0);
             }
             currentHealth = normalisedHealth;
             if (currentHealth > 0)
             {
-                health.fillAmount = normalisedHealth;
+                health.fillAmount = .333f + .667f*normalisedHealth;
             }
             else
             {
-                health.fillAmount = -normalisedHealth;
+                health.fillAmount = .333f*(1+normalisedHealth);
             }
         }
         StringBuilder sb = new StringBuilder("<color=#ffffff>5 <color=#84b2ff>3");
@@ -97,7 +110,7 @@ namespace EcoBuilder.UI
         }
         void LateUpdate()
         {
-            if (target == null)
+            if (target == null || eye == null)
             {
                 allBars.Remove(this);
                 Destroy(gameObject);
@@ -105,18 +118,20 @@ namespace EcoBuilder.UI
             }
             else if (target.activeSelf)
             {
-                if (!traitsText.enabled) {
+                if (!traitsText.enabled)
+                {
                     health.enabled = healthBorder.enabled = healthShowing;
                     traitsText.enabled = true;
+                    StartCoroutine(Grow());
                 }
                 Vector3 worldPos = target.transform.TransformPoint(new Vector3(.4f,-.4f,0));
-                Vector2 trackedPos = eye.WorldToScreenPoint(worldPos);
-                rt.position = trackedPos;
+                Vector2 canvasPos = eye.WorldToViewportPoint(worldPos);
+                rt.anchorMin = rt.anchorMax = canvasPos;
 
                 if (currentHealth > 0) {
-                    health.color = Color.Lerp(health.color, new Color(0,.75f,0,1), 2*Time.deltaTime);
+                    health.color = Color.Lerp(health.color, new Color(.3f,.8f,.5f), 2*Time.deltaTime);
                 } else {
-                    health.color = Color.Lerp(health.color, new Color(.4f,.2f,.2f,.1f), 2*Time.deltaTime);
+                    health.color = Color.Lerp(health.color, new Color(.9f,0,0), 2*Time.deltaTime);
                 }
             }
             else if (traitsText.enabled)

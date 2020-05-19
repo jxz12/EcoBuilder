@@ -33,6 +33,15 @@ namespace EcoBuilder
         {
             return (--t)*t*t+1;
         }
+        const float c4 = (2f * Mathf.PI) / 3f;
+        public static float ElasticOut(float t)
+        {
+            if (t<=0 || t>=1) {
+                return t;
+            } else {
+                return Mathf.Pow(2, -10*t) * Mathf.Sin((t*10 - 0.75f) * c4) + 1;
+            }
+        }
         public static IEnumerator Pivot(RectTransform rt, Vector2 start, Vector2 end, float duration=1, Action OnCompletion=null)
         {
             float startTime = Time.time;

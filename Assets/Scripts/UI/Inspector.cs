@@ -99,10 +99,6 @@ namespace EcoBuilder.UI
             initiator.OnProducerWanted += ()=> IncubateNew(true);
             initiator.OnConsumerWanted += ()=> IncubateNew(false);
             incubator.OnDropped += ()=> SpawnIncubated();
-
-            Camera mainCam = Camera.main;
-            incubator.SetCamera(mainCam);
-            StatusBar.SetCamera(mainCam);
         }
 
         int nextIdx=0;
@@ -121,10 +117,6 @@ namespace EcoBuilder.UI
 
             // grab gameobject from factory
             incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, sizeTrait.NormaliseValue(incubated.BodySize), greedTrait.NormaliseValue(incubated.Greediness), incubated.RandomSeed);
-            incubated.Status = Instantiate(statusPrefab, statusCanvas.transform);
-            incubated.Status.FollowSpecies(incubated.GObject);
-            incubated.Status.SetSize(sizeTrait.PositivifyValue(incubated.BodySize));
-            incubated.Status.SetGreed(greedTrait.PositivifyValue(incubated.Greediness));
 
             incubator.StartIncubation();
             incubator.SetIncubatedObject(incubated.GObject);
@@ -200,7 +192,14 @@ namespace EcoBuilder.UI
                 graveyard.Remove(toSpawn.Idx);
             }
             spawnedSpecies[toSpawn.Idx] = toSpawn;
-            toSpawn.Status.ShowHealth();
+            if (toSpawn.Status == null)
+            {
+                toSpawn.Status = Instantiate(statusPrefab, statusCanvas.transform);
+                toSpawn.Status.FollowSpecies(toSpawn.GObject);
+                toSpawn.Status.SetSize(sizeTrait.PositivifyValue(toSpawn.BodySize));
+                toSpawn.Status.SetGreed(greedTrait.PositivifyValue(toSpawn.Greediness));
+                toSpawn.Status.ShowHealth();
+            }
 
             // must be invoked first so that nodelink focuses after adding
             OnSpawned?.Invoke(toSpawn.Idx, toSpawn.IsProducer, toSpawn.GObject);
@@ -321,7 +320,7 @@ namespace EcoBuilder.UI
 
             Species toSet = incubated!=null? incubated : inspected;
             toSet.BodySize = newValue;
-            toSet.Status.SetSize(sizeTrait.PositivifyValue(toSet.BodySize));
+            toSet.Status?.SetSize(sizeTrait.PositivifyValue(toSet.BodySize));
 
             factory.RegenerateSpecies(toSet.GObject, sizeTrait.NormaliseValue(toSet.BodySize), greedTrait.NormaliseValue(toSet.Greediness), toSet.RandomSeed);
 
@@ -340,7 +339,7 @@ namespace EcoBuilder.UI
 
             Species toSet = incubated!=null? incubated : inspected;
             toSet.Greediness = newValue;
-            toSet.Status.SetGreed(greedTrait.PositivifyValue(toSet.Greediness));
+            toSet.Status?.SetGreed(greedTrait.PositivifyValue(toSet.Greediness));
 
             factory.RegenerateSpecies(toSet.GObject, sizeTrait.NormaliseValue(toSet.BodySize), greedTrait.NormaliseValue(toSet.Greediness), toSet.RandomSeed);
 

@@ -37,8 +37,8 @@ namespace EcoBuilder.UI
         {
             undos = new Stack<Move>();
             redos = new Stack<Move>();
-            undoButton.onClick.AddListener(Undo);
-            redoButton.onClick.AddListener(Redo);
+            undoButton.onClick.AddListener(()=>{ if (Input.touchCount<=1) Undo(); });
+            redoButton.onClick.AddListener(()=>{ if (Input.touchCount<=1) Redo(); });
 
             record = new List<string>();
         }

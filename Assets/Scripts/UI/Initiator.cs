@@ -19,8 +19,8 @@ namespace EcoBuilder.UI
         {
             rt = GetComponent<RectTransform>();
             cg = GetComponent<CanvasGroup>();
-            producerButton.onClick.AddListener(InitiateProducer);
-            consumerButton.onClick.AddListener(InitiateConsumer);
+            producerButton.onClick.AddListener(()=>{ if (Input.touchCount<=1) InitiateProducer(); });
+            consumerButton.onClick.AddListener(()=>{ if (Input.touchCount<=1) InitiateConsumer(); });
         }
         void Start()
         {

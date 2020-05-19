@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace EcoBuilder.UI
 {
     public class Constraints : MonoBehaviour,
-        IPointerEnterHandler, IPointerExitHandler
+        IPointerDownHandler, IPointerUpHandler
     {
         public event Action<bool> OnLeafFilled;
         public event Action<bool> OnPawFilled;
@@ -277,9 +277,11 @@ namespace EcoBuilder.UI
             StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1), 1, ()=>GetComponent<Canvas>().enabled=false));
         }
 
-        Touch enteredTouch; // TODO:
-        public void OnPointerEnter(PointerEventData ped)
+        public void OnPointerDown(PointerEventData ped)
         {
+            if (!(ped.pointerId==-1 || ped.pointerId==0)) {
+                return; // ignore not left click or first touch
+            }
             ShowError(.5f, true);
             OnErrorShown?.Invoke(true);
         }
@@ -339,6 +341,22 @@ namespace EcoBuilder.UI
                     }
                     StartCoroutine(followCoroutine = Follow());
                 }
+                else
+                {
+                    error.enabled = false;
+                    StopCoroutine(followCoroutine);
+                    followCoroutine = null;
+                    if (chainHovered)
+                    {
+                        OnChainUnhovered?.Invoke();
+                        chainHovered = false;
+                    }
+                    if (loopHovered)
+                    {
+                        OnLoopUnhovered?.Invoke();
+                        loopHovered = false;
+                    }
+                }
                 error.enabled = true;
                 float tStart = Time.time;
                 float scaleStart = error.transform.localScale.x;
@@ -351,29 +369,16 @@ namespace EcoBuilder.UI
                     yield return null;
                 }
                 error.transform.localScale = new Vector3(targetScale, targetScale, 1);
-                if (!showing)
-                {
-                    error.enabled = false;
-                    StopCoroutine(followCoroutine);
-                    followCoroutine = null;
-                }
             }
         }
         
         bool chainHovered=false, loopHovered=false;
-        public void OnPointerExit(PointerEventData ped)
+        public void OnPointerUp(PointerEventData ped)
         {
+            if (!(ped.pointerId==-1 || ped.pointerId==0)) {
+                return; // ignore not left click or first touch
+            }
             ShowError(.5f, false);
-            if (chainHovered)
-            {
-                OnChainUnhovered?.Invoke();
-                chainHovered = false;
-            }
-            if (loopHovered)
-            {
-                OnLoopUnhovered?.Invoke();
-                loopHovered = false;
-            }
             OnErrorShown?.Invoke(false);
         }
         void HoverChain(bool hovered)

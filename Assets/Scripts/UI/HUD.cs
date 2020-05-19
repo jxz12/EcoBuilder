@@ -12,6 +12,9 @@ namespace EcoBuilder.UI
         [SerializeField] Recorder recorder;
         [SerializeField] Initiator initiator;
 
+        [SerializeField] Canvas cameraCanvas;
+        [SerializeField] float planeDistance;
+
         [SerializeField] float maxAspect, minAspect;
         [SerializeField] float minInspectorScale, minScoreScale;
         [SerializeField] float maxConstraintsOffset;
@@ -42,6 +45,11 @@ namespace EcoBuilder.UI
                 TopScale = 1;
                 ConstraintsOffset = 0;
             }
+
+            Camera mainCam = Camera.main;
+            cameraCanvas.worldCamera = mainCam; // smellly but necessary because maincam is in different scene
+            cameraCanvas.planeDistance = planeDistance;
+            StatusBar.SetCamera(mainCam);
         }
     }
 }

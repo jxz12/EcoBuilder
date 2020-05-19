@@ -56,7 +56,7 @@ namespace EcoBuilder.Tutorials
             WaitThenDo(1, Show);
             void Show()
             {
-                help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By touching this icon, you can highlight all species with that chain length.";
+                help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By pressing this icon, you can highlight all species with that chain length.";
                 help.SetSide(true);
                 help.SetAnchorHeight(.6f);
                 help.Showing = true;

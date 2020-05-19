@@ -40,7 +40,8 @@ namespace EcoBuilder
             inspector.OnIncubated +=     ()=> graph.MoveHorizontal(-.5f);
             inspector.OnUnincubated +=   ()=> graph.MoveHorizontal(0);
 
-            graph.OnEmptyTapped += ()=> inspector.CancelIncubation();
+            graph.OnEmptyTapped +=   ()=> inspector.CancelIncubation();
+            recorder.OnUndoOrRedo += ()=> inspector.CancelIncubation();
 
             ////////////////////////////
             // the above will always (but not exclusively) cause the below in the next three things

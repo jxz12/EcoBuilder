@@ -276,6 +276,7 @@ namespace EcoBuilder.Tutorials
 
             score.DisableStarCalculation(false);
             score.Hide(false);
+            recorder.Hide(false);
             inspector.HideRemoveButton(false);
             inspector.SetProducerAvailability(true);
             inspector.SetConsumerAvailability(true);

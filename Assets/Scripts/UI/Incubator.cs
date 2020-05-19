@@ -10,40 +10,25 @@ namespace EcoBuilder.UI
     public class Incubator : MonoBehaviour,
         IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
-        // this is a little confusing because Incubator handles wanting incubation,
-        // but nodelink handles wanting unincubation
         public event Action OnDropped;
 
         [SerializeField] RectTransform incubatedParent;
         [SerializeField] Image pickupZone, dropZone;
-        [SerializeField] float planeDistance;
+        [SerializeField] Animator squareAnim;
+        [SerializeField] Canvas rootCanvas;
 
-        Canvas rootCanvas;
-        Camera mainCam;
         void Awake()
         {
-            rootCanvas = GetComponent<Canvas>();
-            Assert.IsNotNull(rootCanvas, "no canvas attached to incubator");
             Assert.IsTrue(rootCanvas.isRootCanvas, "incubator must be a root canvas");
-        }
-
-        public void SetCamera(Camera cam)
-        {
-            mainCam = cam;
-            rootCanvas.worldCamera = mainCam; // smellly but necessary because maincam is in different scene
-            rootCanvas.planeDistance = planeDistance;
-        }
-        void Start()
-        {
         }
         public void StartIncubation()
         {
-            GetComponent<Animator>().SetBool("Droppable", false);
-            GetComponent<Animator>().SetTrigger("Incubate");
+            squareAnim.SetBool("Droppable", false);
+            squareAnim.SetTrigger("Incubate");
         }
         public void Unincubate()
         {
-            GetComponent<Animator>().SetTrigger("Unincubate");
+            squareAnim.SetTrigger("Unincubate");
             Destroy(incubatedObj);
             incubatedObj = null;
         }
@@ -63,7 +48,7 @@ namespace EcoBuilder.UI
             if (incubatedObj != null)
             {
                 Destroy(incubatedObj);
-                GetComponent<Animator>().SetTrigger("Unincubate");
+                squareAnim.SetTrigger("Unincubate");
             }
         }
 
@@ -83,13 +68,13 @@ namespace EcoBuilder.UI
             if (dragging)
             {
                 if (ped.pointerCurrentRaycast.gameObject == dropZone.gameObject) {
-                    GetComponent<Animator>().SetBool("Droppable", true);
+                    squareAnim.SetBool("Droppable", true);
                 } else {
-                    GetComponent<Animator>().SetBool("Droppable", false);
+                    squareAnim.SetBool("Droppable", false);
                 }
                 Vector3 mousePos = ped.position;
-                mousePos.z = planeDistance - 1;
-                Vector3 worldPos = mainCam.ScreenToWorldPoint(mousePos);
+                mousePos.z = rootCanvas.planeDistance - 1;
+                Vector3 worldPos = rootCanvas.worldCamera.ScreenToWorldPoint(mousePos);
 
                 incubatedParent.position = worldPos;
             }
@@ -108,7 +93,7 @@ namespace EcoBuilder.UI
             if (dragging && ped.pointerCurrentRaycast.gameObject == dropZone.gameObject)
             {
                 OnDropped?.Invoke();
-                GetComponent<Animator>().SetTrigger("Spawn");
+                squareAnim.SetTrigger("Spawn");
             }
         }
     }
