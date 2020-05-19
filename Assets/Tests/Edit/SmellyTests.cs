@@ -46,7 +46,7 @@ namespace EcoBuilder.Tests
             foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                                         .Where(f=> Attribute.IsDefined(f, typeof(SerializeField))))
             {
-                if (field.Name == "tutorialPrefab" || field.Name == "nextLevelPrefab") {
+                if (field.Name == "tutorialPrefab" || field.Name == "nextLevelPrefab" || field.Name == "playCamera") {
                     continue;
                 }
                 // sb.Append($"{field.Name} {field.GetValue(monoB)}");
