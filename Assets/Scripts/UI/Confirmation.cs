@@ -54,6 +54,7 @@ namespace EcoBuilder.UI
             yes.interactable = true;
             no.gameObject.SetActive(true);
             no.interactable = true;
+            shade.interactable = true;
             okay.gameObject.SetActive(false);
         }
 
@@ -66,18 +67,12 @@ namespace EcoBuilder.UI
             SetQuestion(description);
             void Wait(string message)
             {
-                if (message == null) {
-                    SetText("Attempting...");
-                } else {
-                    SetText(message);
-                }
-                yes.interactable = false;
-                no.interactable = false;
+                SetText(message ?? "Attempting...");
+                yes.interactable = no.interactable = shade.interactable = false;
             }
         }
         public void FinishWaiting(Action OnOkay, bool successful, string msg)
         {
-            OkayCallback = ()=>{ OnOkay?.Invoke(); canvas.enabled = false; };
             if (successful) {
                 SetText("Success!");
             } else {
@@ -86,6 +81,8 @@ namespace EcoBuilder.UI
             yes.gameObject.SetActive(false);
             no.gameObject.SetActive(false);
             okay.gameObject.SetActive(true);
+            shade.interactable = true;
+            OkayCallback = NoCallback = ()=>{ if (successful) { OnOkay?.Invoke(); } canvas.enabled = false; };
         }
         public void Alert(string message)
         {

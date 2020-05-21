@@ -336,7 +336,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1643718472}
+  m_TargetTexture: {fileID: 1895968183}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 0
@@ -411,8 +411,8 @@ MonoBehaviour:
   outlineShader: {fileID: 4800000, guid: 3c30d1a2a85b9d4499dfc9ebea9ade8b, type: 3}
   outlineBufferShader: {fileID: 4800000, guid: 17f3e80406929b64f90154b46d4f453c, type: 3}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1643718472}
-  extraRenderTexture: {fileID: 2126495775}
+  renderTexture: {fileID: 1895968183}
+  extraRenderTexture: {fileID: 1900087129}
 --- !u!20 &1047668687
 Camera:
   m_ObjectHideFlags: 0
@@ -553,7 +553,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!84 &1643718472
+--- !u!84 &1895968183
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -566,8 +566,8 @@ RenderTexture:
   m_ForcedFallbackFormat: 4
   m_DownscaleFallback: 0
   serializedVersion: 3
-  m_Width: 509
-  m_Height: 905
+  m_Width: 640
+  m_Height: 480
   m_AntiAliasing: 1
   m_MipCount: -1
   m_DepthFormat: 1
@@ -588,7 +588,7 @@ RenderTexture:
     m_WrapW: 1
   m_Dimension: 2
   m_VolumeDepth: 1
---- !u!84 &2126495775
+--- !u!84 &1900087129
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -601,8 +601,8 @@ RenderTexture:
   m_ForcedFallbackFormat: 4
   m_DownscaleFallback: 0
   serializedVersion: 3
-  m_Width: 509
-  m_Height: 905
+  m_Width: 640
+  m_Height: 480
   m_AntiAliasing: 1
   m_MipCount: -1
   m_DepthFormat: 1
@@ -630,6 +630,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3403238049264179994, guid: ca10b088d6954c248a018046baf352cc,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 3403238049264179994, guid: ca10b088d6954c248a018046baf352cc,
+        type: 3}
+      propertyPath: m_textInfo.lineCount
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3403238049264180005, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}
       propertyPath: m_SizeDelta.y
@@ -639,31 +649,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238049380733579, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238049380733579, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238049380733579, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 190
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238049380733579, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 360
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238049380733579, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -113.195
       objectReference: {fileID: 0}
     - target: {fileID: 3403238049394681140, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}
@@ -704,7 +689,7 @@ PrefabInstance:
         type: 3}
       propertyPath: defaultLevelPrefab
       value: 
-      objectReference: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+      objectReference: {fileID: 8093225707240804993, guid: 5e08a2d308233dd4d934f727f2372c3b,
         type: 3}
     - target: {fileID: 3403238049404684665, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}
@@ -893,23 +878,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3403238050891406254, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 50
+      propertyPath: m_LocalPosition.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3403238050891406254, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238050891406254, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238050891406254, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -30
+      propertyPath: m_LocalPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3403238050931884248, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}
@@ -945,31 +920,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.lineCount
       value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238051122792055, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238051122792055, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238051122792055, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 190
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238051122792055, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 360
-      objectReference: {fileID: 0}
-    - target: {fileID: 3403238051122792055, guid: ca10b088d6954c248a018046baf352cc,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -248.64
       objectReference: {fileID: 0}
     - target: {fileID: 3403238051249562315, guid: ca10b088d6954c248a018046baf352cc,
         type: 3}

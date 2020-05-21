@@ -220,23 +220,23 @@ namespace EcoBuilder
             player.team = PlayerDetails.Team.Unassigned;
             SavePlayerDetailsLocal();
         }
-        public void LogOut(Action OnConfirm)
+        public void LogOut(Action OnSuccess)
         {
-            Assert.IsNotNull(OnConfirm);
+            Assert.IsNotNull(OnSuccess);
             Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
+            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
         }
-        public void DeleteAccount(Action OnConfirm)
+        public void DeleteAccount(Action OnSuccess)
         {
-            Assert.IsNotNull(OnConfirm);
+            Assert.IsNotNull(OnSuccess);
             Assert.IsTrue(LoggedIn);
             // yes this is spaghetti
-            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(OnConfirm, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
+            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(OnSuccess, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
-        public void UnlockAllLevels(Action OnConfirm)
+        public void UnlockAllLevels(Action OnSuccess)
         {
-            Assert.IsNotNull(OnConfirm);
-            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to (un)lock all levels?");
+            Assert.IsNotNull(OnSuccess);
+            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to (un)lock all levels?");
         }
 
         //////////////////////////////////////////////
