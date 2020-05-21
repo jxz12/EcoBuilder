@@ -37,6 +37,9 @@ namespace EcoBuilder.UI
             currLvl.transform.SetParent(prevLevelAnchor, false);
             currLvl.SetLocalHighScore();
 
+            Assert.IsTrue(prevLevelAnchor.childCount == 0);
+            Assert.IsTrue(nextLevelAnchor.childCount == 0);
+
             if (nextLvl != null)
             {
                 nextLvl.transform.SetParent(nextLevelAnchor, false);

@@ -318,7 +318,7 @@ MonoBehaviour:
   m_AsteriskChar: 42
   m_KeyboardType: 1
   m_LineType: 0
-  m_HideMobileInput: 0
+  m_HideMobileInput: 1
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 4
   m_RegexValue: 
@@ -359,7 +359,7 @@ MonoBehaviour:
   m_GlobalFontAsset: {fileID: 11400000, guid: 385ea1324fa8e874fac6374d1ca9403c, type: 2}
   m_OnFocusSelectAll: 1
   m_ResetOnDeActivation: 1
-  m_RestoreOriginalTextOnEscape: 1
+  m_RestoreOriginalTextOnEscape: 0
   m_isRichTextEditingAllowed: 0
   m_LineLimit: 0
   m_InputValidator: {fileID: 0}
@@ -479,7 +479,7 @@ MonoBehaviour:
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
-  m_isRichText: 1
+  m_isRichText: 0
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0

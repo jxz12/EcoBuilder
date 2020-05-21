@@ -41,7 +41,6 @@ namespace EcoBuilder.UI
             password.onValueChanged.AddListener(b=> CheckUsernameEmail());
             passwordRepeat.onValueChanged.AddListener(b=> CheckUsernameEmail());
             email.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            password.onSubmit.AddListener(s=> LoginOrRegister());
             recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
@@ -291,16 +290,26 @@ namespace EcoBuilder.UI
             // TODO: shift+tab
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                if (username.isFocused) {
-                    if (_state == State.Login) {
+                if (_state == State.Login)
+                {
+                    Assert.IsFalse(email.isFocused || passwordRepeat.isFocused);
+                    if (username.isFocused) {
                         password.ActivateInputField();
-                    } else {
-                        email.ActivateInputField();
+                    } else if (password.isFocused) {
+                        username.ActivateInputField();
                     }
-                } else if (email.isFocused) {
-                    password.ActivateInputField();
-                } else if (password.isFocused) {
-                    username.ActivateInputField();
+                }
+                else
+                {
+                    if (username.isFocused) {
+                        email.ActivateInputField();
+                    } else if (email.isFocused) {
+                        password.ActivateInputField();
+                    } else if (password.isFocused) {
+                        passwordRepeat.ActivateInputField();
+                    } else if (passwordRepeat.isFocused) {
+                        username.ActivateInputField();
+                    }
                 }
             }
         }

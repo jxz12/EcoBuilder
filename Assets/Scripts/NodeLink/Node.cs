@@ -93,6 +93,7 @@ namespace EcoBuilder.NodeLink
 
         public void SetNewParentKeepPos(Transform newParent)
         {
+            velocity *= transform.parent.localScale.x / newParent.localScale.x;
             transform.SetParent(newParent, true);
             transform.localRotation = Quaternion.identity;
         }

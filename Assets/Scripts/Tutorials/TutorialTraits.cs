@@ -76,7 +76,7 @@ namespace EcoBuilder.Tutorials
             Hide();
             
             help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(430); help.Showing = true; Track(animal.transform); });
+            WaitThenDo(delay, ()=>{ help.Message = "Well done! You saved the animal here by giving it more food. This is achieved by making its food source lighter, as lighter species grow faster. This is exactly what happens in the real world! For example, an Oak tree takes many years to grow, while grass can cover a field within weeks. Try tapping the animal this time."; help.SetPixelWidth(430); help.Showing = true; Track(animal.transform); });
 
             AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainInterference());
         }

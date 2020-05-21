@@ -184,6 +184,7 @@ namespace EcoBuilder.UI
             }
             else
             {
+                displayedScore = 0;
                 displayedScoreCol = Color.Lerp(displayedScoreCol, unsatisfiedScoreCol, 5f*Time.deltaTime);
             }
             if (displayedStars < 2)

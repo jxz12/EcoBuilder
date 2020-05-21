@@ -5,10 +5,11 @@ add 'please wait while loads' and imperial logo onto splash images
 
 add a hint text that comes up after 2/3 minutes for each level
 
-text input at login can be buggy on tap or not on tap
+make text input fields less buggy and raise the field if keyboard is pressed
 ask samraat to remove the TODO
 give a reminder for which one is apparent and which is exclusion - add a glossary as a hyperlink
 mention the speed of the link balls going is important
+fix webgl privacy policy grey
 
 the model calculation may not run sometimes - see pamela's screenshot
 sound effects! and some relaxing music

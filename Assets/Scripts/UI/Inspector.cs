@@ -118,8 +118,7 @@ namespace EcoBuilder.UI
             // grab gameobject from factory
             incubated.GObject = factory.GenerateSpecies(incubated.IsProducer, sizeTrait.NormaliseValue(incubated.BodySize), greedTrait.NormaliseValue(incubated.Greediness), incubated.RandomSeed);
 
-            incubator.StartIncubation();
-            incubator.SetIncubatedObject(incubated.GObject);
+            incubator.StartIncubation(incubated.GObject);
 
             initiator.ShowButtons(false);
 
@@ -143,7 +142,7 @@ namespace EcoBuilder.UI
         private void SpawnIncubated()
         {
             Assert.IsNotNull(incubated, "nothing incubated to spawn");
-            incubator.ReleaseIncubatedObject();
+            incubator.UnincubateAndRelease();
             OnUnincubated?.Invoke();
 
             SpawnWithNonUserEvents(incubated);
@@ -362,7 +361,7 @@ namespace EcoBuilder.UI
             }
             if (incubated != null)
             {
-                incubator.Unincubate();
+                incubator.UnincubateAndDestroy();
                 initiator.ShowButtons(true);
                 
                 incubated = null;
@@ -409,10 +408,10 @@ namespace EcoBuilder.UI
             // Assert.IsNotNull(incubated, "nothing incubated");
             if (incubated != null)
             {
-                incubator.Unincubate();
+                incubator.UnincubateAndDestroy();
                 initiator.ShowButtons(true);
-                incubated = null;
 
+                incubated = null;
                 OnUnincubated?.Invoke();
                 GetComponent<Animator>().SetTrigger("Unincubate");
             }
