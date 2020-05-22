@@ -38,11 +38,6 @@ namespace EcoBuilder
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
 #endif
-#if UNITY_WEBGL
-            print($"TODO: set this to the dependent on screen size for webgl using {Screen.currentResolution}");
-            // Screen.SetResolution(576, 1024, false);
-            // Screen.fullScreen = true;
-#endif
             SendUnsentPost();
         }
             

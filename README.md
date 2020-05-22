@@ -1,19 +1,29 @@
 ECOBUILDER:
-write a cover letter
+revise systems design
 
 add 'please wait while loads' and imperial logo onto splash images
 
-add a hint text that comes up after 2/3 minutes for each level
+make text input fields less buggy at registration
+fix safe zone for score
 
-make text input fields less buggy and raise the field if keyboard is pressed
+glossary and credits with beta testers
+write hint texts for all levels
+switch hand animation to drag size to zero when inter is zero
+make more clear that you can still add links to blue species
+paul crash on level 8
+
 ask samraat to remove the TODO
 give a reminder for which one is apparent and which is exclusion - add a glossary as a hyperlink
 mention the speed of the link balls going is important
-fix webgl privacy policy grey
 
-the model calculation may not run sometimes - see pamela's screenshot
 sound effects! and some relaxing music
 level 13: test if 3 stars is possible
+
+Samraat:
+change 'keep track of your progress'
+age ranges?
+total health -> total population
+
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
@@ -30,12 +40,6 @@ release game with australian fires as angle?
 experiments to see how the score changes over time
 
 I had my first heisenbug today! async trophic levels
-
-# REPORT CARD
-Your final score was XXX
-Use the 'i' icon thingy to show the explanation This was made up of X nodes, and X edges
-The species with the... is...
-(extra info on click such as stability (eigenvalue), nonreactive)
 
 
 

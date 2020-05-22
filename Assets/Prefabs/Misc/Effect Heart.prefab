@@ -7,6 +7,27 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 2.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 2.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3721478162572972259, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: 27809af6d87764042a49e1ba903f56c2,
+        type: 2}
     - target: {fileID: 6668556140072264635, guid: 1c495d9fc21278443a0cb711700ab10a,
         type: 3}
       propertyPath: m_Name
@@ -67,26 +88,5 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_Size.x
-      value: 2.56
-      objectReference: {fileID: 0}
-    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_Size.y
-      value: 2.56
-      objectReference: {fileID: 0}
-    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_WasSpriteAssigned
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3721478162572972259, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 22100000, guid: 27809af6d87764042a49e1ba903f56c2,
-        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c495d9fc21278443a0cb711700ab10a, type: 3}

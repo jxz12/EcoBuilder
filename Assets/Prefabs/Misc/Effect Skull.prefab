@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 72445543660036586}
   - component: {fileID: 3721478162572972259}
   - component: {fileID: 797070684033559759}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Effect Skull
   m_TagString: Untagged
   m_Icon: {fileID: 0}

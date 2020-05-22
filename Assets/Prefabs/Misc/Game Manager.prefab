@@ -826,7 +826,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 190, y: -113.195}
-  m_SizeDelta: {x: 360, y: 206.39}
+  m_SizeDelta: {x: 360, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3403238049380733582
 CanvasRenderer:
@@ -1013,7 +1013,6 @@ RectTransform:
   m_Children:
   - {fileID: 3403238049415391012}
   - {fileID: 3403238050891406254}
-  - {fileID: 3403238050822504528}
   - {fileID: 3403238050967480991}
   - {fileID: 3403238051056720722}
   - {fileID: 3403238050382710250}
@@ -1113,8 +1112,9 @@ GameObject:
   - component: {fileID: 3403238049415391012}
   - component: {fileID: 4388596105821356007}
   - component: {fileID: 1514882378009947899}
+  - component: {fileID: 8841790487859444195}
   m_Layer: 5
-  m_Name: Level Anchors
+  m_Name: Safe area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1133,6 +1133,7 @@ RectTransform:
   m_Children:
   - {fileID: 3403238051093408243}
   - {fileID: 3403238050878025269}
+  - {fileID: 3403238050822504528}
   m_Father: {fileID: 3403238049404684668}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1179,6 +1180,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 32
+--- !u!114 &8841790487859444195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3403238049415391015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d2417d90c139cc40afd25db8f855d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  device: 0
 --- !u!1 &3403238049419369088
 GameObject:
   m_ObjectHideFlags: 0
@@ -2548,7 +2562,7 @@ RectTransform:
   - {fileID: 598118676829666092}
   - {fileID: 3403238050167572421}
   m_Father: {fileID: 3403238049404684668}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -3701,7 +3715,7 @@ RectTransform:
   - {fileID: 3403238049794500865}
   - {fileID: 3403238049380733579}
   - {fileID: 3403238051122792055}
-  m_Father: {fileID: 3403238049404684668}
+  m_Father: {fileID: 3403238049415391012}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.8}
@@ -3924,7 +3938,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3403238050878025269}
   m_Layer: 5
-  m_Name: Card
+  m_Name: Level Card
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4272,7 +4286,7 @@ MonoBehaviour:
     spaceCount: 24
     wordCount: 24
     linkCount: 0
-    lineCount: 5
+    lineCount: 6
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -4518,7 +4532,7 @@ RectTransform:
   - {fileID: 3403238051262421962}
   - {fileID: 3403238051249562315}
   m_Father: {fileID: 3403238049404684668}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4658,7 +4672,7 @@ RectTransform:
   m_Children:
   - {fileID: 3292851712287748957}
   m_Father: {fileID: 3403238049404684668}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4746,7 +4760,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3403238051093408243}
   m_Layer: 5
-  m_Name: Play
+  m_Name: Level Play
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

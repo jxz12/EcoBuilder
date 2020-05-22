@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2668540506597039665}
   - component: {fileID: 6047318902721678427}
   - component: {fileID: 789048923580446014}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Effect Fireworks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
