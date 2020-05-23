@@ -647,11 +647,6 @@ PrefabInstance:
       propertyPath: toSim
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7554625850635455796, guid: cd85d2e718d28d74587f0224ed760990,
-        type: 3}
-      propertyPath: device
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7958780055953065212, guid: cd85d2e718d28d74587f0224ed760990,
         type: 3}
       propertyPath: m_Controller
