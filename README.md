@@ -20,7 +20,6 @@ sound effects! and some relaxing music
 level 13: test if 3 stars is possible
 
 Samraat:
-change 'keep track of your progress'
 age ranges?
 total health -> total population
 

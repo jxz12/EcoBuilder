@@ -48,7 +48,7 @@ namespace EcoBuilder.UI
 
         void StartRegistration()
         {
-            form.Begin();
+            form.Show();
             form.OnFinished += StartMainMenuFromReg;
         }
         void StartMainMenuFromReg()
