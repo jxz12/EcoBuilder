@@ -14,7 +14,8 @@ namespace EcoBuilder.UI
         public event Action OnFinished;
 
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;
-        [SerializeField] TMPro.TMP_InputField username, password, passwordRepeat, email, recipient;
+        // [SerializeField] TMPro.TMP_InputField username, password, passwordRepeat, email, recipient;
+        [SerializeField] InputField username, password, passwordRepeat, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle termsConsent, emailConsent, askAgain;
         [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, forgotGoto;
@@ -42,8 +43,6 @@ namespace EcoBuilder.UI
             passwordRepeat.onValueChanged.AddListener(s=>CheckUsernameEmail());
             email.onValueChanged.AddListener(s=>CheckUsernameEmail());
             recipient.onValueChanged.AddListener(s=>CheckResetRecipient());
-
-            username.onEndEdit.AddListener(s=>password.ActivateInputField());
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
         }
