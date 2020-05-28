@@ -578,6 +578,21 @@ PrefabInstance:
       propertyPath: m_textInfo.pageCount
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1883228925074697717, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883228925074697717, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_KeyboardType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1883228925074697717, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_CharacterValidation
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 2243688625501556919, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -723,6 +738,11 @@ PrefabInstance:
       propertyPath: m_textInfo.pageCount
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5330983992015517533, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_isRichText
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5330983992016375882, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -812,6 +832,31 @@ PrefabInstance:
         type: 3}
       propertyPath: m_textInfo.pageCount
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546967864552671775, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546967864552671775, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_InputType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546967865441642342, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546967865441642342, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_KeyboardType
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5546967865441642342, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_CharacterValidation
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5649003449013798087, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
@@ -1511,7 +1556,7 @@ PrefabInstance:
     - target: {fileID: 6515831361074967053, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 68.69003
+      value: 68.690125
       objectReference: {fileID: 0}
     - target: {fileID: 6515831361133778270, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
@@ -2063,6 +2108,11 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7142891049444517897, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_isRichText
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7181392390257123714, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -2482,6 +2532,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 189.61
+      objectReference: {fileID: 0}
+    - target: {fileID: 7359191580793541963, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7359191580793541963, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_InputType
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7526820423963326346, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}

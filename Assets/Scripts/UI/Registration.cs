@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -15,16 +13,10 @@ namespace EcoBuilder.UI
         //       don't ask me why I chose to do it this way and opposite in Menu
         public event Action OnFinished;
 
-        // info
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;
-
-        // input
-        [SerializeField] TMPro.TextMeshProUGUI username, password, passwordRepeat, email, recipient;
-        [SerializeField] Button usernameFocus, passwordFocus, passwordRepeatFocus, emailFocus, recipientFocus;
+        [SerializeField] TMPro.TMP_InputField username, password, passwordRepeat, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle termsConsent, emailConsent, askAgain;
-
-        // navigation
         [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, forgotGoto;
         [SerializeField] Button loginSubmit, resetSubmit, gdprSubmit, demoSubmit;
 
@@ -45,36 +37,15 @@ namespace EcoBuilder.UI
             resetSubmit.onClick.AddListener(SendResetEmail);
             cancelButton.onClick.AddListener(CancelRegistration);
 
-            usernameFocus.onClick.AddListener(()=>FocusTextInput(username));
-            passwordFocus.onClick.AddListener(()=>FocusTextInput(password));
-            passwordRepeatFocus.onClick.AddListener(()=>FocusTextInput(passwordRepeat));
-            emailFocus.onClick.AddListener(()=>FocusTextInput(email));
-            recipientFocus.onClick.AddListener(()=>FocusTextInput(recipient));
+            username.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            password.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            passwordRepeat.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            email.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            recipient.onValueChanged.AddListener(s=>CheckResetRecipient());
+
+            username.onEndEdit.AddListener(s=>password.ActivateInputField());
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
-        }
-
-        TMPro.TextMeshProUGUI focusedInput=null;
-        void FocusTextInput(TMPro.TextMeshProUGUI inputText)
-        {
-            if (inputText == null)
-            {
-                if (touchKeyboard != null)
-                {
-                    touchKeyboard.active = false;
-                    touchKeyboard = null;
-                    transform.localPosition = Vector2.zero;
-                }
-            }
-            else
-            {
-                if (TouchScreenKeyboard.isSupported && touchKeyboard == null)
-                {
-                    touchKeyboard = TouchScreenKeyboard.Open(inputText.text, TouchScreenKeyboardType.Default, false, false, true, false, "", 64);
-                    transform.localPosition = new Vector2(0,100);
-                }
-            }
-            focusedInput = inputText;
         }
         public void Show()
         {
@@ -86,7 +57,6 @@ namespace EcoBuilder.UI
         [SerializeField] GameObject navObj;
         public enum State { Null, Start, Skip, Register, Login, GDPR, Reset, Demographics, End };
         private State _state = State.Null;
-        TouchScreenKeyboard touchKeyboard;
         public void SetState(State state)
         {
             switch (state)
@@ -101,25 +71,22 @@ namespace EcoBuilder.UI
                     errorText.gameObject.SetActive(true);
                     errorText.text = "Account deleted!";
                 }
-                FocusTextInput(null);
                 break;
             case State.Register:
                 ShowObjectsOnly(idObj);
                 forgotGoto.gameObject.SetActive(false);
-                // emailFocus.gameObject.SetActive(true);
-                // passwordRepeatFocus.gameObject.SetActive(true);
+                email.gameObject.SetActive(true);
                 loginSubmit.interactable = false;
                 loginText.gameObject.SetActive(false);
                 registerText.gameObject.SetActive(true);
-                FocusTextInput(null);
+                passwordRepeat.gameObject.SetActive(true);
                 break;
             case State.Login:
                 ShowObjectsOnly(idObj);
-                emailFocus.gameObject.SetActive(false);
-                passwordRepeatFocus.gameObject.SetActive(false);
+                email.gameObject.SetActive(false);
                 loginText.gameObject.SetActive(true);
                 registerText.gameObject.SetActive(false);
-                FocusTextInput(null);
+                passwordRepeat.gameObject.SetActive(false);
                 break;
             case State.GDPR:
                 ShowObjectsOnly(gdprObj);
@@ -127,17 +94,14 @@ namespace EcoBuilder.UI
                 backButton.interactable = false;
                 emailConsent.gameObject.SetActive(email.text != "");
                 navObj.SetActive(false);
-                FocusTextInput(null);
                 break;
             case State.Reset:
                 ShowObjectsOnly(resetObj);
                 skipButton.interactable = false;
-                FocusTextInput(null);
                 break;
             case State.Demographics:
                 ShowObjectsOnly(demoObj);
                 backButton.interactable = false;
-                FocusTextInput(null);
                 break;
             case State.Skip:
                 if (_state == State.Skip || _state == State.Demographics)
@@ -152,7 +116,6 @@ namespace EcoBuilder.UI
                     ShowObjectsOnly(skipObj);
                     skipButton.image.sprite = redButtonSprite;
                 }
-                FocusTextInput(null);
                 break;
             case State.End:
                 OnFinished?.Invoke();
@@ -210,8 +173,7 @@ namespace EcoBuilder.UI
             }
         }
 
-        static readonly Regex usernameRegex = new Regex(@"^[a-zA-Z_$0-9]+$");
-        static readonly Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+        readonly static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
         void CheckUsernameEmail()
         {
             if (_state == State.Register) {
@@ -219,18 +181,9 @@ namespace EcoBuilder.UI
             } else {
                 loginSubmit.interactable = UsernameOkay();
             }
-            bool UsernameOkay()
-            {
-                return !string.IsNullOrEmpty(username.text) && usernameRegex.IsMatch(username.text);
-            }
-            bool EmailOkay()
-            {
-                return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text);
-            }
-            bool PasswordOkay()
-            {
-                return password.text == passwordRepeat.text;
-            }
+            bool UsernameOkay() { return username.text.Length > 0; }
+            bool EmailOkay() { return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text); }
+            bool PasswordOkay() { return password.text == passwordRepeat.text; }
         }
         void CheckResetRecipient()
         {
@@ -320,74 +273,51 @@ namespace EcoBuilder.UI
         }
         void Update()
         {
-            // TODO: don't perform input on username or email if not matching the regex
-            if (focusedInput != null)
+            // if (_state == State.Register)
+            // {
+            //     if (username.isFocused || email.isFocused || password.isFocused || passwordRepeat.isFocused)
+            //     {
+            //         transform.localPosition = new Vector2(100,0);
+            //     }
+            //     else
+            //     {
+            //         transform.localPosition = new Vector2(0,0);
+            //     }
+            // }
+            // else if (_state == State.Login)
+            // {
+            //     if (username.isFocused || password.isFocused)
+            //     {
+            //         transform.localPosition = new Vector2(100,0);
+            //     }
+            // }
+            // TODO:
+
+            // TODO: shift+tab
+            if (Input.GetKeyDown(KeyCode.Tab))
             {
-                var prevText = focusedInput.text;
-                if (touchKeyboard != null)
+                if (_state == State.Login)
                 {
-                    if (!TouchScreenKeyboard.visible || touchKeyboard.status!=TouchScreenKeyboard.Status.Visible)
-                    {
-                        FocusTextInput(null);
-                    }
-                    if (prevText != touchKeyboard.text)
-                    {
-                        focusedInput.text = touchKeyboard.text;
-                        CheckUsernameEmail();
+                    Assert.IsFalse(email.isFocused || passwordRepeat.isFocused);
+                    if (username.isFocused) {
+                        password.ActivateInputField();
+                    } else if (password.isFocused) {
+                        username.ActivateInputField();
                     }
                 }
                 else
                 {
-                    var sb = new StringBuilder(prevText);
-                    if (!string.IsNullOrEmpty(Input.inputString))
-                    {
-                        foreach (char c in Input.inputString)
-                        {
-                            if (c == '\b') // has backspace/delete been pressed?
-                            {
-                                if (sb.Length > 0) {
-                                    sb.Length -= 1;
-                                }
-                            }
-                            else if (c!='\n' && c!='\r') // ignore enter and return
-                            {
-                                sb.Append(c);
-                            }
-                        }
-                    }
-                    string newText = sb.ToString();
-                    if (prevText != newText)
-                    {
-                        focusedInput.text = newText;
-                        CheckUsernameEmail();
+                    if (username.isFocused) {
+                        email.ActivateInputField();
+                    } else if (email.isFocused) {
+                        password.ActivateInputField();
+                    } else if (password.isFocused) {
+                        passwordRepeat.ActivateInputField();
+                    } else if (passwordRepeat.isFocused) {
+                        username.ActivateInputField();
                     }
                 }
             }
-            // // TODO: shift+tab
-            // if (Input.GetKeyDown(KeyCode.Tab))
-            // {
-            //     if (_state == State.Login)
-            //     {
-            //         Assert.IsFalse(email.isFocused || passwordRepeat.isFocused);
-            //         if (username.isFocused) {
-            //             password.ActivateInputField();
-            //         } else if (password.isFocused) {
-            //             username.ActivateInputField();
-            //         }
-            //     }
-            //     else
-            //     {
-            //         if (username.isFocused) {
-            //             email.ActivateInputField();
-            //         } else if (email.isFocused) {
-            //             password.ActivateInputField();
-            //         } else if (password.isFocused) {
-            //             passwordRepeat.ActivateInputField();
-            //         } else if (passwordRepeat.isFocused) {
-            //             username.ActivateInputField();
-            //         }
-            //     }
-            // }
         }
     }
 }

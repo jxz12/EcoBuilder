@@ -10,7 +10,6 @@ public class SafeArea : MonoBehaviour
         var panel = GetComponent<RectTransform>();
         Assert.IsNotNull(panel);
         var r = GetSafeArea();
-        print(r);
         Vector2 anchorMin = r.position;
         Vector2 anchorMax = r.position + r.size;
         anchorMin.x /= Screen.width;
