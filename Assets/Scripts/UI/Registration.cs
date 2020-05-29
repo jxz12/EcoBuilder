@@ -14,7 +14,6 @@ namespace EcoBuilder.UI
         public event Action OnFinished;
 
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;
-        // [SerializeField] TMPro.TMP_InputField username, password, passwordRepeat, email, recipient;
         [SerializeField] InputField username, password, passwordRepeat, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle termsConsent, emailConsent, askAgain;
@@ -272,25 +271,19 @@ namespace EcoBuilder.UI
         }
         void Update()
         {
-            // if (_state == State.Register)
-            // {
-            //     if (username.isFocused || email.isFocused || password.isFocused || passwordRepeat.isFocused)
-            //     {
-            //         transform.localPosition = new Vector2(100,0);
-            //     }
-            //     else
-            //     {
-            //         transform.localPosition = new Vector2(0,0);
-            //     }
-            // }
-            // else if (_state == State.Login)
-            // {
-            //     if (username.isFocused || password.isFocused)
-            //     {
-            //         transform.localPosition = new Vector2(100,0);
-            //     }
-            // }
-            // TODO:
+#if UNITY_IOS || UNITY_ANDROID
+            if (_state == State.Register || _state == State.Login || _state == State.Reset)
+            {
+                if (/*TouchScreenKeyboard.isSupported &&*/ (username.isFocused || email.isFocused || password.isFocused || passwordRepeat.isFocused || recipient.isFocused))
+                {
+                    transform.localPosition = new Vector2(0,200);
+                }
+                else
+                {
+                    transform.localPosition = Vector2.zero;
+                }
+            }
+#endif
 
             // TODO: shift+tab
             if (Input.GetKeyDown(KeyCode.Tab))
