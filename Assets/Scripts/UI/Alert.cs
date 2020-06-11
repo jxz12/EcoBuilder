@@ -24,7 +24,7 @@ namespace EcoBuilder.UI
         }
         private void SetText(string text)
         {
-            question.text = text;
+            question.text = text.Replace("\\n", "\n"); // because [SerializeField] Unity is sucky
             Canvas.ForceUpdateCanvases();
             layout.CalculateLayoutInputVertical();
             layout.SetLayoutVertical();

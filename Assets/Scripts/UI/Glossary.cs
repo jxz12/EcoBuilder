@@ -15,7 +15,7 @@ namespace EcoBuilder.UI
             {"apparent", "so is apparent competition lol"},
             {"competition", "so is apparent competition ye"},
             {"chain", "swing low"},
-            {"length", "sweet chariot"},
+            // {"length", "sweet chariot"},
         };
         [SerializeField] string highlightedColour = "#0000FF";
         public string HighlightDefinitions(string toReplace)
