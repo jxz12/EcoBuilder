@@ -189,7 +189,7 @@ namespace EcoBuilder
         {
             confirmation.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
         }
-        public void ShowInfo(string message)
+        public void ShowAlert(string message)
         {
             // like javascript alert()
             confirmation.Alert(message);

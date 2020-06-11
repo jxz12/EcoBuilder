@@ -71,7 +71,7 @@ namespace EcoBuilder.UI
         }
         void Info()
         {
-            GameManager.Instance.ShowInfo(information);
+            GameManager.Instance.ShowAlert(information);
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;

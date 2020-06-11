@@ -1,19 +1,17 @@
 ECOBUILDER:
-revise systems design
+
+OOP moneys
+ecobuilder accessibility bs
+make a startup
 
 add 'please wait while loads' and imperial logo onto splash images
 
-make text input fields less buggy at registration
-fix safe zone for score
+make text input fields less buggy at registration - try your best to make inputfield work and ask hsi-cheng/dan to test
 
 glossary and credits with beta testers
 write hint texts for all levels
-switch hand animation to drag size to zero when inter is zero
-make more clear that you can still add links to blue species
-paul crash on level 8
-
-ask samraat to remove the TODO
-give a reminder for which one is apparent and which is exclusion - add a glossary as a hyperlink
+Tutorial Research - switch hand animation to drag size to zero when inter is zero
+make more clear that you can still add links to blue species (in text)
 mention the speed of the link balls going is important
 
 sound effects! and some relaxing music

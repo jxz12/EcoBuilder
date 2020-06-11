@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace EcoBuilder.UI
 {
@@ -121,6 +122,7 @@ namespace EcoBuilder.UI
             get { return message.text; }
             set { StopAllCoroutines(); message.text = value; ForceUpdateLayout(); }
         }
+
         public void DelayThenSet(float delay, string delayedMessage)
         {
             StopAllCoroutines();

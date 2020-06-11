@@ -228,6 +228,26 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 987474157836616596, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 987474157836616596, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 987474157836616596, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 987474157836616596, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.55
+      objectReference: {fileID: 0}
     - target: {fileID: 1661831116595254508, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -1606,7 +1626,7 @@ PrefabInstance:
     - target: {fileID: 6515831361074967053, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 68.690125
+      value: -0.42137116
       objectReference: {fileID: 0}
     - target: {fileID: 6515831361133778270, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
@@ -2366,17 +2386,17 @@ PrefabInstance:
     - target: {fileID: 7181392390711022260, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 215
+      value: 210
       objectReference: {fileID: 0}
     - target: {fileID: 7181392390711022260, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 36
+      value: 34
       objectReference: {fileID: 0}
     - target: {fileID: 7181392390711022260, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 37
+      value: 35
       objectReference: {fileID: 0}
     - target: {fileID: 7181392390711022260, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}

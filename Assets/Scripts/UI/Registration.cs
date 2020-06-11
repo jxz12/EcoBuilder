@@ -274,13 +274,16 @@ namespace EcoBuilder.UI
 #if UNITY_IOS || UNITY_ANDROID
             if (_state == State.Register || _state == State.Login || _state == State.Reset)
             {
-                if (/*TouchScreenKeyboard.isSupported &&*/ (username.isFocused || email.isFocused || password.isFocused || passwordRepeat.isFocused || recipient.isFocused))
+                InputField focused = null;
+                if (username.isFocused) { focused = username; }
+                else if (email.isFocused) { focused = email; }
+                else if (password.isFocused) { focused = password; }
+                else if (passwordRepeat.isFocused) { focused = passwordRepeat; }
+                else if (recipient.isFocused) { focused = recipient; }
+
+                if (focused != null)
                 {
-                    transform.localPosition = new Vector2(0,200);
-                }
-                else
-                {
-                    transform.localPosition = Vector2.zero;
+                    transform.localPosition = new Vector2(0,Mathf.Max(0,-focused.transform.localPosition.y));
                 }
             }
 #endif
