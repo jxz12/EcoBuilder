@@ -565,9 +565,9 @@ PrefabInstance:
         type: 3}
       propertyPath: details.completedMessage
       value: Well done! This is also a common phenomenon in the real world, and is
-        known as 'apparent competition'. An example of this in the real world is
-        if a hawk eats both squirrels and mice, an increase in mice negatively impacts
-        the squirrels.
+        known as apparent competition. An example of this in the real world is that
+        when a hawk eats both squirrels and mice, an increase in mouse population
+        negatively impacts the population of squirrels.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

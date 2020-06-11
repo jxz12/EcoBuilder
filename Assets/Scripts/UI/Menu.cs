@@ -236,6 +236,7 @@ namespace EcoBuilder.UI
         [SerializeField] string settingsText;
         [SerializeField] string levelsLearningText, levelsResearchText;
         [SerializeField] string lockHelp;
+        [SerializeField] string credits;
         string splashText = "Welcome to EcoBuilder!";
         public void ResetHelpToSplash()
         {
@@ -465,6 +466,10 @@ namespace EcoBuilder.UI
             SetHelp(settingsText);
 
             state = State.Settings;
+        }
+        public void ShowCredits()
+        {
+            GameManager.Instance.ShowAlert(credits);
         }
 
         private List<IEnumerator> navigationRoutines = new List<IEnumerator>();

@@ -224,19 +224,19 @@ namespace EcoBuilder
         {
             Assert.IsNotNull(OnSuccess);
             Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
+            alert.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
         }
         public void DeleteAccount(Action OnSuccess)
         {
             Assert.IsNotNull(OnSuccess);
             Assert.IsTrue(LoggedIn);
             // yes this is spaghetti
-            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(OnSuccess, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
+            alert.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ alert.FinishWaiting(OnSuccess, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
         public void UnlockAllLevels(Action OnSuccess)
         {
             Assert.IsNotNull(OnSuccess);
-            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to (un)lock all levels?");
+            alert.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to (un)lock all levels?");
         }
 
         //////////////////////////////////////////////

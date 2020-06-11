@@ -157,7 +157,7 @@ namespace EcoBuilder
         }
         public void ReloadLevelScene(Level toPlay)
         {
-            confirmation.GiveChoice(()=>LoadLevelScene(toPlay), "Are you sure you want to restart the level?");
+            alert.GiveChoice(()=>LoadLevelScene(toPlay), "Are you sure you want to restart the level?");
         }
 
 
@@ -170,10 +170,10 @@ namespace EcoBuilder
         [SerializeField] Canvas tutorialCanvas;
         public Canvas TutCanvas { get { return tutorialCanvas; } }
 
-        [SerializeField] UI.Confirmation confirmation;
+        [SerializeField] UI.Alert alert;
         public void ReturnToMenu(Action OnConfirm, Action OnMenuLoaded)
         {
-            confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
+            alert.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
             void BackToMenu()
             {
                 // playedLevel = null;
@@ -187,12 +187,11 @@ namespace EcoBuilder
 
         public void Quit()
         {
-            confirmation.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
+            alert.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
         }
         public void ShowAlert(string message)
         {
-            // like javascript alert()
-            confirmation.Alert(message);
+            alert.ShowInfo(message);
         }
         public void CloseGameFully()
         {

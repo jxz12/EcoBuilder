@@ -120,8 +120,9 @@ namespace EcoBuilder.UI
         // TODO: this is a smelly mess
         public string Message {
             get { return message.text; }
-            set { StopAllCoroutines(); message.text = value; ForceUpdateLayout(); }
+            set { StopAllCoroutines(); message.text = glossary.HighlightDefinitions(value); ForceUpdateLayout(); }
         }
+        [SerializeField] Glossary glossary;
 
         public void DelayThenSet(float delay, string delayedMessage)
         {

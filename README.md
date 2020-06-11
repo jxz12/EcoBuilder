@@ -4,12 +4,14 @@ OOP moneys
 ecobuilder accessibility bs
 make a startup
 
+smoll:
 add 'please wait while loads' and imperial logo onto splash images
 
-make text input fields less buggy at registration - try your best to make inputfield work and ask hsi-cheng/dan to test
+make text input fields less buggy at registration - try your best to make inputfield work and ask hsi-cheng/dan/samraat to test
 
-glossary and credits with beta testers
+write glossary definitions
 write hint texts for all levels
+credits with beta testers
 Tutorial Research - switch hand animation to drag size to zero when inter is zero
 make more clear that you can still add links to blue species (in text)
 mention the speed of the link balls going is important
@@ -19,7 +21,6 @@ level 13: test if 3 stars is possible
 
 Samraat:
 age ranges?
-total health -> total population
 
 
 # TESTS

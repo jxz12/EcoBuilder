@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace EcoBuilder.UI
 {
-    public class Confirmation : MonoBehaviour
+    public class Alert : MonoBehaviour
     {
         [SerializeField] Button shade, yes, no, okay;
         [SerializeField] TMPro.TextMeshProUGUI question;
@@ -84,9 +84,9 @@ namespace EcoBuilder.UI
             shade.interactable = true;
             OkayCallback = NoCallback = ()=>{ if (successful) { OnOkay?.Invoke(); } canvas.enabled = false; };
         }
-        public void Alert(string message)
+        public void ShowInfo(string message)
         {
-            // does nothing but show a temporary message 
+            // does nothing but show a temporary message like javascript alert()
             canvas.enabled = true;
             yes.gameObject.SetActive(false);
             no.gameObject.SetActive(false);
