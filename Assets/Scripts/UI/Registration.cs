@@ -269,6 +269,7 @@ namespace EcoBuilder.UI
                 errorText.text = "Error: " + msg;
             }
         }
+        TouchScreenKeyboard keyboard;
         void Update()
         {
 #if UNITY_IOS || UNITY_ANDROID
@@ -281,9 +282,15 @@ namespace EcoBuilder.UI
                 else if (passwordRepeat.isFocused) { focused = passwordRepeat; }
                 else if (recipient.isFocused) { focused = recipient; }
 
-                if (focused != null)
+                if (focused != null && keyboard == null)
                 {
                     transform.localPosition = new Vector2(0,Mathf.Max(0,-focused.transform.localPosition.y));
+                    keyboard = TouchScreenKeyboard.Open(focused.text, TouchScreenKeyboardType.Default);
+                }
+                else if (focused == null && keyboard != null)
+                {
+                    transform.localPosition = new Vector2(0,0);
+                    keyboard = null;
                 }
             }
 #endif

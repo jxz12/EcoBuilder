@@ -11,8 +11,6 @@ make text input fields less buggy at registration - try your best to make inputf
 
 write glossary definitions
 write hint texts for all levels
-credits with beta testers
-Tutorial Research - switch hand animation to drag size to zero when inter is zero
 make more clear that you can still add links to blue species (in text)
 mention the speed of the link balls going is important
 
