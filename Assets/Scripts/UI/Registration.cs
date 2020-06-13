@@ -146,6 +146,7 @@ namespace EcoBuilder.UI
             skipButton.interactable = true;
             cancelButton.interactable = true;
             errorText.gameObject.SetActive(false);
+            errorText.text = "";
             navObj.SetActive(true);
         }
 
@@ -304,20 +305,22 @@ namespace EcoBuilder.UI
                             keyboard.active = false;
                             keyboard = null;
                         }
-                        float yTarget = 0;
-                        transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                        // this is smelly I know but I just don't care anymore
+                        if (errorText.text != "Connecting...") {
+                            float yTarget = 0;
+                            transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                        }
                     }
                     prevFocused = focused;
                 }
             }
             else if (_state != State.End)
             {
-                float yTarget = 0;
-                transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                // float yTarget = 0;
+                // transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                transform.localPosition = new Vector2(0,0);
             }
 #endif
-
-            // TODO: shift+tab
             if (Input.GetKeyDown(KeyCode.Tab))
             {
                 if (_state == State.Login)
