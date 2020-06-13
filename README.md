@@ -7,8 +7,6 @@ make a startup
 smoll:
 add 'please wait while loads' and imperial logo onto splash images
 
-make text input fields less buggy at registration - try your best to make inputfield work and ask hsi-cheng/dan/samraat to test
-
 write glossary definitions
 write hint texts for all levels
 make more clear that you can still add links to blue species (in text)

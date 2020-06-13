@@ -48,6 +48,7 @@ namespace EcoBuilder.UI
         public void Show()
         {
             SetState(State.Start);
+
             StartCoroutine(TweenY(1,-1000,0,true));
         }
 
@@ -117,7 +118,7 @@ namespace EcoBuilder.UI
                 break;
             case State.End:
                 OnFinished?.Invoke();
-                StartCoroutine(TweenY(1,0,-1000,false));
+                StartCoroutine(TweenY(1,transform.localPosition.y,-1000,false));
                 break;
             }
             _state = state;
@@ -172,6 +173,7 @@ namespace EcoBuilder.UI
         }
 
         readonly static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+        readonly static Regex nameRegex = new Regex(@"^[a-zA-Z0-9_]*$");
         void CheckUsernameEmail()
         {
             if (_state == State.Register) {
@@ -179,7 +181,7 @@ namespace EcoBuilder.UI
             } else {
                 loginSubmit.interactable = UsernameOkay();
             }
-            bool UsernameOkay() { return username.text.Length > 0; }
+            bool UsernameOkay() { return username.text.Length > 0 && nameRegex.IsMatch(username.text); }
             bool EmailOkay() { return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text); }
             bool PasswordOkay() { return password.text == passwordRepeat.text; }
         }
@@ -269,29 +271,49 @@ namespace EcoBuilder.UI
                 errorText.text = "Error: " + msg;
             }
         }
-        TouchScreenKeyboard keyboard;
+        TouchScreenKeyboard keyboard=null;
+        InputField prevFocused=null;
+        float yVelocity=0, smoothTime=.3f;
         void Update()
         {
 #if UNITY_IOS || UNITY_ANDROID
             if (_state == State.Register || _state == State.Login || _state == State.Reset)
             {
-                InputField focused = null;
-                if (username.isFocused) { focused = username; }
-                else if (email.isFocused) { focused = email; }
-                else if (password.isFocused) { focused = password; }
-                else if (passwordRepeat.isFocused) { focused = passwordRepeat; }
-                else if (recipient.isFocused) { focused = recipient; }
+                // only change state if not touching so the position does not spaz out
+                if (Input.touchCount==0 && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+                {
+                    InputField focused = null;
+                    if (username.isFocused) { focused = username; }
+                    else if (email.isFocused) { focused = email; }
+                    else if (password.isFocused) { focused = password; }
+                    else if (passwordRepeat.isFocused) { focused = passwordRepeat; }
+                    else if (recipient.isFocused) { focused = recipient; }
 
-                if (focused != null && keyboard == null)
-                {
-                    transform.localPosition = new Vector2(0,Mathf.Max(0,-focused.transform.localPosition.y));
-                    keyboard = TouchScreenKeyboard.Open(focused.text, TouchScreenKeyboardType.Default);
+                    if (focused != null)
+                    {
+                        if (keyboard != null) {
+                            keyboard = TouchScreenKeyboard.Open(focused.text, TouchScreenKeyboardType.Default);
+                        }
+                        float yTarget = Mathf.Max(0,-focused.transform.localPosition.y + 100);
+                        transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                        // TouchScreenKeyboard.area.height
+                    }
+                    else
+                    {
+                        if (keyboard != null) {
+                            keyboard.active = false;
+                            keyboard = null;
+                        }
+                        float yTarget = 0;
+                        transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                    }
+                    prevFocused = focused;
                 }
-                else if (focused == null && keyboard != null)
-                {
-                    transform.localPosition = new Vector2(0,0);
-                    keyboard = null;
-                }
+            }
+            else if (_state != State.End)
+            {
+                float yTarget = 0;
+                transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
             }
 #endif
 
@@ -309,14 +331,15 @@ namespace EcoBuilder.UI
                 }
                 else
                 {
+                    bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
                     if (username.isFocused) {
-                        email.ActivateInputField();
+                        (shift?passwordRepeat:email).ActivateInputField();
                     } else if (email.isFocused) {
-                        password.ActivateInputField();
+                        (shift?username:password).ActivateInputField();
                     } else if (password.isFocused) {
-                        passwordRepeat.ActivateInputField();
+                        (shift?email:passwordRepeat).ActivateInputField();
                     } else if (passwordRepeat.isFocused) {
-                        username.ActivateInputField();
+                        (shift?password:username).ActivateInputField();
                     }
                 }
             }
