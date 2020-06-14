@@ -7,7 +7,6 @@ make a startup
 smoll:
 add 'please wait while loads' and imperial logo onto splash images
 
-write glossary definitions
 write hint texts for all levels
 make more clear that you can still add links to blue species (in text)
 mention the speed of the link balls going is important

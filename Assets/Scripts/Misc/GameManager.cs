@@ -135,6 +135,7 @@ namespace EcoBuilder
         public void LoadLevelScene(Level toPlay)
         {
             earth.ResetParent(); 
+            report.ClearNavigation(toPlay);
             if (playedLevel != null) // if playing already
             {
                 if (playedLevel != toPlay)
@@ -145,14 +146,14 @@ namespace EcoBuilder
                 } else {
                     // replay level so no need to destroy
                 }
-                StartCoroutine(UnloadSceneThenLoad("Play", "Play", ()=>report.Hide(toPlay)));
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play", ()=>report.Hide()));
             }
             else
             {
                 // play from menu or report card
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
-                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", ()=>report.Hide(toPlay)));
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", ()=>report.Hide()));
             }
         }
         public void ReloadLevelScene(Level toPlay)
@@ -176,10 +177,12 @@ namespace EcoBuilder
             alert.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
             void BackToMenu()
             {
-                // playedLevel = null;
                 OnConfirm.Invoke(); 
                 HelpText.ResetMenuPosition(false);
                 earth.ResetParent(); 
+
+                // Destroy(playedLevel.gameObject) // playedLevel should destroy itself with own coroutine if necessary
+                report.ClearNavigation(playedLevel); // this is probably unnecessary, but better safe than sorry
                 StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnMenuLoaded?.Invoke(); report.Hide(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
@@ -249,7 +252,6 @@ namespace EcoBuilder
             } else {
                 report.GiveNavigation(playedLevel, null);
             }
-
             report.ShowResults();
         }
     }

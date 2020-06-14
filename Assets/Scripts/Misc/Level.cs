@@ -263,7 +263,7 @@ namespace EcoBuilder
                 while (tweeningCard == true) {
                     yield return null;
                 }
-                RenderOnTop(4);
+                RenderOnTop(5);
                 tweeningCard = true;
                 var rt = GetComponent<RectTransform>();
                 var startSize = rt.sizeDelta;
@@ -369,8 +369,9 @@ namespace EcoBuilder
                 while (flagging)
                 {
                     float t = (Time.time - startTime) / period;
-                    float size = 105 + 5*Mathf.Sin(2*Mathf.PI*t);
-                    rt.sizeDelta = new Vector2(size, size);
+                    // float size = 105 + 5*Mathf.Sin(2*Mathf.PI*t);
+                    float size = 1.05f + .05f*Mathf.Sin(2*Mathf.PI*t);
+                    rt.localScale = new Vector2(size, size);
                     yield return null;
                 }
             }
@@ -449,12 +450,16 @@ namespace EcoBuilder
                 }
                 IEnumerator WaitThenShowHint(float delay=120f)
                 {
-                    yield return new WaitForSeconds(delay);
-                    if (!flagging)
+                    float tStart = Time.time;
+                    while (Time.time < tStart+delay)
                     {
-                        GameManager.Instance.HelpText.Message = details.HintMessage;
-                        GameManager.Instance.HelpText.Showing = true;
+                        if (flagging) { // do not show hint if level becomes finishable
+                            yield break;
+                        }
+                        yield return null;
                     }
+                    GameManager.Instance.HelpText.Message = details.HintMessage;
+                    GameManager.Instance.HelpText.Showing = true;
                 }
 
                 playButton.interactable = false;

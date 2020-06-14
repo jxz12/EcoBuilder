@@ -40,12 +40,7 @@ namespace EcoBuilder
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
-// #if UNITY_EDITOR
-//         [SerializeField] bool constrainTrophic;
-//         public bool ConstrainTrophic { get { return constrainTrophic; } }
-// #else
         public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
-// #endif
         public bool AnyLevelsCompleted { get { return player.highScores.Count > 0; }}
         public bool LevelsUnlockedRegardless { get { return player.levelsUnlockedRegardless; } }
 

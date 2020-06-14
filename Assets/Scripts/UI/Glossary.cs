@@ -9,15 +9,18 @@ namespace EcoBuilder.UI
     {
         [SerializeField] TMPro.TextMeshProUGUI description;
 
-        readonly Dictionary<string,string> definitions = new Dictionary<string,string>(){
-            {"competitive", "competitive exclusion is cool"},
-            {"exclusion", "competitive exclusion is reaaaaaaaaaaaaaaaally really really really really really reaaaaaaaaaaaaaally COOOL LCJLAKSJDLDKFH asdjsdkfjcool"},
-            {"apparent", "so is apparent competition lol"},
-            {"competition", "so is apparent competition ye"},
-            {"chain", "swing low"},
-            // {"length", "sweet chariot"},
-        };
-        [SerializeField] string highlightedColour = "#0000FF";
+        Dictionary<string,string> definitions;
+        [SerializeField] Color highlightedCol, definitionCol;
+        void Awake()
+        {
+            definitions = new Dictionary<string,string>(){
+                {"competitive", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Competitive exclusion</color> is when a species goes extinct because its food source is being eaten too much by another species."},
+                {"exclusion", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Competitive exclusion</color> is when a species goes extinct because its food source is being eaten too much by another species."},
+                {"apparent", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Apparent competition</color> is when a species goes extinct because its predator is being fed too much by another species."},
+                {"competition", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Apparent competition</color> is when a species goes extinct because its predator is being fed too much by another species."},
+                {"chain", $"The <color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>chain length</color> of a species is its shortest path to any plant."},
+            };
+        }
         public string HighlightDefinitions(string toReplace)
         {
             var sentence = new StringBuilder();
@@ -33,7 +36,7 @@ namespace EcoBuilder.UI
                 {
                     if (definitions.ContainsKey(word.ToString()))
                     {
-                        sentence.Append($"<color={highlightedColour}><u>").Append(word).Append("</u></color>");
+                        sentence.Append($"<color=#{ColorUtility.ToHtmlStringRGB(highlightedCol)}><u>").Append(word).Append("</u></color>");
                         // prevhighlighted = true;
                     }
                     else
