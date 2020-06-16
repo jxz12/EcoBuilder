@@ -19,6 +19,7 @@ namespace EcoBuilder.UI
                 {"apparent", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Apparent competition</color> is when a species goes extinct because its predator is being fed too much by another species."},
                 {"competition", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Apparent competition</color> is when a species goes extinct because its predator is being fed too much by another species."},
                 {"chain", $"The <color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>chain length</color> of a species is its shortest path to any plant."},
+                {"biocontrol", $"<color=#{ColorUtility.ToHtmlStringRGB(definitionCol)}>Biocontrol</color> is the act of introducing new species in order to indirectly suppress existing ones. This was done in 1995 in Yellowstone Park, where ecologists introduced wolves to successfully heal its ecosystem."},
             };
         }
         public string HighlightDefinitions(string toReplace)

@@ -7,9 +7,7 @@ make a startup
 smoll:
 add 'please wait while loads' and imperial logo onto splash images
 
-write hint texts for all levels
-make more clear that you can still add links to blue species (in text)
-mention the speed of the link balls going is important
+check whether glossary ever shows up incorrectly (actually play the game lol)
 
 sound effects! and some relaxing music
 level 13: test if 3 stars is possible

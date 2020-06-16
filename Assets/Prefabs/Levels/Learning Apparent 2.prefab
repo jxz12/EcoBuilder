@@ -248,7 +248,8 @@ PrefabInstance:
         type: 3}
       propertyPath: details.introduction
       value: This is the same example of apparent competition as the last level,
-        except you are not allowed to edit the existing species!
+        except you are not allowed to edit the existing species! See if you can use
+        biocontrol to help it survive.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -382,6 +383,12 @@ PrefabInstance:
         type: 3}
       propertyPath: details.superfocusAllowed
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.hintMessage
+      value: 'Hint: you have an extra animal available in this level, see if you
+        can use it to suppress the existing one.'
       objectReference: {fileID: 0}
     - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

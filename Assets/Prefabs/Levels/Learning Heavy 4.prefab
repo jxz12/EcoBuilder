@@ -204,6 +204,11 @@ PrefabInstance:
       propertyPath: details.minChain
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.hintMessage
+      value: 'Hint: try giving the heaviest animal as many food sources as possible.'
+      objectReference: {fileID: 0}
     - target: {fileID: 7152265202980475453, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: m_text
