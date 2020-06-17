@@ -22,6 +22,7 @@ namespace EcoBuilder.UI
         [SerializeField] Image researchLock;
 
         [SerializeField] Button quit, logout, createAccount, deleteAccount;
+        [SerializeField] Slider volume;
         [SerializeField] TMPro.TextMeshProUGUI accountStatus;
         [SerializeField] Animator logoAnim;
 
@@ -124,6 +125,7 @@ namespace EcoBuilder.UI
 
             // set up settings menu
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
+            volume.normalizedValue = GameManager.Instance.MasterVolume;
             if (GameManager.Instance.LoggedIn)
             {
                 accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
@@ -235,7 +237,7 @@ namespace EcoBuilder.UI
         }
         public void SetMasterVolume(float volume)
         {
-            GameManager.Instance.SetNormalizedMasterVolume(volume);
+            GameManager.Instance.SetMasterVolumeLocal(volume);
         }
         [SerializeField] string splashLearningText, splashResearchText, splashCreditsText;
         [SerializeField] string settingsText;
@@ -381,6 +383,7 @@ namespace EcoBuilder.UI
 
             TweenY(splashCanvas.GetComponent<RectTransform>(), -1000, 0);
             splashCanvas.enabled = true;
+            GetComponent<AudioSource>().enabled = true;
 
             state = State.Splash;
         }

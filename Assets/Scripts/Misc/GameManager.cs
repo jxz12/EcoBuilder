@@ -38,6 +38,7 @@ namespace EcoBuilder
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
 #endif
+            SetNormalizedMasterVolume(MasterVolume);
             SendUnsentPost();
         }
             
@@ -205,12 +206,12 @@ namespace EcoBuilder
 #endif
         }
         [SerializeField] AudioMixer skrillex;
-        public void SetNormalizedMasterVolume(float normalisedVolume)
+        private void SetNormalizedMasterVolume(float normalisedVolume)
         {
             float clamped = Mathf.Clamp(normalisedVolume, .0001f, 1f);
             skrillex.SetFloat("Master Volume", Mathf.Log10(clamped) * 20);
         }
-        public void SetNormalizedEffectsVolume(float normalisedVolume)
+        private void SetNormalizedEffectsVolume(float normalisedVolume)
         {
             float clamped = Mathf.Clamp(normalisedVolume, .0001f, 1f);
             skrillex.SetFloat("Effects Volume", Mathf.Log10(clamped) * 20);

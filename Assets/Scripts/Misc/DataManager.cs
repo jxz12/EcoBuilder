@@ -28,6 +28,7 @@ namespace EcoBuilder
 
             public bool reverseDrag = true;
             public bool levelsUnlockedRegardless = false;
+            public float masterVolume = .5f;
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
@@ -43,6 +44,7 @@ namespace EcoBuilder
         public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
         public bool AnyLevelsCompleted { get { return player.highScores.Count > 0; }}
         public bool LevelsUnlockedRegardless { get { return player.levelsUnlockedRegardless; } }
+        public float MasterVolume { get { return player.masterVolume; } }
 
         static string playerPath;
         public void InitPlayer() // called by Awake()
@@ -267,6 +269,14 @@ namespace EcoBuilder
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
+        public void SetMasterVolumeLocal(float normalisedVolume)
+        {
+            Assert.IsFalse(normalisedVolume<0 || normalisedVolume>1);
+            SetNormalizedMasterVolume(normalisedVolume);
+            player.masterVolume = normalisedVolume;
+            SavePlayerDetailsLocal();
+        }
+        // TODO: remote volume
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build
