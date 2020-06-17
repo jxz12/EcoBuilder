@@ -403,6 +403,9 @@ namespace EcoBuilder.UI
             }
             state = State.Hidden;
 
+            logoAnim.SetTrigger("Hide");
+            GetComponent<AudioSource>().enabled = false;
+
             // GameObjects not destroyed until next frame, so delay is needed
             StartCoroutine(WaitThenStart());
             IEnumerator WaitThenStart()
