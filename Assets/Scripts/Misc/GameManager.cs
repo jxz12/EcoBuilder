@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
-using UnityEngine.Events;
+using UnityEngine.Audio;
 
 namespace EcoBuilder
 {
@@ -50,7 +50,6 @@ namespace EcoBuilder
             }
         }
 #endif
-
 
         ///////////////////
         // scene loading //
@@ -204,6 +203,22 @@ namespace EcoBuilder
 #else
             Application.Quit();
 #endif
+        }
+        [SerializeField] AudioMixer skrillex;
+        public void SetNormalizedMasterVolume(float normalisedVolume)
+        {
+            float clamped = Mathf.Clamp(normalisedVolume, .0001f, 1f);
+            skrillex.SetFloat("Master Volume", Mathf.Log10(clamped) * 20);
+        }
+        public void SetNormalizedEffectsVolume(float normalisedVolume)
+        {
+            float clamped = Mathf.Clamp(normalisedVolume, .0001f, 1f);
+            skrillex.SetFloat("Effects Volume", Mathf.Log10(clamped) * 20);
+        }
+        public void FadeEffectsVolume()
+        {
+            // TODO: use the effects mixer to fade out, but take the maximum of all fade volumes so that other effects do not get cut off
+            // TODO: set this effects mixer to zero at the start of play? so that the initial effects do not make a noise?
         }
 
         [SerializeField] Planet earthPrefab;

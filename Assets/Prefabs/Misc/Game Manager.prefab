@@ -1054,6 +1054,7 @@ MonoBehaviour:
   playAnchor: {fileID: 3403238051093408243}
   tutorialCanvas: {fileID: 4388596105821356007}
   alert: {fileID: 3403238050382710255}
+  skrillex: {fileID: 24100000, guid: 3923759883402f64e97cf62b367de023, type: 2}
   earthPrefab: {fileID: 8403942010702710680, guid: e870b3622af02b54dae3f4349ee976cd,
     type: 3}
   helpText: {fileID: 3403238050822504533}

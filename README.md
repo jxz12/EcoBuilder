@@ -9,11 +9,8 @@ add 'please wait while loads' and imperial logo onto splash images
 
 check whether glossary ever shows up incorrectly (actually play the game lol)
 
-sound effects! and some relaxing music
 level 13: test if 3 stars is possible
 
-Samraat:
-age ranges?
 
 
 # TESTS

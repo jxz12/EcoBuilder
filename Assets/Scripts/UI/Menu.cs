@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Assertions;
+using UnityEngine.Audio;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -231,6 +232,10 @@ namespace EcoBuilder.UI
         public void UnlockLevelsRegardless()
         {
             GameManager.Instance.UnlockAllLevels(Reset);
+        }
+        public void SetMasterVolume(float volume)
+        {
+            GameManager.Instance.SetNormalizedMasterVolume(volume);
         }
         [SerializeField] string splashLearningText, splashResearchText, splashCreditsText;
         [SerializeField] string settingsText;
