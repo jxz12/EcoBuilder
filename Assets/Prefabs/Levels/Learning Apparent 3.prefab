@@ -288,8 +288,7 @@ PrefabInstance:
       propertyPath: details.introduction
       value: This level has two species going extinct. One because of competitive
         exclusion, and one because of apparent competition. Can you solve it without
-        using an extra animal? You cannot change the traits of species with a blue
-        outline, but you can still add links between them.
+        using an extra animal?
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

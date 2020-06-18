@@ -318,7 +318,7 @@ PrefabInstance:
       propertyPath: details.completedMessage
       value: Great job! This is situation is closer to how humans sometimes attempt
         to control real ecosystems, by introducing foreign species to indirectly
-        suppress existing ones. . This is also known as biocontrol.
+        suppress existing ones. This is also known as biocontrol.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

@@ -1046,6 +1046,7 @@ MonoBehaviour:
     team: -1
     reverseDrag: 1
     levelsUnlockedRegardless: 0
+    masterVolume: 0.5
   pat: {fileID: 3403238050891406252}
   loadingBar: {fileID: 3403238051056720721}
   defaultLevelPrefab: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
@@ -6210,6 +6211,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Star 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7662090067551729961, guid: d02bc38fa4528e741a6f419fbd0fc2fe,
+        type: 3}
+      propertyPath: m_Pitch
+      value: 0.9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d02bc38fa4528e741a6f419fbd0fc2fe, type: 3}
 --- !u!95 &1417900873531648132 stripped
@@ -6471,6 +6477,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Star 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7662090067551729961, guid: d02bc38fa4528e741a6f419fbd0fc2fe,
+        type: 3}
+      propertyPath: m_Pitch
+      value: 1.15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d02bc38fa4528e741a6f419fbd0fc2fe, type: 3}
