@@ -272,7 +272,8 @@ namespace EcoBuilder.UI
                 errorText.text = "Error: " + msg;
             }
         }
-        TouchScreenKeyboard keyboard=null;
+        // TouchScreenKeyboard keyboard=null;
+        // [SerializeField] TMPro.TextMeshProUGUI touchKeyboardDebug;
         InputField prevFocused=null;
         float yVelocity=0, smoothTime=.3f;
         void Update()
@@ -292,19 +293,34 @@ namespace EcoBuilder.UI
 
                     if (focused != null)
                     {
-                        if (keyboard != null) {
-                            keyboard = TouchScreenKeyboard.Open(focused.text, TouchScreenKeyboardType.Default);
-                        }
+                        // if (keyboard == null) {
+                        //     keyboard = TouchScreenKeyboard.Open(focused.text, TouchScreenKeyboardType.Default);
+                        // }
+
+                        // var keyboard = focused.touchScreenKeyboard;
+                        // if (keyboard != null) {
+                        //     touchKeyboardDebug.text = $"{keyboard.status} {keyboard.active} {keyboard.type} {keyboard.targetDisplay}";
+                        // } else {
+                        //     touchKeyboardDebug.text = $"{keyboard}";
+                        // }
+                        // if (keyboard != null &&
+                        //     (keyboard.status != TouchScreenKeyboard.Status.Visible || !keyboard.active)
+                        // ) {
+                        //     focused.DeactivateInputField();
+                        //     keyboard.active = false;
+                        // }
                         float yTarget = Mathf.Max(0,-focused.transform.localPosition.y + 100);
                         transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
-                        // TouchScreenKeyboard.area.height
                     }
                     else
                     {
-                        if (keyboard != null) {
-                            keyboard.active = false;
-                            keyboard = null;
-                        }
+                        // if (keyboard != null) {
+                        //     keyboard.active = false;
+                        //     keyboard = null;
+                        // }
+
+                        // touchKeyboardDebug.text = $"null";
+
                         // this is smelly I know but I just don't care anymore
                         if (errorText.text != "Connecting...") {
                             float yTarget = 0;

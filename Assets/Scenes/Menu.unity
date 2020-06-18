@@ -1414,6 +1414,11 @@ PrefabInstance:
       propertyPath: textsToDisable.Array.size
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 6515831360507360328, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: touchKeyboardDebug
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 6515831360571628315, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1594,6 +1599,11 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6515831360847000405, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 59.99994
+      objectReference: {fileID: 0}
     - target: {fileID: 6515831360847913731, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -1772,7 +1782,7 @@ PrefabInstance:
     - target: {fileID: 6515831361074967053, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 68.69006
+      value: 68.69003
       objectReference: {fileID: 0}
     - target: {fileID: 6515831361133778270, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}

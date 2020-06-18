@@ -7,10 +7,10 @@ make a startup
 smoll:
 add 'please wait while loads' and imperial logo onto splash images
 
-check whether glossary ever shows up incorrectly (actually play the game lol)
-download departures
-
 level 13: test if 3 stars is possible
+make sure final release URL is not /Beta
+add 'Download for Android/iOS' as default on page
+
 
 
 
