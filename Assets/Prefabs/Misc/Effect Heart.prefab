@@ -32,6 +32,11 @@ PrefabInstance:
       propertyPath: m_WasSpriteAssigned
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: tone
+      value: 
+      objectReference: {fileID: 4625024790247451854}
     - target: {fileID: 3721478162572972259, guid: 1c495d9fc21278443a0cb711700ab10a,
         type: 3}
       propertyPath: m_Controller
@@ -100,3 +105,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c495d9fc21278443a0cb711700ab10a, type: 3}
+--- !u!82 &4625024790247451854 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: -2751842253506020191, guid: 1c495d9fc21278443a0cb711700ab10a,
+    type: 3}
+  m_PrefabInstance: {fileID: 1864522707997020271}
+  m_PrefabAsset: {fileID: 0}

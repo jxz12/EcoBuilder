@@ -6,12 +6,14 @@ namespace EcoBuilder
 {
     public class Effect : MonoBehaviour
     {
-        [SerializeField] AudioSource tone;
+        AudioSource tone;
         void Start()
         {
             if (GetComponent<RectTransform>() == null) {
                 StartCoroutine(LookAtCamera());
             }
+            tone = GetComponent<AudioSource>();
+
             IEnumerator LookAtCamera()
             {
                 Camera cam = Camera.main;
@@ -22,13 +24,10 @@ namespace EcoBuilder
                 }
             }
         }
-        public void FadeAudio()
-        {
-            // TODO: some static variable to always take the max set in a frame or something
-        }
         public void Destroy()
         {
-            Destroy(gameObject);
+            float remaining = (tone!=null && tone.isPlaying)? Mathf.Max(tone.clip.length - tone.time, 0) : 0;
+            Destroy(gameObject, remaining);
         }
     }
 }
