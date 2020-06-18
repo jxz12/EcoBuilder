@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.SceneManagement;
-using UnityEngine.Events;
+using UnityEngine.Audio;
 
 namespace EcoBuilder
 {
@@ -38,11 +38,7 @@ namespace EcoBuilder
                 StartCoroutine(UnloadSceneThenLoad(null, "Menu"));
             }
 #endif
-#if UNITY_WEBGL
-            print($"TODO: set this to the dependent on screen size for webgl using {Screen.currentResolution}");
-            // Screen.SetResolution(576, 1024, false);
-            // Screen.fullScreen = true;
-#endif
+            SetNormalizedMasterVolume(MasterVolume);
             SendUnsentPost();
         }
             
@@ -55,7 +51,6 @@ namespace EcoBuilder
             }
         }
 #endif
-
 
         ///////////////////
         // scene loading //
@@ -140,6 +135,7 @@ namespace EcoBuilder
         public void LoadLevelScene(Level toPlay)
         {
             earth.ResetParent(); 
+            report.ClearNavigation(toPlay);
             if (playedLevel != null) // if playing already
             {
                 if (playedLevel != toPlay)
@@ -150,19 +146,19 @@ namespace EcoBuilder
                 } else {
                     // replay level so no need to destroy
                 }
-                StartCoroutine(UnloadSceneThenLoad("Play", "Play", ()=>report.Hide(toPlay)));
+                StartCoroutine(UnloadSceneThenLoad("Play", "Play", ()=>report.Hide()));
             }
             else
             {
                 // play from menu or report card
                 playedLevel = toPlay;
                 playedLevel.OnFinished += ()=>OnPlayedLevelFinished.Invoke();
-                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", ()=>report.Hide(toPlay)));
+                StartCoroutine(UnloadSceneThenLoad("Menu", "Play", ()=>report.Hide()));
             }
         }
         public void ReloadLevelScene(Level toPlay)
         {
-            confirmation.GiveChoice(()=>LoadLevelScene(toPlay), "Are you sure you want to restart the level?");
+            alert.GiveChoice(()=>LoadLevelScene(toPlay), "Are you sure you want to restart the level?");
         }
 
 
@@ -175,16 +171,18 @@ namespace EcoBuilder
         [SerializeField] Canvas tutorialCanvas;
         public Canvas TutCanvas { get { return tutorialCanvas; } }
 
-        [SerializeField] UI.Confirmation confirmation;
+        [SerializeField] UI.Alert alert;
         public void ReturnToMenu(Action OnConfirm, Action OnMenuLoaded)
         {
-            confirmation.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
+            alert.GiveChoice(BackToMenu, "Are you sure you want to return to the main menu?");
             void BackToMenu()
             {
-                // playedLevel = null;
                 OnConfirm.Invoke(); 
                 HelpText.ResetMenuPosition(false);
                 earth.ResetParent(); 
+
+                // Destroy(playedLevel.gameObject) // playedLevel should destroy itself with own coroutine if necessary
+                report.ClearNavigation(playedLevel); // this is probably unnecessary, but better safe than sorry
                 StartCoroutine(UnloadSceneThenLoad("Play", "Menu", ()=>{ OnMenuLoaded?.Invoke(); report.Hide(); earth.TweenToRestPositionFromNextFrame(2); })); 
                 // wait until next frame to avoid the frame spike caused by Awake and Start()
             }
@@ -192,12 +190,11 @@ namespace EcoBuilder
 
         public void Quit()
         {
-            confirmation.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
+            alert.GiveChoice(CloseGameFully, "Are you sure you want to quit?");
         }
-        public void ShowInfo(string message)
+        public void ShowAlert(string message)
         {
-            // like javascript alert()
-            confirmation.Alert(message);
+            alert.ShowInfo(message);
         }
         public void CloseGameFully()
         {
@@ -207,6 +204,22 @@ namespace EcoBuilder
 #else
             Application.Quit();
 #endif
+        }
+        [SerializeField] AudioMixer skrillex;
+        private void SetNormalizedMasterVolume(float normalisedVolume)
+        {
+            float clamped = Mathf.Clamp(normalisedVolume, .0001f, 1f);
+            skrillex.SetFloat("Master Volume", Mathf.Log10(clamped) * 20);
+        }
+        private void SetNormalizedEffectsVolume(float normalisedVolume)
+        {
+            float clamped = Mathf.Clamp(normalisedVolume, .0001f, 1f);
+            skrillex.SetFloat("Effects Volume", Mathf.Log10(clamped) * 20);
+        }
+        public void FadeEffectsVolume()
+        {
+            // TODO: use the effects mixer to fade out, but take the maximum of all fade volumes so that other effects do not get cut off
+            // TODO: set this effects mixer to zero at the start of play? so that the initial effects do not make a noise?
         }
 
         [SerializeField] Planet earthPrefab;
@@ -255,7 +268,6 @@ namespace EcoBuilder
             } else {
                 report.GiveNavigation(playedLevel, null);
             }
-
             report.ShowResults();
         }
     }

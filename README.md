@@ -1,18 +1,18 @@
 ECOBUILDER:
-write a cover letter
 
+OOP moneys
+ecobuilder accessibility bs
+make a startup
+
+smoll:
 add 'please wait while loads' and imperial logo onto splash images
 
-add a hint text that comes up after 2/3 minutes for each level
+check whether glossary ever shows up incorrectly (actually play the game lol)
+download departures
 
-text input at login can be buggy on tap or not on tap
-ask samraat to remove the TODO
-give a reminder for which one is apparent and which is exclusion - add a glossary as a hyperlink
-mention the speed of the link balls going is important
-
-the model calculation may not run sometimes - see pamela's screenshot
-sound effects! and some relaxing music
 level 13: test if 3 stars is possible
+
+
 
 # TESTS
 make sure web_gl is same as not web_gl (conditional compiles)
@@ -29,12 +29,6 @@ release game with australian fires as angle?
 experiments to see how the score changes over time
 
 I had my first heisenbug today! async trophic levels
-
-# REPORT CARD
-Your final score was XXX
-Use the 'i' icon thingy to show the explanation This was made up of X nodes, and X edges
-The species with the... is...
-(extra info on click such as stability (eigenvalue), nonreactive)
 
 
 

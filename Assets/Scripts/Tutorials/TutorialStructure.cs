@@ -131,7 +131,7 @@ namespace EcoBuilder.Tutorials
             graph.ForceUnfocus();
             graph.SetIfNodeCanBeFocused(firstIdx, false);
 
-            WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on one of your species to focus on it."; Track(secondSpecies.transform); }); 
+            WaitThenDo(delay, ()=> { help.Showing = true; help.SetAnchorHeight(.7f); help.Message = "You can also remove species entirely if you wish. Try tapping on the animal to focus on it."; Track(secondSpecies.transform); }); 
 
 
             AttachSmellyListener<int>(graph, "OnNodeTapped", i=>ExplainRemove2());
@@ -181,7 +181,7 @@ namespace EcoBuilder.Tutorials
             help.Showing = false;
             graph.SetIfNodeCanBeFocused(firstIdx, true);
 
-            WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Reconstruct your ecosystem to complete this tutorial!"; });
+            WaitThenDo(delay, ()=> { help.Showing = true; help.Message = "You may finish the game by tapping the button in the top right, but only once all of your species can coexist. Rebuild your ecosystem to complete this tutorial!"; });
 
             AttachSmellyListener(score, "OnOneStarAchieved", ExplainFinish);
         }

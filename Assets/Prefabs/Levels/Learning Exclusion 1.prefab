@@ -400,10 +400,9 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.introduction
-      value: In this level, the lighter species is eating the plant too quickly for
+      value: In this level, the lighter animal is eating the plant too quickly for
         the heavier one to survive, even though the heavier one would survive on
-        its own. You must save the heavy species but cannot change its weight. There
-        are multiple solutions, so try to find them all!
+        its own. You must save the heavy species but cannot change its weight.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -585,8 +584,8 @@ PrefabInstance:
         type: 3}
       propertyPath: details.completedMessage
       value: Well done! This is a very common phenomenon in the real world, and occurs
-        whenever two species share the same resource. It is known as 'competitive
-        exclusion', and is why there are so few red squirrels in Britain, as grey
+        whenever two species share the same resource. It is known as competitive
+        exclusion, and is why there are so few red squirrels in Britain, as grey
         ones are better foragers.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
@@ -669,6 +668,12 @@ PrefabInstance:
         type: 3}
       propertyPath: details.superfocusAllowed
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.hintMessage
+      value: 'Hint: here you must reduce the suppression on the plant. This can be
+        done by either making the lighter heavier, or my making the plant lighter.'
       objectReference: {fileID: 0}
     - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

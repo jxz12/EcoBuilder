@@ -316,8 +316,9 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.completedMessage
-      value: Great job! This is situation is closer to how humans attempt to control
-        real ecosystems, by introducing foreign species. This is also known as biocontrol.
+      value: Great job! This is situation is closer to how humans sometimes attempt
+        to control real ecosystems, by introducing foreign species to indirectly
+        suppress existing ones. This is also known as biocontrol.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
@@ -398,6 +399,12 @@ PrefabInstance:
         type: 3}
       propertyPath: details.minLoop
       value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
+        type: 3}
+      propertyPath: details.hintMessage
+      value: 'Hint: you must use the extra animal to indirectly suppress the lighter
+        animal. The lighter your extra animal, the more it will suppress its prey.'
       objectReference: {fileID: 0}
     - target: {fileID: 7252206139381172800, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

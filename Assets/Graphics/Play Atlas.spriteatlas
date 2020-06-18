@@ -87,6 +87,7 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 4b1885f5416f3c741ac0815952921840, type: 3}
     - {fileID: 21300000, guid: cd5efc45d507a414c81bd895a5528a0b, type: 3}
     - {fileID: 21300000, guid: 47b0b6ed20592d74ba2a6d517e877ad2, type: 3}
+    - {fileID: 21300000, guid: 5b97855547e3d8648ab68b31fa5dc6e2, type: 3}
     - {fileID: 21300000, guid: 4dc79b73247092e4ab1b277f39e3f809, type: 3}
     - {fileID: 21300000, guid: e4430d406d9e002418f1d3cf864fb0ff, type: 3}
     - {fileID: 21300000, guid: 9c0068a62e7a92d40824e0b03460035a, type: 3}
@@ -129,7 +130,7 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 8c78600be78f3ab49a5a74c540eb9bcc, type: 3}
     - {fileID: 21300000, guid: 2d51f7919d7861740b467e1d1fa24867, type: 3}
     - {fileID: 21300000, guid: 4db942fb23bbc3041b97e2ee448ea126, type: 3}
-    totalSpriteSurfaceArea: 314059
+    totalSpriteSurfaceArea: 315117
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -145,6 +146,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: dfe0f8b3b8f11c54d94569c6e1326583, type: 3}
   - {fileID: 21300000, guid: 6e66bb159c14d844580544244bf0d9d5, type: 3}
   - {fileID: 21300000, guid: cd5efc45d507a414c81bd895a5528a0b, type: 3}
+  - {fileID: 21300000, guid: 5b97855547e3d8648ab68b31fa5dc6e2, type: 3}
   - {fileID: 21300000, guid: 652fca555eeb9b14ba2044a843f6e69b, type: 3}
   - {fileID: 21300000, guid: ed3b4c75a68320349a9f4481bab4876c, type: 3}
   - {fileID: 21300000, guid: 8aa2ac852714f2a469ee62ff1f33ee3d, type: 3}
@@ -197,6 +199,7 @@ SpriteAtlas:
   - btn_c_red
   - btn_c_grey
   - box_b_03
+  - box_e_04
   - leaf
   - box_a
   - lock

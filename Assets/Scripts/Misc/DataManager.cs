@@ -28,6 +28,7 @@ namespace EcoBuilder
 
             public bool reverseDrag = true;
             public bool levelsUnlockedRegardless = false;
+            public float masterVolume = .5f;
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
@@ -40,14 +41,10 @@ namespace EcoBuilder
         public bool ReverseDragDirection { get { return player.reverseDrag; } }
         public bool AskForRegistration { get { return player.team==PlayerDetails.Team.Unassigned; } }
         public string Username { get { return player.username; } }
-// #if UNITY_EDITOR
-//         [SerializeField] bool constrainTrophic;
-//         public bool ConstrainTrophic { get { return constrainTrophic; } }
-// #else
         public bool ConstrainTrophic { get { return player.team != PlayerDetails.Team.Lion; } }
-// #endif
         public bool AnyLevelsCompleted { get { return player.highScores.Count > 0; }}
         public bool LevelsUnlockedRegardless { get { return player.levelsUnlockedRegardless; } }
+        public float MasterVolume { get { return player.masterVolume; } }
 
         static string playerPath;
         public void InitPlayer() // called by Awake()
@@ -220,23 +217,23 @@ namespace EcoBuilder
             player.team = PlayerDetails.Team.Unassigned;
             SavePlayerDetailsLocal();
         }
-        public void LogOut(Action OnConfirm)
+        public void LogOut(Action OnSuccess)
         {
-            Assert.IsNotNull(OnConfirm);
+            Assert.IsNotNull(OnSuccess);
             Assert.IsTrue(LoggedIn);
-            confirmation.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
+            alert.GiveChoice(()=>{ DeletePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to log out? Any scores you achieve when not logged in will not be saved to this account.");
         }
-        public void DeleteAccount(Action OnConfirm)
+        public void DeleteAccount(Action OnSuccess)
         {
-            Assert.IsNotNull(OnConfirm);
+            Assert.IsNotNull(OnSuccess);
             Assert.IsTrue(LoggedIn);
             // yes this is spaghetti
-            confirmation.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ confirmation.FinishWaiting(OnConfirm, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
+            alert.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ alert.FinishWaiting(OnSuccess, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");
         }
-        public void UnlockAllLevels(Action OnConfirm)
+        public void UnlockAllLevels(Action OnSuccess)
         {
-            Assert.IsNotNull(OnConfirm);
-            confirmation.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnConfirm(); }, "Are you sure you want to (un)lock all levels?");
+            Assert.IsNotNull(OnSuccess);
+            alert.GiveChoice(()=>{ player.levelsUnlockedRegardless = !player.levelsUnlockedRegardless; SavePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to (un)lock all levels?");
         }
 
         //////////////////////////////////////////////
@@ -272,6 +269,14 @@ namespace EcoBuilder
             Action<bool,string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
             pat.Post(data, OnCompletion);
         }
+        public void SetMasterVolumeLocal(float normalisedVolume)
+        {
+            Assert.IsFalse(normalisedVolume<0 || normalisedVolume>1);
+            SetNormalizedMasterVolume(normalisedVolume);
+            player.masterVolume = normalisedVolume;
+            SavePlayerDetailsLocal();
+        }
+        // TODO: remote volume
 
         // This whole framework is necessary because you cannot change prefabs from script when compiled
         // Ideally we would keep this inside Levels.Level.LevelDetails, but that is not possible in a build

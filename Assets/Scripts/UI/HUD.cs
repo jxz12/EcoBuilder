@@ -4,7 +4,6 @@ namespace EcoBuilder.UI
 {
     public class HUD : MonoBehaviour
     {
-        // TODO: refactor PlayManager to only need a reference to this
         [SerializeField] Score score;
         [SerializeField] Constraints constraints;
 
@@ -14,7 +13,6 @@ namespace EcoBuilder.UI
 
         [SerializeField] Canvas cameraCanvas;
         [SerializeField] Camera playCamera;
-        // [SerializeField] float planeDistance;
 
         [SerializeField] float maxAspect, minAspect;
         [SerializeField] float minInspectorScale, minScoreScale;
@@ -47,8 +45,9 @@ namespace EcoBuilder.UI
                 ConstraintsOffset = 0;
             }
 
-            cameraCanvas.worldCamera = playCamera; // smellly
-            // cameraCanvas.planeDistance = 5;
+            // smellly
+            cameraCanvas.worldCamera = playCamera;
+            cameraCanvas.planeDistance = 5;
             StatusBar.SetCamera(playCamera);
         }
     }

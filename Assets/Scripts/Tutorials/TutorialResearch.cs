@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -62,11 +63,13 @@ namespace EcoBuilder.Tutorials
                 help.Message = "Look, there is a new slider available! This new trait is called 'interference', and measures how much a species competes with itself. Low interference results in higher health, and a high interference results in lower health. Try dragging both sliders down as low as possible."; 
                 help.Showing=true;
                 AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(plantObj.transform); });
-                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, plantGreed!=0?40:90); });
             }
 
             void TrackPlantTrait(bool sizeOrGreed, float val)
             {
+                float prevSize = plantSize;
+                float prevGreed = plantGreed;
                 if (sizeOrGreed) {
                     plantSize = val;
                 } else {
@@ -74,6 +77,14 @@ namespace EcoBuilder.Tutorials
                 }
                 if (plantSize==0 && plantGreed==0) {
                     ExplainThiccPlant();
+                }
+                else if (prevGreed!=0 && plantGreed==0) {
+                    StopAllCoroutines();
+                    ShuffleOnSlider(3, 90);
+                }
+                else if (prevGreed==0 && plantGreed!=0) {
+                    StopAllCoroutines();
+                    ShuffleOnSlider(3, 40);
                 }
             }
             AttachSmellyListener<int, float>(inspector, "OnSizeSet", (i,x)=>TrackPlantTrait(true, x));
@@ -112,10 +123,10 @@ namespace EcoBuilder.Tutorials
             WaitThenDo(1f, WaitingFor);
             void WaitingFor()
             {
-                help.Message = "Then make it eat the plant, and drag both sliders as high as possible.";
+                help.Message = "Drag both sliders as high as possible, and then make it eat the plant.";
                 help.Showing = true;
                 AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(animalObj.transform); });
-                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, animalGreed!=1?40:90); });
             }
 
             void TrackAnimalTrait(bool sizeOrGreed, float val)
@@ -140,10 +151,13 @@ namespace EcoBuilder.Tutorials
                         ExplainConflict1();
                     }
                 }
-                else if (prevSize==1 && prevGreed==1)
-                {
+                else if (prevGreed!=1 && animalGreed==1) {
                     StopAllCoroutines();
-                    Track(animalObj.transform);
+                    ShuffleOnSlider(3, 90);
+                }
+                else if (prevGreed==1 && animalGreed!=1) {
+                    StopAllCoroutines();
+                    ShuffleOnSlider(3, 40);
                 }
             }
             void TrackConnected()
@@ -174,12 +188,13 @@ namespace EcoBuilder.Tutorials
             Hide();
             help.Showing = false;
             // point at plant again
-            WaitThenDo(1f, ()=>{ Point(new Vector2(-61,115) * hud.BottomScale, -45); targetAnchor = new Vector2(1,0); help.Message = "Great job! A plant with low interference can enable even the heaviest species survive. Now try adding one final plant."; help.Showing = true; });
+            WaitThenDo(1f, ()=>{ Point(new Vector2(-61,115) * hud.BottomScale, -45); targetAnchor = new Vector2(1,0); help.Message = "Great job! A plant with low interference can enable even the heaviest species to survive. Now try adding one final plant."; help.Showing = true; });
 
             AttachSmellyListener(inspector, "OnIncubated", ()=>{ Hide(); help.Showing=false; });
             AttachSmellyListener(graph, "OnEmptyTapped", ()=>{ Point(); help.Showing=true; });
             AttachSmellyListener<int, bool, GameObject>(inspector, "OnSpawned", (i,b,g)=>{ plantIdx2=i; plantObj2=g; ExplainConflict2(); });
         }
+        float plant2Size=-1, plant2Greed=-1;
         void ExplainConflict2()
         {
             DetachSmellyListeners();
@@ -197,8 +212,29 @@ namespace EcoBuilder.Tutorials
                 help.Message = "There is one more rule in Research world that you must follow: no two species can be identical! Try making the new plant identical to the first by dragging both sliders as low as possible.";
                 help.Showing = true;
                 AttachSmellyListener(graph, "OnUnfocused", ()=>{ StopAllCoroutines(); Track(plantObj2.transform); });
-                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, 40); });
+                AttachSmellyListener<int>(graph, "OnNodeTapped", i=>{ StopAllCoroutines(); ShuffleOnSlider(3, plant2Greed!=0?40:90); });
             }
+            void TrackPlant2Trait(bool sizeOrGreed, float val)
+            {
+                float prevSize = plant2Size;
+                float prevGreed = plant2Greed;
+                if (sizeOrGreed) {
+                    plant2Size = val;
+                } else {
+                    plant2Greed = val;
+                }
+                Assert.IsFalse(plant2Size==0 && plant2Greed==0, "should not be possible due to conflict");
+                if (prevGreed!=0 && plant2Greed==0) {
+                    StopAllCoroutines();
+                    ShuffleOnSlider(3, 90);
+                }
+                else if (prevGreed==0 && plant2Greed!=0) {
+                    StopAllCoroutines();
+                    ShuffleOnSlider(3, 40);
+                }
+            }
+            AttachSmellyListener<int, float>(inspector, "OnSizeSet", (i,x)=>TrackPlant2Trait(true, x));
+            AttachSmellyListener<int, float>(inspector, "OnGreedSet", (i,x)=>TrackPlant2Trait(false, x));
             AttachSmellyListener<int, string>(inspector, "OnConflicted", (i,s)=>ExplainConflict3());
         }
         void ExplainConflict3()

@@ -6,24 +6,28 @@ namespace EcoBuilder
 {
     public class Effect : MonoBehaviour
     {
+        AudioSource tone;
         void Start()
         {
             if (GetComponent<RectTransform>() == null) {
                 StartCoroutine(LookAtCamera());
             }
-        }
-        IEnumerator LookAtCamera()
-        {
-            Camera cam = Camera.main;
-            while (true)
+            tone = GetComponent<AudioSource>();
+
+            IEnumerator LookAtCamera()
             {
-                transform.LookAt(transform.position + cam.transform.rotation * Vector3.back, cam.transform.rotation * Vector3.up);
-                yield return null;
+                Camera cam = Camera.main;
+                while (true)
+                {
+                    transform.LookAt(transform.position + cam.transform.rotation * Vector3.back, cam.transform.rotation * Vector3.up);
+                    yield return null;
+                }
             }
         }
         public void Destroy()
         {
-            Destroy(gameObject);
+            float remaining = (tone!=null && tone.isPlaying)? Mathf.Max(tone.clip.length - tone.time, 0) : 0;
+            Destroy(gameObject, remaining);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace EcoBuilder.UI
         [SerializeField] Animator star1, star2, star3;
 
         [SerializeField] Image scoreCurrentImage, scoreTargetImage;
-        [SerializeField] Sprite targetSprite1, targetSprite2;
+        [SerializeField] Sprite targetSprite1, targetSprite2, trophySprite;
         [SerializeField] Sprite researchWorldBackground;
         [SerializeField] TMPro.TextMeshProUGUI scoreText, scoreTargetText, statsText;
 
@@ -49,7 +49,7 @@ namespace EcoBuilder.UI
         [SerializeField] GameObject starsObject, statsObject;
         public void EnableStatsText(long? prevHighScore)
         {
-            // Assert.IsTrue(rankCheckDelay > 1, "trying to check too often");
+            Assert.IsTrue(rankCheckDelay > 1, "trying to check too often");
             GetComponent<Image>().sprite = researchWorldBackground;
             starsObject.SetActive(false);
             statsObject.SetActive(true);
@@ -184,17 +184,20 @@ namespace EcoBuilder.UI
             }
             else
             {
+                displayedScore = 0;
                 displayedScoreCol = Color.Lerp(displayedScoreCol, unsatisfiedScoreCol, 5f*Time.deltaTime);
             }
-            if (displayedStars < 2)
-            {
-                scoreTargetText.text = target1.ToString("N0");
-                scoreTargetImage.sprite = targetSprite1;
-            }
-            else
+            if (statsObject.activeSelf)
             {
                 scoreTargetText.text = target2.ToString("N0");
-                scoreTargetImage.sprite = targetSprite2;
+                scoreTargetImage.sprite = trophySprite;
+                scoreTargetImage.rectTransform.sizeDelta = new Vector2(70,45);
+            }
+            else 
+            {
+                scoreTargetText.text = (displayedStars<2? target1:target2).ToString("N0");
+                scoreTargetImage.sprite = displayedStars<2? targetSprite1:targetSprite2;
+                scoreTargetImage.rectTransform.sizeDelta = new Vector2(70,48); // magic numbers lol
             }
             star1.SetBool("Filled", displayedStars>=1);
             star2.SetBool("Filled", displayedStars>=2);
@@ -286,7 +289,7 @@ namespace EcoBuilder.UI
         {
             Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
-            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(0,0), 1, ()=>GetComponent<Canvas>().enabled=false));
+            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1), 1, ()=>GetComponent<Canvas>().enabled=false));
         }
 
 
@@ -298,7 +301,7 @@ namespace EcoBuilder.UI
         {
             GetComponent<Canvas>().enabled = !hidden;
             if (!hidden) {
-                StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,0), new Vector2(0,1)));
+                StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(1,1), new Vector2(0,1)));
             }
         }
     }

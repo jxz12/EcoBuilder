@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Assertions;
+using UnityEngine.Audio;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace EcoBuilder.UI
         [SerializeField] Image researchLock;
 
         [SerializeField] Button quit, logout, createAccount, deleteAccount;
+        [SerializeField] Slider volume;
         [SerializeField] TMPro.TextMeshProUGUI accountStatus;
         [SerializeField] Animator logoAnim;
 
@@ -48,7 +50,7 @@ namespace EcoBuilder.UI
 
         void StartRegistration()
         {
-            form.Begin();
+            form.Show();
             form.OnFinished += StartMainMenuFromReg;
         }
         void StartMainMenuFromReg()
@@ -123,6 +125,7 @@ namespace EcoBuilder.UI
 
             // set up settings menu
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
+            volume.normalizedValue = GameManager.Instance.MasterVolume;
             if (GameManager.Instance.LoggedIn)
             {
                 accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
@@ -232,10 +235,15 @@ namespace EcoBuilder.UI
         {
             GameManager.Instance.UnlockAllLevels(Reset);
         }
+        public void SetMasterVolume(float volume)
+        {
+            GameManager.Instance.SetMasterVolumeLocal(volume);
+        }
         [SerializeField] string splashLearningText, splashResearchText, splashCreditsText;
         [SerializeField] string settingsText;
         [SerializeField] string levelsLearningText, levelsResearchText;
         [SerializeField] string lockHelp;
+        [SerializeField] string credits;
         string splashText = "Welcome to EcoBuilder!";
         public void ResetHelpToSplash()
         {
@@ -375,6 +383,7 @@ namespace EcoBuilder.UI
 
             TweenY(splashCanvas.GetComponent<RectTransform>(), -1000, 0);
             splashCanvas.enabled = true;
+            GetComponent<AudioSource>().enabled = true;
 
             state = State.Splash;
         }
@@ -393,6 +402,9 @@ namespace EcoBuilder.UI
                 Destroy(child.gameObject);
             }
             state = State.Hidden;
+
+            logoAnim.SetTrigger("Hide");
+            GetComponent<AudioSource>().enabled = false;
 
             // GameObjects not destroyed until next frame, so delay is needed
             StartCoroutine(WaitThenStart());
@@ -465,6 +477,10 @@ namespace EcoBuilder.UI
             SetHelp(settingsText);
 
             state = State.Settings;
+        }
+        public void ShowCredits()
+        {
+            GameManager.Instance.ShowAlert(credits);
         }
 
         private List<IEnumerator> navigationRoutines = new List<IEnumerator>();

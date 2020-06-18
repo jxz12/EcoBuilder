@@ -33,13 +33,29 @@ namespace EcoBuilder.UI
         Level currLvl, nextLvl;
         public void GiveNavigation(Level currLvl, Level nextLvl)
         {
+            // ensure Hide() has been called beforehand
+            Assert.IsNull(this.currLvl);
+            Assert.IsNull(this.nextLvl);
+
             Assert.IsNotNull(currLvl);
-            currLvl.transform.SetParent(prevLevelAnchor, false);
+            var currRT = currLvl.GetComponent<RectTransform>();
+            var currSize = currRT.sizeDelta;
+            currLvl.transform.SetParent(prevLevelAnchor);
+            currRT.localScale = Vector3.one;
+            currRT.anchoredPosition = Vector2.zero;
+            currRT.sizeDelta = currSize;
+
             currLvl.SetLocalHighScore();
 
             if (nextLvl != null)
             {
-                nextLvl.transform.SetParent(nextLevelAnchor, false);
+                var nextRT = nextLvl.GetComponent<RectTransform>();
+                var nextSize = nextRT.sizeDelta;
+                nextRT.SetParent(nextLevelAnchor);
+                nextRT.localScale = Vector3.one;
+                nextRT.anchoredPosition = Vector2.zero;
+                nextRT.sizeDelta = nextSize;
+
                 nextLvl.Unlock();
                 nextLvlMsg.text = "Next Level";
                 nextLvlCompleteIcon.enabled = false;
@@ -59,16 +75,18 @@ namespace EcoBuilder.UI
             {
                 quitBtn.interactable = false;
                 if (currLvl != null) {
-                    Destroy(currLvl);
+                    Destroy(currLvl.gameObject);
                 }
                 if (nextLvl != null) {
-                    Destroy(nextLvl);
+                    Destroy(nextLvl.gameObject);
                 }
+                this.currLvl = null;
+                this.nextLvl = null;
             }
         }
         void Info()
         {
-            GameManager.Instance.ShowInfo(information);
+            GameManager.Instance.ShowAlert(information);
         }
 
         [SerializeField] Sprite pointSprite, trophySprite;
@@ -161,19 +179,20 @@ namespace EcoBuilder.UI
                 StartCoroutine(RankRoutine(2,4));
             }
         }
-        public void Hide(Level notToDestroy=null)
+        public void ClearNavigation(Level notToDestroy=null)
         {
             // remove any leaks for levels that would never be used again
-            if (currLvl != null && currLvl != notToDestroy)
-            {
+            if (currLvl != null && currLvl != notToDestroy) {
                 Destroy(currLvl.gameObject);
-                currLvl = null;
             }
-            if (nextLvl != null && nextLvl != notToDestroy)
-            {
+            currLvl = null;
+            if (nextLvl != null && nextLvl != notToDestroy) {
                 Destroy(nextLvl.gameObject);
-                nextLvl = null;
             }
+            nextLvl = null;
+        }
+        public void Hide()
+        {
             if (canvas.enabled)
             {
                 StopAllCoroutines();

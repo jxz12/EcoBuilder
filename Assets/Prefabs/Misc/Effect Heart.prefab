@@ -7,6 +7,42 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -2751842253506020191, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_audioClip
+      value: 
+      objectReference: {fileID: 8300000, guid: d62591342be25a84b8e9230234f45156, type: 3}
+    - target: {fileID: -2751842253506020191, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Volume
+      value: 0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 2.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 2.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 797070684033559759, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: tone
+      value: 
+      objectReference: {fileID: 4625024790247451854}
+    - target: {fileID: 3721478162572972259, guid: 1c495d9fc21278443a0cb711700ab10a,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: 27809af6d87764042a49e1ba903f56c2,
+        type: 2}
     - target: {fileID: 6668556140072264635, guid: 1c495d9fc21278443a0cb711700ab10a,
         type: 3}
       propertyPath: m_Name
@@ -67,26 +103,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_Size.x
-      value: 2.56
-      objectReference: {fileID: 0}
-    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_Size.y
-      value: 2.56
-      objectReference: {fileID: 0}
-    - target: {fileID: 72445543660036586, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_WasSpriteAssigned
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3721478162572972259, guid: 1c495d9fc21278443a0cb711700ab10a,
-        type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 22100000, guid: 27809af6d87764042a49e1ba903f56c2,
-        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c495d9fc21278443a0cb711700ab10a, type: 3}
+--- !u!82 &4625024790247451854 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: -2751842253506020191, guid: 1c495d9fc21278443a0cb711700ab10a,
+    type: 3}
+  m_PrefabInstance: {fileID: 1864522707997020271}
+  m_PrefabAsset: {fileID: 0}

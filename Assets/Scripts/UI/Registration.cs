@@ -14,7 +14,7 @@ namespace EcoBuilder.UI
         public event Action OnFinished;
 
         [SerializeField] TMPro.TextMeshProUGUI loginText, registerText, errorText;
-        [SerializeField] TMPro.TMP_InputField username, password, passwordRepeat, email, recipient;
+        [SerializeField] InputField username, password, passwordRepeat, email, recipient;
         [SerializeField] TMPro.TMP_Dropdown age, gender, education;
         [SerializeField] Toggle termsConsent, emailConsent, askAgain;
         [SerializeField] Button skipButton, backButton, cancelButton, regGoto, loginGoto, forgotGoto;
@@ -37,29 +37,22 @@ namespace EcoBuilder.UI
             resetSubmit.onClick.AddListener(SendResetEmail);
             cancelButton.onClick.AddListener(CancelRegistration);
 
-            username.onValueChanged.AddListener(s=> CheckUsernameEmail());
-            password.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            passwordRepeat.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            email.onValueChanged.AddListener(b=> CheckUsernameEmail());
-            password.onSubmit.AddListener(s=> LoginOrRegister());
-            recipient.onValueChanged.AddListener(b=> CheckResetRecipient());
+            username.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            password.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            passwordRepeat.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            email.onValueChanged.AddListener(s=>CheckUsernameEmail());
+            recipient.onValueChanged.AddListener(s=>CheckResetRecipient());
 
             termsConsent.onValueChanged.AddListener(b=> gdprSubmit.interactable = b);
-
-            // // to stop Unity UI complaining
-            // foreach (var fitter in fittersToDisable) {
-            //     fitter.enabled = false;
-            // }
-            // errorText.GetComponent<ContentSizeFitter>().enabled = true;
         }
-        public void Begin()
+        public void Show()
         {
             SetState(State.Start);
+
             StartCoroutine(TweenY(1,-1000,0,true));
         }
 
         [SerializeField] GameObject[] startObj, idObj, gdprObj, resetObj, demoObj, skipObj; // required because hierarchy with sub-layout components causes strange frames
-        // [SerializeField] ContentSizeFitter[] fittersToDisable;
         [SerializeField] GameObject navObj;
         public enum State { Null, Start, Skip, Register, Login, GDPR, Reset, Demographics, End };
         private State _state = State.Null;
@@ -125,7 +118,7 @@ namespace EcoBuilder.UI
                 break;
             case State.End:
                 OnFinished?.Invoke();
-                StartCoroutine(TweenY(1,0,-1000,false));
+                StartCoroutine(TweenY(1,transform.localPosition.y,-1000,false));
                 break;
             }
             _state = state;
@@ -153,6 +146,7 @@ namespace EcoBuilder.UI
             skipButton.interactable = true;
             cancelButton.interactable = true;
             errorText.gameObject.SetActive(false);
+            errorText.text = "";
             navObj.SetActive(true);
         }
 
@@ -179,6 +173,8 @@ namespace EcoBuilder.UI
             }
         }
 
+        readonly static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
+        readonly static Regex nameRegex = new Regex(@"^[a-zA-Z0-9_]*$");
         void CheckUsernameEmail()
         {
             if (_state == State.Register) {
@@ -186,19 +182,9 @@ namespace EcoBuilder.UI
             } else {
                 loginSubmit.interactable = UsernameOkay();
             }
-        }
-        private bool UsernameOkay()
-        {
-            return username.text.Length > 0;
-        }
-        private static Regex emailRegex = new Regex(@"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|""(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])");
-        private bool EmailOkay()
-        {
-            return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text);
-        }
-        private bool PasswordOkay()
-        {
-            return password.text == passwordRepeat.text;
+            bool UsernameOkay() { return username.text.Length > 0 && nameRegex.IsMatch(username.text); }
+            bool EmailOkay() { return string.IsNullOrEmpty(email.text) || emailRegex.IsMatch(email.text); }
+            bool PasswordOkay() { return password.text == passwordRepeat.text; }
         }
         void CheckResetRecipient()
         {
@@ -286,21 +272,78 @@ namespace EcoBuilder.UI
                 errorText.text = "Error: " + msg;
             }
         }
+        TouchScreenKeyboard keyboard=null;
+        InputField prevFocused=null;
+        float yVelocity=0, smoothTime=.3f;
         void Update()
         {
-            // TODO: shift+tab
+#if UNITY_IOS || UNITY_ANDROID
+            if (_state == State.Register || _state == State.Login || _state == State.Reset)
+            {
+                // only change state if not touching so the position does not spaz out
+                if (Input.touchCount==0 && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+                {
+                    InputField focused = null;
+                    if (username.isFocused) { focused = username; }
+                    else if (email.isFocused) { focused = email; }
+                    else if (password.isFocused) { focused = password; }
+                    else if (passwordRepeat.isFocused) { focused = passwordRepeat; }
+                    else if (recipient.isFocused) { focused = recipient; }
+
+                    if (focused != null)
+                    {
+                        if (keyboard != null) {
+                            keyboard = TouchScreenKeyboard.Open(focused.text, TouchScreenKeyboardType.Default);
+                        }
+                        float yTarget = Mathf.Max(0,-focused.transform.localPosition.y + 100);
+                        transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                        // TouchScreenKeyboard.area.height
+                    }
+                    else
+                    {
+                        if (keyboard != null) {
+                            keyboard.active = false;
+                            keyboard = null;
+                        }
+                        // this is smelly I know but I just don't care anymore
+                        if (errorText.text != "Connecting...") {
+                            float yTarget = 0;
+                            transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                        }
+                    }
+                    prevFocused = focused;
+                }
+            }
+            else if (_state != State.End)
+            {
+                // float yTarget = 0;
+                // transform.localPosition = new Vector2(0,Mathf.SmoothDamp(transform.localPosition.y, yTarget, ref yVelocity, smoothTime));
+                transform.localPosition = new Vector2(0,0);
+            }
+#endif
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                if (username.isFocused) {
-                    if (_state == State.Login) {
+                if (_state == State.Login)
+                {
+                    Assert.IsFalse(email.isFocused || passwordRepeat.isFocused);
+                    if (username.isFocused) {
                         password.ActivateInputField();
-                    } else {
-                        email.ActivateInputField();
+                    } else if (password.isFocused) {
+                        username.ActivateInputField();
                     }
-                } else if (email.isFocused) {
-                    password.ActivateInputField();
-                } else if (password.isFocused) {
-                    username.ActivateInputField();
+                }
+                else
+                {
+                    bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                    if (username.isFocused) {
+                        (shift?passwordRepeat:email).ActivateInputField();
+                    } else if (email.isFocused) {
+                        (shift?username:password).ActivateInputField();
+                    } else if (password.isFocused) {
+                        (shift?email:passwordRepeat).ActivateInputField();
+                    } else if (passwordRepeat.isFocused) {
+                        (shift?password:username).ActivateInputField();
+                    }
                 }
             }
         }
