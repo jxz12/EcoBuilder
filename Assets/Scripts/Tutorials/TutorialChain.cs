@@ -56,7 +56,7 @@ namespace EcoBuilder.Tutorials
             WaitThenDo(1, Show);
             void Show()
             {
-                help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain of one. By pressing this icon, you can highlight all species with that chain length.";
+                help.Message = "This number on the left has changed! This is because the animal is one link away from a plant, which means it has a chain length of one. By pressing this icon, you can highlight all species with that chain length.";
                 help.SetSide(true);
                 help.SetAnchorHeight(.6f);
                 help.Showing = true;
@@ -125,7 +125,7 @@ namespace EcoBuilder.Tutorials
             void Todo()
             {
                 help.SetPixelWidth(430);
-                help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain of your ecosystem is now two. However it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it by changing the plant.";
+                help.Message = "Great job. It takes two links to get from the plant to the second animal, and so the maximum chain length of your ecosystem is now two. However it is going extinct! This is because biomass is lost at each level of an ecosystem, and so the top species does not have enough food to sustain it. Try saving it by changing the plant.";
                 help.Showing = true;
                 inspector.HideSizeSlider(false);
                 Track(producerTransform);
@@ -150,7 +150,7 @@ namespace EcoBuilder.Tutorials
 
             graph.ForceUnfocus();
             help.Showing = false;
-            WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain of two also eat the plant."; help.SetPixelWidth(400); help.Showing = true; help.SetAnchorHeight(.85f); DragAndDrop(producerTransform, carnivoreTransform, 2.5f, .5f); });
+            WaitThenDo(delay, ()=>{ help.Message = "Great! In general, it is more difficult to get a species to survive, the longer its chain length. Let's try one more thing: make the species with a chain length of two also eat the plant."; help.SetPixelWidth(400); help.Showing = true; help.SetAnchorHeight(.85f); DragAndDrop(producerTransform, carnivoreTransform, 2.5f, .5f); });
 
             graph.SetIfNodeCanBeFocused(producerIdx, false);
             graph.SetIfNodeCanBeSource(producerIdx, true);
@@ -177,7 +177,7 @@ namespace EcoBuilder.Tutorials
                 recorder.Hide(false);
                 score.Hide(false);
                 score.DisableStarCalculation(false);
-                help.Message = "The max chain of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to a plant, and so the path going through both animals is overridden by linking to the plant. To finish this level, reconstruct a chain of 2.";
+                help.Message = "The max chain length of your ecosystem has fallen back to one! This is because the height of any given species only considers its shortest path to a plant, and so the path going through both animals is overridden by linking to the plant. To finish this level, reconstruct a chain length of 2.";
                 help.SetSide(false, true);
                 help.SetAnchorHeight(.85f, true);
                 help.SetPixelWidth(380);

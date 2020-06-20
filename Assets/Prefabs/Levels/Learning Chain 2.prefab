@@ -86,7 +86,7 @@ PrefabInstance:
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
       propertyPath: details.completedMessage
-      value: Well done! It is difficult to keep species with longer chain lengths
+      value: Well done! It is difficult to keep species with longer chain length
         alive. This is reflected in the real world, where the maximum chain length
         rarely surpasses two or three.
       objectReference: {fileID: 0}
@@ -166,7 +166,7 @@ PrefabInstance:
         type: 3}
       propertyPath: details.hintMessage
       value: 'Hint: your plant needs to be as light as possible in order to sustain
-        a long chain.'
+        a long chain length.'
       objectReference: {fileID: 0}
     - target: {fileID: 5023438037007353712, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}

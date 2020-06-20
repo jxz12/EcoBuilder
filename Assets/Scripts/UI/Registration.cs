@@ -62,7 +62,7 @@ namespace EcoBuilder.UI
             {
             case State.Start:
                 ShowObjectsOnly(startObj);
-                username.text = password.text = email.text = "";
+                username.text = password.text = email.text = passwordRepeat.text = "";
                 termsConsent.isOn = emailConsent.isOn = askAgain.isOn = false;
                 skipButton.image.sprite = greyButtonSprite;
                 backButton.interactable = false; 

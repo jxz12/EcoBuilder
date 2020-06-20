@@ -214,7 +214,7 @@ PrefabInstance:
         type: 3}
       propertyPath: details.completedMessage
       value: Great job! If you are struggling to get the third star, then think about
-        other ways you can create a chain of length two.
+        other ways you can create a chain length of two.
       objectReference: {fileID: 0}
     - target: {fileID: 4551156237783506342, guid: 2897088b9804946c7a2c8f09c72d4ffb,
         type: 3}
