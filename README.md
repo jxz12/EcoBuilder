@@ -1,17 +1,10 @@
 ECOBUILDER:
 
-OOP moneys
-ecobuilder accessibility bs
-make a startup
-
 smoll:
 add 'please wait while loads' and imperial logo onto splash images
-
-level 13: test if 3 stars is possible
-make sure final release URL is not /Beta
+website:
 add 'Download for Android/iOS' as default on page
-
-
+accessibility bs
 
 
 # TESTS

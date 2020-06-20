@@ -130,6 +130,11 @@ namespace EcoBuilder.UI
         public void Update()
         {
             Assert.IsFalse(starsObject.activeSelf && statsObject.activeSelf);
+            bool valid = AttachedValidity?.Invoke() ?? true;
+            if (!valid) {
+                return;
+            }
+
             double score = 0;
             foreach (var Source in AttachedSources) {
                 score += Source.Invoke();
@@ -143,12 +148,11 @@ namespace EcoBuilder.UI
                 displayedScoreCol = lowerScoreCol;
                 ResetRemindCycle();
             }
-
             displayedScore = (long)score;
 
-            //////////////////////////////////
-            // only continue if allowed
-            if (starsDisabled || (!AttachedValidity?.Invoke() ?? false)) {
+            ////////////////////////////////////////// 
+            // stars may be disabled by e.g. tutorial
+            if (starsDisabled) {
                 return;
             }
             latestValidScore = score;
