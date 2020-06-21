@@ -32,8 +32,6 @@ namespace EcoBuilder
 
             public Dictionary<int, long> highScores = new Dictionary<int, long>();
             public Dictionary<int, long> cachedMedians = new Dictionary<int, long>();
-            // public Queue<Dictionary<string,string>> unsentPost = new Queue<Dictionary<string,string>>();
-            // public int unsentCount=0;
         }
         [SerializeField] PlayerDetails player = null;
 
@@ -101,7 +99,8 @@ namespace EcoBuilder
         // web form things
 
 #if UNITY_EDITOR
-        public string ServerURL { get { return "http://127.0.0.1/ecobuilder/"; } }
+        [SerializeField] string serverURL = "http://127.0.0.1/ecobuilder/";
+        public string ServerURL { get { return serverURL; } }
 #else
         public string ServerURL { get { return "https://www.ecobuildergame.org/Beta/"; } }
 #endif
