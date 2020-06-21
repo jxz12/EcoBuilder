@@ -293,7 +293,9 @@ namespace EcoBuilder.UI
         {
             Assert.IsFalse(HighestStars < 1 || HighestStars > 3, "cannot pass with less than 1 or more than 3 stars");
 
-            StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(0,1), new Vector2(1,1), 1, ()=>GetComponent<Canvas>().enabled=false));
+            var rt = GetComponent<RectTransform>();
+            float yPivot = rt.pivot.y;
+            StartCoroutine(Tweens.Pivot(rt, new Vector2(0,yPivot), new Vector2(1,yPivot), 1, ()=>GetComponent<Canvas>().enabled=false));
         }
 
 
@@ -304,8 +306,11 @@ namespace EcoBuilder.UI
         public void Hide(bool hidden=true)
         {
             GetComponent<Canvas>().enabled = !hidden;
-            if (!hidden) {
-                StartCoroutine(Tweens.Pivot(GetComponent<RectTransform>(), new Vector2(1,1), new Vector2(0,1)));
+            if (!hidden)
+            {
+                var rt = GetComponent<RectTransform>();
+                float yPivot = rt.pivot.y;
+                StartCoroutine(Tweens.Pivot(rt, new Vector2(1,yPivot), new Vector2(0,yPivot)));
             }
         }
     }
