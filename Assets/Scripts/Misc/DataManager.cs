@@ -301,6 +301,7 @@ namespace EcoBuilder
         }
         public void SavePlaythroughRemote(int levelIdx, long score, string matrix, string actions)
         {
+            string device = $"{SystemInfo.deviceModel}\n{SystemInfo.deviceName}\n{SystemInfo.deviceType}\n{SystemInfo.deviceUniqueIdentifier}\n{Screen.width}x{Screen.height}\n{SystemInfo.operatingSystem}";
             var data = new Dictionary<string, string>() {
                 { "username", player.username },
                 { "password", player.passwordEncrypted },
@@ -310,6 +311,7 @@ namespace EcoBuilder
                 { "erocs", Postman.Encrypt(score.ToString()) }, // a little protection
                 { "matrix", matrix },
                 { "actions", actions },
+                { "device", device },
                 { "__address__", ServerURL+"playthrough.php" },
             };
             Action<bool, string> OnCompletion = (b,s)=> { if (!b) SavePost(data); };
