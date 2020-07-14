@@ -2,9 +2,6 @@ ECOBUILDER:
 
 smoll:
 add 'please wait while loads' and imperial logo onto splash images
-website:
-add 'Download for Android/iOS' as default on page
-accessibility bs
 
 
 # TESTS
