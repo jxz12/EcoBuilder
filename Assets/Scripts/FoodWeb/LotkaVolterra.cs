@@ -370,18 +370,15 @@ namespace EcoBuilder.FoodWeb
         //     return Lambda <= 0;
         // }
 
-        public string GetState()
+        public string GetState(string formatter="e5")
         {
             // columns:
             // A*x=b
             // n 1 1
 
-            return MathNetMatStr(interaction, "e5") + ':' +
-                   MathNetVecStr(negGrowth, "e5") + ':' +
-                   MathNetVecStr(abundance, "e5");
-            // return MathNetMatStr(interaction, "f") + '\n' +
-            //        MathNetVecStr(negGrowth, "f") + '\n' +
-            //        MathNetVecStr(abundance, "f");
+            return MathNetMatStr(interaction, formatter) + ':' +
+                   MathNetVecStr(negGrowth, formatter) + ':' +
+                   MathNetVecStr(abundance, formatter);
         }
 
         /////////////////////

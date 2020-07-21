@@ -303,9 +303,15 @@ namespace EcoBuilder.FoodWeb
             }
         }
 
+        private string savedMatrix="";
+        public void SaveMatrix()
+        {
+            savedMatrix = simulation.GetState();
+            print(savedMatrix);
+        }
         public string GetMatrix()
         {
-            return simulation.GetState();
+            return savedMatrix;
         }
     }
 

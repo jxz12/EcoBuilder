@@ -182,6 +182,7 @@ namespace EcoBuilder
                 constraints.HighlightLoop();
                 break;
             }
+            score.OnHighestScoreBroken += ()=> model.SaveMatrix();
 
             long? prevHighScore = GameManager.Instance.GetHighScoreLocal(details.Idx);
             if (!details.ResearchMode)
@@ -198,7 +199,7 @@ namespace EcoBuilder
                 if (GameManager.Instance.GetCachedMedian(details.Idx) == null) {
                     GameManager.Instance.CacheMediansRemote(); // try once to get median
                 }
-                score.OnHighestScoreBroken += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:null, GameManager.Instance.GetCachedMedian(details.Idx)));
+                score.OnRankStaled += ()=> GameManager.Instance.GetSingleRankRemote(details.Idx, score.HighestScore, (b,s)=> score.SetStatsText(b? s:null, GameManager.Instance.GetCachedMedian(details.Idx)));
                 score.EnableStatsText(prevHighScore);
                 score.OnOneStarAchieved +=    ()=> GameManager.Instance.MakePlayedLevelFinishable(); // don't unfocus or show message, unlike a stars level
             }

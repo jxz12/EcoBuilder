@@ -30,7 +30,9 @@ namespace EcoBuilder
             InitPlayer();
             earth = Instantiate(earthPrefab);
 
+#if UNITY_EDITOR
             print($"{SystemInfo.deviceModel}\n{SystemInfo.deviceName}\n{SystemInfo.deviceType}\n{SystemInfo.deviceUniqueIdentifier}\n{Screen.width}x{Screen.height}\n");
+#endif
         }
 
         void Start()

@@ -12,7 +12,8 @@ namespace EcoBuilder.UI
     {
         public event Action OnOneStarAchieved;
         public event Action OnThreeStarsAchieved;
-        public event Action OnHighestScoreBroken; // this is used for requesting stats
+        public event Action OnHighestScoreBroken;
+        public event Action OnRankStaled;
 
         [SerializeField] Animator star1, star2, star3;
 
@@ -57,7 +58,7 @@ namespace EcoBuilder.UI
             target1 = target2 = this.prevHighScore = prevHighScore ?? 0; // this means highscore is viewable regardless of finish flag
 
             LastStatsRank = null;
-            OnHighestScoreBroken?.Invoke(); // request a rank at first
+            OnRankStaled?.Invoke(); // request a rank at first
         }
         public string LastStatsRank { get; private set; }
         [SerializeField] float rankCheckDelay;
@@ -182,6 +183,7 @@ namespace EcoBuilder.UI
                 if (HighestScore > prevHighestScore)
                 {
                     OnHighestScoreBroken?.Invoke();
+                    OnRankStaled?.Invoke();
                     lastHighScoreTime = Time.time;
                 }
                 displayedScoreCol = Color.Lerp(displayedScoreCol, defaultScoreCol, .5f*Time.deltaTime);
@@ -216,7 +218,7 @@ namespace EcoBuilder.UI
             // periodically request a new rank + median after long enough wait
             if (Time.time > lastHighScoreTime+rankCheckDelay)
             {
-                OnHighestScoreBroken?.Invoke();
+                OnRankStaled?.Invoke();
                 lastHighScoreTime = Time.time;
             }
         }
