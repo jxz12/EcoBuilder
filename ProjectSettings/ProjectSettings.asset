@@ -169,7 +169,7 @@ PlayerSettings:
     iPhone: com.JZ.EcoBuilder
   buildNumber:
     iPhone: 6
-  AndroidBundleVersionCode: 6
+  AndroidBundleVersionCode: 7
   AndroidMinSdkVersion: 19
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
