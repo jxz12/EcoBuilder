@@ -354,7 +354,7 @@ namespace EcoBuilder.Tutorials
             void ShowAll()
             {
                 help.ResetLevelPosition();
-                help.Message = "The final feature of Research World is a new scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. Good luck!";
+                help.Message = "The final feature of Research World is a new scoring system! You will be ranked against players from around the world on how well you score, with your current rank shown in the top left. When you press the finish button, your highest score so far will be submitted to the leaderboard. Good luck!";
                 help.Showing = true;
             }
             IEnumerator DestroySkipButton(float duration=.5f)

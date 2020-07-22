@@ -65,7 +65,9 @@ namespace EcoBuilder.UI
         float lastHighScoreTime = 0;
         public void SetStatsText(string rank, long? median)
         {
-            Assert.IsTrue(statsObject.activeSelf);
+            if (statsObject == null || !statsObject.activeSelf) {
+                return; // in case the rank request callback happens after gameobject is destroyed
+            }
             var sb = new StringBuilder();
             if (rank != null) {
                 sb.Append($"Your Rank: {rank}");
@@ -106,11 +108,13 @@ namespace EcoBuilder.UI
         {
             AttachedValidity = IsValid;
         }
-        public string GetDescription()
+
+        public string SavedDescription { get; private set; } = "";
+        void SaveDescription()
         {
             Assert.IsTrue(AttachedSources.Count == AttachedDescriptions.Count);
             if (AttachedSources.Count == 0) {
-                return null;
+                SavedDescription = "";
             }
             var sb = new StringBuilder();
             sb.Append("Your score was comprised of ").Append(AttachedDescriptions[0].Invoke(AttachedSources[0].Invoke()));
@@ -119,7 +123,7 @@ namespace EcoBuilder.UI
                 sb.Append(", plus ").Append(AttachedDescriptions[i].Invoke(AttachedSources[i].Invoke()));
             }
             sb.Append(".");
-            return sb.ToString();
+            SavedDescription = sb.ToString();
         }
 
         public long HighestScore { get; private set; } = 0;
@@ -183,8 +187,11 @@ namespace EcoBuilder.UI
                 if (HighestScore > prevHighestScore)
                 {
                     OnHighestScoreBroken?.Invoke();
-                    OnRankStaled?.Invoke();
+                    if (statsObject.activeSelf) {
+                        OnRankStaled?.Invoke();
+                    }
                     lastHighScoreTime = Time.time;
+                    SaveDescription();
                 }
                 displayedScoreCol = Color.Lerp(displayedScoreCol, defaultScoreCol, .5f*Time.deltaTime);
             }
@@ -216,7 +223,7 @@ namespace EcoBuilder.UI
                 EndReminding();
             }
             // periodically request a new rank + median after long enough wait
-            if (Time.time > lastHighScoreTime+rankCheckDelay)
+            if (statsObject.activeSelf && Time.time > lastHighScoreTime+rankCheckDelay)
             {
                 OnRankStaled?.Invoke();
                 lastHighScoreTime = Time.time;

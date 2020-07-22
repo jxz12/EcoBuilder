@@ -227,7 +227,7 @@ namespace EcoBuilder
             StartCoroutine(FinishGradually());
             IEnumerator FinishGradually()
             {
-                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.GetMatrix(), recorder.GetActions(), score.GetDescription());
+                GameManager.Instance.SetReportCard(score.HighestStars, score.HighestScore, score.LastStatsRank, model.SavedMatrix, recorder.GetActions(), score.SavedDescription);
                 yield return null;
                 Instantiate(confettiPrefab, GameManager.Instance.CardAnchor);
                 yield return null;
@@ -239,9 +239,9 @@ namespace EcoBuilder
                 score.Finish();
                 constraints.Finish();
                 yield return null;
-                Destroy(gameObject);
-                yield return null;
                 GameManager.Instance.HelpText.Showing = false;
+                yield return null;
+                Destroy(gameObject);
             }
         }
 

@@ -2362,7 +2362,7 @@ MonoBehaviour:
   lowerScoreCol: {r: 0.9056604, g: 0.055535804, b: 0.055535804, a: 1}
   starsObject: {fileID: 7958780055853960717}
   statsObject: {fileID: 7958780055618977914}
-  rankCheckDelay: 5
+  rankCheckDelay: 10
   scoreIcon: {fileID: 7958780055596404208}
   remindPeriod: 3
   remindDuration: 1
