@@ -7,6 +7,7 @@ using UnityEngine.Assertions;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EcoBuilder
 {
@@ -379,7 +380,7 @@ namespace EcoBuilder
             using (var file = new StreamWriter($"{Application.persistentDataPath}/{filename}.post"))
             {
                 foreach (var kvp in data) {
-                    file.WriteLine($"{kvp.Key} {kvp.Value}");
+                    file.WriteLine($"\"{kvp.Key}\":\"{kvp.Value}\"");
                 }
             }
         }
@@ -396,16 +397,21 @@ namespace EcoBuilder
             var unsentFiles = Directory.GetFiles(Application.persistentDataPath, "*.post");
             Array.Sort(unsentFiles);
             var unsentQueue = new Queue<Tuple<string, Dictionary<string,string>>>();
+            var regex = new Regex("\"([^\"]*)\":\"([^\"]*)\"");
             foreach (string filename in unsentFiles)
             {
                 var post = new Dictionary<string,string>();
-                foreach (var line in File.ReadLines(filename))
+                string fileText = File.ReadAllText(filename);
+                var matches = regex.Matches(fileText);
+                foreach (Match match in matches)
                 {
-                    var kvp = line.Split(' ');
-                    post[kvp[0]] = kvp[1];
+                    var groups = match.Groups;
+                    post[groups[1].Value] = groups[2].Value;
                 }
                 if (post.Count > 0) {
                     unsentQueue.Enqueue(Tuple.Create(filename,post));
+                } else {
+                    File.Delete(filename); // corrupted or old format file
                 }
             }
             if (unsentQueue.Count > 0) {
