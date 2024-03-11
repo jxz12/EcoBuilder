@@ -43,6 +43,33 @@ namespace EcoBuilder.Archie
             }
         }
 
+        void Start()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("{\n");
+            for (int i=0; i<9; i++)
+            {
+                float size = i/8f;
+                for (int j=0; j<5; j++)
+                {
+                    float greed = j/4f;
+
+                    // float L = 70-50*size;
+                    // var lab1 = new LABColor(L, 50, -80);
+                    // var lab2 = new LABColor(L, 30, 20);
+
+                    float L = 80-50*size;
+                    var lab1 = new LABColor(L, -50, 10);
+                    var lab2 = new LABColor(L, -5, 65);
+
+                    var lab = LABColor.Lerp(lab1, lab2, greed);
+                    Color rgb = lab.ToColor();
+                    sb.Append($"({size},{greed}):({rgb.r},{rgb.g},{rgb.b}),\n");
+                }
+            }
+            sb.Append("}");
+            print(sb.ToString());
+        }
 
         private void Form_Animal(animal_object animal, float bodySize, float greediness, int seed)
         {

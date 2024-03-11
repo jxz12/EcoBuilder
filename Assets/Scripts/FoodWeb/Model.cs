@@ -39,8 +39,8 @@ namespace EcoBuilder.FoodWeb
                ;
 
         [SerializeField]
-        double a_min = 1e-5,
-               a_max = 1;
+        double a_min = 1e-4,
+               a_max = 1e-1;
 
         [SerializeField]
         double minRealAbund = 2e-10f,
@@ -114,9 +114,9 @@ namespace EcoBuilder.FoodWeb
         void Awake()
         {
             // calculate bounds for a_ij and set a_ii in the same range
-            // a_max = ActiveCapture(kg_max, kg_min) / kg_min;
-            // a_min = Grazing(kg_min, kg_max) / kg_max;
-            // print(a_min+" "+a_max);
+            a_max = ActiveCapture(kg_max, kg_min) / kg_min;
+            a_min = Grazing(kg_min, kg_max) / kg_max;
+            print(a_min+" "+a_max);
 
             simulation = new LotkaVolterra<Species>(
                   (s)=> s.Metabolism,
