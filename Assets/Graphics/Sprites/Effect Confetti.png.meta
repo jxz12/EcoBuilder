@@ -180,7 +180,7 @@ TextureImporter:
       213: -2349032266520403783
     second: Effect Confetti_58
   externalObjects: {}
-  serializedVersion: 10
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -197,9 +197,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -208,12 +211,12 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
-    wrapW: -1
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -231,9 +234,15 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 1
+  swizzle: 50462976
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -245,6 +254,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -257,6 +267,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -269,6 +280,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -281,6 +293,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -1535,9 +1561,68 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-  spritePackingTag: 
+    nameFileIdTable:
+      Effect Confetti_0: 4737718994922035797
+      Effect Confetti_1: 1121305971815887681
+      Effect Confetti_10: 3994371996176705523
+      Effect Confetti_11: 2835330622221793370
+      Effect Confetti_12: 4501816460631832416
+      Effect Confetti_13: -3382695901145844624
+      Effect Confetti_14: 7814504009103013172
+      Effect Confetti_15: 7770489430417952899
+      Effect Confetti_16: 5350504496516414590
+      Effect Confetti_17: 3317750181544742280
+      Effect Confetti_18: -4470860949339383035
+      Effect Confetti_19: -3893359608204818201
+      Effect Confetti_2: 8444280860433620121
+      Effect Confetti_20: 5973114366219057207
+      Effect Confetti_21: 3527258297068331675
+      Effect Confetti_22: 4983041770654250706
+      Effect Confetti_23: 8047843067505599232
+      Effect Confetti_24: -2033451457039439367
+      Effect Confetti_25: 6926856524190216368
+      Effect Confetti_26: 5962299903514394969
+      Effect Confetti_27: 7280315567638249839
+      Effect Confetti_28: 3253660045364430292
+      Effect Confetti_29: -6370501005132280985
+      Effect Confetti_3: -7123839805343267798
+      Effect Confetti_30: -469536443006903860
+      Effect Confetti_31: 8307737987873343758
+      Effect Confetti_32: 1696480263068033316
+      Effect Confetti_33: -2915132426983197350
+      Effect Confetti_34: 1683803471357026260
+      Effect Confetti_35: -249626059841786201
+      Effect Confetti_36: 8686122397419774266
+      Effect Confetti_37: 1724596594116193378
+      Effect Confetti_38: 3543883981610682116
+      Effect Confetti_39: 4615708849358940865
+      Effect Confetti_4: -5538336085054096591
+      Effect Confetti_40: -8495121079342645152
+      Effect Confetti_41: 7308008316367389122
+      Effect Confetti_42: -2888812928211380853
+      Effect Confetti_43: 1970621832973731423
+      Effect Confetti_44: -2232853474797899784
+      Effect Confetti_45: 2792462122710185885
+      Effect Confetti_46: 5764192235228566732
+      Effect Confetti_47: -6129373371710900062
+      Effect Confetti_48: 8531790578262310125
+      Effect Confetti_49: -552500145011887384
+      Effect Confetti_5: 5688012409395086665
+      Effect Confetti_50: -4740936289812780569
+      Effect Confetti_51: 1776648909231111795
+      Effect Confetti_52: -1874573300455511663
+      Effect Confetti_53: -8161227745514107316
+      Effect Confetti_54: -5478132102197539280
+      Effect Confetti_55: -67272827159460425
+      Effect Confetti_56: -275710514282885724
+      Effect Confetti_57: 4758539817397200181
+      Effect Confetti_58: -2349032266520403783
+      Effect Confetti_6: 5942363917954153329
+      Effect Confetti_7: -6893449326060478013
+      Effect Confetti_8: -5133454399690727069
+      Effect Confetti_9: 713760729457610160
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
