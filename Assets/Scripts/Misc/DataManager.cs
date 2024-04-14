@@ -25,7 +25,8 @@ namespace EcoBuilder
             public int gender = -1;
             public int education = -1;
             public enum Team { Unassigned=-1, Wolf, Lion, NeverAsk }
-            public Team team = Team.Unassigned;
+            // public Team team = Team.Unassigned;
+            public Team team = Team.NeverAsk;
 
             public bool reverseDrag = true;
             public bool levelsUnlockedRegardless = false;
@@ -226,6 +227,9 @@ namespace EcoBuilder
         public void DeleteAccount(Action OnSuccess)
         {
             Assert.IsNotNull(OnSuccess);
+            alert.GiveChoice(() =>{ DeletePlayerDetailsLocal(); OnSuccess(); }, "Are you sure you want to reset your progress? All high scores and settings will be cleared.");
+            return;
+
             Assert.IsTrue(LoggedIn);
             // yes this is spaghetti
             alert.GiveChoiceAndWait(()=> DeleteAccountRemote((b,s)=>{ alert.FinishWaiting(OnSuccess, b, s); if (b) DeletePlayerDetailsLocal(); }), "Are you sure you want to delete your account? Any high scores you have achieved will be lost.", "Deleting account...");

@@ -61,18 +61,20 @@ namespace EcoBuilder
         }
 
         // for user interaction
-        [SerializeField] float minRotationVelocity = .01f;
+        [SerializeField] float minRotationVelocity = .1f;
+        [SerializeField] float smoothTime = .1f;
         float rotation, rotationTarget, rotationVelocity;
         void Update()
         {
-            rotationTarget += (rotationVelocity + Mathf.Sign(rotationVelocity)*.2f) * Time.deltaTime;
-            rotation = Mathf.SmoothDamp(rotation, rotationTarget, ref rotationVelocity, minRotationVelocity);
+            rotationTarget += (minRotationVelocity + Mathf.Sign(rotationVelocity)) * Time.deltaTime;
+            rotation = Mathf.SmoothDamp(rotation, rotationTarget, ref rotationVelocity, smoothTime);
 
             transform.localRotation = Quaternion.Euler(0,rotation,0);
         }
         public void OnDrag(PointerEventData ped)
         {
             rotationTarget -= ped.delta.x * .1f;
+            print(rotationTarget);
         }
     }
 }

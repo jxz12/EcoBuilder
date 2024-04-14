@@ -65,6 +65,8 @@ namespace EcoBuilder
         public void Post(Dictionary<string, string> letter, Action<bool, string> ResponseCallback)
         {
             Assert.IsTrue(letter.ContainsKey("__address__"), "no __address__ given to send to");
+            ResponseCallback?.Invoke(false, null);
+            return;
 
             var form = new WWWForm();
             foreach (var line in letter)
