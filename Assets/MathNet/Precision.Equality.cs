@@ -948,7 +948,7 @@ namespace MathNet.Numerics
         /// <param name="a">The first value.</param>
         /// <param name="b">The second value.</param>
         /// <param name="maximumAbsoluteError">The accuracy required for being almost equal.</param>
-        public static bool AlmostEqual<T>(this Vector<T> a, Vector<T> b, double maximumAbsoluteError)
+        public static bool AlmostEqual<T>(this LinearAlgebra.Vector<T> a, LinearAlgebra.Vector<T> b, double maximumAbsoluteError)
             where T : struct, IEquatable<T>, IFormattable
         {
             return AlmostEqualNorm(a.L2Norm(), b.L2Norm(), (a - b).L2Norm(), maximumAbsoluteError);
@@ -960,7 +960,7 @@ namespace MathNet.Numerics
         /// <param name="a">The first value.</param>
         /// <param name="b">The second value.</param>
         /// <param name="maximumError">The accuracy required for being almost equal.</param>
-        public static bool AlmostEqualRelative<T>(this Vector<T> a, Vector<T> b, double maximumError)
+        public static bool AlmostEqualRelative<T>(this LinearAlgebra.Vector<T> a, LinearAlgebra.Vector<T> b, double maximumError)
             where T : struct, IEquatable<T>, IFormattable
         {
             return AlmostEqualNormRelative(a.L2Norm(), b.L2Norm(), (a - b).L2Norm(), maximumError);
@@ -973,7 +973,7 @@ namespace MathNet.Numerics
         /// <param name="a">The first value.</param>
         /// <param name="b">The second value.</param>
         /// <param name="decimalPlaces">The number of decimal places.</param>
-        public static bool AlmostEqual<T>(this Vector<T> a, Vector<T> b, int decimalPlaces)
+        public static bool AlmostEqual<T>(this LinearAlgebra.Vector<T> a, LinearAlgebra.Vector<T> b, int decimalPlaces)
             where T : struct, IEquatable<T>, IFormattable
         {
             return AlmostEqualNorm(a.L2Norm(), b.L2Norm(), (a - b).L2Norm(), decimalPlaces);
@@ -986,7 +986,7 @@ namespace MathNet.Numerics
         /// <param name="a">The first value.</param>
         /// <param name="b">The second value.</param>
         /// <param name="decimalPlaces">The number of decimal places.</param>
-        public static bool AlmostEqualRelative<T>(this Vector<T> a, Vector<T> b, int decimalPlaces)
+        public static bool AlmostEqualRelative<T>(this LinearAlgebra.Vector<T> a, LinearAlgebra.Vector<T> b, int decimalPlaces)
             where T : struct, IEquatable<T>, IFormattable
         {
             return AlmostEqualNormRelative(a.L2Norm(), b.L2Norm(), (a - b).L2Norm(), decimalPlaces);

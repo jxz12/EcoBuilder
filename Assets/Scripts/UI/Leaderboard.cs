@@ -14,8 +14,8 @@ namespace EcoBuilder.UI
         void Awake()
         {
             moreButton.onClick.AddListener(UpdateTopScores);
-            topPanelLayout.enabled = true;
-            topPanelFitter.enabled = true;
+            // topPanelLayout.enabled = true;
+            // topPanelFitter.enabled = true;
         }
         int? currentIdx = null;
         string topScoresText = "";
@@ -27,9 +27,9 @@ namespace EcoBuilder.UI
 
             topScoresShowing = 0;
             topScoresText = "";
-            topPanelLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            // topPanelLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
-            UpdateTopScores();
+            // UpdateTopScores();
             UpdateLowerScores();
         }
         [SerializeField] VerticalLayoutGroup topPanelLayout;
@@ -88,11 +88,11 @@ namespace EcoBuilder.UI
             {
                 var lowerScoresText = new StringBuilder();
                 if (rank == null) {
-                    lowerScoresText.Append($"You: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
+                    lowerScoresText.Append($"Your score: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
                 } else {
                     lowerScoresText.Append($"{rank}: {GameManager.Instance.Username} {(playerScore??0).ToString("N0")}");
                 }
-                lowerScoresText.Append($"\nAverage: {(median??0).ToString("N0")}");
+                // lowerScoresText.Append($"\nAverage: {(median??0).ToString("N0")}");
                 lowerScores.text = lowerScoresText.ToString();
             }
             void UpdateRank(bool successful, string rank)

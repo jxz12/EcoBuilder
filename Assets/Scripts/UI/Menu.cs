@@ -23,7 +23,7 @@ namespace EcoBuilder.UI
 
         [SerializeField] Button quit, logout, createAccount, deleteAccount;
         [SerializeField] Slider volume;
-        [SerializeField] TMPro.TextMeshProUGUI accountStatus;
+        [SerializeField] TMPro.TextMeshProUGUI accountStatus, unlockAll;
         [SerializeField] Animator logoAnim;
 
         void Awake()
@@ -126,20 +126,22 @@ namespace EcoBuilder.UI
             // set up settings menu
             reverseDrag.isOn = GameManager.Instance.ReverseDragDirection;
             volume.normalizedValue = GameManager.Instance.MasterVolume;
-            if (GameManager.Instance.LoggedIn)
-            {
-                accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
-                createAccount.gameObject.SetActive(false);
-                logout.gameObject.SetActive(true);
-                deleteAccount.gameObject.SetActive(true);
-            }
-            else
-            {
-                accountStatus.text = "You are not currently logged in.";
-                createAccount.gameObject.SetActive(true);
-                logout.gameObject.SetActive(false);
-                deleteAccount.gameObject.SetActive(false);
-            }
+            // if (GameManager.Instance.LoggedIn)
+            // {
+            //     accountStatus.text = $"Hello, {GameManager.Instance.Username}! You have collected {collectedStars} out of {totalStars} stars.";
+            //     createAccount.gameObject.SetActive(false);
+            //     logout.gameObject.SetActive(true);
+            //     deleteAccount.gameObject.SetActive(true);
+            // }
+            // else
+            // {
+            //     accountStatus.text = "You are not currently logged in.";
+            //     createAccount.gameObject.SetActive(true);
+            //     logout.gameObject.SetActive(false);
+            //     deleteAccount.gameObject.SetActive(false);
+            // }
+
+            unlockAll.text = GameManager.Instance.LevelsUnlockedRegardless ? "Lock levels" : "Unlock All Levels";
 
             // don't want to keep layoutgroups enabled as they are slow, so only enable for one frame
             EnableThenDisableLevelLayouts();
