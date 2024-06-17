@@ -248,6 +248,8 @@ namespace EcoBuilder.NodeLink
                     float mag = X_ij.magnitude;
 
                     float rx = ((mag-term.d)/2f) * (X_ij.x/mag);
+                    
+                    // TODO: this is NaN in level 18
                     Assert.IsFalse(float.IsNaN(rx), $"rx=NaN for SGD term {term.i}:{term.j}");
                    
                     float mu = Math.Min(term.w * eta, muMax);

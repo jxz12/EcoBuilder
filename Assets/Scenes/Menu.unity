@@ -2365,6 +2365,11 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6515831361461378621, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6515831361462467446, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
       propertyPath: m_TextStyleHashCode
@@ -3444,6 +3449,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Enabled
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9132565727173729106, guid: 6eb26f81b2edba24ea6df17653829ef3,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -65
       objectReference: {fileID: 0}
     - target: {fileID: 9159805724263057918, guid: 6eb26f81b2edba24ea6df17653829ef3,
         type: 3}
