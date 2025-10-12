@@ -23,5 +23,6 @@ Product -> Archive
 Window -> Organizer
 
 # Android
+* Project Settings -> Player -> Other Settings -> Bundle Version Code = bump
 * Build aab file
 * DO NOT LOSE .keystore FILE because you must sign it with the same key to update the same Android app
